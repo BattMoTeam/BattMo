@@ -1,22 +1,27 @@
-function paramobj = assignJsonParams(paramobj, jsonstruct)
-    
-    paramobjFds = properties(paramobj);
+function inputparams = assignJsonParams(inputparams, jsonstruct)
 
-    for ind = 1 : numel(paramobjFds)
-        
-        fd = paramobjFds{ind};
+    inputparamsFds = properties(inputparams);
+
+    for ind = 1 : numel(inputparamsFds)
+
+        fd = inputparamsFds{ind};
         if isfield(jsonstruct, fd)
-            paramobj.(fd) = jsonstruct.(fd);
+
+            val = jsonstruct.(fd);
+            % convert from given unit to SI, if format is appropriate, see convertUnitBattMo function
+            val = convertUnitBattMo(val);
+            inputparams.(fd) = val;
+
         end
-        
+
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

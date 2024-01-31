@@ -3,22 +3,33 @@ classdef CurrentCollectorInputParams < ElectronicComponentInputParams
 % Input parameter class for the :code:`CurrentCollector` model
 %
     properties
-        
+
+
+        %% Standard parameters
+
+        thermalConductivity  % Thermal conductivity of current collector
+        specificHeatCapacity % Heat capacity of current collector
+        density              % Density of current collector [kg m^-3]
+
+        %% Advanced parameters
+
+        effectiveVolumetricHeatCapacity % (account for density, if not given computed from specificHeatCapacity)
+
+        %% Coupling term
+
         externalCouplingTerm % coupling term specification of the current collector with external source
 
-        thermalConductivity % Thermal conductivity of current collector
-        specificHeatCapacity % Heat capacity of current collector
 
-        density % Density of current collector [kg m^-3]
     end
-    
+
     methods
-        
-        function paramobj = CurrentCollectorInputParams(jsonstruct)
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
-            paramobj.externalCouplingTerm = struct();
+
+        function inputparams = CurrentCollectorInputParams(jsonstruct)
+
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
+
         end
-        
+
     end
 
 end
@@ -26,7 +37,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

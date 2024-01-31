@@ -15,9 +15,9 @@ classdef SingleParticleSEIInputParams < InputParams
     
     methods
         
-        function paramobj = SingleParticleSEIInputParams(jsonstruct)
+        function inputparams = SingleParticleSEIInputParams(jsonstruct)
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
             an    = 'Anode';
             ct    = 'Cathode';
@@ -26,19 +26,19 @@ classdef SingleParticleSEIInputParams < InputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(an)   = SEIActiveMaterialInputParams(pick(an));
-            paramobj.(ct)   = ActiveMaterialInputParams(pick(ct));
+            inputparams.(an)   = SEIActiveMaterialInputParams(pick(an));
+            inputparams.(ct)   = ActiveMaterialInputParams(pick(ct));
             switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
+              case 'CCDischarge'
+                inputparams.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
               case 'CCCV'
-                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+                inputparams.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'CV'
-                paramobj.(ctrl) = CvControlModelInputParams(pick(ctrl));
+                inputparams.(ctrl) = CvControlModelInputParams(pick(ctrl));
             end
             
             % not input parameter for SingleCellElectrolyte
-            paramobj.(elyte) = [];
+            inputparams.(elyte) = [];
             
         end
 
@@ -49,7 +49,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

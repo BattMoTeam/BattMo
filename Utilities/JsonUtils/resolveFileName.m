@@ -1,9 +1,6 @@
 function fullfilename = resolveFileName(filename)
     
-% If the filename is not an absolute path (starts with "/") or explicitly refer to the current directory (starts with
-% "./"), then use battmo directory path.
-    
-    if strcmp(filename(1), '/') | strcmp(filename(1:2), './') |  strcmp(filename(1:3), '../')
+    if exist(filename) == 2
         fullfilename = filename; 
     else
         fullfilename = fullfile(battmoDir(), filename);
@@ -15,7 +12,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -4,20 +4,25 @@ classdef SeparatorInputParams < ComponentInputParams
 %    
     properties
         
-        porosity            % Porosity [-]
+        porosity             % the ratio of the volume free space to the total volume (symbol: varepsilon)
+        density              % the mass density of the material (symbol: rho)
+        bruggemanCoefficient % coefficient to determine effective transport parameters in porous media (symbol: beta)
         
-        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        specificHeatCapacity        % Specific Heat capacity of the electrolyte
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
 
-        density             % Density [kg m^-3]
+        % Advanced parameters
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
 
-        BruggemanCoefficient
+        % helper parameters
+        use_thermal
     end
     
     methods
 
-        function paramobj = SeparatorInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = SeparatorInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
         
     end
@@ -28,7 +33,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

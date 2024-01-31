@@ -10,18 +10,29 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 
     methods
 
-        function paramobj = SEIActiveMaterialInputParams(jsonstruct)
+        function inputparams = SEIActiveMaterialInputParams(jsonstruct)
 
-            paramobj = paramobj@ActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
             % For SEI, we always use full diffusion model
-            paramobj.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
-            paramobj.SideReaction            = SideReactionInputParams(pick('SideReaction'));
-            paramobj.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
+            inputparams.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+            inputparams.SideReaction            = SideReactionInputParams(pick('SideReaction'));
+            inputparams.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
+        end
+
+        function inputparams = validateInputParams(inputparams)
+
+            inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
+            
+            if inputparams.isRootSimulationModel
+                % only one particle in the stand-alone model
+                inputparams.SolidElectrodeInterface.np = 1;
+            end
+
         end
         
     end
@@ -30,7 +41,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

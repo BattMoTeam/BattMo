@@ -1,12 +1,13 @@
 classdef SimplifiedSolidDiffusionModelInputParams < SolidDiffusionModelInputParams 
 %
-% See simplified model presented in *Comparison of approximate solution methods for the solid phase diffusion equation in a porous electrode model* by Zhang, Qi and White, Ralph E (
-% Journal of power sources, 2007) :cite:p:`zhang2007comparison`
+% See simplified model presented in *Comparison of approximate solution methods for the solid phase diffusion equation
+% in a porous electrode model* by Zhang, Qi and White, Ralph E ( Journal of power sources, 2007)
+% :cite:p:`zhang2007comparison`
 %
     methods
         
-        function paramobj = SimplifiedSolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@SolidDiffusionModelInputParams(jsonstruct);
+        function inputparams = SimplifiedSolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
         end
         
     end
@@ -17,7 +18,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

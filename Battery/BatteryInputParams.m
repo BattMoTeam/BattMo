@@ -4,102 +4,117 @@ classdef BatteryInputParams < InputParams
 %
 
     properties
-        
-        
+
         G     % Computational Grid
         SOC   % Initial state of charge [-]
         initT % Initial temperature [T]
-        
+
         %% parameters for the battery components
-        
-        NegativeElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-        PositiveElectrode % instance of :class:`ElectrodeInputParams <Electrochemistry.ElectrodeInputParams>`
-        Electrolyte       % instance of :class:`ElectrolyteInputParams <Electrochemistry.ElectrolyteInputParams>`
-        ThermalModel      % instance of :class:`ThermalComponentInputParams <Electrochemistry.ThermalComponentInputParams>`
-        Control           % instance of :class:`ControlModelInputParams <Utilities.ControlModelInputParams>`
-        
+
+        NegativeElectrode % Negative Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        PositiveElectrode % Positive Electrode Model, instance of :class:`Electrode <Electrochemistry.Electrodes.Electrode>`
+        Electrolyte       % Electrolyte model, instance of :class:`Electrolyte <Electrochemistry.Electrodes.Electrolyte>`
+        Separator         % Separator model, instance of :class:`Separator <Electrochemistry.Electrodes.Separator>`
+        ThermalModel      % Thermal model, instance of :class:`ThermalComponent <Electrochemistry.ThermalComponent>`
+        Control           % Control Model
+
         couplingTerms % Coupling terms (describe the topological structure of the coupling between the components)
-        
+
         use_thermal            % flag : true if  coupled thermal simulation should be considered
         include_current_collectors
 
     end
-    
+
     methods
-        
-        function paramobj = BatteryInputParams(jsonstruct)
-            
-            paramobj = paramobj@InputParams(jsonstruct);
-            
+
+        function inputparams = BatteryInputParams(jsonstruct)
+
+            inputparams = inputparams@InputParams(jsonstruct);
+
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
+            sep     = 'Separator';
             thermal = 'ThermalModel';
-            ctrl    = 'Control';            
+            ctrl    = 'Control';
 
             pick = @(fd) pickField(jsonstruct, fd);
+
+            inputparams.(ne)      = ElectrodeInputParams(pick(ne));
+            inputparams.(pe)      = ElectrodeInputParams(pick(pe));
+            inputparams.(elyte)   = ElectrolyteInputParams(pick(elyte));
+            inputparams.(sep)     = SeparatorInputParams(pick(sep));
+            inputparams.(thermal) = ThermalComponentInputParams(pick(thermal));
             
-            paramobj.(ne)      = ElectrodeInputParams(pick(ne));
-            paramobj.(pe)      = ElectrodeInputParams(pick(pe));
-            paramobj.(elyte)   = ElectrolyteInputParams(pick(elyte));
-            paramobj.(thermal) = ThermalComponentInputParams(pick(thermal));
             switch jsonstruct.(ctrl).controlPolicy
-              case 'IEswitch'
-                paramobj.(ctrl) = IEswitchControlModelInputParams(pick(ctrl));
-              case 'CCCV'
-                paramobj.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
-              case 'powerControl'
-                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
-              case 'powerControl'
-                paramobj.(ctrl) = PowerControlModelInputParams(pick(ctrl));
+              case 'CCDischarge'
+                inputparams.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
+              case 'CCCharge'
+                inputparams.(ctrl) = CCChargeControlModelInputParams(pick(ctrl));
               case 'CC'
-                paramobj.(ctrl) = CcControlModelInputParams(pick(ctrl));
+                inputparams.(ctrl) = CCcontrolModelInputParams(pick(ctrl));
+              case 'CCCV'
+                inputparams.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
+              case 'powerControl'
+                inputparams.(ctrl) = PowerControlModelInputParams(pick(ctrl));
+              case 'CC'
+                inputparams.(ctrl) = CcControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end
-            paramobj.couplingTerms = {};
+            inputparams.couplingTerms = {};
 
-            paramobj = paramobj.validateInputParams();
-            
+            inputparams = inputparams.validateInputParams();
+
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
+            co      = 'Coating';
             elyte   = 'Electrolyte';
+            sep     = 'Separator';
             thermal = 'ThermalModel';
-            ctrl    = 'Control';            
+            ctrl    = 'Control';
+            
+            inputparams = mergeParameters(inputparams, {{'use_thermal'}       , ...
+                                                  {ne, 'use_thermal'}   , ...
+                                                  {pe, 'use_thermal'}   , ...
+                                                  {elyte, 'use_thermal'}, ...
+                                                  {sep, 'use_thermal'}});
 
-            paramobj = mergeParameters(paramobj, {{'use_thermal'}    , ...
-                                                  {ne, 'use_thermal'}, ...
-                                                  {pe, 'use_thermal'}, ...
-                                                  {elyte, 'use_thermal'}});
-                            
-            paramobj = mergeParameters(paramobj, {{'include_current_collectors'}    , ...
+            inputparams = mergeParameters(inputparams, {{'include_current_collectors'}    , ...
                                                   {ne, 'include_current_collectors'}, ...
                                                   {pe, 'include_current_collectors'}});
 
-            
-            paramobj.(ne)    = paramobj.(ne).validateInputParams();
-            paramobj.(pe)    = paramobj.(pe).validateInputParams();
-            paramobj.(elyte) = paramobj.(elyte).validateInputParams();
 
-            if paramobj.use_thermal
-                paramobj.(thermal) = paramobj.(thermal).validateInputParams();
-            end
+            inputparams.(ne)    = inputparams.(ne).validateInputParams();
+            inputparams.(pe)    = inputparams.(pe).validateInputParams();
+            inputparams.(elyte) = inputparams.(elyte).validateInputParams();
+            inputparams.(ctrl)  = inputparams.(ctrl).validateInputParams();
             
+            if inputparams.use_thermal
+                inputparams.(thermal) = inputparams.(thermal).validateInputParams();
+
+                % for the moment we do not support thermal simulation with composite material. We check for that here
+                isok = strcmp(inputparams.(ne).(co).active_material_type, 'default');
+                isok = isok & strcmp(inputparams.(ne).(co).active_material_type, 'default');
+                assert(isok, 'We do not support for the moment thermal simulation for composite materials');
+
+            end
+
+
         end
 
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

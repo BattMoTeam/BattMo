@@ -1,76 +1,65 @@
 classdef ElectrodeInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`Electrode` model
-%        
+%
     properties
-        
-        %
-        % Input parameter for the electrode active component (:class:`ActiveMaterialInputParams
-        % <Electrochemistry.ActiveMaterialInputParams>`)
-        %
-        ActiveMaterial
-        
-        
-        %
-        % Input parameter for the current collector (:class:`CurrentCollectorInputParams
-        % <Electrochemistry.CurrentCollectorInputParams>`)
-        %
-        CurrentCollector
-        
-        %
-        % Coupling term specification
-        %
-        couplingTerm
-        
-        
-        %
-        % Set to true to include current collector
-        %
-        include_current_collectors
 
+        %% Sub-Models
+
+        Coating
+        CurrentCollector
+
+        %% Coupling term specification
+
+        couplingTerm
+
+        %% Parameters assigned at setup
+
+        include_current_collectors
         use_thermal
-        
+
     end
-    
+
     methods
 
-        function paramobj = ElectrodeInputParams(jsonstruct)
+        function inputparams = ElectrodeInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
-            am = 'ActiveMaterial';
+            co = 'Coating';
             cc = 'CurrentCollector';
-            
+
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(am) = ActiveMaterialInputParams(pick(am));
-            paramobj.(cc) = CurrentCollectorInputParams(pick(cc));
-            
-            paramobj = paramobj.validateInputParams();
+
+            inputparams.(co) = CoatingInputParams(pick(co));
+            inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
+
+            inputparams = inputparams.validateInputParams();
 
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            am = 'ActiveMaterial';
-            cc  = 'CurrentCollector';
-            
-            paramobj = mergeParameters(paramobj, {{'use_thermal'}, {am, 'use_thermal'}});
-            paramobj.(am) = paramobj.(am).validateInputParams();
+            am = 'Coating';
+            cc = 'CurrentCollector';
 
-            if ~isempty(paramobj.include_current_collectors)
-                paramobj = mergeParameters(paramobj, {{'use_thermal'}, {cc, 'use_thermal'}});
-                paramobj.(cc) = paramobj.(cc).validateInputParams();
+            inputparams = mergeParameters(inputparams, {{'use_thermal'}, {am, 'use_thermal'}});
+            inputparams.(am) = inputparams.(am).validateInputParams();
+
+            if ~isempty(inputparams.include_current_collectors)
+                inputparams = mergeParameters(inputparams, {{'use_thermal'}, {cc, 'use_thermal'}});
+                inputparams.(cc) = inputparams.(cc).validateInputParams();
             end
-            
+
         end
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -2,9 +2,9 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
 
     methods
 
-        function model = MagnesiumBatteryNoFlow(paramobj)
+        function model = MagnesiumBatteryNoFlow(inputparams)
 
-            model = model@MagnesiumBattery(paramobj);
+            model = model@MagnesiumBattery(inputparams);
 
         end
         
@@ -160,7 +160,7 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
             I = drivingForces.src(time);
             R = state.(ctam).R;
             F = model.con.F;
-            vols = model.(ct).G.cells.volumes;
+            vols = model.(ct).G.getVolumes();
             ctGalvanostatic = I + sum(2*F*R.*vols);
 
             % at the anode we impose zero potential
@@ -170,9 +170,9 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
             nqp = model.(elyte).nqp;
             
             
-            anvols    = model.(an).G.cells.volumes;
-            ctvols    = model.(an).G.cells.volumes;
-            elytevols = model.(elyte).G.cells.volumes;
+            anvols    = model.(an).G.getVolumes();
+            ctvols    = model.(an).G.getVolumes();
+            elytevols = model.(elyte).G.getVolumes();
             F = model.con.F;
             
             eqs = {};
@@ -253,3 +253,25 @@ classdef MagnesiumBatteryNoFlow < MagnesiumBattery
 
 end
 
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

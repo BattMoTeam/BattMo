@@ -8,8 +8,6 @@ close all
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-addpath(genpath('/home/xavier/Programs/matlab_bgl/'));
-
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Safari2009/fullmodel.json');
 
@@ -22,23 +20,23 @@ sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
-paramobj = SingleParticleSEIInputParams(jsonstruct);
+inputparams = SingleParticleSEIInputParams(jsonstruct);
 
-paramobj.(an).(sd).N   = 10;
-paramobj.(an).(sd).np  = 1;
-paramobj.(an).(sei).N  = 10;
-paramobj.(an).(sei).np = 1;
+inputparams.(an).(sd).N   = 10;
+inputparams.(an).(sd).np  = 1;
+inputparams.(an).(sei).N  = 10;
+inputparams.(an).(sei).np = 1;
 
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
-paramobj.(an).G = G;
+inputparams.(an).G = G;
 
-paramobj.(ct).(sd).N   = 10;
-paramobj.(ct).(sd).np  = 1;
-paramobj.(ct).G = G;
+inputparams.(ct).(sd).N   = 10;
+inputparams.(ct).(sd).np  = 1;
+inputparams.(ct).G = G;
 
-model = SingleParticleSEI(paramobj);
+model = SingleParticleSEI(inputparams);
 
 model = model.registerVarAndPropfuncNames();
 [g, edgelabels] = setupGraph(model);
@@ -78,9 +76,8 @@ for ind = 1 : numel(p)
         propfunction = model.propertyFunctionList{iprop};
         fn = propfunction.fn;
         mn = propfunction.modelnamespace;
-        mn = join(mn, '.');
+        mn = strjoin(mn, '.');
         if ~isempty(mn)
-            mn = mn{1};
             statename = sprintf('state.%s', mn);
         else
             statename = 'state';
@@ -89,8 +86,7 @@ for ind = 1 : numel(p)
         fnname = regexp(fnname, "\.(.*)", 'tokens');
         fnname = fnname{1}{1};
         fnname = horzcat(mn, {fnname});
-        fnname = join(fnname, '.');
-        fnname = fnname{1};
+        fnname = strjoin(fnname, '.');
 
         funcCallList{end + 1} = sprintf('%s = model.%s(%s);', statename, fnname, statename);
     end
@@ -109,7 +105,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

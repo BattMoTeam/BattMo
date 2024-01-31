@@ -1,0 +1,37 @@
+{
+  "$id": "file://./Binder.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Binder",
+  "type": "object",
+  "properties": {
+    "electronicConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the electronic conductivity of the material",
+      "symbol": "sigma"
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
+    },
+    "massFraction": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the ratio of the mass of the material to the total mass of the phase or mixture",
+      "symbol": "gamma"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the thermal conductivity of the component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the specificHeatCapacity of the component",
+      "symbol": ""
+    }
+  },
+  "required": [
+    "density",
+    "massFraction"
+  ]
+}

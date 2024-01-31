@@ -1,63 +1,101 @@
 {
-  "$id": "file://battmo/schemas/ControlModel",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./ControlModel.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties" : {"Control" : {"type" : "object",
-                               "properties" : {
-                                 "controlPolicy": {"type": "string",
-                                                   "enum": ["IEswitch", "CCCV", "CV", "powerControl", "CC"]},
-                                 "CRate" : {"type": "number"},
-                                 "initialControl" : {"type" : "string",
-                                                     "enum" : ["charging", "discharging"]},
-                                 "lowerCutoffVoltage" : {"type" : "number"},
-                                 "upperCutoffVoltage" : {"type" : "number"}
-                               },
-                               "anyOf": [
-                                 {"properties": {"controlPolicy" : {"const" : "IEswitch"},
-                                                 "$ref" : "#/$defs/IEswitchControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CCCV"},
-                                                 "$ref" : "#/$defs/CcCvControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CV"},
-                                                 "$ref" : "#/$defs/CvControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "CC"},
-                                                 "$ref" : "#/$defs/CcControlModel"}},
-                                 {"properties": {"controlPolicy" : {"const" : "powerControl"},
-                                                 "$ref" : "#/$defs/powerControlModel"}}
-                               ]
-                              }
-                 },
-
-  "defs" : {
-    "IEswitchControlModel" : {"description" : "no more data than default is needed"},
-    "CcCvControlModel": {
+  "properties" : {
+    "Control" : {
+      "type" : "object",
       "properties" : {
-        "dEdtLimit" : {"type" : "number"},
-        "dIdtLimit" : {"type" : "number"}
-      }},
-    "CvControlModel": {  "properties" : {
-      "inputVoltage" : {"type" : "number"}
+        "controlPolicy": {
+          "type": "string",
+          "enum": ["CCDischarge",
+                   "CCCHarge",
+                   "CC",
+                   "CCCV",
+                   "powerControl"]}},
+      "CRate" : {"type": "number"}
     }},
-    "CcControlModel": {},
-    "powerControlModel": {
+    "allOf": [
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
+        "then": {
+          "$ref" : "#/$defs/CCDischarge"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCCharge"}},
+        "then": {
+          "$ref" : "#/$defs/CCCharge"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCCV"}},
+        "then":{
+          "$ref" : "#/$defs/CCCV"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "powerControl"}},
+        "then": {
+          "$ref" : "#/$defs/powerControl"}}}
+    ],
+
+  "$defs" : {
+    "CCDischarge" : {
+      "properties" :
+      {"rampupTime" : {
+        "type" : "number",
+        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
+       "lowerCutoffVoltage" : {
+        "type" : "number"},
+       "useCVswitch" : {
+         "type" : "boolean",
+         "description" : "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
+       }}},
+    "CCCharge" : {
+      "properties" :
+      {"rampupTime" : {
+        "type" : "number",
+        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
+       "upperCutoffVoltage" : {
+         "type" : "number"},
+       "useCVswitch" : {
+         "type" : "boolean",
+         "description" : "Switch to control voltage when the upper cutoff voltage is reached. Default value is true."
+       }
+      }
+    },
+    "CCCV": {
+      "properties" : {
+        "lowerCutoffVoltage" : {
+          "type" : "number"},
+        "upperCutoffVoltage" : {
+	  "type" : "number"},
+        "dEdtLimit" : {"type" : "number"},
+        "dIdtLimit" : {"type" : "number"},
+        "numberOfCycles" : {"type" : "number"},
+        "initialControl" : {"type" : "string",
+                            "enum" : ["discharging", "charging"]}
+      }},
+
+    "powerControl": {
       "properties" : {
         "case" : {"type" : "string",
                   "enum" : ["time limited", "voltage limited", "CPCV"]},
         "dischargingPower" : {"type" : "number"},
         "chargingPower" : {"type" : "number"}},
-      
-      "anyOf" : [{ "properties" : {"powerControlCase" : {"const" : "time limited"},
-                                   "dischargingTime" : {"type" : "number"},
-                                   "chargingTime" : {"type" : "number"}
-                                  }},
-                 
-                 { "properties" : {"powerControlCase" : {"const" : "voltage limited"}
-                                  }},
-                 
-                 { "properties" : {"powerControlCase" : {"const" : "CPCV"},
-                                   "lowerCutoffPower" : {"type" : "number"},
-                                   "upperCutoffPower" : {"type" : "number"}
-                                  }
-                 }
-                ]}
+
+      "anyOf" : [
+        { "properties" : {
+          "powerControlCase" : {"const" : "time limited"},
+          "dischargingTime" : {"type" : "number"},
+          "chargingTime" : {"type" : "number"}
+        }},
+
+        { "properties" : {
+          "powerControlCase" : {"const" : "voltage limited"}
+        }},
+
+        { "properties" : {
+          "powerControlCase" : {"const" : "CPCV"},
+          "lowerCutoffPower" : {"type" : "number"},
+          "upperCutoffPower" : {"type" : "number"}
+        }
+        }
+      ]}
   }
 }

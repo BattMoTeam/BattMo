@@ -1,46 +1,71 @@
 classdef CurrentCollector < ElectronicComponent
 
     properties
-        
+
+        %% Input
+
+        % Standard parameters
+
+        thermalConductivity  % Thermal conductivity of current collector
+        specificHeatCapacity % Heat capacity of current collector
+        density              % Density of current collector [kg m^-3]
+
+        % Advanced parameter
+        effectiveVolumetricHeatCapacity % (account for density, if not given computed from specificHeatCapacity)
+
+        % Coupling term
         externalCouplingTerm
 
-        thermalConductivity
-        specificHeatCapacity
-        density
-        
+        %% Helper properties
+
+        effectiveThermalConductivity    % (for current collector, coincide with thermalConductivity, only assign for conveniance here)
+
     end
-    
+
     methods
-        
-        function model = CurrentCollector(paramobj)
-            
-            model = model@ElectronicComponent(paramobj);
+
+        function model = CurrentCollector(inputparams)
+
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'externalCouplingTerm', ...
                        'thermalConductivity' , ...
-                       'specificHeatCapacity'        , ...
-                       'density'};
-            
-            model = dispatchParams(model, paramobj, fdnames);
-            
-            % The parameter EffectiveElectricalConductivity in CurrentCollectorInputParams is given as scalar
-            model.EffectiveElectricalConductivity = model.EffectiveElectricalConductivity*ones(model.G.cells.num, 1);
-            
+                       'specificHeatCapacity', ...
+                       'density'             , ...
+                       'effectiveVolumetricHeatCapacity'};
+
+            model = dispatchParams(model, inputparams, fdnames);
+
+            if isempty(model.effectiveElectronicConductivity)
+                model.effectiveElectronicConductivity = model.electronicConductivity;
+            end
+
+            if model.use_thermal
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    model.effectiveVolumetricHeatCapacity = model.specificHeatCapacity*model.density;
+                end
+                model.effectiveThermalConductivity = model.thermalConductivity;
+            end
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
+
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
-            
+
             varnames = {'jCoupling', ...
-                        'jExternal', ...
-                        'jFaceCoupling', ...
-                        'jFaceExternal'};
+                        'jExternal'};
             model = model.registerVarNames(varnames);
-            
+
+            if model.use_thermal
+                varnames = {'jFaceCoupling', ...
+                            'jFaceExternal'};
+                model = model.registerVarNames(varnames);
+            end
+
             fn = @CurrentCollector.updatejBcSource;
             model = model.registerPropFunction({'jBcSource', fn, {'jCoupling', 'jExternal'}});
 
@@ -50,29 +75,29 @@ classdef CurrentCollector < ElectronicComponent
             end
 
             model = model.removeVarName('T');
-            
+
         end
-        
+
         function state = updatejBcSource(model, state)
-            
+
             state.jBcSource = state.jCoupling + state.jExternal;
-            
+
         end
-        
+
         function state = updatejFaceBc(model, state)
-            
+
             state.jFaceBc = state.jFaceCoupling + state.jFaceExternal;
-            
+
         end
-        
+
     end
-    
+
 end
-                             
+
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

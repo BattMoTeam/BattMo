@@ -1,0 +1,22 @@
+{
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 0.1027
+  },
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness": 8.52e-05,
+      "N": 10
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness": 7.56e-05,
+      "N": 10
+    }
+  },
+  "Separator": {
+    "thickness": 1.2e-05,
+    "N": 10
+  }
+}

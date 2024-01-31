@@ -59,7 +59,7 @@ function output = coinCellSectorGrid(params)
     comptag = (1 : numel(components));
     tagdict = containers.Map(components, comptag);
 
-    tag = -1*ones(G.cells.num, 1);
+    tag = -1*ones(G.getNumberOfCells(), 1);
     zc = G.cells.centroids(:, 3);
     z = [-1 cumsum(thickness)];
     for k = 1:numel(z)-1
@@ -72,7 +72,7 @@ function output = coinCellSectorGrid(params)
 
     % Interfaces
     [bf, bc] = boundaryFaces(G);
-    internal = (1:G.faces.num)';
+    internal = (1:G.getNumberOfFaces())';
     internal = setdiff(internal, bf);
     c1 = G.faces.neighbors(internal, 1);
     c2 = G.faces.neighbors(internal, 2);
@@ -131,7 +131,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

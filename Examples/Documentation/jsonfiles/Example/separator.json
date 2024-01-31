@@ -1,0 +1,7 @@
+{
+  "porosity": 0.55,
+  "specificHeatCapacity": 1978,
+  "thermalConductivity": 0.334,
+  "density": 946,
+  "bruggemanCoefficient": 1.5
+}

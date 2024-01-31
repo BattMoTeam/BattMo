@@ -573,6 +573,7 @@ classdef BatteryLinearSolver < handle
                 opt.block_size = 1;
             end
 
+            require('linearsolvers');
             [x, extra] =  amgcl(A, b, 'amgcloptions', opt);
 
             flag   = extra.err < opt.solver.tol;
@@ -987,7 +988,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

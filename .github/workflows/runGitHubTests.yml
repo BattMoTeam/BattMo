@@ -1,0 +1,39 @@
+# See https://github.com/matlab-actions/overview for more information
+name: Running runGitHubTests
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      # Python dependencies
+      - name: Install Python dependencies
+        run: pip3 install -U referencing jsonschema
+
+      # Use the submodules' remote-tracking branches
+      - name: Update submodules
+        run: git submodule update --init
+
+      # Set up MATLAB on the GitHub Actions runner
+      - name: Setup MATLAB
+        uses: matlab-actions/setup-matlab@v1
+
+      # Execute the tests
+      - name: Running some tests
+        uses: matlab-actions/run-command@v1
+        with:
+          command: run('Tests/runGitHubTests.m')

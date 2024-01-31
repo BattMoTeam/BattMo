@@ -2,67 +2,51 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
 %
 % Full diffusion model (standard PXD)
 %
-
     
     properties
-        %
+
+
+        %% Standard Parameters
+
+
+        % Function to update diffusion coefficient value, given as a struct with fields
+        % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
+        % - functionname : matlab function name (should be available in path)
+        % - argumentlist : should be  ["c", "cmin", "cmax"]
+        diffusionCoefficient    
+
+        % The following parameters are only need in the case the diffusionCoefficient is given as a function (see argument list)
+        saturationConcentration % the saturation concentration of the guest molecule in the host material (symbol: cmax)
+        guestStoichiometry100   % the ratio of the concentration of the guest molecule to the saturation concentration
+                                % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC(symbol: theta100)
+        guestStoichiometry0     % the ratio of the concentration of the guest molecule to the saturation concentration
+                                % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
+
+
+        %% Discretization parameters
+        
         % Number of discretization intervals in the diffusion model [-]
-        %
         N
-
-        %
-        %  Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
-        %
+        % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
         np 
-
-        %
-        % Volume Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
-        %
-        volumeFraction
-
-        %
-        %  Active Material Fraction (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
-        %
-        activeMaterialFraction
-
-        %
-        % Function to update D value given as a struct with fields
-        % - D.type is in {'function', 'constant'}. If 'constant' is chosen the value of D0 defined in parent class
-        % - D.functionname :  matlab function name (should be available in path)
-        % - D.argumentlist = ["c", "cmin", "cmax"]
-        % 
-        D    
-
-        %
-        % maximum concentration [mol/m^3] (only needed if D is a function)
-        %
-        cmax
-        %
-        % Minimum lithiation, 0% SOC [-] (only needed if D is a function)
-        %
-        theta0
-        %
-        % Maximum lithiation, 100% SOC [-] (only needed if D is a function)
-        %
-        theta100 
 
     end
     
     methods
         
-        function paramobj = FullSolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@SolidDiffusionModelInputParams(jsonstruct);
+        function inputparams = FullSolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            D0 = paramobj.D0;
-            D  = paramobj.D;
+            D0 = inputparams.referenceDiffusionCoefficient;
+            D  = inputparams.diffusionCoefficient;
             
             assert(~isempty(D0) || ~isempty(D), 'Either D0 or D should be provided');
 
             if ~isempty(D) & strcmp(D.type, 'constant')
-                paramobj.D0 = paramobj.D.value;
+                inputparams.referenceDiffusionCoefficient = inputparams.diffusionCoefficient.value;
             end
             
         end
@@ -75,7 +59,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

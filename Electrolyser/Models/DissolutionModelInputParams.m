@@ -14,9 +14,9 @@ classdef DissolutionModelInputParams < ComponentInputParams
 
     methods
         
-        function paramobj = DissolutionModelInputParams(jsonstruct)
+        function inputparams = DissolutionModelInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         
@@ -27,7 +27,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

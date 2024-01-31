@@ -1,67 +1,34 @@
 {
-  "$id": "file://battmo/schemas/ThermalComponent",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./ThermalComponent.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Thermal model",
   "type" : "object",
   "properties" : {
     "ThermalModel" : {
-      "externalHeatTransferCoefficient": {"type" : "number"},
-      "useWetProperties" : {"type" : "boolean",
-                            "description" : "If set to true, we use wet properties, which means that the thermal properties are measured with the electrolyte. In this case, it corresponds to the effective thermal properties. This property is NOT yet SUPPORTED. It could be set to false or ignored"},
-      "externalTemperature": {
-        "type" : "number"},
-      "EffectiveThermalConductivity" : {
-        "type" : "number",
-        "description": "this value is usually not given but computed from the other components"},
-      "EffectiveHeatCapacity" : {
-        "type" : "number",
-        "description": "this value is usually not given but computed from the other components"},
+      "useWetProperties" : {
+        "type" : "boolean",
+        "description" : "If set to true, we use wet properties, which means that the thermal properties are measured with the electrolyte. In this case, it corresponds to the effective thermal properties. This property is NOT yet SUPPORTED. It could be set to false or ignored"},
+      "externalHeatTransferCoefficient": {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the external surface and surroundings. The use of this value depends on the choice of geometry. If needed, it is also specified in the Geometry schema"
+      },
       "externalHeatTransferCoefficientTopFaces" :  {
-        "type" : "number",
-        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"},
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the top surfaces and surroundings. The use of this value depends on the choice of geometry. If needed, it is also specified in the Geometry schema"
+      },
       "externalHeatTransferCoefficientSideFaces" : {
-        "type" : "number",
-        "description": "In some model a different heat transfer coefficient for the top faces can be given and used"}},
-
-    "NegativeElectrode" : {
-      "type" : "object",
-      "properties" : {
-        "ActiveMaterial" : {
-          "$ref" : "#/$defs/thermalParameters"},
-        "CurrentCollector" : {
-          "$ref" : "#/$defs/thermalParameters"}}},
-
-    "PositiveElectrode" : {
-      "type" : "object",
-      "properties" : {
-        "ActiveMaterial" : {"$ref" : "#/$defs/thermalParameters"},
-        "CurrentCollector" : {"$ref" : "#/$defs/thermalParameters"}}},
-
-    "Electrolyte" : {
-      "type" : "object",
-      "properties" : { "Separator" : {"type" : "object",
-                                      "$ref" : "#/$defs/thermalParameters"}}}},
-  "anyOf" : [
-    {"properties" : {
-      "ThermalModel" : {
-        "properties" : {
-          "useWetProperties" : {"const" : false}}},
-      "Electrolyte" : {
-        "type" : "object",
-        "$ref" : "#/$defs/thermalParameters"}}},
-    {"properties" : {
-      "ThermalModel" : {
-        "properties" : {
-          "useWetProperties" : {"const" : true}}}}}
-  ],
-
-  "$defs" : {
-    "thermalParameters" : {
-      "type": "object",
-      "properties" : {
-        "thermalConductivity": {"type" : "number"},
-        "density" : {"type" : "number"},
-        "specificHeatCapacity": {"type" : "number"}}}}
-
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the side surfaces and surroundings. The use of this value depends on the choice of geometry. If needed, it is also specified in the Geometry schema"
+      },
+      "externalHeatTransferCoefficientTab" : {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the heat transfer coefficient between the side surfaces and surroundings. The use of this value depends on the choice of geometry. If needed, it is also specified in the Geometry schema"
+      },
+      "externalTemperature": {
+        "$ref": "PhysicalQuantity.schema.json",
+        "description": "the temperature of the surroundings"
+      }
+    }
+  }
 }
 

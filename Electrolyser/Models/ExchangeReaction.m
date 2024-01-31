@@ -13,14 +13,14 @@ classdef ExchangeReaction < BaseModel
 
     methods
 
-        function model = ExchangeReaction(paramobj)
+        function model = ExchangeReaction(inputparams)
 
             model = model@BaseModel();
             
             fdnames = {'kxch', ...
                        'OH'  , ...
                        'kML' };
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants;
             
@@ -124,7 +124,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

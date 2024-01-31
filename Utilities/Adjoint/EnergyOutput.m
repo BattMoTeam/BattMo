@@ -37,11 +37,9 @@ function obj = EnergyOutput(model, states, schedule, varargin)
     tSteps = opt.tStep;
     
     if isempty(tSteps) % do all
-        time     = 0;
         numSteps = numel(dts);
         tSteps   = (1:numSteps)';
     else
-        time     = sum(dts(1:(opt.tStep-1)));
         numSteps = 1;
         dts      = dts(opt.tStep);
     end
@@ -71,7 +69,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -2,20 +2,22 @@ classdef ThermalComponentInputParams < ComponentInputParams
 
     properties
         
-        EffectiveThermalConductivity             % Effective thermal conductivity
-        EffectiveVolumetricHeatCapacity
-        couplingTerm
+        effectiveThermalConductivity             % effective thermal conductivity
+        effectiveVolumetricHeatCapacity          % effective volumetric heat capacity
+        
         externalHeatTransferCoefficient          % scalar value
         externalHeatTransferCoefficientTopFaces  % scalar value
         externalHeatTransferCoefficientSideFaces % scalar value
         externalTemperature                      % 
 
+        couplingTerm
+
     end
     
     methods
 
-        function paramobj = ThermalComponentInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = ThermalComponentInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
         
     end
@@ -26,7 +28,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

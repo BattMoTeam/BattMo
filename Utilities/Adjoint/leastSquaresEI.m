@@ -27,10 +27,6 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
 %           respect to state is returned in a format appropriate for the adjoint computation.
 %
 
-
-
-
-
     opt = struct('ComputePartials', false, ...
                  'tStep'          , []   , ...
                  'state'          , []   , ...
@@ -43,12 +39,10 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
     if isempty(opt.tStep) %do all
         time     = cumsum(dts);
         numSteps = numel(dts);
-        tSteps   = (1:numSteps)';
     else
         time     = sum(dts(1:(opt.tStep)));
         numSteps = 1;
         dts      = dts(opt.tStep);
-        tSteps   = opt.tStep;
     end
 
     obj = repmat({[]}, numSteps, 1);
@@ -65,7 +59,7 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
         stateRef = findState(t, refStates, dt, relTol);
 
         if opt.ComputePartials
-            if (opt.from_states)
+            if opt.from_states
                 state = model.initStateAD(state);
             else
                 state = opt.state;
@@ -100,7 +94,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -5,37 +5,37 @@ classdef SideReaction < BaseModel
         % Physical constants
         constants = PhysicalConstants();
 
-        beta         % side reaction buttler-volmer  coefficient [-]
-        k            % side reaction rate constant [m/s]
-        conductivity % ionic conductivity [S/m]
-        
+        chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
+        reactionRateConstant      % side reaction rate constant [m/s]
+
     end
 
     methods
 
-        function model = SideReaction(paramobj)
+        function model = SideReaction(inputparams)
 
             model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
-            fdnames = {'beta', ...
-                       'k'   , ...
-                       'conductivity'};
+            fdnames = {'chargeTransferCoefficient', ...
+                       'reactionRateConstant'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
         end
 
         function model = registerVarAndPropfuncNames(model)
-            
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {};
+            % Temperature
+            varnames{end + 1} = 'T';
             % potential in electrode
             varnames{end + 1} = 'phiElectrode';
             % solvent concentration in SEI film - value at interface
@@ -46,13 +46,13 @@ classdef SideReaction < BaseModel
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';
-            
+
             model = model.registerVarNames(varnames);
-            
+
             fn = @SideReaction.updateReactionRate;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
+            inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            
+
         end
 
 
@@ -60,15 +60,15 @@ classdef SideReaction < BaseModel
 
             F    = model.constants.F;
             R    = model.constants.R;
-            beta = model.beta;
-            k    = model.k;
+            beta = model.chargeTransferCoefficient;
+            k    = model.reactionRateConstant;
 
             T        = state.T;
             c        = state.c;
             phiElyte = state.phiElectrolyte;
             phiElde  = state.phiElectrode;
             dphi     = state.externalPotentialDrop;
-            
+
             eta = (phiElde - phiElyte - dphi);
 
             % Reaction rate in mol/(m^2*s) (not Coulomb and therefore no Faraday number in front). It is always negative
@@ -77,14 +77,14 @@ classdef SideReaction < BaseModel
             state.R = -k*c.*exp(-(beta*F)./(R*T).*eta);
 
         end
-        
+
 
 
     end
 end
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

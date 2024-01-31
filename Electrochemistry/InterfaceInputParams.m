@@ -3,43 +3,44 @@ classdef InterfaceInputParams < InputParams
 % Input parameter class for the interface model
 %    
     properties
-        
+
         G  % Grid
-        
-        theta0   % Lithiation value at 0% SOC [-]
-        theta100 % Lithiation value at 100% SOC [-]
 
-        cmax                    % Maximum concentration [mol m^-3]
-        k0                      % Reference rate constant  [m^2.5 mol^-0.5 s^-1]
-        Eak                     % Activation energy [J mol^-1]
-        volumetricSurfaceArea   % Volumetric surface area [m2 m^-3]
-        volumeFraction          % Volume fraction of the active material
-        density                 % Density of the active material [kg m^-3]
-        n                       % number of electron transfer
+        saturationConcentration      % the saturation concentration of the guest molecule in the host material
+        numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
+        volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
+        activationEnergyOfReaction   % the activation energy of the electrochemical reaction
+        reactionRateConstant         % the reaction rate constant of the electrochemical reaction
 
-        % Function to update OCP value, which is given as a struct with fields
-        %
-        % - type : "function";
-        % - functionname :  matlab function name (should be available in path)
-        % - argumentlist : ["cElectrode", "T", "cmax"]
-        OCP 
-
-        % Function to update j0 : if empty, the default expression using k0 is used, see method
+        % The exchange current at the electrode-electrolyte interface under equilibrium conditions.
+        % Tf empty, the default expression using the reaction rate constant is used, see method
         % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
-        %
-        % - type = {"function", "constant"} % if "constant" is selected, the value of k0 is used to compute reaction rate
-        % - functionname :  matlab function name (should be available in path)
-        % - argumentlist = ["cElectrodeSurface", "cmax"]
-        j0  
+        %   - type = {"function", "constant"} % if "constant" is selected, we use the reactionRateConstant value
+        %   - functionname :  matlab function name (should be available in path)
+        %   - argumentlist = ["cElectrodeSurface", "cmax"]
+        exchangeCurrentDensity
+        
+        guestStoichiometry100 % the ratio of the concentration of the guest molecule to the saturation concentration
+                              % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC
+        guestStoichiometry0   % the ratio of the concentration of the guest molecule to the saturation concentration
+                              % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC
+        density               % the mass density of the active material
 
-        alpha = 0.5 % coefficient in Butler-Volmer coefficient (default is 0.5)
+        % A function to determine the open-circuit potential of the electrode under given conditions
+        %   - type : "function";
+        %   - functionname :  matlab function name (should be available in path)
+        %   - argumentlist : ["cElectrode", "T", "cmax"]
+        openCircuitPotential
+        
+        chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
+      
     end
     
     methods
         
-        function paramobj = InterfaceInputParams(jsonstruct)
+        function inputparams = InterfaceInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
@@ -49,9 +50,8 @@ classdef InterfaceInputParams < InputParams
 end
 
 
-
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

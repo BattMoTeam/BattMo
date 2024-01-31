@@ -1,5 +1,6 @@
 function flux = assembleUpwindFlux(model, flux, coefficient)
-    
+
+    error('not up to date with subgrid setup')
     op = model.operators;
     flux = op.faceUpstr(flux > 0, coefficient).*flux;
     
@@ -8,7 +9,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

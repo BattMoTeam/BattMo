@@ -1,51 +1,47 @@
-classdef ElectrolyteInputParams < ElectroChemicalComponentInputParams
+classdef ElectrolyteInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`Electrolyte` model
-%    
+%
     properties
-        
-        compnames % Names of the components in the electrolyte
-        sp % Structure given properties of each component
-        
-        %
-        % Input parameter for the separator (:class:`SeparatorInputParams
-        % <Electrochemistry.SeparatorInputParams>`)
-        %
-        Separator
-        
-        thermalConductivity % Intrinsic Thermal conductivity of the electrolyte
-        specificHeatCapacity        % Specific Heat capacity of the electrolyte
-        
-        
-        Conductivity
-        DiffusionCoefficient
-        
-        density % Density [kg m^-3] (Note : only of the liquid part, the density of the separator is given there)
 
-        BruggemanCoefficient
+        species % Structure given properties of the main ion (Lithium)
+        
+        %% Standard parameters
+
+        density              % the mass density of the material (symbol: rho)
+        ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
+        diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
+        bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
+
+        thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
+        specificHeatCapacity % Specific Heat capacity of the electrolyte
+
+        %% Advanced parameters
+
+        volumeFraction
+        effectiveThermalConductivity    % (account for volume fraction)
+        effectiveVolumetricHeatCapacity % (account for volume fraction and density)
+        
+        use_thermal
         
     end
-    
+
     methods
 
-        function paramobj = ElectrolyteInputParams(jsonstruct)
-            
-            paramobj = paramobj@ElectroChemicalComponentInputParams(jsonstruct);
-            
-            pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.Separator = SeparatorInputParams(pick('Separator'));
-            
-            paramobj.EffectiveElectricalConductivity = 'not used';
+        function inputparams = ElectrolyteInputParams(jsonstruct)
+
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
+
         end
 
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -1,7 +1,6 @@
 {
-  "$id": "file://battmo/schemas/Solver",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Options for the solver",
+  "$id": "file://./Solver.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "description" : "Setting that can be given to the solver (only parts of those are avaible through json interface)",
 
@@ -23,4 +22,4 @@
           "properties" : {
             "linearSolverSetup" : {
               "type" : "object",
-              "$ref" : "linearsolver"}}}}}}}
+              "$ref" : "LinearSolver.schema.json"}}}}}}}

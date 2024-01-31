@@ -1,0 +1,79 @@
+{
+  "$id": "file://./Coating.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Coating",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "./ElectronicComponent.schema.json"
+    },
+    {
+      "properties": {
+        "ActiveMaterial": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
+        "ActiveMaterial1": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
+        "ActiveMaterial2": {
+          "$ref": "ActiveMaterial.schema.json"
+        },
+        "Binder": {
+          "$ref": "Binder.schema.json"
+        },
+        "ConductingAdditive": {
+          "$ref": "ConductingAdditive.schema.json"
+        },
+        "effectiveDensity": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the mass density of the material (either in wet or calendared state). The density is computed with respect to the total volume (i.e. including the empty pores)",
+          "symbol": "rho"
+        },
+        "bruggemanCoefficient": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the Bruggeman coefficient for effective transport in porous media",
+          "symbol": "beta"
+        },
+        "active_material_type": {
+          "type": "string",
+          "enum": [
+            "default",
+            "composite"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "active_material_type": {
+            "enum": ["default"]
+          }
+        },
+        "required": ["active_material_type"]
+      },
+      "then": {
+        "required": [
+          "ActiveMaterial"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "active_material_type": {
+            "enum": ["composite"]
+          }
+        },
+        "required": ["active_material_type"]
+      },
+      "then": {
+        "required": [
+          "ActiveMaterial1",
+          "ActiveMaterial2"
+        ]
+      }
+    }
+
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "Coating" : {
+    "isFile": true,
+    "filename" : "coating.json"
+  },
+  "CurrentCollector" : {
+    "isFile": true,
+    "filename" : "currentCollector.json"
+  }
+}

@@ -1,28 +1,28 @@
-function paramobj = assignStructParams(paramobj, structdata)
+function inputparams = assignStructParams(inputparams, structdata)
     
     fields_sd = fieldnames(structdata);
-    fields_pobj = fieldnames(paramobj);
+    fields_pobj = fieldnames(inputparams);
     
     for ind = 1 : numel(fields_sd)
         
         fd = fields_sd{ind};
         
-        % if isclass(paramobj)
-            % if paramobj is a class, we check here that it the field fd matches a property of the class
+        % if isclass(inputparams)
+            % if inputparams is a class, we check here that it the field fd matches a property of the class
             % assert(ismember(fd, fields_pobj), 'field in input data is not recognized');
         % end
         
         if isstruct(structdata.(fd)) && isfield(structdata.(fd), 'isFile') && structdata.(fd).isFile
             filename = structdata.(fd).filename;
-            paramobj.(fd) = jsonfileToParams(paramobj.(fd), filename);
+            inputparams.(fd) = jsonfileToParams(inputparams.(fd), filename);
         elseif isnumeric(structdata.(fd))
-            paramobj.(fd) = structdata.(fd);
+            inputparams.(fd) = structdata.(fd);
         elseif ischar(structdata.(fd))
-            paramobj.(fd) = structdata.(fd);
+            inputparams.(fd) = structdata.(fd);
         elseif iscell(structdata.(fd))
-            paramobj.(fd) = structdata.(fd);
+            inputparams.(fd) = structdata.(fd);
         elseif isstruct(structdata.(fd))
-            paramobj.(fd) = assignStructParams(paramobj.(fd), structdata.(fd));
+            inputparams.(fd) = assignStructParams(inputparams.(fd), structdata.(fd));
         end
 
     end
@@ -33,7 +33,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

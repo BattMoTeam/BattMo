@@ -4,17 +4,23 @@ classdef SolidDiffusionModelInputParams < InputParams
 %
     properties
 
-        EaD                         % Activation energy [J mol^-1]
-        D0                          % Diffusion reference constant[ m^2 s^-1]
-        rp                          % Particle radius [m]
-        volumetricSurfaceArea       % Volumetric surface area [m2 m^-3]
+        %% Standard input parameters
+        
+        particleRadius                % the characteristic radius of the particle (symbol: rp)
+        activationEnergyOfDiffusion   % the Arrhenius-type activation energy for diffusion (symbol: EaD)
+        referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
+        volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
+
+        %% Advanced parameters
+        
+        volumeFraction % the ratio of the volume of the active material to the total volume (including porous space)
         
     end
     
     methods
         
-        function paramobj = SolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@InputParams(jsonstruct);
+        function inputparams = SolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@InputParams(jsonstruct);
         end
         
     end
@@ -25,7 +31,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

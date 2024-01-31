@@ -1,29 +1,40 @@
 {
-  "$id": "file://battmo/schemas/Simulation",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./Simulation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input description for a Battery simulation in BattMo",
   "type": "object",
-  
-  "allOf" : [
-    {"$ref" : "ModelSpecification",
-     "description": "Overall model specification. Choice of physics and component that will be included in the model"},
-    {"$ref" : "Battery",
-     "description": "Battery Physical Parameters"},
-    {"$ref" : "ControlModel",
-     "description" : "Input for the control type and the corresponding parameters"},
-    {"$ref" : "Geometry",
-     "description" : "Specification of the geometry including the discretization parameters"},
-    {"$ref" : "StateInitialization",
-     "description" : "Input to setup the initial state of the battery"},
-    {"$ref" : "TimeStepping",
-     "description" : "Input for the time stepping"},
-    {"$ref" : "Solver",
-     "description" : "Options for the solver"},
-    {"$ref" : "Output",
-     "description" : "Input for the choice of outputs the will be returned"}
+  "allOf": [
+    {
+      "$ref": "ModelSpecification.schema.json",
+      "description": "Overall model specification. Choice of physics and component that will be included in the model"
+    },
+    {
+      "$ref": "Battery.schema.json",
+      "description": "Battery Physical Parameters"
+    },
+    {
+      "$ref": "ControlModel.schema.json",
+      "description": "Input for the control type and the corresponding parameters"
+    },
+    {
+      "$ref": "Geometry.schema.json",
+      "description": "Specification of the geometry including the discretization parameters"
+    },
+    {
+      "$ref": "StateInitialization.schema.json",
+      "description": "Input to setup the initial state of the battery"
+    },
+    {
+      "$ref": "TimeStepping.schema.json",
+      "description": "Input for the time stepping"
+    },
+    {
+      "$ref": "Solver.schema.json",
+      "description": "Options for the solver"
+    },
+    {
+      "$ref": "Output.schema.json",
+      "description": "Input for the choice of outputs the will be returned"
+    }
   ]
-                            
 }
-
-
-  

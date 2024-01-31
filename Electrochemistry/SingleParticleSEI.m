@@ -14,30 +14,25 @@ classdef SingleParticleSEI < BaseModel
     
     methods
         
-        function model = SingleParticleSEI(paramobj)
+        function model = SingleParticleSEI(inputparams)
 
             model = model@BaseModel();
 
-            model.Anode       = SEIActiveMaterial(paramobj.Anode);
-            model.Cathode     = ActiveMaterial(paramobj.Cathode);
-            model.Electrolyte = SingleCellElectrolyte(paramobj.Electrolyte);
-            model.Control     = model.setupControl(paramobj.Control);
+            model.Anode       = SEIActiveMaterial(inputparams.Anode);
+            model.Cathode     = ActiveMaterial(inputparams.Cathode);
+            model.Electrolyte = SingleCellElectrolyte(inputparams.Electrolyte);
+            model.Control     = model.setupControl(inputparams.Control);
             
             fdnames = {'anodeArea', ...
                        'cathodeArea'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
         end
 
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            varnames = {};
-            % temperature
-            varnames{end + 1} = 'T';
-            model = model.registerVarNames(varnames);
-            
             % Some shorthands used for the sub-models
             an    = 'Anode';
             ct    = 'Cathode';
@@ -47,6 +42,15 @@ classdef SingleParticleSEI < BaseModel
             sr    = 'SideReaction';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
+
+            varnames = {};
+            % temperature
+            varnames{end + 1} = 'T';
+            % time
+            varnames{end + 1} = 'time';
+            % potential at the cathode
+            varnames{end + 1} = {ct, 'phi'};
+            model = model.registerVarNames(varnames);
             
             fn = @SingleParticleSEI.dispatchEcathode;
             model = model.registerPropFunction({{ct, 'phi'}, fn, {{ctrl, 'E'}}});
@@ -54,6 +58,9 @@ classdef SingleParticleSEI < BaseModel
             fn = @SingleParticleSEI.dispatchT;
             model = model.registerPropFunction({{an, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{ct, 'T'}, fn, {'T'}});
+            
+            fn = @SingleParticleSEI.dispatchTime;
+            model = model.registerPropFunction({{ctrl, 'time'}, fn, {'time'}});
             
             fn = @SingleParticleSEI.setupEIequation;
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, {{an, itf, 'R'}, {ctrl, 'I'}}});
@@ -100,21 +107,27 @@ classdef SingleParticleSEI < BaseModel
             
         end
         
-        function control = setupControl(model, paramobj)
+        function control = setupControl(model, inputparams)
 
-            switch paramobj.controlPolicy
-              case "IEswitch"
-                control = IEswitchControlModel(paramobj); 
+            switch inputparams.controlPolicy
+              case "CCDischarge"
+                control = CCDischargeControlModel(inputparams); 
               case "CCCV"
-                control = seiCcCvControlModel(paramobj);
+                control = seiCcCvControlModel(inputparams);
               case "CV"
-                control = CvControlModel(paramobj);
+                control = CvControlModel(inputparams);
               otherwise
                 error('Error controlPolicy not recognized');
             end
             
         end
 
+
+        function state = dispatchTime(model, state)
+
+            state.Control.time = state.time;
+            
+        end
         
         function state = dispatchT(model, state)
 
@@ -212,7 +225,7 @@ classdef SingleParticleSEI < BaseModel
 
                 % nothing to do here
                 
-              case 'IEswitch'
+              case 'CCDischarge'
                 
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
@@ -228,170 +241,7 @@ classdef SingleParticleSEI < BaseModel
             
         end
 
-        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
 
-
-            opt = struct('resOnly', true);
-            [opt, extra] = merge_options(opt, varargin{:});
-            
-            an    = 'Anode';
-            ct    = 'Cathode';
-            sd    = 'SolidDiffusion';
-            itf   = 'Interface';
-            sei   = 'SolidElectrodeInterface';
-            sr    = 'SideReaction';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
-
-            time = state0.time + dt;
-
-            if ~opt.resOnly
-                state = model.initStateAD(state);
-            end
-
-            state                               = model.dispatchEcathode(state);
-            state                               = model.dispatchT(state);
-            state.Cathode                       = model.Cathode.dispatchTemperature(state.Cathode);
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateDiffusionCoefficient(state.Cathode.SolidDiffusion);
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateFlux(state.Cathode.SolidDiffusion);
-            
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassAccum(state.Cathode.SolidDiffusion, ...
-                                                                                               state0.Cathode.SolidDiffusion, ...
-                                                                                               dt);
-
-            state                               = model.setupElectrolyteCoupling(state);
-            state.Cathode                       = model.Cathode.updateConcentrations(state.Cathode);
-            state.Cathode                       = model.Cathode.updatePhi(state.Cathode);
-            state                               = model.updateCathodeReactionRateCoefficient(state);
-            state.Cathode.Interface             = model.Cathode.Interface.updateOCP(state.Cathode.Interface);
-            state.Cathode.Interface             = model.Cathode.Interface.updateEtaWithEx(state.Cathode.Interface);
-            state.Cathode.Interface             = model.Cathode.Interface.updateReactionRate(state.Cathode.Interface);
-            state.Cathode                       = model.Cathode.updateRvol(state.Cathode);
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassSource(state.Cathode.SolidDiffusion);
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.assembleSolidDiffusionEquation(state.Cathode.SolidDiffusion);
-            state.Cathode.SolidDiffusion        = model.Cathode.SolidDiffusion.updateMassConservation(state.Cathode.SolidDiffusion);
-            state                               = model.setupElectrolyteMassCons(state);
-            state.Anode                         = model.Anode.dispatchTemperature(state.Anode);
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateDiffusionCoefficient(state.Anode.SolidDiffusion);
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateFlux(state.Anode.SolidDiffusion);
-            
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateMassAccum(state.Anode.SolidDiffusion, ...
-                                                                                             state0.Anode.SolidDiffusion, ...
-                                                                                             dt);
-            
-            state.Anode                         = model.Anode.updateConcentrations(state.Anode);
-            state.Anode                         = model.Anode.updatePhi(state.Anode);
-            state                               = model.updateAnodeReactionRateCoefficient(state);
-            state.Anode.Interface               = model.Anode.Interface.updateOCP(state.Anode.Interface);
-            state.Anode                         = model.Anode.updatePotentialDrop(state.Anode);
-            state.Anode.Interface               = model.Anode.Interface.updateEtaWithEx(state.Anode.Interface);
-            state.Anode.Interface               = model.Anode.Interface.updateReactionRate(state.Anode.Interface);
-            state                               = model.setupEIequation(state);
-
-            state = model.updateControl(state, drivingForces);
-        
-            state.Control                       = model.Control.updateControlEquation(state.Control);
-            state.Anode                         = model.Anode.updateRvol(state.Anode);
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateMassSource(state.Anode.SolidDiffusion);
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.assembleSolidDiffusionEquation(state.Anode.SolidDiffusion);
-            state.Anode.SolidDiffusion          = model.Anode.SolidDiffusion.updateMassConservation(state.Anode.SolidDiffusion);
-            state.Anode                         = model.Anode.updateSEISurfaceConcentration(state.Anode);
-            state.Anode.SideReaction            = model.Anode.SideReaction.updateReactionRate(state.Anode.SideReaction);
-            state.Anode                         = model.Anode.assembleSEIchargeCons(state.Anode);
-            state.Anode                         = model.Anode.dispatchSEIRate(state.Anode);
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.updateSEIgrowthVelocity(state.Anode.SolidElectrodeInterface);
-
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.assembleWidthEquation(state.Anode.SolidElectrodeInterface, ...
-                                                                                                            state0.Anode.SolidElectrodeInterface, ...
-                                                                                                            dt);
-
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.updateMassSource(state.Anode.SolidElectrodeInterface);
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.assembleInterfaceBoundaryEquation(state.Anode.SolidElectrodeInterface);
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.updateFlux(state.Anode.SolidElectrodeInterface);
-            
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.updateMassAccumTerm(state.Anode.SolidElectrodeInterface, ...
-                                                                                                          state0.Anode.SolidElectrodeInterface, ...
-                                                                                                          dt);
-
-            state.Anode.SolidElectrodeInterface = model.Anode.SolidElectrodeInterface.updateMassConservation(state.Anode.SolidElectrodeInterface);
-            
-            eqs = {};
-            eqs{end + 1} = state.(an).(sd).massCons;
-            eqs{end + 1} = state.(an).(sd).solidDiffusionEq;
-            eqs{end + 1} = state.(an).(sei).massCons;
-            eqs{end + 1} = state.(an).(sei).widthEq;
-            eqs{end + 1} = state.(an).seiInterfaceChargeCons;
-            eqs{end + 1} = state.(an).(sei).interfaceBoundaryEq;
-            eqs{end + 1} = state.(ct).(sd).massCons;
-            eqs{end + 1} = state.(ct).(sd).solidDiffusionEq;
-            eqs{end + 1} = state.(elyte).massCons;
-            eqs{end + 1} = state.(ctrl).EIequation;
-            eqs{end + 1} = state.(ctrl).controlEquation;
-
-            %% TODO : Fix scalings
-            doscaling = true;
-            if doscaling
-                dt2 = 1/dt;
-                scalings = [dt2*2.3588e-15,
-                            3.35103e-05,
-                            dt2*5.26809e-11,
-                            dt2*100,
-                            1,
-                            5.27945e-11,
-                            dt2*1.24205e-15,
-                            0.000129254,
-                            17.3974,
-                            1.72968e+06,
-                            1];
-                
-                for ind = 1 : numel(eqs)
-                    eqs{ind} = 1/scalings(ind)*eqs{ind};
-                end
-            end
-            names = {'an_sd_massCons'            , ...
-                     'an_sd_solidDiffusionEq'    , ...
-                     'an_sei_massCons'           , ...
-                     'an_sei_widthEq'            , ...
-                     'an_seiInterfaceChargeCons' , ...
-                     'an_sei_interfaceBoundaryEq', ...
-                     'ct_sd_massCons'            , ...
-                     'ct_sd_solidDiffusionEq'    , ...
-                     'elyte_massCons'            , ...
-                     'ctrl_EIequation'           , ...
-                     'ctrl_controlEq'            };
-            
-            types = repmat({'cell'}, 1, numel(names));
-            
-            primaryVars = model.getPrimaryVariableNames();
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-            
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-            
-            an    = 'Anode';
-            ct    = 'Cathode';
-            sd    = 'SolidDiffusion';
-            itf   = 'Interface';
-            sei   = 'SolidElectrodeInterface';
-            sr    = 'SideReaction';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
-            
-            primaryvarnames = {{an, 'R'}               , ...
-                               {an, sd, 'c'}           , ...
-                               {an, sd, 'cSurface'}    , ...
-                               {an, sei, 'c'}          , ...
-                               {an, sei, 'cInterface'} , ...
-                               {an, sei, 'delta'}      , ...
-                               {ct, sd, 'c'}           , ...
-                               {ct, sd, 'cSurface'}    , ...
-                               {elyte, 'phi'}          , ...
-                               {ctrl, 'E'}             , ...
-                               {ctrl, 'I'}};
-            
-        end
 
         function forces = getValidDrivingForces(model)
 
@@ -401,8 +251,8 @@ classdef SingleParticleSEI < BaseModel
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 forces.CCCV = true;
-              case 'IEswitch'
-                forces.IEswitch = true;
+              case 'CCDischarge'
+                forces.CCDischarge = true;
                 forces.src = [];
               case 'CV'
                 forces.CV = true;
@@ -473,10 +323,7 @@ classdef SingleParticleSEI < BaseModel
             cleanState.(ct).(itf).externalPotentialDrop = 0;
             % external EC concentration is set to constant
             cleanState.(an).(sei).cExternal = state.(an).(sei).cExternal;
-            % keep control type
-            if strcmp(model.(ctrl).controlPolicy, 'CCCV')
-                cleanState.(ctrl).time = state.time;
-            end            
+            
             cleanState.(ctrl) = model.(ctrl).addStaticVariables(cleanState.(ctrl), state.(ctrl));
                 
         end
@@ -528,7 +375,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

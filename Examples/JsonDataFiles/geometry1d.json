@@ -1,0 +1,30 @@
+{
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 0.0001
+  },
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness": 6.4e-05,
+      "N": 10
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 5
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness": 5.7e-05,
+      "N": 10
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 5
+    }    
+  },
+  "Separator": {
+    "thickness": 1.5e-05,
+    "N": 10
+  }
+}

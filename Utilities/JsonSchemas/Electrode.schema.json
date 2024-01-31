@@ -1,11 +1,12 @@
 {
-  "$id": "file://battmo/schemas/Electrode",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./Electrode.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Electrode",
   "type": "object",
   
-  "properties" : {"ActiveMaterial" : {"$ref" : "ActiveMaterial"},
-                  "CurrentCollector" : {"$ref" : "CurrentCollector"}
-                 }
+  "properties" : {
+    "Coating" : {"$ref" : "Coating.schema.json"},
+    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"}
+  }
 
 }

@@ -1,0 +1,38 @@
+{"include_current_collectors" : true,
+ "Geometry" : {
+   "case" : "jellyRoll",
+   "rInner" : 2e-3,
+   "rOuter" : 23e-3,
+   "L" : 70e-3,
+   "nas" : 10,
+   "nL" : 3},
+ "NegativeElectrode": {
+   "Coating": {
+     "thickness" : 94e-6,
+     "N" : 3,
+     "SolidDiffusion" : {"N" : 5}
+   },
+   "CurrentCollector": {
+     "thickness" : 25e-6,
+     "N" : 3,
+     "tabparams" : {
+       "usetab" : true,
+       "width" : 3.5e-3,
+       "fractions" : [0.01, 0.1, 0.366, 0.544, 0.722, 0.9]}}},
+ "PositiveElectrode": {
+   "Coating": {
+     "thickness" : 84e-6,
+     "N" : 3,
+     "SolidDiffusion" : {"N" : 5}
+   },
+   "CurrentCollector": {
+     "thickness" : 10e-6,
+     "N" : 3,
+     "tabparams" : {
+       "usetab" : true,
+       "width" : 3.5e-3,
+       "fractions" : [0.01, 0.1, 0.366, 0.544, 0.722, 0.9]}}},
+ "Separator" : {
+   "thickness" : 10e-6,
+   "N" : 3}
+}

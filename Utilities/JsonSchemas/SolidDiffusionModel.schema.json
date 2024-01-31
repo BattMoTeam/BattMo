@@ -1,15 +1,27 @@
 {
-    "$id": "file://battmo/schemas/SolidDiffusionModel",
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "file://./SolidDiffusionModel.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "description": "solid diffusion",
     "type": "object",
     "properties" : {
-        "rp": {"type" : "number",
-               "description" : "particle radius"},
-        "EaD": {"type" : "number",
-                "description" : "Arrhenius coefficient for diffusivity coefficient"},
-        "D0": {"type" : "number",
-               "description" : "reference diffusivity coefficient"},
-        "volumetricSurfaceArea": {"type" : "number"}
+        "particleRadius": {
+            "$ref": "PhysicalQuantity.schema.json",
+            "description": "the characteristic radius of the particle",
+            "symbol": "rp"
+        },
+        "activationEnergyOfDiffusion": {
+            "$ref": "PhysicalQuantity.schema.json",
+            "description": "the Arrhenius-type activation energy for diffusion",
+            "symbol": "EaD"
+        },
+        "referenceDiffusionCoefficient": {
+            "$ref": "PhysicalQuantity.schema.json",
+            "description": "the pre-exponential reference diffusion coefficient in an Arrhenius-type equation",
+            "symbol": "D0"
+        },
+        "volumetricSurfaceArea": {
+            "$ref": "PhysicalQuantity.schema.json",
+            "description": "surface area of the active material - electrolyte interface per volume of electrode"
+         }
     }
 }

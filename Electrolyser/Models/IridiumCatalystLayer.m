@@ -3,9 +3,9 @@ classdef IridiumCatalystLayer < CatalystLayer
     
     methods
         
-        function model = IridiumCatalystLayer(paramobj)
+        function model = IridiumCatalystLayer(inputparams)
 
-            model = model@CatalystLayer(paramobj);
+            model = model@CatalystLayer(inputparams);
             
         end
         
@@ -99,7 +99,7 @@ classdef IridiumCatalystLayer < CatalystLayer
         % Reaction in Membrane :    H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_inmr
         % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             F    = model.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             
             elyteR = state.elyteReactionRate;
             inmrR  = state.inmrReactionRate;
@@ -123,7 +123,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -1,22 +1,22 @@
-mrstModule add ad-core mpfa matlab_bgl
+mrstModule add ad-core mpfa
 
 mrstDebug(20);
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/alkalineElectrolyser.json';
+jsonfilename = fullfile('Electrolyser','Parameters','alkalineElectrolyser.json');
 jsonstruct_base = parseBattmoJson(jsonfilename);
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/dissolution.json';
+jsonfilename = fullfile('Electrolyser','Parameters','dissolution.json');
 jsonstruct_diss = parseBattmoJson(jsonfilename);
 
 jsonstruct = mergeJsonStructs({jsonstruct_base, ...
                                jsonstruct_diss});
-                              
-paramobj = ElectrolyserInputParams(jsonstruct);
 
-jsonstring = fileread('/home/xavier/Matlab/Projects/battmo/Electrolyser/Parameters/electrolysergeometry1d.json');
-jsonstruct = jsondecode(jsonstring);
+inputparams = ElectrolyserInputParams(jsonstruct);
 
-paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
+jsonstring = fileread(fullfile('Electrolyser','Parameters','electrolysergeometry1d.json'));
+jsonstruct = battMojsondecode(jsonstring);
+
+inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 inm = 'IonomerMembrane';
 her = 'HydrogenEvolutionElectrode';
@@ -26,7 +26,7 @@ exr = 'ExchangeReaction';
 ctl = 'CatalystLayer';
 dm  = 'DissolutionModel';
 
-model = Electrolyser(paramobj);
+model = Electrolyser(inputparams);
 
 doplotgraph = false;
 if doplotgraph
@@ -64,7 +64,7 @@ nls.errorOnFailure = false;
 
 model.verbose = false;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
@@ -90,7 +90,7 @@ ylabel('Current [A/cm^2]');
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

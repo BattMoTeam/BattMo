@@ -3,17 +3,17 @@ classdef SideReactionInputParams < InputParams
 % Input parameter class for the :code:`ActiveMaterial` model
 %    
     properties
-        beta         % side reaction buttler-volmer  coefficient [-]
-        k            % side reaction rate constant [m/s]
-        conductivity % ionic conductivity [S/m]
+        
+        chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
+        reactionRateConstant      % side reaction rate constant [m/s]
 
     end
     
     methods
         
-        function paramobj = SideReactionInputParams(jsonstruct)
+        function inputparams = SideReactionInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
@@ -25,7 +25,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

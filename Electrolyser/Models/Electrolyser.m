@@ -12,28 +12,28 @@ classdef Electrolyser < BaseModel
         couplingTerms
         couplingNames
 
-        primaryVarNames
-        funcCallList
 
     end
 
     methods
 
-        function model = Electrolyser(paramobj)
+        function model = Electrolyser(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'G' , ...
                        'couplingTerms'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.OxygenEvolutionElectrode   = EvolutionElectrode(paramobj.OxygenEvolutionElectrode);
-            model.HydrogenEvolutionElectrode = EvolutionElectrode(paramobj.HydrogenEvolutionElectrode);
-            model.IonomerMembrane            = IonomerMembrane(paramobj.IonomerMembrane);
+            model.OxygenEvolutionElectrode   = EvolutionElectrode(inputparams.OxygenEvolutionElectrode);
+            model.HydrogenEvolutionElectrode = EvolutionElectrode(inputparams.HydrogenEvolutionElectrode);
+            model.IonomerMembrane            = IonomerMembrane(inputparams.IonomerMembrane);
 
             % setup couplingNames
             model.couplingNames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);
 
+            model = model.setupForSimulation();
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -98,7 +98,7 @@ classdef Electrolyser < BaseModel
                             };
             model = model.registerPropFunction({VarName({}, 'controlEqs', 2), fn, inputvarnames});
 
-            model = model.registerStaticVarNames({{inm, 'jBcSource'}     , ...
+            model = model.setAsStaticVarNames({{inm, 'jBcSource'}     , ...
                                                   {oer, ptl, 'jBcSource'}, ...
                                                   {her, ptl, 'jBcSource'}, ...
                                                   'T'});
@@ -109,19 +109,6 @@ classdef Electrolyser < BaseModel
             
         end
 
-
-        function model = validateModel(model, varargin)
-
-            model = validateModel@BaseModel(model, varargin{:});
-
-            if isempty(model.computationalGraph)
-                model = model.setupComputationalGraph();
-                cgt = model.computationalGraph;
-                model.primaryVarNames = cgt.getPrimaryVariableNames();
-                model.funcCallList = cgt.setOrderedFunctionCallList();
-            end
-
-        end
 
         function [model, state] = setupBcAndInitialState(model)
 
@@ -141,7 +128,7 @@ classdef Electrolyser < BaseModel
 
             state.(inm) = model.(inm).setupOHconcentration();
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
             state.T = T*ones(nc, 1);
 
             state = model.dispatchTemperature(state);
@@ -158,7 +145,7 @@ classdef Electrolyser < BaseModel
                 liqrho = model.(elde).(ptl).density(cOH, T);
                 Vs     = model.(elde).(ptl).partialMolarVolume(cOH, liqrho, T);
 
-                nc = model.(elde).(ptl).G.cells.num;
+                nc = model.(elde).(ptl).G.getNumberOfCells();
 
                 fun = @(s) leverett(model.(elde).(ptl).leverettCoefficients, s); % Define Leverett function handle
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
@@ -208,10 +195,10 @@ classdef Electrolyser < BaseModel
 
             end
 
-            nc = model.(inm).G.cells.num;
+            nc = model.(inm).G.getNumberOfCells();
 
             % We use water activity in oer to setup activity
-            nc_inm = model.(inm).G.cells.num;
+            nc_inm = model.(inm).G.getNumberOfCells();
 
             aw = state.(oer).(ptl).H2Oa(1);
             state.(inm).H2Oa = aw*ones(nc_inm, 1);
@@ -229,8 +216,8 @@ classdef Electrolyser < BaseModel
             Eelyte_her = state.(her).(ctl).Eelyte(1);
             Einmr_her  = state.(her).(ctl).Einmr(1);
 
-            nc_her = model.(her).(ptl).G.cells.num;
-            nc_oer = model.(oer).(ptl).G.cells.num;
+            nc_her = model.(her).(ptl).G.getNumberOfCells();
+            nc_oer = model.(oer).(ptl).G.getNumberOfCells();
 
             state.(her).(ptl).E   = 0;
             state.(her).(ptl).phi = - Eelyte_her*ones(nc_her, 1);
@@ -286,7 +273,7 @@ classdef Electrolyser < BaseModel
             if model.(oer).(ctl).include_dissolution
                 
                 dm = 'DissolutionModel';
-                nc = model.(oer).(ctl).(dm).G.cells.num;
+                nc = model.(oer).(ctl).(dm).G.getNumberOfCells();
                 
                 state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0*ones(nc, 1);
                 
@@ -295,6 +282,41 @@ classdef Electrolyser < BaseModel
 
         end
 
+        function model = setupForSimulation(model)
+
+            shortNames = {'IonomerMembrane'           , 'inm';
+                          'HydrogenEvolutionElectrode', 'her';
+                          'OxygenEvolutionElectrode'  , 'oer';
+                          'CatalystLayer'             , 'ctl';
+                          'ExchangeReaction'          , 'exr';
+                          'PorousTransportLayer'      , 'ptl';
+                          'Boundary'                  , 'bd' ;
+                          'DissolutionModel'          , 'dm'};
+
+            model = model.equipModelForComputation('shortNames', shortNames);
+
+            F = model.con.F;
+
+            
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+
+            ctl = 'CatalystLayer';
+            exr = 'ExchangeReaction';
+            ptl = 'PorousTransportLayer';
+
+            scalings = {{{inm, 'chargeCons'}, F}, ...
+                        {{her, ptl, 'chargeCons'}, F}};
+
+            if model.(oer).(ctl).include_dissolution
+                scalings = horzcat(scalings, ...
+                                   {{{oer, ctl, dm, 'massCons'}, 1e5}});
+            end
+
+        end
+        
+        
         function state = setupControl(model, state, drivingForces)
 
             oer = 'OxygenEvolutionElectrode';
@@ -342,7 +364,7 @@ classdef Electrolyser < BaseModel
                 elde = eldes{ielde};
 
                 % setup initial value for the variable that also takes care of AD.
-                nc = model.(elde).(ctl).G.cells.num;
+                nc = model.(elde).(ctl).G.getNumberOfCells();
                 initval = nan(nc, 1);
                 [adsample, isAD] = getSampleAD(state.(inm).phi);
                 if isAD
@@ -384,7 +406,7 @@ classdef Electrolyser < BaseModel
             OHsource  = 0*state.(inm).H2Oceps;
             H2OSource = 0*state.(inm).H2Oceps;
             
-            vols = model.(inm).G.cells.volumes;
+            vols = model.(inm).G.getVolumes();
 
             eldes = {her, oer};
             
@@ -415,11 +437,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
-        end
 
         function cleanState = addStaticVariables(model, cleanState, state)
 
@@ -464,114 +481,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-
-
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-
-            opts = struct('ResOnly', false, 'iteration', 0);
-            opts = merge_options(opts, varargin{:});
-
-            inm = 'IonomerMembrane';
-            her = 'HydrogenEvolutionElectrode';
-            oer = 'OxygenEvolutionElectrode';
-            ctl = 'CatalystLayer';
-            exr = 'ExchangeReaction';
-            ptl = 'PorousTransportLayer';
-            bd  = 'Boundary';
-            dm  = 'DissolutionModel';
-
-            time = state0.time + dt;
-            if(not(opts.ResOnly))
-                state = model.initStateAD(state);
-            end
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            %% Set up the governing equations
-
-            eqs = {};
-            names = {};
-
-            F = model.con.F;
-
-            eqs{end + 1}   = 1/F*state.(inm).chargeCons;
-            names{end + 1} = 'inm_chargeCons';
-            eqs{end + 1}   = state.(inm).H2OmassCons;
-            names{end + 1} = 'inm_H2OmassCons';
-            eqs{end + 1}   = state.(inm).activityEquation;
-            names{end + 1} = 'inm_activityEquation';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{1};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_1';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{2};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_2';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{3};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_3';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcEquations{4};
-            names{end + 1} = 'oer_ptl_bd_bcEquations_4';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{1};
-            names{end + 1} = 'oer_ptl_bd_bcControlEquations_1';
-            eqs{end + 1}   = state.(oer).(ptl).(bd).bcControlEquations{2};
-            names{end + 1} = 'oer_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = 1/F*state.(oer).(ptl).chargeCons;
-            names{end + 1} = 'oer_ptl_chargeCons';
-            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{1};
-            names{end + 1} = 'oer_ptl_compGasMassCons_1';
-            eqs{end + 1}   = state.(oer).(ptl).compGasMassCons{2};
-            names{end + 1} = 'oer_ptl_compGasMassCons_2';
-            eqs{end + 1}   = state.(oer).(ptl).liquidMassCons;
-            names{end + 1} = 'oer_ptl_liquidMassCons';
-            eqs{end + 1}   = state.(oer).(ptl).OHMassCons;
-            names{end + 1} = 'oer_ptl_OHMassCons';
-            eqs{end + 1}   = state.(oer).(ptl).liquidStateEquation;
-            names{end + 1} = 'oer_ptl_liquidStateEquation';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{1};
-            names{end + 1} = 'her_ptl_bd_bcEquations_1';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{2};
-            names{end + 1} = 'her_ptl_bd_bcEquations_2';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{3};
-            names{end + 1} = 'her_ptl_bd_bcEquations_3';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcEquations{4};
-            names{end + 1} = 'her_ptl_bd_bcEquations_4';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{1};
-            names{end + 1} = 'her_ptl_bd_bcControlEquations_1';
-            eqs{end + 1}   = state.(her).(ptl).(bd).bcControlEquations{2};
-            names{end + 1} = 'her_ptl_bd_bcControlEquations_2';
-            eqs{end + 1}   = 1/F*state.(her).(ptl).chargeCons;
-            names{end + 1} = 'her_ptl_chargeCons';
-            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{1};
-            names{end + 1} = 'her_ptl_compGasMassCons_1';
-            eqs{end + 1}   = state.(her).(ptl).compGasMassCons{2};
-            names{end + 1} = 'her_ptl_compGasMassCons_2';
-            eqs{end + 1}   = state.(her).(ptl).liquidMassCons;
-            names{end + 1} = 'her_ptl_liquidMassCons';
-            eqs{end + 1}   = state.(her).(ptl).OHMassCons;
-            names{end + 1} = 'her_ptl_OHMassCons';
-            eqs{end + 1}   = state.(her).(ptl).liquidStateEquation;
-            names{end + 1} = 'her_ptl_liquidStateEquation';
-            eqs{end + 1}   = state.controlEqs{1};
-            names{end + 1} = 'controlEqs_1';
-            eqs{end + 1}   = state.controlEqs{2};
-            names{end + 1} = 'controlEqs_2';
-
-            if model.(oer).(ctl).include_dissolution
-                eqs{end + 1}   = 1e5*state.(oer).(ctl).(dm).massCons;
-                names{end + 1} = 'oer_ctl_dm_massCons';
-            end
-            
-            neq = numel(eqs);
-
-            types = repmat({'cell'}, 1, neq);
-
-            primaryVars = model.getPrimaryVariableNames();
-
-            %% setup LinearizedProblem that can be processed by MRST Newton API
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
-        end
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
             
@@ -645,7 +554,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

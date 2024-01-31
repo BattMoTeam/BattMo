@@ -4,19 +4,14 @@ function cons = assembleConservationEquation(model, flux, bcsource, source, accu
         accum = 0;
     end
         
-    op = model.operators;
-    
-    % cons = accum + (op.Div(flux) - bcsource) - source;
-    accum = accum - bcsource - source; 
-    cons = op.AccDiv(accum, flux);
-    %cons = cons - bcsource - source;
+    cons = accum + model.G.getDiv(flux) - bcsource - source; 
     
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

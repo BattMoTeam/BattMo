@@ -1,7 +1,7 @@
 function output = run_magnesium_1D_battery(input, varargin)
-    
+
     input_default = struct('precipitation', true);
-    
+
     if ~isempty(input)
         fds = fieldnames(input);
         vals = cellfun(@(fd) input.(fd), fds, 'un', false);
@@ -21,8 +21,8 @@ function output = run_magnesium_1D_battery(input, varargin)
     if isfield(input, 'directory')
         opt.directory = input.directory;
     end
-        
-    %% Load json input 
+
+    %% Load json input
     jsonstruct = parseBattmoJson('SeaWater/json_inputs/magnesium_battery.json');
 
     if input.precipitation
@@ -30,27 +30,27 @@ function output = run_magnesium_1D_battery(input, varargin)
     else
         jsonstruct.include_precipitation = false;
     end
-    
-    paramobj = SeaWaterBatteryInputParams(jsonstruct);
+
+    inputparams = SeaWaterBatteryInputParams(jsonstruct);
 
     elyte = 'Electrolyte';
     ct    = 'Cathode';
     ctam  = 'CathodeActiveMaterial';
     an    = 'Anode';
     anam  = 'AnodeActiveMaterial';
-    
+
     %% Setup geometry
 
-    gen = SeaWaterBatteryGenerator1D();
+    gen = SeaWaterBatteryGeneratorP2D();
     % We increase the resolution
     gen.fac = 20;
     gen = gen.applyResolutionFactors();
 
-    paramobj = gen.updateBatteryInputParams(paramobj);
+    inputparams = gen.updateBatteryInputParams(inputparams);
 
     %% Setup model
 
-    model = MagnesiumBattery(paramobj);
+    model = MagnesiumBattery(inputparams);
     model = model.setupComputationalGraph(); % needed later to evaluate values using evalVarName (we want only to setup it once)
 
     %% Setup Electrolyte initial content
@@ -86,7 +86,7 @@ function output = run_magnesium_1D_battery(input, varargin)
     aqmodel = AqueousModel(melyte, totals, totalnames, pH);
     stateelyte = aqmodel.solveAqueousMixture(stateelyteguess);
 
-    nc = model.(elyte).G.cells.num;
+    nc = model.(elyte).G.getNumberOfCells();
     state.(elyte).qpcs = cellfun(@(val) val*ones(nc, 1), stateelyte.qpcs, 'uniformoutput', false);
     state.(elyte).pcs  = cellfun(@(val) val*ones(nc, 1), stateelyte.pcs , 'uniformoutput', false);
     for ind = 1 : numel(stateelyte.cs)
@@ -100,8 +100,8 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     %% setup initial volume fractions
 
-    state.(an).volumeFraction = 0.3*ones(model.(an).G.cells.num, 1);
-    state.(ct).volumeFraction = 0.8*ones(model.(ct).G.cells.num, 1);
+    state.(an).volumeFraction = 0.3*ones(model.(an).G.getNumberOfCells(), 1);
+    state.(ct).volumeFraction = 0.8*ones(model.(ct).G.getNumberOfCells(), 1);
 
     indsolid = model.(elyte).indsolidsp(1);
     state.(elyte).cs{indsolid} = zeros(nc, 1);
@@ -121,7 +121,7 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     state = model.initializeTemperature(state);
 
-    state.(elyte).phi = zeros(model.Electrolyte.G.cells.num, 1);
+    state.(elyte).phi = zeros(model.Electrolyte.G.getNumberOfCells(), 1);
 
     state = model.evalVarName(state, {ctam, 'ENernst'});
 
@@ -136,8 +136,8 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     %% Initialize nucleation value
 
-    state.(elyte).nucleation = zeros(model.(elyte).G.cells.num, 1);
-    state.(elyte).indicator = ones(model.(elyte).G.cells.num, 1);
+    state.(elyte).nucleation = zeros(model.(elyte).G.getNumberOfCells(), 1);
+    state.(elyte).indicator = ones(model.(elyte).G.getNumberOfCells(), 1);
 
     initstate = state;
 
@@ -146,36 +146,36 @@ function output = run_magnesium_1D_battery(input, varargin)
     is_prep = model.include_precipitation;
 
     if is_prep
-        
-        dt = []; 
+
+        dt = [];
         n = 30;
         dt = [dt; repmat(1e-6, n, 1).*1.8.^[1 : n]'];
         dT = dt(end);
         T = 0.03*hour; % roughly activation time
         dt = [dt; repmat(dT, floor(T/dT), 1)];
         T = 150*hour;
-        n = 100; 
-        dt = [dt; repmat(T/n, n, 1)]; 
-        T = 7*hour;
-        n = 20; 
+        n = 100;
         dt = [dt; repmat(T/n, n, 1)];
-        
+        T = 7*hour;
+        n = 20;
+        dt = [dt; repmat(T/n, n, 1)];
+
     else
 
-        dt = []; 
+        dt = [];
         n = 30;
         dt = [dt; repmat(1e-5, n, 1).*1.6.^[1 : n]'];
         T = 0.1*hour;
         n = 50;
         dt = [dt; repmat(T/n, n, 1)];
-        
-    end
-    
 
-    step = struct('val', dt, 'control', ones(numel(dt), 1)); 
+    end
+
+
+    step = struct('val', dt, 'control', ones(numel(dt), 1));
 
     ct = 'Cathode';
-    % stopFunc = @(model, state, state_prev) (state.(ct).E < 2.0); 
+    % stopFunc = @(model, state, state_prev) (state.(ct).E < 2.0);
     stopFunc = @(model, state, state_prev) (false);
 
     tup = 0.1;
@@ -185,11 +185,11 @@ function output = run_magnesium_1D_battery(input, varargin)
     % we use a ramp-up function
     srcfunc = @(time) rampupControl(time, tup, inputI);
 
-    control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1); 
-    schedule = struct('control', control, 'step', step); 
+    control = repmat(struct('src', srcfunc, 'stopFunction', stopFunc), 1, 1);
+    schedule = struct('control', control, 'step', step);
 
     %% We setup the nonlinear solver
-    % Setup nonlinear solver 
+    % Setup nonlinear solver
     nls = NonLinearSolver();
     % Change default maximum iteration number in nonlinear solver
     nls.maxIterations   = 15;
@@ -208,9 +208,9 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     output.model = model;
     output.schedule = schedule;
-    
+
     % Run simulation
-    
+
     dopacked = true;
     if dopacked
         simname = md5sum(input);
@@ -239,15 +239,37 @@ function output = run_magnesium_1D_battery(input, varargin)
         end
         save(inputfilename, 'input');
         if opt.clearSimulation
-            clearPackedSimulatorOutput(problem);
+            clearPackedSimulatorOutput(problem, 'Prompt', false);
         end
         simulatePackedProblem(problem);
         [~, states, report] = getPackedSimulatorOutput(problem);
         output.states = states;
     else
-        [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
+        [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
                                                         nls);
         output.states = states;
     end
 
 end
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

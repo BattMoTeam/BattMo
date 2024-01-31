@@ -1,15 +1,26 @@
-===============
-Advanced topics
-===============
+==============
+Advanced Usage
+==============
 
 .. toctree::
-    :maxdepth: 2
+   :maxdepth: 2
+   :hidden:
 
+   modelinitialisation
+   controlinput
+   soliddiffusion
+   parsets
+   units
+   thermal
+   optimisation
+   Octave <octave>
+   
+* :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
+* :ref:`Control models <controlinput:Control models>`
+* :ref:`Solid diffusion models <soliddiffusion:Solid Diffusion Models>`
+* :ref:`Parameter sets <parsets:Parameter sets>`
+* :ref:`Units <units:Units>`
+* :ref:`Thermal simulation <thermal:Thermal Simulation>`
+* :ref:`Optimisation <optimisation:Optimization>`
+* :ref:`Octave Support <octave:Note on Octave Support>`
 
-    Model initialisation <modelinitialisation>
-    Control models <controls>
-    Diffusion models <diffusion>
-    Thermal model <thermal>
-    JSON inputs <json>
-    Optimisation <optimisation>
-    Parameter sets <parsets>

@@ -14,11 +14,15 @@
 from __future__ import unicode_literals
 import sys
 import os
+import docutils
+import errno
+from docutils.parsers.rst import roles
+from sphinx.util.docutils import ReferenceRole
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
+sys.path.insert(0, os.path.abspath(os.path.join('..')))
 matlab_src_dir = os.path.abspath('..')
 
 autoclass_content = 'both'
@@ -32,12 +36,20 @@ autodoc_member_order = 'bysource'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.matlab', 'sphinx.ext.napoleon', 'sphinxcontrib.bibtex']
+extensions = ['sphinxcontrib.globalsubs',
+              'sphinxcontrib.bibtex',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.autosectionlabel',
+              'sphinxcontrib.youtube',
+              'sphinx_collapse'
+              ]
 bibtex_bibfiles = ['refs.bib']
 
-primary_domain = 'mat'
-highlight_language = 'matlab'
+autosectionlabel_prefix_document = True
 
+global_substitutions = {
+    'battmo': '**BattMo**'
+}
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -52,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BattMo'
-copyright = '2021, Simon Clark'
+copyright = '2021-2023'
 author = 'Simon Clark'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -112,7 +124,14 @@ html_theme = 'sphinx_rtd_theme'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+    }
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -127,17 +146,23 @@ html_theme = 'sphinx_rtd_theme'
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 html_logo = 'battmologo.png'
+html_favicon = 'battmologo.ico'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #html_favicon = None
 
+rst_prolog = """
+.. role:: todo
+   :class: todo
+"""
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-# html_css_files = ['css/custom.css']
+html_static_path = ['_static']
+html_css_files = ['css/custom.css']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -186,7 +211,7 @@ html_logo = 'battmologo.png'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MATLABSphinxDocumentationTestdoc'
+# htmlhelp_basename = 'MATLABSphinxDocumentationTestdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -266,27 +291,126 @@ latex_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-napoleon_google_docstring = True
+# napoleon_google_docstring = True
 add_module_names=False
-autodoc_preserve_defaults = True
+# autodoc_preserve_defaults = True
 
-from sphinxcontrib.mat_documenters import MatAttributeDocumenter, MatClassLevelDocumenter
-import sphinx
+# from sphinxcontrib.mat_documenters import MatAttributeDocumenter, MatClassLevelDocumenter
+# import sphinx
 
-def _add_directive_header(self, sig):
-    MatClassLevelDocumenter.add_directive_header(self, sig)
-    if not self.options.annotation:
-        if not self._datadescriptor:
-            try:
-                objrepr = sphinx.util.inspect.object_description(self.object.default)  # display default
-            except ValueError:
-                pass
-            else:
-                self.add_line('   :annotation:', '<autodoc>')
-    elif self.options.annotation is SUPPRESS:
-        pass
-    else:
-        self.add_line('   :annotation: %s' % self.options.annotation,
-                      '<autodoc>')
+# def _add_directive_header(self, sig):
+#     MatClassLevelDocumenter.add_directive_header(self, sig)
+#     if not self.options.annotation:
+#         if not self._datadescriptor:
+#             try:
+#                 objrepr = sphinx.util.inspect.object_description(self.object.default)  # display default
+#             except ValueError:
+#                 pass
+#             else:
+#                 self.add_line('   :annotation:', '<autodoc>')
+#     elif self.options.annotation is SUPPRESS:
+#         pass
+#     else:
+#         self.add_line('   :annotation: %s' % self.options.annotation,
+#                       '<autodoc>')
 
-MatAttributeDocumenter.add_directive_header = _add_directive_header
+# MatAttributeDocumenter.add_directive_header = _add_directive_header
+
+
+repo_url    = 'https://github.com/BattMoTeam/BattMo'
+branch_name = 'dev'
+
+def find_battmo_file(filename):
+    ignored_dirs = ['output', 'Externals', '.git', '.github']
+    for root, dirs, files in os.walk(matlab_src_dir):
+        for r in ignored_dirs:
+            if r in dirs:
+                dirs.remove(r)
+        if filename in files:
+            return os.path.join(os.path.relpath(root, matlab_src_dir),
+                                filename)
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
+
+
+class BattMoRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        mfuncname = target + '.m'
+        target = find_battmo_file(mfuncname)
+        target = repo_url + '/blob/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmo', BattMoRole())
+
+    
+class BattMoFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        target = repo_url + '/blob/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmofile', BattMoFileRole())
+
+class BattMoRawFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        target = repo_url + '/raw/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmorawfile', BattMoRawFileRole())
+
+
+mrst_repo_url    = 'https://bitbucket.org/mrst/'
+mrst_branch_name = 'battmo-dev'
+
+
+class MrstFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        reponame = target.split('/')
+        target = '/'.join(reponame[1:])
+        reponame = reponame[0]
+        target = mrst_repo_url + reponame + '/src/' + mrst_branch_name + '/' + target
+        if lineno is not None:
+            target += "#lines-"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('mrstfile', MrstFileRole())

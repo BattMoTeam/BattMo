@@ -1,0 +1,117 @@
+\documentclass[11pt]{standalone}
+\usepackage{fontspec}
+\usepackage{amsmath,graphicx}
+\usepackage{chemformula}
+\usepackage{xcolor}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc, patterns, backgrounds, arrows.meta, matrix}
+\usetikzlibrary{graphs, graphdrawing, graphdrawing.layered}
+\usetikzlibrary{decorations.pathreplacing,decorations.pathmorphing,calligraphy}
+
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\definecolor{battmo}{RGB}{255,117,26}
+\colorlet{numb}{magenta!60!black}
+
+\newcommand{\brac}[1]{\left<#1\right>}
+\newcommand{\aver}[1]{\overline{#1}}
+
+\usepackage{xspace}
+
+\graphicspath{{figs/}}
+
+
+\newcommand{\fracpar}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\epsi}{\ensuremath{\varepsilon}}
+
+\newcommand{\sgn}{{\rm sgn}\, }
+\newcommand{\grad}{\nabla}
+\newcommand{\dive}{\grad\cdot}
+\newcommand{\abs}[1]{\left|#1\right|}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+\begin{document}
+
+\colorlet{ptl}{black!30!white}
+\colorlet{inm}{orange!30!white}
+\colorlet{catl}{red!30!white}
+\colorlet{exch}{blue!30!white}
+
+\newdimen\comwidth
+\comwidth=9cm
+\newdimen\ptlwidth
+\ptlwidth=9cm
+\newdimen\mypad
+\mypad=0.2cm
+
+\begin{tikzpicture}
+
+  \tikzset{mybox/.style={line width = 3pt, rounded corners = 2pt}}
+  \tikzset{mynode/.style={rounded corners=2pt}}
+
+  \node[anchor = south west] (eq) {
+    \begin{minipage}{0.9\ptlwidth}
+      \begin{align*}
+        \frac{d (\rho_{i} \varepsilon_G)}{dt} + \nabla \cdot J_{i,G}                 & = S_{i,G}         \\
+        \frac{d (\rho_{\mathrm{L}} \varepsilon_L)}{dt} + \nabla \cdot J_{\mathrm{L}} & = S_{\mathrm{L}}  \\
+        \frac{d (c_{i,L}\varepsilon_L)}{dt} + \nabla \cdot N_{i,L}                   & = S_{i,L}         \\
+        \frac{1}{z_{\ch{OH-}}F} \nabla \cdot j_L                                     & = S_{\ch{OH-}, L} \\[1cm]
+        \frac{1}{z_{\ch{OH-}}F} \nabla \cdot j_M                                     & = S_{\ch{OH-}, M} \\
+        \frac{d (c_{\ch{H2O},M} \varepsilon_M)}{dt} + \nabla \cdot N_{\ch{H2O},M}    & = S_{\ch{H2O},M}
+      \end{align*}        
+    \end{minipage}};
+
+  \coordinate (orig) at (eq.south west);
+  
+  \draw [mybox] (orig) coordinate (a) coordinate (membraneSW) rectangle ($(orig) + (\ptlwidth, 2.5)$) coordinate (b) coordinate (membraneNE);
+  
+  \node[anchor = north west, mynode, fill = ptl, outer sep = 4pt] at (a|-b) {Membrane};
+  
+  \draw  [mybox, anchor = north west] ($(eq.north west) + (0, \mypad)$) coordinate (a) coordinate (ptlNW) rectangle ($(membraneNE) + (0, \mypad)$) coordinate (b) coordinate (ptlSE);
+  
+  \node[anchor = north west, fill = inm, mynode, outer sep = 4pt] at (a) {Porous Transport Layer};
+
+  \draw [mybox, anchor = north west] ($(ptlNW-|ptlSE) + (\mypad, 0)$) coordinate (catNW) rectangle ++(\comwidth, -4cm) coordinate (catSE);
+  
+  \node[anchor = north west] at ($(catNW) + (0.5, -1.4)$) {
+    \begin{minipage}[t]{0.9\comwidth}
+      \begin{tabular}[t]{r@{\ch{<->}}l}
+        \ch{2 H2O_{(l)} + 2 e- } & \ch{ 2 OH^-_{(inmr)} + H2_{(g)}} \\
+        \ch{2 H2O_{(l)} + 2 e- } & \ch{ 2 OH^-_{(aq)} + H2_{(g)}} \\
+        \ch{4 OH^-_{(inmr)} } & \ch{ 4 e- + 2 H2O_{(l)} + O2_{(g)}} \\
+        \ch{4 OH^-_{(aq)} } & \ch{ 4 e- + 2 H2O_{(l)} + O2_{(g)}} \\
+      \end{tabular}
+    \end{minipage}
+  };
+
+  \node[anchor = north west, mynode, fill = catl, outer sep = 4pt] at (catNW) {Catalyst layer};
+
+  \draw [mybox, anchor = south west] ($(membraneSW-|membraneNE) + (\mypad, 0)$) coordinate (exchSW) rectangle ($(catSE) + (0, -\mypad)$) coordinate (exchNE);
+
+  \node[anchor = north west, mynode, fill = exch, outer sep = 4pt] at (exchSW|-exchNE) {Exchange reactions};
+  
+  \node[anchor = north west] at ($(exchSW|-exchNE) + (0.5, -1)$) {
+    \begin{minipage}[t]{0.9\comwidth}
+      Computation of exchange rates
+      \begin{align*}
+        (\ch{OH^-})_{\text{M}} \ch{<->} (\ch{OH^-})_{\text{L}}\\
+        (\ch{H2O})_{\text{M}} \ch{<->} (\ch{H2O})_{\text{L}}
+      \end{align*}
+    \end{minipage}
+  };
+\end{tikzpicture}
+
+\end{document}
+
+
+%%% Local Variables:
+%%% TeX-master: t
+%%% TeX-engine: luatex
+%%% End:

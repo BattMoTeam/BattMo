@@ -1,15 +1,41 @@
 {
-  "$id": "file://battmo/schemas/FullSolidDiffusionModel",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./FullSolidDiffusionModel.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "solid diffusion",
   "type": "object",
-  "allOf" : [{"$ref": "SolidDiffusionModel"},
-             {"properties" : { "volumeFraction": {"type" : "number"},
-                               "cmax": {"type" : "number"},     
-                               "theta0": {"type" : "number"},   
-                               "theta100": {"type" : "number"},
-                               "D" : {"$ref" : "function"}
-                             }
-             }]
+  "allOf": [
+    {
+      "$ref": "SolidDiffusionModel.schema.json"
+    },
+    {
+      "properties": {
+        "diffusionCoefficient": {
+          "allOf": [
+            {"$ref": "Function.schema.json"},
+            { "properties" : {
+              "argumentlist": {"type" : "array",
+                               "prefixItems": [{"const": "soc"}]
+                              },
+              "symbol": {"const" : "D"}}}
+          ],
+          "description": "Function that is used to compute the diffusion coefficient. If not given, we use a constant diffusion coefficient as computed in SolidDiffusionModel."
+        },
+        "saturationConcentration": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the saturation concentration of the guest molecule in the host material",
+          "symbol": "cmax"
+        },
+        "guestStoichiometry100": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 100% SOC",
+          "symbol": "theta100"
+        },
+        "guestStoichiometry0": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 0% SOC",
+          "symbol": "theta0"
+        }
+      }
+    }
+  ]
 }
-

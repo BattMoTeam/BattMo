@@ -1,40 +1,39 @@
 classdef ElectronicComponent < BaseModel
 %
 % The ElectronicComponent class is model to assemble charge conservation equation
-% 
+%
     properties
-        
-        EffectiveElectricalConductivity % Effective electrical conductivity
+
+        electronicConductivity          % electronic conductivity
+        effectiveElectronicConductivity % effective electronic conductivity
+
         constants % Physical constants
 
         use_thermal
-        
+
     end
 
     methods
-        
-        function model = ElectronicComponent(paramobj)
-        % Here, :code:`paramobj` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
+
+        function model = ElectronicComponent(inputparams)
+        % Here, :code:`inputparams` is instance of :class:`ElectronicComponentInputParams <Electrochemistry.ElectronicComponentInputParams>`
 
             model = model@BaseModel();
-            
+
             % OBS : All the models should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
             fdnames = {'G'                              , ...
-                       'EffectiveElectricalConductivity', ...
+                       'electronicConductivity'         , ...
+                       'effectiveElectronicConductivity', ...
                        'use_thermal'};
-            
-            model = dispatchParams(model, paramobj, fdnames);
-            
-            % setup discrete differential operators
-            docellflux = false;
+
+            model = dispatchParams(model, inputparams, fdnames);
+
             if model.use_thermal
-                docellflux = true;
+                model.G = model.G.setupCellFluxOperators();
             end
-            
-            model.operators = localSetupOperators(model.G, 'assembleCellFluxOperator', docellflux);
-            
+
             model.constants = PhysicalConstants();
 
         end
@@ -44,7 +43,7 @@ classdef ElectronicComponent < BaseModel
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {};
 
             % Temperature [K]
@@ -61,15 +60,15 @@ classdef ElectronicComponent < BaseModel
             varnames{end + 1} = 'j';
             % Residual for the charge conservation equation
             varnames{end + 1} = 'chargeCons';
-            
+
             model = model.registerVarNames(varnames);
 
             if model.use_thermal
                 varnames = {'jFace', ...
                             'jFaceBc'};
-                model = model.registerVarNames(varnames);                
+                model = model.registerVarNames(varnames);
             end
-            
+
             fn = @ElectronicComponent.updateCurrent;
             inputnames = {'phi', 'conductivity'};
             model = model.registerPropFunction({'j', fn, inputnames});
@@ -77,13 +76,13 @@ classdef ElectronicComponent < BaseModel
             fn = @ElectronicComponent.updateChargeConservation;
             inputnames = {'j', 'jBcSource', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
-            
+
             fn = @ElectronicComponent.updateConductivity;
             inputnames = {};
             model = model.registerPropFunction({'conductivity', fn, inputnames});
-            
+
             if model.use_thermal
-                
+
                 fn = @ElectronicComponent.updateFaceCurrent;
                 inputnames = {'j', 'jFaceBc'};
                 model = model.registerPropFunction({'jFace', fn, inputnames});
@@ -91,68 +90,76 @@ classdef ElectronicComponent < BaseModel
                 fn = @ElectronicComponent.updateFaceBcCurrent;
                 inputnames = {};
                 model = model.registerPropFunction({'jFaceBc', fn, inputnames});
-                
+
             end
+
+        end
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
 
         end
 
         function state = updateConductivity(model, state)
             % default function to update conductivity
-            state.conductivity = model.EffectiveElectricalConductivity;
-            
+            state.conductivity = model.effectiveElectronicConductivity;
+
         end
-        
-        
+
+
         function state = updateFaceCurrent(model, state)
-            
+
             G = model.G;
-            nf = G.faces.num;
-            intfaces = model.operators.internalConn;
             
+            nf       = G.getNumberOfFaces();
+            intfaces = G.getIntFaces();
+
             j       = state.j;
             jFaceBc = state.jFaceBc;
-            
+
             zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), j);
             jFace = zeroFaceAD + jFaceBc;
             jFace(intfaces) = j;
-            
+
             state.jFace = jFace;
-            
+
         end
 
         function state = updateFaceBcCurrent(model, state)
-            
+
             state.jFaceBc = 0;
-            
+
         end
-        
+
         function state = updateCurrent(model, state)
-        % Assemble electrical current which is stored in :code:`state.j` 
+        % Assemble electrical current which is stored in :code:`state.j`
 
             sigma = state.conductivity;
             phi   = state.phi;
-            
-            j = assembleFlux(model, phi, sigma); 
+
+            j = assembleHomogeneousFlux(model, phi, sigma);
 
             state.j = j;
-            
+
         end
-        
+
         function state = updateChargeConservation(model, state)
         % Assemble residual of the charge conservation equation which is stored in :code:`state.chargeCons`
-           
+
             flux     = state.j;
             bcsource = state.jBcSource;
             source   = state.eSource;
-            
-            accum    = zeros(model.G.cells.num,1);
-            
+
+            accum    = zeros(model.G.getNumberOfCells(),1);
+
             chargeCons = assembleConservationEquation(model, flux, bcsource, source, accum);
-            
+
             state.chargeCons = chargeCons;
-            
+
         end
-        
+
     end
 end
 
@@ -160,7 +167,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

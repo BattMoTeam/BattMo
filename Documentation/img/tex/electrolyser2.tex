@@ -1,0 +1,103 @@
+\documentclass[11pt]{standalone}
+\usepackage{fontspec}
+\usepackage{amsmath,graphicx}
+\usepackage{chemformula}
+\usepackage{xcolor}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc, patterns, backgrounds, arrows.meta, matrix}
+\usetikzlibrary{graphs, graphdrawing, graphdrawing.layered}
+\usetikzlibrary{decorations.pathreplacing,decorations.pathmorphing,calligraphy}
+
+\usepackage[most]{tcolorbox}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\definecolor{battmo}{RGB}{255,117,26}
+\colorlet{numb}{magenta!60!black}
+
+\tcbset{colframe=white, colback=white, nobeforeafter, box align = top, valign=top, boxsep = 1pt}
+
+\newcommand{\brac}[1]{\left<#1\right>}
+\newcommand{\aver}[1]{\overline{#1}}
+
+\usepackage{xspace}
+
+\graphicspath{{figs/}}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}{Definition}[section]
+\newcommand{\Real}{\mathbb R}
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{4mm}
+
+\DeclareMathOperator{\Id}{Id}
+\DeclareMathOperator{\trace}{tr}
+\newcommand{\fracpar}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\epsi}{\ensuremath{\varepsilon}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}}
+% 
+
+\newcommand{\sgn}{{\rm sgn}\, }
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\grad}{\nabla}
+\newcommand{\dive}{\grad\cdot}
+\newcommand{\laplace}{\Delta}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\ddiv}{\texttt{div}}
+\newcommand{\dgrad}{\texttt{grad}}
+
+\def\dsp{\displaystyle}
+
+\newcommand{\visc}[1]{#1_{\text{diss}}}
+\newcommand{\trans}{T}
+\newcommand{\psat}{p_{\text{sat}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+\begin{document}
+
+\tcbset{myobjnode/.style={colback=red!5!white,colframe=red!75!black,left=3pt,right=3pt,top=3pt,bottom=3pt}}
+\newdimen\mydim
+\NewDocumentCommand{\myobjnode}{ m d<> }{\IfNoValueTF{#2}{\settowidth\mydim{#1}}{\settowidth\mydim{#2}}\addtolength\mydim{5mm}\begin{tcolorbox}[myobjnode, width = \mydim ,colback=white,colframe=battmo, force nobeforeafter]
+    \begin{center}
+      #1
+    \end{center}
+  \end{tcolorbox}
+}
+
+\tikzset{graphs/myedges/.style={edges = {-{Latex[width=2mm]}, line width = 1.5pt}}}
+\def\myscale{1} % default value
+\def\mcode #1{\lstinline[basicstyle={\setmainfont{Freemono}[Scale = \myscale]\setsansfont{Freemono}[Scale = \myscale]\setmonofont{Freemono}[Scale = \myscale]}]|#1|}
+\def\mcodeclass #1{\lstinline[basicstyle={\setmainfont{Freemono}[Scale = \myscale]\setsansfont{Freemono}[Scale = \myscale]\setmonofont{Freemono}[Scale = \myscale]\color{blue}}]|#1|}
+
+\begingroup
+
+\def\myscale{0.7}
+\def\baselinestretch{0.5}
+
+\begin{tikzpicture}
+  \graph[layered layout, myedges, sibling distance = 0pt, sibling sep = 0pt, level distance = 1.5cm]
+  { oer [as = \myobjnode{\mcodeclass{EvolutionElectrode}}]
+    -> { oerptl [as = \myobjnode{\mcodeclass{PorousTransportLayer}}],
+      oercatl [as = \myobjnode{\mcodeclass{CatalystLayer}}],
+      oerexch [as = \myobjnode{\mcodeclass{ExchangeReactions}}]}};
+\end{tikzpicture}
+
+\endgroup
+
+\end{document}
+
+
+%%% Local Variables:
+%%% TeX-master: t
+%%% TeX-engine: luatex
+%%% End:

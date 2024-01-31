@@ -3,38 +3,39 @@ classdef MagnesiumBattery < SeaWaterBattery
     properties
         
         doposqpcapping = true % Cap quasi-particle concentrations in the Newton update (only for the "always positive" quasiparticle)
-        printVoltage = true   % print voltage reached at each converged step
+        printVoltage   = true   % print voltage reached at each converged step
 
     end
     
     
     methods
 
-        function model = MagnesiumBattery(paramobj)
+        function model = MagnesiumBattery(inputparams)
             
-            model = model@SeaWaterBattery(paramobj);
-
+            model = model@SeaWaterBattery(inputparams);
+            model = model.setupForSimulation();
+            
         end
         
-        function model = setupElectrolyte(model, paramobj)
+        function model = setupElectrolyte(model, inputparams)
 
-            if paramobj.include_precipitation
-                model.Electrolyte = MagnesiumElectrolyte(paramobj.Electrolyte);
+            if inputparams.include_precipitation
+                model.Electrolyte = MagnesiumElectrolyte(inputparams.Electrolyte);
             else
-                model.Electrolyte = MagnesiumElectrolyteNoPrecipitation(paramobj.Electrolyte);
+                model.Electrolyte = MagnesiumElectrolyteNoPrecipitation(inputparams.Electrolyte);
             end
                 
         end
 
-        function model = setupAnode(model, paramobj)
+        function model = setupAnode(model, inputparams)
             
-            model.Anode = MagnesiumElectrode(paramobj);
+            model.Anode = MagnesiumElectrode(inputparams);
             
         end
         
-        function model = setupAnodeActiveMaterial(model, paramobj)
+        function model = setupAnodeActiveMaterial(model, inputparams)
             
-            model.AnodeActiveMaterial = MagnesiumActiveMaterial(paramobj);
+            model.AnodeActiveMaterial = MagnesiumActiveMaterial(inputparams);
             
         end
             
@@ -74,13 +75,20 @@ classdef MagnesiumBattery < SeaWaterBattery
                                               {elde, 'j'}, ...
                                               {elde, 'jBcSource'}});
             end
+
+            model = model.removeVarName({ct, 'volumeFraction'});
             
         end
-        
-        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
-                    
-            opts = struct('ResOnly', false, 'iteration', 0);
-            opts = merge_options(opts, varargin{:});
+
+        function model = setupForSimulation(model)
+
+            shortNames ={'Electrolyte'          , 'elyte';
+                         'AnodeActiveMaterial'  , 'anam';
+                         'CathodeActiveMaterial', 'ctam';
+                         'Cathode'              , 'ct';
+                         'Anode'                , 'an'};
+
+            model = model.equipModelForComputation('shortNames', shortNames);
 
             elyte = 'Electrolyte';
             anam  = 'AnodeActiveMaterial';
@@ -88,68 +96,32 @@ classdef MagnesiumBattery < SeaWaterBattery
             ct    = 'Cathode';
             an    = 'Anode';
 
-            time = state0.time + dt;
-            if(not(opts.ResOnly))
-                state = model.initStateAD(state);
-            end
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-                        
-            anvols    = model.(an).G.cells.volumes;
-            ctvols    = model.(ct).G.cells.volumes;
-            elytevols = model.(elyte).G.cells.volumes;
+            anvols    = model.(an).G.getVolumes();
+            ctvols    = model.(ct).G.getVolumes();
+            elytevols = model.(elyte).G.getVolumes();
             F         = model.con.F;
             nqp       = model.(elyte).nqp;
             is_prep   = model.include_precipitation;
-            
-            eqs = {};
+
+            scalings = {};
             for ind = 1 : nqp
-                eqs{end + 1} = 1e-2./elytevols.*state.(elyte).qpMassCons{ind};
+                scalings = horzcat(scalings, ...
+                                   {{{'elyte', 'qpMassCons', ind}, elytevols/1e-2}, ...
+                                    {{'elyte', 'atomicMassCons', ind}, 1/1e-2}});
             end
-            for ind = 1 : nqp
-                eqs{end + 1} = 1e-2*state.(elyte).atomicMassCons{ind};
-            end
-            eqs{end + 1} = 1/F*state.(elyte).chargeCons;
-            eqs{end + 1} = state.(ct).galvanostatic;
-            eqs{end + 1} = state.(an).galvanostatic;
+            scalings = horzcat(scalings, ...
+                               {{{'elyte', 'chargeCons'}, F}});
 
             if is_prep
-                % Add the extra equations in case where precipitation is included.
-                eqs{end + 1} = 1./anvols.*state.(an).massCons;
-                eqs{end + 1} = 1./ctvols.*state.(ct).massCons;
-                eqs{end + 1} = 1e-2./elytevols.*state.(elyte).dischargeMassCons;
-                eqs{end + 1} = 1./elytevols.*state.(elyte).nucleationEquation;
-                eqs{end + 1} = state.(elyte).volumeFractionEquation;
+                scalings = horzcat(scalings                                       , ...
+                                   {{{an, 'massCons'}, anvols}                    , ...
+                                    {{ct, 'massCons'}, ctvols}                    , ...
+                                    {{elyte, 'dischargeMassCons'}, elytevols/1e-2}, ...
+                                    {{elyte, 'nucleationEquation'}, elytevols}});
             end
             
-            %% setup equation names (just for printed output)
-            names = {};
-            for ind = 1 : nqp
-                names{end + 1} = sprintf('qp_%d_masscons', ind);
-            end
-            for ind = 1 : nqp
-                names{end + 1} = sprintf('qp_%d_atommasscons', ind);
-            end
-            names = {names{:}, 'elyte_chargecons', 'ct_galvanostatic', 'an_galvanostatic'};
-
-            if is_prep
-                names = {names{:}, 'anode_masscons', 'cathode_masscons', 'discharge_masscons', 'nucleation', 'electrolyte_vf'};
-            end
-            
-            types = repmat({'cell'}, 1, numel(names));
-
-            primaryVars = model.getPrimaryVariableNames();
-
-            %% setup LinearizedProblem that can be processed by MRST Newton API
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
         end
 
-        %% Assembly functions
         
         function state = updateQuasiParticleSource(model, state)
         % Update source term for all the quasi particles
@@ -157,8 +129,8 @@ classdef MagnesiumBattery < SeaWaterBattery
             coupDict  = model.couplingCellDict;
             qpdict    = model.Electrolyte.qpdict;
             nqp       = model.Electrolyte.nqp;
-            nc        = model.Electrolyte.G.cells.num;
-            vols      = model.Electrolyte.G.cells.volumes;
+            nc        = model.Electrolyte.G.getNumberOfCells();
+            vols      = model.Electrolyte.G.getVolumes();
             adbackend = model.AutoDiffBackend;
             
             cathR    = state.CathodeActiveMaterial.R;
@@ -192,7 +164,7 @@ classdef MagnesiumBattery < SeaWaterBattery
 
             I = drivingForces.src(t);
             F = model.con.F;
-            vols = model.(ct).G.cells.volumes;
+            vols = model.(ct).G.getVolumes();
 
             state.(ct).galvanostatic = I + sum(2*F*R.*vols);
 
@@ -246,3 +218,25 @@ classdef MagnesiumBattery < SeaWaterBattery
 
 end
 
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

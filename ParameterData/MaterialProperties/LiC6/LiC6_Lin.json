@@ -1,0 +1,14 @@
+{
+    "saturationConcentration": 31540,
+    "volumetricSurfaceArea": 142372,
+    "density": 1852,
+    "numberOfElectronsTransferred" : 1,
+    "activationEnergyOfReaction": 4000,
+    "reactionRateConstant": 1.76e-11,
+    "guestStoichiometry100": 0.51873811,
+    "guestStoichiometry0": 0.001,
+    "openCircuitPotential": {"type": "function",
+                             "functionname": "computeOCPFunc_LiC6_Lin",
+                             "argumentlist" : ["concentration", "temperature", "cmax"]
+                            }
+}

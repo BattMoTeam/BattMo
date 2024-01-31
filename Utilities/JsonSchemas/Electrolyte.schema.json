@@ -1,26 +1,70 @@
 {
-  "$id": "file://battmo/schemas/Electrolyte",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "A standard electrolyte",
+  "$id": "file://./Electrolyte",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "An electrolyte",
   "type": "object",
-
-  "properties" : { "compnames": {"type" : "array"},
-                   "sp": { "type" : "object",
-                           "properties" : {
-                             "z": {"type" : "number",
-                                   "description" : "charge number"},
-                             "t": {"type" : "number",
-                                   "description" : "transference number"}
-                           }
-                         },
-                   "Separator" : {"$ref" : "Separator"},
-                   "density" : {"type" : "number",
-                                "description": "density of the liquid part only. The density of separator is given in the separator input data"},
-                   "Conductivity": {"$ref" : "function",
-                                    "description" : "function to update conductivity"},
-                   "DiffusionCoefficient" : {"$ref" : "function",
-                                             "description" : "function to update diffusion coefficient"},
-                   "BruggemanCoefficient" : {"type" : "number",
-                                             "description": "Bruggeman coefficient for the electrolyte in the whole domain"}
-                 }
+  "properties": {
+    "ionicConductivity": {
+      "allOf": [
+        {"$ref": "Function.schema.json"},
+        { "properties" : {
+          "argumentlist": {"type" : "array",
+                           "prefixItems": [{"const": "concentration"},
+                                           {"const": "temperature"}]
+                          },
+          "symbol": {"const" : "kappa"}}}
+        ],
+      "description": "a function to determine the ionic conductivity of the electrolyte under given conditions"
+    },
+    "diffusionCoefficient": {
+      "allOf": [
+        {"$ref": "Function.schema.json"},
+        { "properties" : {
+          "argumentlist": {"type" : "array",
+                           "prefixItems": [{"const": "concentration"},
+                                           {"const": "temperature"}]
+                          },
+          "symbol": {"const" : "D"}}}
+        ],
+      "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions"
+    },
+    "species": {
+      "type": "object",
+      "description": "Property for the positive ion (Lithium). We support for the moment only binary electrolyte.",
+      "properties": {
+        "chargeNumber": {
+          "type": "number",
+          "description": "charge number"
+        },
+        "transferenceNumber": {
+          "type": "number",
+          "description": "transference number"
+        },
+        "nominalConcentration": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json"
+        }
+      }
+    },
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the mass density of the material",
+      "symbol": "rho"
+    },
+    "bruggemanCoefficient": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the coefficient for determining effective transport parameters in porous media",
+      "symbol": "beta"
+    },
+    "thermalConductivity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the intrinsic Thermal conductivity of the active component",
+      "symbol": ""
+    },
+    "specificHeatCapacity": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "the Specific Heat capacity of the active component",
+      "symbol": ""
+    }
+  }
 }

@@ -5,12 +5,12 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
 %
     methods
 
-        function model = SimplifiedSolidDiffusionModel(paramobj)
+        function model = SimplifiedSolidDiffusionModel(inputparams)
 
-            model = model@SolidDiffusionModel(paramobj);
+            model = model@SolidDiffusionModel(inputparams);
 
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
@@ -19,49 +19,94 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
             model = registerVarAndPropfuncNames@SolidDiffusionModel(model);
 
             varnames = {};
-            % concentration
+            % concentration at surface
             varnames{end + 1} = 'cSurface';
             % concentration (over the whole particle)
             varnames{end + 1} = 'cAverage';
             % Solid diffusion equation
             varnames{end + 1} = 'solidDiffusionEq';
-            
+
             model = model.registerVarNames(varnames);
 
-            fn = @ActiveMaterial.updateDiffusionCoefficient;
+            fn = @SimplifiedSolidDiffusionModel.updateDiffusionCoefficient;
             inputnames = {'T'};
             model = model.registerPropFunction({'D', fn, inputnames});
 
-            fn = @ActiveMaterial.assembleSolidDiffusionEquation;
+            fn = @SimplifiedSolidDiffusionModel.assembleSolidDiffusionEquation;
             inputnames = {'cSurface', 'cAverage', 'Rvol', 'D'};
-
             model = model.registerPropFunction({'solidDiffusionEq', fn, inputnames});
-            
+
+            fn = @SimplifiedSolidDiffusionModel.assembleAccumTerm;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+            inputnames = {'cAverage'};
+            model = model.registerPropFunction({'massAccum', fn, inputnames});
+
+            fn = @SimplifiedSolidDiffusionModel.updateMassConservation;
+            inputnames = {'massAccum', 'massSource'};
+            model = model.registerPropFunction({'massCons', fn, inputnames});
+
+            fn = @SimplifiedSolidDiffusionModel.updateMassSource;
+            inputnames = {'Rvol'};
+            model = model.registerPropFunction({'massSource', fn, inputnames});
+
         end
 
-        
+
+        function state = updateMassConservation(model, state)
+        % Used when diffusionModelType == 'simple' or no particle diffusion
+
+            source = state.massSource;
+            accum = state.massAccum;
+
+            state.massCons = accum - source;
+
+        end
+
+
+        function state = assembleAccumTerm(model, state, state0, dt)
+
+            vf = model.volumeFraction;
+
+            c  = state.cAverage;
+            c0 = state0.cAverage;
+
+            state.massAccum = vf.*(c - c0)/dt;
+
+        end
+
+        function state = updateMassSource(model, state)
+        % used when diffusionModelType == simple
+
+            Rvol = state.Rvol;
+
+            state.massSource = - Rvol;
+
+        end
+
+
         function state = assembleSolidDiffusionEquation(model, state)
         % We update the surface concentration of the charge carrier in the active material.
         % The surface concentration value is computed following polynomial method, as described in ref1 (see below)
 
+            rp  = model.particleRadius;
+            vsa = model.volumetricSurfaceArea;
+            
             csurf = state.cSurface;
             caver = state.cAverage;
             D     = state.D;
             Rvol  = state.Rvol;
 
-            rp  = model.rp;
-            vsa = model.volumetricSurfaceArea;
             state.solidDiffusionEq = csurf - caver + (rp.*Rvol)./(5*vsa*D);
-            
+
         end
-    
+
     end
-    
+
 end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
@@ -79,5 +124,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
-    
-

@@ -1,0 +1,5 @@
+{
+  "externalHeatTransferCoefficientTab": 1000,
+  "externalHeatTransferCoefficient": 100,
+  "externalTemperature": 298.15
+}

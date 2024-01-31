@@ -1,18 +1,20 @@
 {
-  "$id": "file://battmo/schemas/Geometry",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./Geometry.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Specification of the geometry including the discretization parameters",
   "type": "object",
 
   "properties" : {"Geometry" : {"type" : "object",
                                 "properties" : {"case" : {"type" : "string",
-                                                          "enum" : ["1D", "pouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
+                                                          "enum" : ["1D", "multiLayerPouch", "2D-demo", "3D-demo", "jellyRoll", "sectorModel", "coinCell"]}}},
                   "NegativeElectrode" : { "$ref" : "#/$defs/particlediscretization"},
                   "PositiveElectrode" : { "$ref" : "#/$defs/particlediscretization"}
                  },
 
   "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
               "$ref" : "#/$defs/1D"},
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "multiLayerPouch"}}}},
+              "$ref" : "#/$defs/multiLayerPouch"},
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D-demo"}}}},
               "$ref" : "#/$defs/2D-demo" },
              {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "3D-demo"}}}},
@@ -24,32 +26,31 @@
             ],
 
   "$defs" : {
-    
+
     "layerSpecs" : {
       "properties" : {
         "NegativeElectrode" : {
           "properties" : {
-            "ActiveMaterial" : {
+            "Coating" : {
               "$ref" : "#/$defs/layerSpec"},
             "CurrentCollector" : {
               "$ref" : "#/$defs/layerSpec"}}},
         "PositiveElectrode" : {
           "properties" : {
-            "ActiveMaterial" : {
+            "Coating" : {
               "$ref" : "#/$defs/layerSpec"},
             "CurrentCollector" : {
               "$ref" : "#/$defs/layerSpec"}}},
-        "Electrolyte" : {
-          "properties" : {
-            "Separator" : {
-              "$ref" : "#/$defs/layerSpec"}}}}},
+        "Separator" : {
+          "$ref" : "#/$defs/layerSpec"}}},
 
     "layerSpec" : {
       "properties" : {
         "thickness" : {
-          "type" : "number",
-          "description" : "thickness of the component"},
-        "N" : {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description" : "the thickness of the component",
+          "symbol" : "t"},
+        "numberOfDiscreteCells" : {
           "type" : "number",
           "description" : "discretization parameter"}}},
 
@@ -62,12 +63,108 @@
               "faceArea" : {
                 "type" : "number",
                 "description" : "area of the cross-section"}}}}}]},
-    
-    "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
-                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator2D"},
 
-    "3D-demo" : {"$ref" : "#/$defs/layerSpecs",
-                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGenerator3D"},
+    "multiLayerPouch" : {
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" : {
+          "Geometry" : {
+            "properties" : {
+              "nLayers" : {
+                "type" : "number",
+                "description" : "number of layers in the pouch cells"},
+              "width" : { "type" : "number"},
+              "height" : { "type" : "number"},
+              "tab" : {
+                "type" : "object",
+                "description" : "parameters for the tabs",
+                "properties" : {
+                  "cap_tabs" : {"type" : "boolean",
+                                "description" : "If true, the tabs are removed and the parameters are only used to set the current collector external coupling"},
+                  "width" : {"type" : "number"},
+                  "Nx" : {"type" : "number",
+                          "description" : "Discretization parameter in the width direction"},
+                  "NegativeElectrode" : {
+                    "type" : "object",
+                    "description" : "tab parameter for the negative electrode",
+                    "properties" : {
+                      "height" : {"type" : "number"},
+                      "Ny" : {"type" : "number",
+                              "description" : "Discretization parameter in the height direction"}
+                    }
+                  },
+                  "PositiveElectrode" : {
+                    "type" : "object",
+                    "description" : "tab parameter for the negative electrode",
+                    "properties" : {
+                      "height" : {"type" : "number"},
+                      "Ny" : {"type" : "number",
+                              "description" : "Discretization parameter in the height direction"}}}}},
+              "Electrolyte" : {
+                "type" : "object",
+                "description" : "Discretization parameter for the electrolyte in the width and height directions",
+                "properties" : {
+                  "Nx" : {"type" : "number"},
+                  "Ny" : {"type" : "number"}}}}}}}]},
+
+    "2D-demo" : {"$ref" : "#/$defs/layerSpecs",
+                 "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using the grid generator BatteryGeneratorP3D"},
+
+    "3D-demo" : {
+      "description" : "In this demo case the dimensions are fixed. Further parametrization should be done using  the grid generator BatteryGeneratorP4D",
+      "allOf" : [
+        {"$ref" : "#/$defs/layerSpecs"},
+        {"properties" :
+         {"Geometry" : {
+           "properties" : {
+             "width" : {"type" : "number"},
+             "height" : {"type" : "number"},
+             "Nw" : {"type" : "number",
+                     "description" : "discretization number in the width direction"},
+             "Nh" : {"type" : "number",
+                     "description" : "discretization number in the height direction"}
+           }},
+          "NegativeElectrode" : {
+            "CurrentColector" : {
+              "tab" : {
+                "type" : "object",
+                "properties" : {
+                  "width" : {"type" : "number"},
+                  "height" : {"type" : "number"},
+                  "Nw" : {"type" : "number",
+                          "description": "discretization number in the width direction"}
+                }
+              }
+            }
+          }
+         },
+         "PositiveElectrode" : {
+            "CurrentColector" : {
+              "tab" : {
+                "type" : "object",
+                "properties" : {
+                  "width" : {"type" : "number"},
+                  "height" : {"type" : "number"},
+                  "Nw" : {"type" : "number",
+                          "description": "discretization number in the width direction"}
+                }
+              }
+            }
+         },
+         "ThermalModel": {
+           "properties" : {
+             "externalHeatTransferCoefficientTab" : {
+               "$ref": "PhysicalQuantity.schema.json",
+               "description": "the heat transfer coefficient at the tab"
+             }
+           }
+         }
+        }
+
+
+      ]
+
+                },
 
     "particlediscretization" : {
       "properties" : {
@@ -86,24 +183,24 @@
               "properties" : {
                 "diffusionModelType" : {
                   "const" : "full"}}}}]}}},
-    
+
     "jellyRoll" : {
       "properties" : {
         "Geometry" : {
           "properties" : {
-            "rOuter" : {
+            "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "rInner"  : {
+            "innerRadius"  : {
               "type" : "number",
               "description" : "inner radius"},
-            "L" : {
+            "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "nL" : {
+            "numberOfDiscreteCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "nas" : {
+            "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
         "NegativeElectrode" : {
@@ -125,23 +222,23 @@
       "properties" : {
         "Geometry" : {
           "properties" : {
-            "rOuter" : {
+            "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "rInner"  : {
+            "innerRadius"  : {
               "type" : "number",
               "description" : "inner radius"},
-            "L" : {
+            "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "nL" : {
+            "numberOfDiscreteCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "nas" : {
+            "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
       "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
-    
+
     "tabparams" : {
       "type" : "object",
       "description" : "Parameters for the tabs",
@@ -184,7 +281,3 @@
             {"properties" : {
               "usetab" : {
                 "const" : false}}}]}}}}}
-
-
-
-

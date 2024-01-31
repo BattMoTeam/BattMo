@@ -1,0 +1,157 @@
+{
+  "$id": "file://./LinearSolver.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "linear solver",
+  "type": "object",
+  "properties" : {
+    "library" : {
+      "type" : "string",
+      "description" : "list of (partially) supported linear solver library",
+      "enum" : ["matlab", "agmg", "amgcl"]
+    },
+
+    "verbose" : {"type" : "integer"},
+
+    "method" : {
+      "type" : "string",
+      "description" : "name of the method used by the solver - depends on the chosen library. if not given a default solver for the library is given"
+    },
+
+    "reduction" : {
+      "type" : "object",
+      "properties" : {
+        "doReduction": {"type" : "boolean"},
+        "description" : "The reduction of Control.I and Control.E is done conditionally",
+        "variables" : {
+          "type" : "array",
+          "description" : "list of the variables that will be eliminated before inverting the linear system",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "name" : {"$ref" : "#/$defs/variable"},
+              "order" : {"type" : "integer",
+                         "description" : "gives order in which reduction should be done"},
+              "special" : {"type" : "boolean"},
+              "description" : "If special is true, it reminds us that some variables such as Control.I and Control.E can be reduced or not depending on the type of control that is active"}
+          }
+        }
+      }
+    }
+  },
+
+  "oneOf" : [
+    { "properties" : {
+      "library" : {"const" : "matlab"}},
+      "description" : "We have the following methods for the matlab solver. If no method is given, a direct solver is used",
+      "anyOf": [
+        {"properties" : {
+          "method" : {"const": "direct"}}
+        },
+
+        {"properties" : {
+          "method" : {"const" : "grouped-gmres"},
+          "description" : "we run gmres on the whole system with one preconditioner",
+          "gmres_options" : {"$ref" : "#/$defs/matlab_gmres_options"},
+          "preconditioner" : {"$ref" : "#"}}
+        },
+
+        {"properties" : {
+          "method" : {"const" : "separate-variable-gmres"},
+          "description" : "We use separate preconditioner for chosen variables",
+          "options" : {"type" : "object",
+                       "properties" : {"type" : {"type" : "string",
+                                                 "enum" : ["jacobi", "gauss-seidel"]}},
+                       "anyOf" : [
+                         {"properties" : {"type" : {"const" : "gauss-seidel"},
+                                          "iteration" : {"type" : "integer"}}},
+                         {"properties" : {"type" : {"const" : "jacobi"}}}
+                         ]
+                      },
+          "gmres_options" : {"$ref" : "#/$defs/matlab_gmres_options"},
+          "preconditioners" : {"$ref" : "#/$defs/separate_variable_preconditioners"}}
+        },
+
+        {"not" : {
+          "properties" : {
+            "method" : {"enum" : ["direct", "grouped-gmres", "separate-variable-gmres"]}}},
+         "description" : "if no method is given, the direct solver is used"
+        }
+
+      ]
+    },
+
+    {"properties" : {"library" : {"const" : "agmg"}},
+
+     "description" : "We can use either standard method (gmres) or separate with variable",
+
+     "oneOf": [
+
+       {"properties" : {
+         "method" : {"const": "standard"},
+         "description": "solve until convergence. This is the default method"}
+       },
+
+       {"properties" : {
+         "method" : {"const": "amg"},
+         "description" : "only one iteration"}},
+
+       {"properties" : {
+         "method" : {"const" : "separate-variable-gmres"},
+         "description" : "We use separate preconditioner for chosen variables",
+         "preconditioners" : {"$ref": "#/$defs/separate_variable_preconditioners"}}}
+     ]
+
+    },
+
+
+    {"allOf" : [{"properties" : {"library" : {"const" : "amgcl"}}},
+                {"$ref" : "AMGCLoptions.schema.json"}
+               ]
+    }
+
+  ],
+
+  "$defs" : {
+
+    "variable" : {
+      "type" : "array",
+      "items" : {"type" : "string"}},
+
+    "separate_variable_preconditioners" : {
+      "type" : "array",
+      "description" : "array of solvers for the variables",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {"type" : "string",
+                    "description" : "A name can be given to the preconditioner. It will be used in verbose mode to identify the preconditioner."},
+          "variables" : {"type" : "array",
+                         "items" : {"$ref" : "#/$defs/variable"}
+                        },
+          "solver" : {"$ref" : "#"}
+        }
+      }
+    },
+
+    "matlab_gmres_options" : {
+      "type" : "object",
+      "description" : "see matlab documentation for full details. The preconditioners and start vectors are not included here",
+      "properties" : {
+        "restart" : {
+          "anyOf" : [{"type" : "integer"},
+                     {"const" : "default"}],
+          "description" : "restart the method every restart iterations"},
+        "tol" : {
+          "anyOf" : [{"type" : "number"},
+                     {"const" : "default"}],
+          "description" : "tolerance",
+          "default" : 1e-6},
+        "maxit" : {
+          "anyOf" : [{"type" : "integer"},
+                     {"const" : "default"}],
+          "description" : "maximum number of outer iterations",
+          "default" : "MIN(N/RESTART,10) where N is matrix size"}}
+    }
+  }
+
+}

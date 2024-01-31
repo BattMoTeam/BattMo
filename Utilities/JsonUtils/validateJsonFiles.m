@@ -1,4 +1,4 @@
-function is_valid = validateJsonFiles(jsonfiles)
+function isValid = validateJsonFiles(jsonfiles)
 
     if ~iscell(jsonfiles)
         jsonfiles = {jsonfiles};
@@ -6,17 +6,24 @@ function is_valid = validateJsonFiles(jsonfiles)
 
     % Load module
     % FIXME Don't load the module every time
-    loadModule('validationJsonScript');
+    modname = 'validateJsonFiles';
+    loadModule(modname);
 
     % Validate using python script
     for k = 1:numel(jsonfiles)
         jsonfile = jsonfiles{k};
-        is_valid{k} = py.validationJsonScript.validate(jsonfile);
-        assert(is_valid{k}, 'jsonfile %s is not valid', jsonfile);
+        dispif(mrstVerbose, 'Validating %s\n', jsonfile);
+        try
+            isValid{k} = py.(modname).validate(battmoDir(), jsonfile); %#ok
+        catch e
+            disp(e);
+            error('Error when running the validation');
+        end
+        assert(isValid{k}, 'jsonfile %s is not valid', jsonfile);
     end
 
     if numel(jsonfiles) == 1
-        is_valid = is_valid{1};
+        isValid = isValid{1};
     end
 
 end
@@ -24,7 +31,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

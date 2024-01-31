@@ -1,0 +1,49 @@
+{
+  "Geometry": {
+    "case": "multiLayerPouch",
+    "nLayers": 5,
+    "width": 0.1,
+    "height": 0.1,
+    "tab": {
+      "width": 0.05,
+      "Nx": 3,
+      "NegativeElectrode": {
+        "height": 0.04,
+        "Ny": 2
+      },
+      "PositiveElectrode": {
+        "height": 0.02,
+        "Ny": 2
+      }
+    },
+    "Electrolyte": {
+      "Nx": 2,
+      "Ny": 4
+    }
+  },
+  "include_current_collectors": true,
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness": 0.0001,
+      "N": 3
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 2
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness": 8e-05,
+      "N": 3
+    },
+    "CurrentCollector": {
+      "thickness": 1e-05,
+      "N": 2
+    }
+  },
+  "Separator": {
+    "thickness": 5e-05,
+    "N": 3
+  }
+}

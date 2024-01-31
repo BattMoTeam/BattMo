@@ -26,29 +26,29 @@ classdef CatalystLayerInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = CatalystLayerInputParams(jsonstruct)
+        function inputparams = CatalystLayerInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
-            if isempty(paramobj.include_dissolution)
-                paramobj.include_dissolution = false;
-            elseif paramobj.include_dissolution
-                paramobj.DissolutionModel = DissolutionModelInputParams(jsonstruct.DissolutionModel);
+            if isempty(inputparams.include_dissolution)
+                inputparams.include_dissolution = false;
+            elseif inputparams.include_dissolution
+                inputparams.DissolutionModel = DissolutionModelInputParams(jsonstruct.DissolutionModel);
             end
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            paramobj = validateInputParams@ComponentInputParams(paramobj);
+            inputparams = validateInputParams@ComponentInputParams(inputparams);
             
             dm = 'DissolutionModel';
 
-            if paramobj.include_dissolution
-                paramobj = mergeParameters(paramobj, {{'volumetricSurfaceArea0'}, {dm, 'volumetricSurfaceArea0'}});
-                paramobj.(dm) = paramobj.(dm).validateInputParams();
+            if inputparams.include_dissolution
+                inputparams = mergeParameters(inputparams, {{'volumetricSurfaceArea0'}, {dm, 'volumetricSurfaceArea0'}});
+                inputparams.(dm) = inputparams.(dm).validateInputParams();
             end
             
 
@@ -62,7 +62,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

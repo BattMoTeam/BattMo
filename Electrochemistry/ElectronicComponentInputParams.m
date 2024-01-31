@@ -1,37 +1,40 @@
 classdef ElectronicComponentInputParams < ComponentInputParams
 %
 % Input parameter class for :code:`ElectronicComponent` model
-%    
+%
     properties
 
-        %
-        % conductivity (effective value)
-        %
-        % In many models, this value is not used as the conductivity depends on other parameters
-        %
-        EffectiveElectricalConductivity
 
+        %% Standard parameters
+
+        electronicConductivity          % electronic conductivity
+
+        %% Advanced parameter
+
+        effectiveElectronicConductivity % effective electronic conductivity
+
+        %% helper parameters
         use_thermal
-        
+
     end
-    
-    
+
+
     methods
 
-        function paramobj = ElectronicComponentInputParams(jsonstruct)
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+        function inputparams = ElectronicComponentInputParams(jsonstruct)
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
         end
-        
-    end
-    
 
-    
+    end
+
+
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

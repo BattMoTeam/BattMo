@@ -1,6 +1,7 @@
-function [mass, masses] = computeCellMass(model, varargin)
+function [mass, masses, volumes] = computeCellMass(model, varargin)
 
-    opt = struct('packingMass', 0);
+    opt = struct('packingMass', 0, ...
+                 'packingVolume', 0);
     opt = merge_options(opt, varargin{:});
     
     
@@ -8,6 +9,7 @@ function [mass, masses] = computeCellMass(model, varargin)
     sep   = 'Separator';
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
+    co    = 'Coating';
     am    = 'ActiveMaterial';
     itf   = 'Interface';
     cc    = 'CurrentCollector';
@@ -20,21 +22,24 @@ function [mass, masses] = computeCellMass(model, varargin)
     for ind = 1 : numel(eldes)
         
         elde = eldes{ind};
-        
-        rho  = model.(elde).(am).(itf).density;
-        vols = model.(elde).(am).G.cells.volumes;
-        frac = model.(elde).(am).volumeFraction;
 
-        masses.(elde).(am).val = sum(rho.*vols.*frac);
+        rho  = model.(elde).(co).effectiveDensity;
+        vols = model.(elde).(co).G.getVolumes();
+        frac = model.(elde).(co).volumeFraction;
         
-        mass = mass + masses.(elde).(am).val;
+        masses.(elde).(co).val  = sum(rho.*vols);
+        volumes.(elde).(co).val = sum(vols.*frac);
+        
+        mass = mass + masses.(elde).(co).val;
         
         if model.include_current_collectors
 
             rho  = model.(elde).(cc).density;
-            vols = model.(elde).(cc).G.cells.volumes;
+            vols = model.(elde).(cc).G.getVolumes();
             
-            masses.(elde).(cc).val = sum(rho.*vols);
+            masses.(elde).(cc).val  = sum(rho.*vols);
+            volumes.(elde).(cc).val = sum(vols);
+
             mass = mass + masses.(elde).(cc).val;
             
         end
@@ -42,27 +47,33 @@ function [mass, masses] = computeCellMass(model, varargin)
     end
     
     rho  = model.(elyte).density;
-    vols = model.(elyte).G.cells.volumes;
+    vols = model.(elyte).G.getVolumes();
     frac = model.(elyte).volumeFraction;
     
-    masses.(elyte).val = sum(rho.*vols.*frac);
+    masses.(elyte).val  = sum(rho.*vols.*frac);
+    volumes.(elyte).val = sum(vols.*frac);
+    
     mass = mass + masses.(elyte).val;
     
-    rho  = model.(elyte).(sep).density;
-    vols = model.(elyte).(sep).G.cells.volumes;
-    frac = model.(elyte).(sep).volumeFraction;
+    rho  = model.(sep).density;
+    vols = model.(sep).G.getVolumes();
+    frac = (1 - model.(sep).porosity);
     
-    masses.(elyte).(sep).val = sum(rho.*vols.*frac);
-    mass = mass + masses.(elyte).(sep).val;
+    masses.(sep).val  = sum(rho.*vols.*frac);
+    volumes.(sep).val = sum(vols.*frac);
+
+    mass = mass + masses.(sep).val;
 
     mass = mass + opt.packingMass;
+
+    volumes.val = sum(model.G.getVolumes()) + opt.packingVolume;
     
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

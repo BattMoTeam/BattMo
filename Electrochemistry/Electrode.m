@@ -1,52 +1,57 @@
 classdef Electrode < BaseModel
 %
-% The Electrode model is made of two sub-models : an electrode active component (see
-% :class:`Electrochemistry.ActiveMaterial`) and a current collector (see
+% The Electrode model is made of two sub-models : a coating (see
+% :class:`Electrochemistry.Coating`) and a current collector (see
 % :class:`Electrochemistry.CurrentCollector`)
 %
     properties
-        
-        ActiveMaterial   % instance of :class:`Electrochemistry.ActiveMaterial`
+
+        %% Sub-Models
+
+        Coating          % instance of :class:`Electrochemistry.ActiveMaterial`
         CurrentCollector % instance of :class:`Electrochemistry.CurrentCollector`
 
-        couplingTerm
-        
-        include_current_collectors
+        %% Coupling parameters
 
+        couplingTerm
+
+        %% Computed parameters at setup
+
+        include_current_collectors
         use_thermal
-        
+
     end
 
     methods
-        
-        function model = Electrode(paramobj)
-        % paramobj is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
-            
+
+        function model = Electrode(inputparams)
+        % inputparams is instance of :class:`Electrochemistry.Electrodes.ElectrodeInputParams`
+
             model = model@BaseModel();
-            
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
-            
-            fdnames = {'G', ...
-                       'couplingTerm', ...
+
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
+
+            fdnames = {'G'                         , ...
+                       'couplingTerm'              , ...
+                       'include_current_collectors', ...
                        'use_thermal'};
-            model = dispatchParams(model, paramobj, fdnames);
-            
-            % Assign the two components
-            model.ActiveMaterial = model.setupActiveMaterial(paramobj.ActiveMaterial);
-            
-            if paramobj.include_current_collectors
+            model = dispatchParams(model, inputparams, fdnames);
+
+            model.Coating = Coating(inputparams.Coating);
+
+            if inputparams.include_current_collectors
                 model.include_current_collectors = true;
-                assert(~isempty(paramobj.CurrentCollector), 'current collector input data is missing')
-                model.CurrentCollector = model.setupCurrentCollector(paramobj.CurrentCollector);
+                assert(~isempty(inputparams.CurrentCollector), 'current collector input data is missing')
+                model.CurrentCollector = model.setupCurrentCollector(inputparams.CurrentCollector);
             else
                 model.include_current_collectors = false;
-                % if isempty(paramobj.CurrentCollector.G)
+                % if isempty(inputparams.CurrentCollector.G)
                 %    warning('current collector data is given, but we are not using it, as required by input flag');
                 % end
             end
-                   
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
         %% Declaration of the Dynamical Variables and Function of the model
@@ -54,121 +59,131 @@ classdef Electrode < BaseModel
 
             % define shorthands
             cc = 'CurrentCollector';
-            am = 'ActiveMaterial';
+            co = 'Coating';
 
             if ~model.include_current_collectors
-                model.subModelNameList = {am};
+                model.subModelNameList = {co};
             end
-           
+
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             if ~model.include_current_collectors
-                model = model.registerVarName(VarName({am}, 'jExternal'));
+                model = model.registerVarName({co, 'jExternal'});
             end
-            
-            
+
+
             if model.include_current_collectors
 
                 fn = @Electrode.updateCoupling;
-                inputnames = {{am, 'phi'}, ...
+                inputnames = {{co, 'phi'}, ...
                               {cc , 'phi'}};
-                model = model.registerPropFunction({{am, 'jCoupling'}, fn, inputnames});
+                model = model.registerPropFunction({{co, 'jCoupling'}, fn, inputnames});
                 model = model.registerPropFunction({{cc, 'jCoupling'}, fn, inputnames});
                 model = model.registerPropFunction({{cc, 'eSource'}  , fn, inputnames});
 
                 if model.use_thermal
-                    model = model.registerPropFunction({{am, 'jFaceCoupling'}, fn, inputnames});
+                    model = model.registerPropFunction({{co, 'jFaceCoupling'}, fn, inputnames});
                     model = model.registerPropFunction({{cc, 'jFaceCoupling'}, fn, inputnames});
                 end
-                
+
             end
-            
+
         end
-        
-        function am = setupActiveMaterial(model, paramobj)
-        % paramobj is instance of ActiveMaterialInputParams
-        % standard instantiation (ActiveMaterial is specified in ActiveMaterial instantiation)
-            am = ActiveMaterial(paramobj);
+
+        function cc = setupCurrentCollector(model, inputparams)
+        % standard instantiation
+            cc = CurrentCollector(inputparams);
         end
-        
-        function cc = setupCurrentCollector(model, paramobj)
-        % standard instantiation 
-            cc = CurrentCollector(paramobj);
+
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
+
+            co = 'Coating';
+
+            model.G.parentGrid.tPFVgeometry = tPFVgeometry;
+
+            model.(co) = model.(co).setTPFVgeometry(tPFVgeometry);
+
+            if model.include_current_collectors
+                cc = 'CurrentCollector';
+                model.(cc) = model.(cc).setTPFVgeometry(tPFVgeometry);
+            end
+
         end
 
         function state = updateCoupling(model, state)
-        % setup coupling terms between the current collector and the electrode active component            
-            
+        % setup coupling terms between the current collector and the electrode active component
+
             if model.include_current_collectors
-                
+
                 elde  = model;
-                
-                am = 'ActiveMaterial';
+
+                co = 'Coating';
                 cc = 'CurrentCollector';
 
-                am_phi = state.(am).phi;
+                co_phi = state.(co).phi;
                 cc_phi = state.(cc).phi;
 
-                am_sigmaeff = elde.(am).EffectiveElectricalConductivity;
-                cc_sigmaeff = elde.(cc).EffectiveElectricalConductivity;
-                
+                co_sigmaeff = elde.(co).effectiveElectronicConductivity;
+                cc_sigmaeff = elde.(cc).effectiveElectronicConductivity;
+
                 %% We setup the current transfers between CurrentCollector and ActiveMaterial
-                
-                am_jCoupling  = am_phi*0.0; %NB hack to initialize zero ad
+
+                co_jCoupling = co_phi*0.0; %NB hack to initialize zero ad
                 cc_jCoupling = cc_phi*0.0; %NB hack to initialize zero ad
 
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
-                face_am = coupterm.couplingfaces(:, 2);
-                [teac, bccell_am] = elde.(am).operators.harmFaceBC(am_sigmaeff, face_am);
-                [tcc, bccell_cc] = elde.(cc).operators.harmFaceBC(cc_sigmaeff, face_cc);
-
-                bcphi_am = am_phi(bccell_am);
+                face_co = coupterm.couplingfaces(:, 2);
+                
+                [tco, bccell_co, bcsgn_co] = elde.(co).G.getBcTrans(face_co);
+                tco = co_sigmaeff*tco;
+                
+                [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getBcTrans(face_cc);
+                tcc = cc_sigmaeff*tcc;
+                
+                bcphi_co = co_phi(bccell_co);
                 bcphi_cc = cc_phi(bccell_cc);
 
-                trans = 1./(1./teac + 1./tcc);
-                crosscurrent = trans.*(bcphi_cc - bcphi_am);
-                am_jCoupling = subsasgnAD(am_jCoupling,bccell_am, crosscurrent);
+                trans = 1./(1./tco + 1./tcc); % Harmonic average
+                crosscurrent = trans.*(bcphi_cc - bcphi_co);
+                co_jCoupling = subsasgnAD(co_jCoupling,bccell_co, crosscurrent);
                 cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
-                nf = G.faces.num;
-                sgn = model.(cc).operators.sgn;
+                nf = G.getNumberOfFaces();
                 zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), cc_phi);
                 cc_jFaceCoupling = zeroFaceAD;
-                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling,face_cc, sgn(face_cc).*crosscurrent);
-                assert(~any(isnan(sgn(face_cc))));
-                
-                G = model.(am).G; 
-                nf = G.faces.num; 
-                sgn = model.(am).operators.sgn; 
-                zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), am_phi); 
-                am_jFaceCoupling = zeroFaceAD; 
-                am_jFaceCoupling = subsasgnAD(am_jFaceCoupling, face_am, -sgn(face_am).*crosscurrent); 
-                assert(~any(isnan(sgn(face_am))));
-                
-                % We set here volumetric current source to zero for current collector (could have been done at a more logical place but
-                % let us do it here, for simplicity)
-                state.(cc).eSource = zeros(elde.(cc).G.cells.num, 1);
-                
-                state.(am).jCoupling = am_jCoupling;
+                cc_jFaceCoupling = subsasgnAD(cc_jFaceCoupling, face_cc, bcsgn_cc.*crosscurrent);
+
+                G = model.(co).G;
+                nf = G.getNumberOfFaces();
+                zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), co_phi);
+                co_jFaceCoupling = zeroFaceAD;
+                co_jFaceCoupling = subsasgnAD(co_jFaceCoupling, face_co, -bcsgn_co.*crosscurrent);
+
+                % We set here volumetric current source to zero for current collector (could have been done at a more
+                % logical place but let us do it here, for simplicity)
+                state.(cc).eSource = zeros(elde.(cc).G.getNumberOfCells(), 1);
+
+                state.(co).jCoupling = co_jCoupling;
                 state.(cc).jCoupling = cc_jCoupling;
-                
-                state.(am).jFaceCoupling = am_jFaceCoupling;
+
+                state.(co).jFaceCoupling = co_jFaceCoupling;
                 state.(cc).jFaceCoupling = cc_jFaceCoupling;
-                
+
             end
-                
+
         end
 
-    end    
+    end
 end
 
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

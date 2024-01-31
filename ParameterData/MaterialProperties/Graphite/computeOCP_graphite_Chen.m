@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_graphite_Chen(c, T, cmax)
+function [OCP, dUdT] = computeOCP_graphite_Chen(c, ~, cmax)
     % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
     % from [1].
 
@@ -18,7 +18,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

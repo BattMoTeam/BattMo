@@ -28,9 +28,9 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
     
     methods
         
-        function paramobj = PorousTransportLayerInputParams(jsonstruct)
+        function inputparams = PorousTransportLayerInputParams(jsonstruct)
             
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
         end
         
@@ -42,7 +42,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

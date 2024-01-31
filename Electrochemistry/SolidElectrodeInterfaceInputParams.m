@@ -2,18 +2,25 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
 
     properties
         
-        molecularWeight % SEI molecular weight [kg/mol]
-        density         % SEI densisity [kg/m^3]
-        D               % SEI diffusion coefficient [m^2/s]
-        N               % Number of discretization intervals in the sei layer model [-]
-        np              % Number of computational grid cells (typically set by parent model)
+        %% Standard parameters
+        
+        molecularWeight      % SEI molecular weight [kg/mol]
+        density              % SEI density [kg/m^3]
+        conductivity         % SEI conductivity
+        diffusionCoefficient % SEI diffusion coefficient [m^2/s]
+
+        %% Discretization parameters
+        
+        N  % Number of discretization intervals in the sei layer model [-]
+        np % Number of computational grid cells (typically set by parent model)
+        
     end
     
     methods
         
-        function paramobj = SolidElectrodeInterfaceInputParams(jsonstruct)
+        function inputparams = SolidElectrodeInterfaceInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
@@ -25,7 +32,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

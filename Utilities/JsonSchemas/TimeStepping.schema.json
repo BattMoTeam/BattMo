@@ -1,17 +1,32 @@
 {
-  "$id": "file://battmo/schemas/TimeStepping",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "file://./TimeStepping.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input for the time stepping",
   "type": "object",
-
-  "properties" : {"TimeStepping" : {"type" : "object",
-                                    "properties" : {"totalTime" : {"type" : "number"},
-                                                    "dt" : {"type" : "number"},
-                                                    "N" : {"type" : "integer"},
-                                                    "useRampup" : {"type" : "boolean"},
-                                                    "rampupTime" : {"type" : "number"}},
-                                    "oneOf" : [{"required" : ["N", "totalTime"]},
-                                               {"required" : ["dt"]}]
-                                   }
-                 }
+  "properties": {
+    "TimeStepping": {
+      "type": "object",
+      "properties": {
+        "totalTime": {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "Total time. If not given, may be inferred by some control models",
+          "symmbol": ""
+        },
+        "timeStepDuration": {
+          "type": "number"
+        },
+        "numberOfTimeSteps": {
+          "type": "integer",
+          "description": "number of time steps, then we compute the time step duration from total time and number of time steps"
+        },
+        "useRampup": {
+          "type": "boolean"
+        },
+        "numberOfRampupSteps": {
+          "type": "number",
+          "description": "if we use rampup, we use at the start time intervals that increases geometrically until we reach the time step target, see function rampupTimesteps."
+        }
+      }
+    }
+  }
 }
