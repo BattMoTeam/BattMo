@@ -57,13 +57,27 @@ testCases = {
             };
 
 % Execute tests
-suite = testsuite(testCases);
+% suite = testsuite(testCases);
 
-% import matlab.unittest.TestSuite;
-% import matlab.unittest.selectors.*;
-% suite = TestSuite.fromClass(?TestRunExamples);
-% selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
-% suite = suite.selectIf(selector);
+
+for itestcase = 1 : numel(testCases)
+
+    testCase = testCases{itestcase};
+    suite =  TestSuite.fromClass(meta.class.fromName(testCase));
+
+    if strcmp(testCase, 'TestRunExamples')
+    
+        selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
+        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryLinearSolve') & selector;
+        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryPrecondTestP2D') & selector;
+        suite = suite.selectIf(~selector);
+    end
+    
+    suites{itestcase} = suite;
+
+end
+
+suite = horzcat(suites{:});
 
 runner = testrunner('textoutput');
 
