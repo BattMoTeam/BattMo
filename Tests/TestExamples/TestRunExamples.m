@@ -46,6 +46,7 @@ classdef TestRunExamples < matlab.unittest.TestCase
     properties
 
         % Scripts that are not yet fully supported
+
         exclude = {'runJellyRollLinearSolve', ...
                    'runSingleParticleSEI'   , ...
                    'runDissElectrolyser'};
