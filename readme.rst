@@ -5,6 +5,10 @@
 .. image:: https://zenodo.org/badge/410005581.svg
    :target: https://zenodo.org/badge/latestdoi/410005581
 
+[![BattMo Tests](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml)
+
+[![BattMo Docs](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml)
+
 The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
 
 **BattMo** offers users a flexible framework for building fully coupled electrochemical-thermal simulations of electrochemical devices using 1D, 2D, or 3D geometries. **BattMo** is implemented in MATLAB and builds on the open-source MATLAB Reservoir Simulation Toolbox (`MRST <https://www.sintef.no/Projectweb/MRST/>`_) developed at SINTEF. MRST provides a solid basis for finite volume grid generation of complex geometries and advanced numerical solvers that enable fast simulations for large systems.
