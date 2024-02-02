@@ -66,11 +66,22 @@ for itestcase = 1 : numel(testCases)
     suite =  TestSuite.fromClass(meta.class.fromName(testCase));
 
     if strcmp(testCase, 'TestRunExamples')
-    
-        selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
-        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryLinearSolve') | selector;
-        selector = HasParameter('Property', 'filename', 'Value', 'runBatteryPrecondTestP2D') | selector;
+
+
+        % Tests that are not supported on githb
+        filenames = {'runJellyRoll'            , ...
+                     'runBatteryLinearSolve'   , ...
+                     'runBatteryPrecondTestP2D', ...
+                     'runSetupModel'           , ...
+                     'runParameterSweep'};
+
+        selector = HasParameter('Property', 'filename', 'Value', filenames{1});
+        for ifile = 2 : numel(filenames)
+            filename = filenames{ifile};
+            selector = HasParameter('Property', 'filename', 'Value', filename) | selector;
+        end
         suite = suite.selectIf(~selector);
+        
     end
     
     suites{itestcase} = suite;
