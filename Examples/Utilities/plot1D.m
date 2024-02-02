@@ -62,10 +62,10 @@ for i = 1 : numel(states)
             end
             
             if (k < 3)
-                plot(submodel.G.cells.centroids(:, 1), var, '* - ')
+                plot(submodel.grid.cells.centroids(:, 1), var, '* - ')
             else
-                iface = all(submodel.G.faces.neighbors > 0, 2); 
-                plot(submodel.G.faces.centroids(iface, 1), var, '* - ')
+                iface = all(submodel.grid.faces.neighbors > 0, 2); 
+                plot(submodel.grid.faces.centroids(iface, 1), var, '* - ')
             end
             
             subtitle(ffield)
@@ -75,7 +75,7 @@ for i = 1 : numel(states)
     
     % plot temperature
     subplot(2, 3, 5);
-    cc = model.G.cells.centroids(:, 1);
+    cc = model.grid.cells.centroids(:, 1);
     vols = model.G.getVolumes();
     plot(cc, state.(thermal).T, '* - ');
     if doFixedTempScale

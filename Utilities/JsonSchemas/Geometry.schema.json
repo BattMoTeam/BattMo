@@ -74,7 +74,7 @@
                 "type" : "number",
                 "description" : "number of layers in the pouch cells"},
               "width" : { "type" : "number"},
-              "height" : { "type" : "number"},
+              "length" : { "type" : "number"},
               "tab" : {
                 "type" : "object",
                 "description" : "parameters for the tabs",
@@ -88,7 +88,7 @@
                     "type" : "object",
                     "description" : "tab parameter for the negative electrode",
                     "properties" : {
-                      "height" : {"type" : "number"},
+                      "length" : {"type" : "number"},
                       "Ny" : {"type" : "number",
                               "description" : "Discretization parameter in the height direction"}
                     }
@@ -97,7 +97,7 @@
                     "type" : "object",
                     "description" : "tab parameter for the negative electrode",
                     "properties" : {
-                      "height" : {"type" : "number"},
+                      "length" : {"type" : "number"},
                       "Ny" : {"type" : "number",
                               "description" : "Discretization parameter in the height direction"}}}}},
               "Electrolyte" : {

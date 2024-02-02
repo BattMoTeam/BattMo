@@ -287,7 +287,7 @@ A geometrical model for a coin cell.
    :header-rows: 1
                  
    * - Component
-     - Name
+     - Key name
      - Thickness
      - Diameter
      - Nl
@@ -329,3 +329,78 @@ A geometrical model for a coin cell.
    * - Discretization number in angular direction
      - :code:`numAngular`
      - 30
+
+
+:battmo:`BatteryGeneratorMultilayerPouch`
+-----------------------------------------
+
+A geometrical model for a multi-layer pouch cell.
+
+.. image:: img/multilayerpouch.png
+           :width: 80%
+
+
+.. list-table:: Parameters for each component : thickness and number of cell (Nl) for a layer, with the values used in the plot above
+   :header-rows: 1
+                 
+   * - Component
+     - Name
+     - Thickness
+     - Nl
+   * - Negative electrode current collector
+     - :code:`NegativeCurrentCollector`
+     - 10 µm
+     - 2
+   * - Negative electrode coating
+     - :code:`NegativeCoating`
+     - 100 µm
+     - 3
+   * - Separator
+     - :code:`Separator`
+     - 50 μm
+     - 3
+   * - Positive electrode coating
+     - :code:`PositiveCoating`
+     - 80 μm
+     - 3
+   * - Positive electrode current collector
+     - :code:`PositiveCurrentCollector`
+     - 10 µm
+     - 2
+   
+.. list-table:: Other parameters, with values used in plot above
+   :header-rows: 1
+                 
+   * - Parameter
+     - Name
+     - Value
+   * - Number of Layers
+     - :code:`nLayers`
+     - 5
+   * - Width of the cell
+     - :code:`width`
+     - 10 cm
+   * - Length of the cell
+     - :code:`length`
+     - 10 cm       
+   * - Discretization number for width
+     - :code:`Electrolyte.Nx`
+     - 2
+   * - Discretization number for length outside the tab
+     - :code:`Electrolyte.Ny`
+     - 2
+   * - Tabs width (same for negative and positive)
+     - :code:`tab.width`
+     - 5 cm       
+   * - Tabs discretization number
+     - :code:`tab.Nx`
+     - 3
+   * - Tab lenght of negative electrode
+     - :code:`tab.NegativeElectrode.length`
+     - 4 cm
+   * - Tab length of positive electrode
+     - :code:`tab.PositiveElectrode.length`
+     - 2 cm       
+
+
+See :battmofile:`json source file<Examples/JsonDataFiles/geometryMultiLayerPouch.json>` for this example.

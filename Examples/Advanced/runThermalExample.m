@@ -30,7 +30,6 @@ model = setupModelFromJson(jsonstruct);
 
 % We index of the faces that are coupled to thermally to the exterior
 extfaceind = model.ThermalModel.couplingTerm.couplingfaces;
-G          = model.ThermalModel.G;
 nf         = model.ThermalModel.G.getNumberOfFaces();
 
 % We create a vector with one value per face with value equal to the external heat transfer coefficient for the external
@@ -113,7 +112,7 @@ legend show
 
 state = states{end}
 figure
-plotCellData(model.ThermalModel.G, ...
+plotCellData(model.ThermalModel.grid, ...
              state.ThermalModel.T + T0);
 colorbar
 title('Temperature / C');

@@ -26,17 +26,8 @@ classdef SubGrid < GenericGrid
         function subG = SubGrid(G, parentGrid, mappings)
         % We initiate the subgrid using a MRST grid with the parentGrids and the mappings
 
-            topology.cells.facePos   = G.cells.facePos;
-            topology.cells.faces     = G.cells.faces;
-            topology.cells.num       = G.cells.num;
-            topology.faces.nodePos   = G.faces.nodePos;
-            topology.faces.nodes     = G.faces.nodes;
-            topology.faces.num       = G.faces.num;
-            topology.faces.neighbors = G.faces.neighbors;
-            topology.nodes.num       = G.nodes.num;
-            topology.griddim         = G.griddim;
-
-            subG.topology   = topology;
+            subG = subG@GenericGrid(G);
+            
             subG.parentGrid = parentGrid;
             subG.mappings   = mappings;
 

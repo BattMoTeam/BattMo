@@ -688,6 +688,18 @@ classdef BaseModel < PhysicalModel
         % Shortcut to setup and retrieve the computational graph plot 
             cgp = ComputationalGraphPlot(model.computationalGraph);
         end
+
+
+        function G = grid(model)
+        % Shorcut to retrieve grid in defaut MRST format, which can be used for plotting
+
+            if isa(model.G, 'GenericGrid')
+                G = model.G.mrstFormat();
+            else
+                G = model.G;
+            end
+            
+        end
         
     end
 

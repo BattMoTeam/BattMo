@@ -1,4 +1,3 @@
-G = model.G;
 
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
@@ -31,35 +30,35 @@ for ind = 1 : numel(states)
     
     subplot(3, 2, 1);
     cla
-    plotCellData(model.(ne).(am).G, state.(ne).(am).phi, plotparams{:});
+    plotCellData(model.(ne).(am).grid, state.(ne).(am).phi, plotparams{:});
     colorbar
     view(viewparam);
     title('phi (negative elde)');
     
     subplot(3, 2, 2);
     cla
-    plotCellData(model.(pe).(am).G, state.(pe).(am).phi, plotparams{:});
+    plotCellData(model.(pe).(am).grid, state.(pe).(am).phi, plotparams{:});
     colorbar
     view(viewparam);
     title('phi (positive elde)');
     
     subplot(3, 2, 3);
     cla
-    plotCellData(model.(ne).(cc).G, state.(ne).(cc).phi, plotparams{:});
+    plotCellData(model.(ne).(cc).grid, state.(ne).(cc).phi, plotparams{:});
     colorbar
     view(viewparam);
     title('phi (negative cc)');
     
     subplot(3, 2, 4);
     cla
-    plotCellData(model.(pe).(cc).G, state.(pe).(cc).phi, plotparams{:});
+    plotCellData(model.(pe).(cc).grid, state.(pe).(cc).phi, plotparams{:});
     colorbar
     view(viewparam);
     title('phi (positive cc)');
     
     subplot(3, 2, 5);
     cla
-    plotCellData(model.(elyte).G, state.(elyte).phi, plotparams{:});
+    plotCellData(model.(elyte).grid, state.(elyte).phi, plotparams{:});
     colorbar
     view(viewparam);
     title('phi (elyte)');

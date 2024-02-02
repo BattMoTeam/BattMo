@@ -46,7 +46,7 @@ import matlab.unittest.TestRunner
 % Setup
 mrstVerbose 'off';
 stopOnError        = false;
-runTestsInParallel = false;
+runTestsInParallel = true;
 doAssertSuccess    = true;
 
 % Define which test cases to run
@@ -57,13 +57,38 @@ testCases = {
             };
 
 % Execute tests
-suite = testsuite(testCases);
+% suite = testsuite(testCases);
 
-% import matlab.unittest.TestSuite;
-% import matlab.unittest.selectors.*;
-% suite = TestSuite.fromClass(?TestRunExamples);
-% selector = HasParameter('Property', 'filename', 'Value', 'runJellyRoll');
-% suite = suite.selectIf(selector);
+
+for itestcase = 1 : numel(testCases)
+
+    testCase = testCases{itestcase};
+    suite =  TestSuite.fromClass(meta.class.fromName(testCase));
+
+    if strcmp(testCase, 'TestRunExamples')
+
+
+        % Tests that are not supported on githb
+        filenames = {'runJellyRoll'            , ...
+                     'runBatteryLinearSolve'   , ...
+                     'runBatteryPrecondTestP2D', ...
+                     'runSetupModel'           , ...
+                     'runParameterSweep'};
+
+        selector = HasParameter('Property', 'filename', 'Value', filenames{1});
+        for ifile = 2 : numel(filenames)
+            filename = filenames{ifile};
+            selector = HasParameter('Property', 'filename', 'Value', filename) | selector;
+        end
+        suite = suite.selectIf(~selector);
+        
+    end
+    
+    suites{itestcase} = suite;
+
+end
+
+suite = horzcat(suites{:});
 
 runner = testrunner('textoutput');
 

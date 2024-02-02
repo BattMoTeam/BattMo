@@ -175,9 +175,9 @@ figure
 plot(time/hour, E, '-'); grid on; xlabel('time  / h'); ylabel('voltage  / V');
 if model.use_thermal
     % Plot half of the cell
-    cells = model.(thermal).G.cells.centroids(:, 1) > 0;
+    cells = model.(thermal).grid.cells.centroids(:, 1) > 0;
     figure
-    plotCellData(model.(thermal).G, states{end}.(thermal).T, cells);
+    plotCellData(model.(thermal).grid, states{end}.(thermal).T, cells);
     colorbar
     view(3), axis square tight
 end
