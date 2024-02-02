@@ -256,8 +256,8 @@ example we use 100 W/m²/s and 1000 W/m²/s, respectively.</p>
 <p>Let us visualize those values. We run the following</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% We index of the faces that are coupled to thermally to the exterior</span>
 <span class="n">extfaceind</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">couplingTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">;</span>
-<span class="n">G</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">G</span><span class="p">;</span>
-<span class="n">nf</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">G</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
+<span class="n">G</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">;</span>
+<span class="n">nf</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="n">G</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
 
 <span class="c">% We create a vector with one value per face with value equal to the external heat transfer coefficient for the external</span>
 <span class="c">% face</span>
@@ -316,7 +316,7 @@ occur through the tabs.</p>
 for the last time step. To do so, we run</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}</span>
 <span class="nb">figure</span>
-<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">             </span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Tabs</span><span class="p">);</span>
 <span class="n">colorbar</span>
 <span class="s">title(&#39;Temperature / C&#39;)</span><span class="p">;</span>

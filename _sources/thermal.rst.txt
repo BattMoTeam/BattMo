@@ -66,8 +66,8 @@ Let us visualize those values. We run the following
 
    % We index of the faces that are coupled to thermally to the exterior
    extfaceind = model.ThermalModel.couplingTerm.couplingfaces;
-   G          = model.ThermalModel.G;
-   nf         = model.ThermalModel.G.faces.num;
+   G          = model.ThermalModel.grid;
+   nf         = G.faces.num;
    
    % We create a vector with one value per face with value equal to the external heat transfer coefficient for the external
    % face
@@ -148,7 +148,7 @@ for the last time step. To do so, we run
           
    state = states{end}
    figure
-   plotCellData(model.ThermalModel.G, ...
+   plotCellData(model.ThermalModel.grid, ...
                 state.ThermalModel.T + Tabs);
    colorbar
    title('Temperature / C');
