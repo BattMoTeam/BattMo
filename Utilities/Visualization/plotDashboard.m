@@ -50,16 +50,16 @@ function [fig] = plotDashboard(model, states, varargin)
         timeBar = [  time(step)/hour, 0; ...
                      time(step)/hour, 1000];
         
-        if model.G.griddim == 1
+        if model.grid.griddim == 1
             
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
             
             switch model.(ne).(co).(am).diffusionModelType
               case 'simple'
-                subplot(2,4,1), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
+                subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
               case 'full'
-                subplot(2,4,1), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -73,7 +73,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,2), plotCellData(model.(elyte).G, states{step}.(elyte).c ./ 1000, 'linewidth', 3);
+            subplot(2,4,2), plotCellData(model.(elyte).grid, states{step}.(elyte).c ./ 1000, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
             set(gca, ...
@@ -86,9 +86,9 @@ function [fig] = plotDashboard(model, states, varargin)
             
             switch model.(pe).(co).(am).diffusionModelType
               case 'simple'
-                subplot(2,4,3), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).(am).c ./ 1000, 'linewidth', 3);
+                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).c ./ 1000, 'linewidth', 3);
               case 'full'
-                subplot(2,4,3), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -126,7 +126,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,5), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).phi, 'linewidth', 3);
+            subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).phi, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Potential  /  V')
             set(gca, ...
@@ -137,7 +137,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,6), plotCellData(model.(elyte).G, states{step}.(elyte).phi, 'linewidth', 3);
+            subplot(2,4,6), plotCellData(model.(elyte).grid, states{step}.(elyte).phi, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Electrolyte Potential  /  V')
             set(gca, ...
@@ -148,7 +148,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,7), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).phi, 'linewidth', 3);
+            subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).phi, 'linewidth', 3);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Potential  /  V')
             set(gca, ...
@@ -182,9 +182,9 @@ function [fig] = plotDashboard(model, states, varargin)
 
             switch model.(ne).(co).(am).diffusionModelType
               case 'simple'
-                subplot(2,4,1), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).(am).c ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).c ./ 1000, 'edgealpha', 0.1);
               case 'full'
-                subplot(2,4,1), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -202,14 +202,14 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
             
             
             
-            subplot(2,4,2), plotCellData(model.(elyte).G, states{step}.(elyte).c ./ 1000, 'edgealpha', 0.1);
+            subplot(2,4,2), plotCellData(model.(elyte).grid, states{step}.(elyte).c ./ 1000, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
@@ -222,16 +222,16 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
 
             switch model.(pe).(co).(am).diffusionModelType
               case 'simple'
-                subplot(2,4,3), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).(am).c ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).c ./ 1000, 'edgealpha', 0.1);
               case 'full'
-                subplot(2,4,3), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).(am).(sd).c ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).(sd).c ./ 1000, 'edgealpha', 0.1);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -248,7 +248,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
@@ -269,7 +269,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
             
-            subplot(2,4,5), plotCellData(model.(ne).(co).G, states{step}.(ne).(co).phi, 'edgealpha', 0.1);
+            subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).phi, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Negative Electrode Potential  /  V')
             colormap(gca, crameri('lapaz'))
@@ -282,12 +282,12 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
             
-            subplot(2,4,6), plotCellData(model.(elyte).G, states{step}.(elyte).phi, 'edgealpha', 0.1);
+            subplot(2,4,6), plotCellData(model.(elyte).grid, states{step}.(elyte).phi, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Electrolyte Potential  /  V')
             colormap(gca, crameri('lapaz'))
@@ -300,12 +300,12 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
             
-            subplot(2,4,7), plotCellData(model.(pe).(co).G, states{step}.(pe).(co).phi, 'edgealpha', 0.1);
+            subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).phi, 'edgealpha', 0.1);
             xlabel(gca, 'Position  /  m')
             title(gca, 'Positive Electrode Potential  /  V')
             colormap(gca, crameri('lapaz'))
@@ -319,7 +319,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 'XColor'   , style.fontColor      , ...
                 'YColor'   , style.fontColor      , ...
                 'GridColor', style.fontColor)
-            if model.G.griddim == 3
+            if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
@@ -383,16 +383,16 @@ function [fig] = plotDashboard(model, states, varargin)
                 phimax_pe = max(max(states{i}.(pe).(co).phi));
                 phimin_pe = min(min(states{i}.(pe).(co).phi));
                 
-                xmin = min(model.(elyte).G.nodes.coords(:,1));
-                xmax = max(model.(elyte).G.nodes.coords(:,1));
-                if model.G.griddim == 2
-                    ymin = min(model.(elyte).G.nodes.coords(:,2));
-                    ymax = max(model.(elyte).G.nodes.coords(:,2));
-                elseif model.G.griddim == 3
-                    ymin = min(model.(elyte).G.nodes.coords(:,2));
-                    ymax = max(model.(elyte).G.nodes.coords(:,2));
-                    zmin = min(model.(elyte).G.nodes.coords(:,3));
-                    zmax = max(model.(elyte).G.nodes.coords(:,3));
+                xmin = min(model.(elyte).grid.nodes.coords(:,1));
+                xmax = max(model.(elyte).grid.nodes.coords(:,1));
+                if model.grid.griddim == 2
+                    ymin = min(model.(elyte).grid.nodes.coords(:,2));
+                    ymax = max(model.(elyte).grid.nodes.coords(:,2));
+                elseif model.grid.griddim == 3
+                    ymin = min(model.(elyte).grid.nodes.coords(:,2));
+                    ymax = max(model.(elyte).grid.nodes.coords(:,2));
+                    zmin = min(model.(elyte).grid.nodes.coords(:,3));
+                    zmax = max(model.(elyte).grid.nodes.coords(:,3));
                 end
             else
                 
@@ -446,13 +446,13 @@ function [fig] = plotDashboard(model, states, varargin)
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single'); 
                 style.fontSize = 10;
             end
-            if model.G.griddim == 1
+            if model.grid.griddim == 1
 
                 switch model.(ne).(co).(am).diffusionModelType
                   case 'simple'
-                    subplot(2,4,1), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
+                    subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
                   case 'full'
-                    subplot(2,4,1), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                    subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
                   otherwise
                     error('diffusionModelType not recognized');
                 end
@@ -469,7 +469,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,2), plotCellData(model.(elyte).G, states{i}.(elyte).c ./ 1000, 'linewidth', 3);
+                subplot(2,4,2), plotCellData(model.(elyte).grid, states{i}.(elyte).c ./ 1000, 'linewidth', 3);
 
                     
                 xlabel(gca, 'Position  /  m')
@@ -487,9 +487,9 @@ function [fig] = plotDashboard(model, states, varargin)
 
                 switch model.(pe).(co).(am).diffusionModelType
                   case 'simple'
-                    subplot(2,4,3), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).(am).c ./ 1000, 'linewidth', 3);
+                    subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).(am).c ./ 1000, 'linewidth', 3);
                   case 'full'
-                    subplot(2,4,3), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                    subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
                   otherwise
                     error('diffusionModelType not recognized');
                 end
@@ -522,7 +522,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,5), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).phi, 'linewidth', 3);
+                subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).phi, 'linewidth', 3);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -535,7 +535,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,6), plotCellData(model.(elyte).G, states{i}.(elyte).phi, 'linewidth', 3);
+                subplot(2,4,6), plotCellData(model.(elyte).grid, states{i}.(elyte).phi, 'linewidth', 3);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Electrolyte Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -548,7 +548,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,7), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).phi, 'linewidth', 3);
+                subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).phi, 'linewidth', 3);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
@@ -583,9 +583,9 @@ function [fig] = plotDashboard(model, states, varargin)
 
                 switch model.(ne).(co).(am).diffusionModelType
                   case 'simple'
-                    subplot(2,4,1), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).(am).c ./ 1000, 'edgealpha', 0.1);
+                    subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).(am).c ./ 1000, 'edgealpha', 0.1);
                   case 'full'
-                    subplot(2,4,1), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                    subplot(2,4,1), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
                   otherwise
                     error('diffusionModelType not recognized');
                 end
@@ -603,13 +603,13 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
 
-                subplot(2,4,2), plotCellData(model.(elyte).G, states{i}.(elyte).c ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,2), plotCellData(model.(elyte).grid, states{i}.(elyte).c ./ 1000, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));
@@ -623,16 +623,16 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
                 switch model.(pe).(co).(am).diffusionModelType
                   case 'simple'
-                    subplot(2,4,3), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).(am).c ./ 1000, 'edgealpha', 0.1);
+                    subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).(am).c ./ 1000, 'edgealpha', 0.1);
                   case 'full'
-                    subplot(2,4,3), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
+                    subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
                   otherwise
                     error('diffusionModelType not recognized');
                 end
@@ -650,7 +650,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
@@ -671,7 +671,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-                subplot(2,4,5), plotCellData(model.(ne).(co).G, states{i}.(ne).(co).phi, 'edgealpha', 0.1);
+                subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).phi, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Negative Electrode Potential  /  V')
                 colormap(gca, crameri('lapaz'))
@@ -685,12 +685,12 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
-                subplot(2,4,6), plotCellData(model.(elyte).G, states{i}.(elyte).phi, 'edgealpha', 0.1);
+                subplot(2,4,6), plotCellData(model.(elyte).grid, states{i}.(elyte).phi, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Electrolyte Potential  /  V')
                 colormap(gca, crameri('lapaz'))
@@ -704,12 +704,12 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
-                subplot(2,4,7), plotCellData(model.(pe).(co).G, states{i}.(pe).(co).phi, 'edgealpha', 0.1);
+                subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).phi, 'edgealpha', 0.1);
                 xlabel(gca, 'Position  /  m')
                 title(gca, 'Positive Electrode Potential  /  V')
                 colormap(gca, crameri('lapaz'))
@@ -723,7 +723,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'XColor'   , style.fontColor      , ...
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
-                if model.G.griddim == 3
+                if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
