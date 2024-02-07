@@ -142,7 +142,7 @@ classdef Battery < BaseModel
                 elde = eldes{ielde};
 
                 switch model.(elde).(co).active_material_type
-                  case 'default'
+                  case {'default', 'sei'}
                     ams = {am};
                   case 'composite'
                     ams = {am1, am2};
@@ -312,7 +312,7 @@ classdef Battery < BaseModel
                 elde = eldes{ielde};
 
                 switch model.(elde).(co).active_material_type
-                  case 'default'
+                  case {'default', 'sei'}
                     ams = {am};
                   case 'composite'
                     ams = {am1, am2};
@@ -1789,7 +1789,7 @@ classdef Battery < BaseModel
 
                 switch model.(elde).(co).active_material_type
 
-                  case 'default'
+                  case {'default', 'sei'}
 
                     am = 'ActiveMaterial';
 

@@ -33,7 +33,7 @@ function [capacity, capacities] = computeCellCapacity(model)
 
         switch model.(elde).(co).active_material_type
 
-          case 'default'
+          case {'default', 'sei'}
 
             am  = 'ActiveMaterial';
 

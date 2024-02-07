@@ -98,8 +98,8 @@ classdef BatteryInputParams < InputParams
                 inputparams.(thermal) = inputparams.(thermal).validateInputParams();
 
                 % for the moment we do not support thermal simulation with composite material. We check for that here
-                isok = strcmp(inputparams.(ne).(co).active_material_type, 'default');
-                isok = isok & strcmp(inputparams.(ne).(co).active_material_type, 'default');
+                isok = ismember(inputparams.(ne).(co).active_material_type, {'default', 'sei'});
+                isok = isok & ismember(inputparams.(pe).(co).active_material_type, {'default', 'sei'});
                 assert(isok, 'We do not support for the moment thermal simulation for composite materials');
 
             end

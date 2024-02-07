@@ -58,7 +58,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             fn = @SEIActiveMaterial.Interface.updateEtaWithEx;
             % Comment about the syntax used below : Here we use the more cumbersome syntax (using VarName)
-            % because we use a different model thant the current model in the definition of the propfunction. The
+            % because we use a different model than the current model in the definition of the propfunction. The
             % handy-syntax could have been implemented here too (but this has not been done...)
             varname = VarName({itf}, 'eta');
             inputvarnames = {VarName({itf}, 'phiElectrolyte'), ...

@@ -28,9 +28,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
     methods
 
         function model = CompositeActiveMaterial(inputparams)
-        %
-        % ``inputparams`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
-        %
+
             model = model@ElectronicComponent(inputparams);
 
             fdnames = {'volumeFraction'        , ...

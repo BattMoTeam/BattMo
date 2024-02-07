@@ -17,10 +17,16 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         %% Standard parameters
 
-        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed in wet or calendared state (meaning including the volume of the pores)
-        bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
+        effectiveDensity % the mass density of the material (symbol: rho). Important : the density is computed in wet or
+                         % calendared state (meaning including the volume of the pores)
 
+        bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
+        
+        active_material_type % Active material type string with one of following values:
+                             % - 'default'   (only one particle type : uses ActiveMaterial model)
+                             % - 'composite' (two different particles: uses CompositeActiveMaterial)
+                             % - 'sei'       (one particle with sei layer: uses SEIActiveMaterial)
+        
         %% Advanced parameters
 
         volumeFractions
@@ -49,10 +55,16 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             end
 
             switch inputparams.active_material_type
+
               case 'default'
 
                 am = 'ActiveMaterial';
                 inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+
+              case 'sei'
+
+                am = 'ActiveMaterial';
+                inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
 
               case 'composite'
 

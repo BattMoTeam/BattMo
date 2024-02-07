@@ -7,7 +7,6 @@ clear all
 close all
 clc
 
-
 %% Import the required modules from MRST
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
@@ -52,7 +51,7 @@ cc      = 'CurrentCollector';
 % Here, we setup the 1D computational mesh that will be used for the
 % simulation. The required discretization parameters are already included
 % in the class BatteryGenerator1D. 
-gen = BatteryGenerator1D();
+gen = BatteryGeneratorP2D();
 
 % Now, we update the paramobj with the properties of the mesh. 
 paramobj = gen.updateBatteryInputParams(paramobj);
