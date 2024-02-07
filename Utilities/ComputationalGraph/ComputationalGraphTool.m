@@ -580,14 +580,21 @@ classdef ComputationalGraphTool
             rootnames = nodenames(all(A == 0, 1));
             staticnames = cgt.getStaticVarNames();
 
-            fprintf('Root variables \n');
-
             ind = ismember(rootnames, staticnames);
-            rootnames(~ind)
+            rootind = find(~ind);
+
+            cgt.printHeader('Root Variables', numel(rootind));
+
+            for irind = 1 : numel(rootind)
+                fprintf('%s\n', rootnames{rootind(irind)});
+            end
 
             if nnz(ind)
-                fprintf('static variables \n');
-                rootnames(ind)
+                staticind = find(ind);
+                cgt.printHeader('Static Variables', numel(staticind));
+                for isind = 1 : numel(staticind)
+                    fprintf('%s\n', rootnames{staticind(isind)});
+                end
             end
 
         end
@@ -608,12 +615,17 @@ classdef ComputationalGraphTool
                 tailinds = intersect(inds, tailinds);
             end
 
-            fprintf('Tail variables \n');
-            nodenames(tailinds)
+            cgt.printHeader('Tail Variables', numel(tailinds));
+            
+            for itail = 1 : numel(tailinds)
+                fprintf('%s\n', nodenames{tailinds(itail)});
+            end
 
             if nargin == 1
-                fprintf('Extra Variables (do not enter in residual evaluation)\n')
-                nodenames(extravarnameinds)
+                cgt.printHeader('Extra Variables (do not enter in residual evaluation)', numel(extravarnameinds));
+                for ievar = 1 : numel(extravarnameinds)
+                    fprintf('%s\n', nodenames{extravarnameinds(ievar)});
+                end
             end
 
         end
@@ -628,8 +640,11 @@ classdef ComputationalGraphTool
             fprintf('Detached variables \n');
             ind1 = all(A == 0, 1);
             ind2 = all(A' == 0, 1);
-            nodenames(ind1&ind2)
+            detached_nodenames = nodenames(ind1&ind2);
 
+            for idnodename = 1 : numel(detached_nodenames)
+                fprintf('%s\n', detached_nodenames(idnodename));
+            end
         end
 
         function primvarnames = getPrimaryVariableNames(cgt)
@@ -784,10 +799,13 @@ classdef ComputationalGraphTool
 
         end
 
+        function printHeader(headertxt, n)
+        % Minor utility function used in this class to print a header with a number
+            str = sprintf('\n%d %s', n, headertxt);
+            fprintf('%s:\n', str);
+            fprintf('%s\n', repmat('-', length(str), 1));
+        end
     end
-
-
-
 
 end
 
