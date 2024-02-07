@@ -101,7 +101,7 @@ classdef ComputationalGraphTool
             cgt.isok = true;
         end
 
-        function [varnames, varnameinds, propfuncinds, distance] = getDependencyList(cgt, varname)
+        function [varnames, varnameinds, propfuncinds, levels] = getDependencyList(cgt, varname)
 
             A = cgt.adjencyMatrix;
 
@@ -113,17 +113,12 @@ classdef ComputationalGraphTool
             end
 
             varnameind = cgt.getVarNameIndex(varname);
+            
+            [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A');
 
-            distance = dfs(A, varnameind);
-
-            varnameinds = find(distance >= 0);
-            distance    = distance(distance >= 0);
-            [distance, ia] = sort(distance);
-            varnameinds = varnameinds(ia);
-
-            propfuncinds = max(A(:, varnameinds), [], 1);
-
-            varnames = cgt.varNameList(varnameinds);
+            varnameinds = propvarnameinds;
+            levels      = propdeplevels;
+            varnames    = cgt.varNameList(varnameinds);
 
         end
 
@@ -182,7 +177,7 @@ classdef ComputationalGraphTool
 
             varnameind = cgt.getVarNameIndex(varname);
 
-            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds(varnameind, A);
+            [~, propfuncinds, propvarnameinds, ~, staticinds, ~] = getDependencyVarNameInds(varnameind, A);
 
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
