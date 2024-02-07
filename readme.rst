@@ -5,9 +5,12 @@
 .. image:: https://zenodo.org/badge/410005581.svg
    :target: https://zenodo.org/badge/latestdoi/410005581
 
-[![BattMo Tests](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml)
+[![Tests](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml)
 
-[![BattMo Docs](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml)
+[![Docs](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml)
+
+[![Running runGitHubTests](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml)
+[![Sphinx: Render docs](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml/badge.svg)](https://github.com/BattMoTeam/BattMo/actions/workflows/doc.yml)
 
 The Battery Modelling Toolbox (**BattMo**) is a resource for continuum modelling of electrochemical devices in MATLAB. The initial development features a pseudo X-dimensional (PXD) framework for the Doyle-Fuller-Newman model of lithium-ion battery cells. However, the development plan for BattMo includes extensions to other battery chemistries (e.g. metal-air) and eventually hydrogen systems (i.e. electrolyzers and fuel cells).
 
