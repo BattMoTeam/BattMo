@@ -1453,7 +1453,9 @@ classdef Battery < BaseModel
             am2   = 'ActiveMaterial2';
             itf   = 'Interface';
             cc    = 'CurrentCollector';
-
+            sr    = 'SideReaction';
+            sei   = 'SolidElectrodeInterface';
+            
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
@@ -1465,9 +1467,13 @@ classdef Battery < BaseModel
 
             for ind = 1 : numel(eldes)
                 elde = eldes{ind};
-
+                update_sei = false;
+                
                 switch model.(elde).(co).active_material_type
                   case 'default'
+                    ams = {am};
+                  case 'sei'
+                    update_sei = true;
                     ams = {am};
                   case 'composite'
                     ams = {am1, am2};
@@ -1481,6 +1487,10 @@ classdef Battery < BaseModel
                     state.(elde).(co).(amc).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
                     state.(elde).(co).(amc).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
 
+                    if update_sei
+                        state.(elde).(co).(amc).(sr).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
+                    end
+                    
                 end
 
             end
