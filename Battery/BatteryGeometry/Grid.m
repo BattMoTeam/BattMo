@@ -874,8 +874,13 @@ classdef Grid < GenericGrid
 
             cellfacedist = abs(m.cellfacedist2*faceCentroids - m.cellfacedist1*cellCentroids);
 
-            tPFVgeometry.hT = 1./cellfacedist*faceArea;
+            hT = 1./cellfacedist*faceArea;
 
+            t  = grid.helpers.trans;
+            T = 1./(t.S*(1./(t.P*hT)));
+
+            tPFVgeometry.hT       = hT;
+            tPFVgeometry.T        = T;
             tPFVgeometry.faceArea = faceArea;
 
             tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
@@ -888,7 +893,7 @@ classdef Grid < GenericGrid
             tp = grid.topology;
             m  = grid.matrixOperators;
             v  = grid.vectorHelpers;
-
+            
             n = tp.griddim;
 
             nodecoords_facenode = m.nodecoords_facenode*nodecoords;
@@ -953,8 +958,15 @@ classdef Grid < GenericGrid
             dscaln = grid.applyProduct(m.dscaln, d, cellfaceNormals);
             dsq    = grid.applyProduct(m.dsq, d, d);
 
-            tPFVgeometry.hT = dscaln./dsq;
+            hT = dscaln./dsq;
 
+            t  = grid.helpers.trans;
+            T = 1./(t.S*(1./(t.P*hT)));
+
+            tPFVgeometry.hT = hT;
+            tPFVgeometry.T  = T;
+            
+            
             tPFVgeometry = TwoPointFiniteVolumeGeometry(tPFVgeometry);
 
         end

@@ -101,8 +101,11 @@ classdef ComputationalGraphTool
             cgt.isok = true;
         end
 
-        function [varnames, varnameinds, propfuncinds, levels] = getDependencyList(cgt, varname)
-
+        function [varnames, varnameinds, propfuncinds, levels] = getDependencyList(cgt, varname, direction)
+        % dependency direction can be
+        % - 'upwards' for upwards in the graph
+        % - 'downwards' for downwards in the graph
+            
             A = cgt.adjencyMatrix;
 
             % for cell-valued variable pick-up a valid index
@@ -113,21 +116,46 @@ classdef ComputationalGraphTool
             end
 
             varnameind = cgt.getVarNameIndex(varname);
-            
-            [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A');
 
+            switch direction
+              case 'upwards'
+                [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A);
+              case 'downwards'
+                [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A');
+              otherwise
+                error('direction not recognized')
+            end
+            
             varnameinds = propvarnameinds;
             levels      = propdeplevels;
             varnames    = cgt.varNameList(varnameinds);
 
         end
 
-        function printDependencyList(cgt, varname)
-        % input varname is either
-        %     - a VarName instance
-        %     - a cell which then uses shortcuts for VarName (see implementation below)
-        %     - a string giving a regexp. It will be used to select varnames by the string name
+        function printChildDependencyList(cgt, varname)
+            
+            cgt.printDependencyList(varname, 'downwards');
+            
+        end
+        
+        function printParentDependencyList(cgt, varname)
+            
+            cgt.printDependencyList(varname, 'upwards');
 
+        end
+
+        function printDependencyList(cgt, varname, direction)
+        % input varname is either
+        %  - a VarName instance
+        %  - a cell which then uses shortcuts for VarName (see implementation below)
+        %  - a string giving a regexp. It will be used to select varnames by the string name
+        %
+        % dependency direction can be
+        % - 'upwards' for upwards in the graph
+        % - 'downwards' for downwards in the graph
+        %
+        % Prints the dependency list of the variable given by varname
+            
             nodenames = cgt.nodenames;
 
             if isa(varname, 'VarName')
@@ -149,7 +177,7 @@ classdef ComputationalGraphTool
                 error('input varname not recognized');
             end
 
-            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname);
+            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname, direction);
 
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);

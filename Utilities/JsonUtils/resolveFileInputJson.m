@@ -1,4 +1,6 @@
 function jsonstruct = resolveFileInputJson(jsonstruct)
+% Parse the json struct, looking for key "isFile" and replace the object there with the content of "filename" that should be given together with "isFile".
+% We can give several filenames using the key "filenames" and they will be merged.
 % Note that (for the moment), we do not resolve file name if they are included in json arrays (only those included in objects)
 
 
