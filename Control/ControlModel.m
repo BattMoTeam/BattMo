@@ -129,6 +129,22 @@ classdef ControlModel < BaseModel
             
         end
 
+        function schedule = setupSchedule(model, jsonstruct)
+        % Convenience function to setup schedule from main jsonstruct with property TimeStepping
+            
+            if isfield(jsonstruct, 'TimeStepping')
+                timeSteppingParams = jsonstruct.TimeStepping;
+            else
+                timeSteppingParams = [];
+            end
+
+            step    = model.setupScheduleStep(timeSteppingParams);
+            control = model.setupScheduleControl();
+
+            schedule = struct('step', step, ...
+                              'control', control);
+            
+        end
         
     end
     
