@@ -33,15 +33,25 @@ classdef FlatJsonViewer
         end
 
 
-        function print(fjv, filterdesc)
+        function print(fjv, varargin)
 
-            if nargin > 1
-                fjv = fjv.filter(filterdesc);
+            opt = struct('filter', [], ...
+                         'filename', []);
+
+            opt = merge_options(opt, varargin{:});
+            
+            if ~isempty(opt.filter)
+                fjv = fjv.filter(opt.filterdesc);
             end
             
-            cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
+            T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
+
+            if ~isempty(opt.filename)
+                writetable(T, opt.filename);
+            end
             
         end
+
 
         function sortedfjv = sort(fjv, orderdesc)
 
