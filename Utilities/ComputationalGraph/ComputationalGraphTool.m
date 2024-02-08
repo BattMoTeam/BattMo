@@ -436,7 +436,9 @@ classdef ComputationalGraphTool
             fnname = regexp(fnname, "\.(.*)", 'tokens');
             fnname = fnname{1}{1};
             fnname = sprintf('%s([])', fnname);
-            fnname = strjoin({mn, fnname}, '.');
+            if ~isempty(mn)
+                fnname = strjoin({mn, fnname}, '.');
+            end
             fnname = sprintf('cgt.model.%s', fnname);
 
             try
