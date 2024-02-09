@@ -39,9 +39,10 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             model = model.registerVarNames(varnames);
 
+            model = model.setAsStaticVarName({sei, 'cExternal'});
+            
             if model.isRootSimulationModel
-                model = model.setAsStaticVarNames({{sei, 'cExternal'}, ...
-                                                   {sr, 'phiElectrolyte'}});
+                model = model.setAsStaticVarNames({sr, 'phiElectrolyte'});
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
