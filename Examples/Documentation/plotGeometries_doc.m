@@ -11,13 +11,13 @@ if doplot.illustration1D
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
-    paramobj = BatteryInputParams(jsonstruct_material);
+    inputparams = BatteryInputParams(jsonstruct_material);
 
     gen = FakeBatteryGeneratorP2D_doc();
 
-    paramobj = gen.updateBatteryInputParams(paramobj);
+    inputparams = gen.updateBatteryInputParams(inputparams);
 
-    model = Battery(paramobj);
+    model = Battery(inputparams);
 
     plotBatteryGrid(model);
     
@@ -30,13 +30,13 @@ if doplot.illustration3D
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
-    paramobj = BatteryInputParams(jsonstruct_material);
+    inputparams = BatteryInputParams(jsonstruct_material);
 
     gen = BatteryGeneratorP4D();
 
-    paramobj = gen.updateBatteryInputParams(paramobj);
+    inputparams = gen.updateBatteryInputParams(inputparams);
 
-    model = Battery(paramobj);
+    model = Battery(inputparams);
 
     plotBatteryGrid(model);
     
