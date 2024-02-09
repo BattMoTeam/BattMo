@@ -52,11 +52,9 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 %%  Initialize the battery model. 
 % The battery model is initialized by sending paramobj to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = GenericBattery(paramobj);
 
 cgt = model.cgt;
-
-return
 
 %% The control is used to set up the schedule
 
@@ -80,7 +78,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 model.verbose = true;
 
 %% Run the simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
@@ -89,4 +87,71 @@ time = cellfun(@(x) x.time, states);
 E    = cellfun(@(x) x.Control.E, states); 
 I    = cellfun(@(x) x.Control.I, states);
 
+plot(time, E);
+
+states1 = states;
+
+%%
+
+paramobj.(ctrl) = CCChargeControlModelInputParams(jsonstruct.(ctrl));
+paramobj = paramobj.validateInputParams();
+
+model = GenericBattery(paramobj);
+
+schedule = model.(ctrl).setupSchedule(jsonstruct);
+
+%% Setup the initial state of the model
+% The initial state of the model is setup using the model.setupInitialState() method.
+
+initstate = states1{end};
+initstate.time = 0;
+
+%% Run the simulation
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+%% Process output and recover the output voltage and current from the output states.
+
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+time = cellfun(@(x) x.time, states); 
+E    = cellfun(@(x) x.Control.E, states); 
+I    = cellfun(@(x) x.Control.I, states);
+
+figure
+plot(time, E);
+
+states2 = states;
+
+for istate = 1 : numel(states2)
+    states2{istate}.time = states2{istate}.time + states1{end}.time;
+end
+
+%%
+
+
+states = vertcat(states1, states2);
+
+for istate = 1 : numel(states)
+    states{istate} = model.addVariables(states{istate});
+end
+
+%%
+
+time = cellfun(@(x) x.time, states); 
+E    = cellfun(@(x) x.Control.E, states); 
+I    = cellfun(@(x) x.Control.I, states);
+
+figure
+plot(time, E)
+
+figure
+plot(time, I)
+
+%%
+
+delta = cellfun(@(state) state.(ne).(co).(am).(sei).delta(end), states);
+
+% figure
+hold on
+plot(time, delta)
 
