@@ -369,7 +369,8 @@ classdef GenericBattery < BaseModel
                       case 'simple'
 
                         scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, 1/F};
-                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, dt./(F*battery.(elde).(co).G.getVolumes())};
+                        dt = 1; % dummy value, just to remind us of the form of the scaling
+                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, dt./(F*model.(elde).(co).G.getVolumes())};
                         
                       case 'full'
 
