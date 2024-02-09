@@ -334,7 +334,9 @@ classdef GenericBattery < BaseModel
             sd      = "SolidDiffusion";
             thermal = 'ThermalModel';
             ctrl    = 'Control';
-
+            sr      = 'SideReaction';
+            sei     = 'SolidElectrodeInterface';
+            
             eldes = {ne, pe};
 
             F = model.con.F;
@@ -391,6 +393,34 @@ classdef GenericBattery < BaseModel
                         error('diffusionModelType not recognized');
 
                     end
+
+                    if is_sei_present
+
+                        % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
+                        % scaling for the standalone model SEIActiveMaterial for the SEI parts.
+                        
+                        coefref = 1/scalingcoef;
+                        
+                        rp  = model.(elde).(co).(am).(sd).particleRadius;
+                        vsa = model.(elde).(co).(am).(sd).volumetricSurfaceArea;
+                        scalingcoef = vsa*(4*pi*rp^3/3);
+                        
+                        coefref = coefref/scalingcoef;
+
+                        Mw  = model.(elde).(co).(am).(sei).molecularWeight;
+                        rho = model.(elde).(co).(am).(sei).density;
+                        scalingcoef = 0.5*Mw/rho;
+
+                        scalings{end + 1} = {{elde, co, am, sei, 'widthEq'}, scalingcoef*coefref};
+
+                        deltaref = 1*nano*meter;
+                        scalingcoef = deltaref;
+                        
+                        scalings{end + 1} = {{elde, co, am, sei, 'interfaceBoundaryEq'}, coefref*scalingcoef};
+                        scalings{end + 1} = {{elde, co, am, sei, 'massCons'}, coefref*scalingcoef};
+                        
+                    end
+                    
                 end
             end
 
