@@ -42,7 +42,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             model = model.setAsStaticVarName({sei, 'cExternal'});
             
             if model.isRootSimulationModel
-                model = model.setAsStaticVarNames({sr, 'phiElectrolyte'});
+                model = model.setAsStaticVarName({sr, 'phiElectrolyte'});
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
@@ -236,9 +236,10 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
+            cleanState.(sei).cExternal     = state.(sei).cExternal;
+
             if model.isRootSimulationModel
                 
-                cleanState.(sei).cExternal     = state.(sei).cExternal;
                 cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
 
             end
