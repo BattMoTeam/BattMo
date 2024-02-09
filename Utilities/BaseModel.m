@@ -625,7 +625,7 @@ classdef BaseModel < PhysicalModel
                     coef = scaling{2};
 
                     val = model.getProp(state, name);
-                    val = 1/coef*val;
+                    val = 1./coef.*val;
 
                     state = model.setProp(state, name, val);
                     
