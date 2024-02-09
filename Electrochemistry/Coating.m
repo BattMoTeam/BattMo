@@ -539,6 +539,15 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function state = updateSideReactionPhi(model, state)
+
+            am  = 'ActiveMaterial';
+            sr = 'SideReaction';
+
+            state.(am).(sr).phiElectrode = state.phi;
+            
+        end
+        
         function state = dispatchCompositeTemperature(model, state)
 
             am1 = 'ActiveMaterial1';
