@@ -584,6 +584,9 @@ classdef GenericBattery < BaseModel
 
             if nargin < 2 | isempty(jsonstruct)
                 jsonstruct.Electrolyte.initialConcentration = model.Electrolyte.species.nominalConcentration;
+                if ~isempty(model.Electrolyte.nominalEthyleneCarbonateConcentration)
+                    jsonstruct.Electrolyte.initialEthyleneCarbonateConcentration = model.Electrolyte.nominalEthyleneCarbonateConcentration;
+                end
             end
 
             nc = model.G.getNumberOfCells();
