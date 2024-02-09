@@ -5,13 +5,14 @@
   "use_thermal": false,
   "include_current_collectors": false,
   "Control": {
-    "controlPolicy": "CCDischarge",
-    "rampupTime": 0.1,
+    "controlPolicy": "CCCV",
     "CRate": 1,
-    "lowerCutoffVoltage": 2.4,
+    "lowerCutoffVoltage": 3,
     "upperCutoffVoltage": 4.1,
+    "numberOfCycles": 3,
     "dIdtLimit": 0.01,
-    "dEdtLimit": 0.01
+    "dEdtLimit": 0.01,
+    "initialControl" : "discharging"
   },
   "NegativeElectrode": {
     "Coating": {
