@@ -12,17 +12,10 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the paramobj object.
 
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite_sei.json');
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
 elyte   = 'Electrolyte';
@@ -46,13 +39,13 @@ sei     = 'SolidElectrodeInterface';
 % in the class BatteryGenerator1D. 
 gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the mesh. 
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the mesh. 
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%  Initialize the battery model. 
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = GenericBattery(paramobj);
+model = GenericBattery(inputparams);
 
 cgt = model.cgt;
 
@@ -87,71 +80,31 @@ time = cellfun(@(x) x.time, states);
 E    = cellfun(@(x) x.Control.E, states); 
 I    = cellfun(@(x) x.Control.I, states);
 
-plot(time, E);
-
-states1 = states;
-
-%%
-
-paramobj.(ctrl) = CCChargeControlModelInputParams(jsonstruct.(ctrl));
-paramobj = paramobj.validateInputParams();
-
-model = GenericBattery(paramobj);
-
-schedule = model.(ctrl).setupSchedule(jsonstruct);
-
-%% Setup the initial state of the model
-% The initial state of the model is setup using the model.setupInitialState() method.
-
-initstate = states1{end};
-initstate.time = 0;
-
-%% Run the simulation
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-%% Process output and recover the output voltage and current from the output states.
-
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-time = cellfun(@(x) x.time, states); 
-E    = cellfun(@(x) x.Control.E, states); 
-I    = cellfun(@(x) x.Control.I, states);
-
-figure
-plot(time, E);
-
-states2 = states;
-
-for istate = 1 : numel(states2)
-    states2{istate}.time = states2{istate}.time + states1{end}.time;
-end
-
-%%
-
-
-states = vertcat(states1, states2);
-
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
 
-%%
-
-time = cellfun(@(x) x.time, states); 
-E    = cellfun(@(x) x.Control.E, states); 
-I    = cellfun(@(x) x.Control.I, states);
+figure
+plot(time/hour, E);
+title('Voltage / V')
+xlabel('Time / h')
 
 figure
-plot(time, E)
+plot(time/hour, I);
+title('Current / A')
+xlabel('Time / h')
 
 figure
-plot(time, I)
-
-%%
+hold on
 
 delta = cellfun(@(state) state.(ne).(co).(am).(sei).delta(end), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{max}')
 
-% figure
-hold on
-plot(time, delta)
+delta = cellfun(@(state) state.(ne).(co).(am).(sei).delta(1), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{min}')
+
+title('SEI thickness in negative electrode/ nm')
+xlabel('Time / h')
+
+legend show
 
