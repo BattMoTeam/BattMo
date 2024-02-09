@@ -56,10 +56,11 @@ classdef CcCvControlModel < ControlModel
             % - CV_charge2
             varnames{end + 1} = 'ctrlType';
             % Variable to store number of cycles
-            varnames{end + 1} = 'nCycles';
+            varnames{end + 1} = 'numberOfCycles';
             model = model.registerVarNames(varnames);
 
-            model = model.setAsStaticVarName('nCycles');
+            model = model.setAsStaticVarName('numberOfCycles');
+            model = model.setAsExtraVarName('numberOfCycles');
             
             fn = @CcCvControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
@@ -266,7 +267,7 @@ classdef CcCvControlModel < ControlModel
                 totalTime = params.totalTimes;
             else
                 if ~isempty(ncycles)
-                    warning('Both the total time and the number of cycles are given.\nWe do not use the given total time value but compute it instead from the number of cycles.');
+                    warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
                 end
                 totalTime = 2*ncycles*1.1*(1*hour/CRate);
             end
