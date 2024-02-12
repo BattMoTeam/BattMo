@@ -188,43 +188,6 @@ classdef Coating < ElectronicComponent
 
             end
 
-            %% We setup the thermal parameters
-
-            if model.use_thermal
-
-                %% We setup the thermal conductivities
-
-                if isempty(model.thermalConductivity)
-                    bg = model.bruggemanCoefficient;
-                    thermalConductivity = 0;
-                    for icomp = 1 : numel(compnames)
-                        compname = compnames{icomp};
-                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
-                    end
-                    model.thermalConductivity = thermalConductivity;
-                end
-
-                if isempty(model.effectiveThermalConductivity)
-                    bg = model.bruggemanCoefficient;
-                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
-                end
-
-                %% We setup the thermal capacities
-
-                if isempty(model.specificHeatCapacity)
-                    specificHeatCapacity = 0;
-                    for icomp = 1 : numel(compnames)
-                        compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + inputparams.(compname).massFraction*inputparams.(compname).specificHeatCapacity;
-                    end
-                    model.specificHeatCapacity = specificHeatCapacity;
-                end
-
-                if isempty(model.effectiveVolumetricHeatCapacity)
-                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.effectiveDensity*model.specificHeatCapacity;
-                end
-
-            end
 
             %% Setup the submodels
 
@@ -276,6 +239,47 @@ classdef Coating < ElectronicComponent
             end
 
 
+            %% We setup the thermal parameters
+
+            if model.use_thermal
+
+                %% We setup the thermal conductivities
+
+                if isempty(model.thermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    thermalConductivity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        if ~isempty(model.(compname).thermalConductivity)
+                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*model.(compname).thermalConductivity;
+                        end
+                    end
+                    model.thermalConductivity = thermalConductivity;
+                end
+
+                if isempty(model.effectiveThermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
+                end
+
+                %% We setup the thermal capacities
+
+                if isempty(model.specificHeatCapacity)
+                    specificHeatCapacity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        if ~isempty(model.(compname).specificHeatCapacity)
+                            specificHeatCapacity = specificHeatCapacity + model.(compname).massFraction*model.(compname).specificHeatCapacity;
+                        end
+                    end
+                    model.specificHeatCapacity = specificHeatCapacity;
+                end
+
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.effectiveDensity*model.specificHeatCapacity;
+                end
+
+            end
 
         end
 
