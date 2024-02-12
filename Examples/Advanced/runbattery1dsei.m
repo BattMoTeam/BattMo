@@ -51,6 +51,8 @@ cgt = model.cgt;
 
 %% The control is used to set up the schedule
 
+jsonstruct.TimeStepping.numberOfTimeSteps = 200;
+
 schedule = model.(ctrl).setupSchedule(jsonstruct);
 
 %% Setup the initial state of the model
@@ -64,9 +66,9 @@ nls = NonLinearSolver();
 nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+model.nonlinearTolerance = 1e-5*model.Control.Imax;
 % Set verbosity
 model.verbose = true;
 
@@ -83,6 +85,10 @@ I    = cellfun(@(x) x.Control.I, states);
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
+
+
+set(0, 'defaultlinelinewidth', 3)
+set(0, 'defaultaxesfontsize', 15)
 
 figure
 plot(time/hour, E);

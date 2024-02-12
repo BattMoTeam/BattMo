@@ -10,8 +10,8 @@
     "lowerCutoffVoltage": 3,
     "upperCutoffVoltage": 4.1,
     "numberOfCycles": 3,
-    "dIdtLimit": 0.01,
-    "dEdtLimit": 0.01,
+    "dIdtLimit": 1e-6,
+    "dEdtLimit": 1e-6,
     "initialControl" : "discharging"
   },
   "NegativeElectrode": {
