@@ -85,7 +85,7 @@ function isequal = compareValue(val1, val2)
             end
             isequal = true;
         else
-            isequal = false
+            isequal = false;
         end
         return;
     end
@@ -103,7 +103,7 @@ function isequal = compareValue(val1, val2)
             end
             isequal = true;
         else
-            isequal = false
+            isequal = false;
         end
         return
     end
