@@ -22,8 +22,8 @@ classdef PEMgridGenerator
             
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            params = pickField(params, 'Electrolyte');
-            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
+            params.Electrolyte.cellinds = inputparams.G.mappings.cellmap;
+            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params.Electrolyte);
 
             inputparams = gen.setupElectrodeElectrolyteCoupTerm(inputparams);
             
@@ -47,7 +47,7 @@ classdef PEMgridGenerator
         % Setup the grid for the electrolyte
             
             % Default setup
-            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellinds);
             
         end
 

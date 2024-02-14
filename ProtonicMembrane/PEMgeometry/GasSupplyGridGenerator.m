@@ -17,10 +17,10 @@ classdef GasSupplyGridGenerator
         
         function [inputparams, gen] = setupInputParams(gen, inputparams, params)
         % This is the main function which should be called by the derived class at the end of the :meth:`updateInputParams` method
-
             
             [inputparams, gen] = gen.setupGrid(inputparams, params);
-            [inputparams, gen] = gen.setupExternalCoupling(inputparams, params);
+           
+            inputparams = gen.setupExternalCoupling(inputparams, params);
             
         end
 
@@ -30,7 +30,7 @@ classdef GasSupplyGridGenerator
             
         end
 
-        function [inputparams, gen] = setupExternalCoupling(gen, inputparams, params)
+        function inputparams = setupExternalCoupling(gen, inputparams, params)
             
             error('virtual function');
             

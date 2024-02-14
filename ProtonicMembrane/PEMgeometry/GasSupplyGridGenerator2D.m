@@ -39,7 +39,7 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
         end
 
 
-        function [inputparams, gen] = setupExternalCoupling(gen, inputparams, params)
+        function inputparams = setupExternalCoupling(gen, inputparams, params)
 
             G  = gen.parentGrid.mrstFormat;
             nx = gen.nx;

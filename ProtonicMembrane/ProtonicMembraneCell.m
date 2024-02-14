@@ -23,7 +23,8 @@ classdef ProtonicMembraneCell < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T'       , ...
+            fdnames = {'G', ...
+                       'T', ...
                        'couplingTerms'};
 
             model = dispatchParams(model, inputparams, fdnames);

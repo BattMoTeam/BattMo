@@ -39,15 +39,6 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             gen.parentGrid = parentGrid;
             
         end
-        
-        function inputparams = setupElectrolyte(gen, inputparams, params)
-        % Method that setups the grid and the coupling for the electrolyte model
-
-            ncells = gen.parentGrid.getNumberOfCells();
-            params.cellind = (1 : ncells)';
-            inputparams = setupElectrolyte@PEMgridGenerator(gen, inputparams, params);
-            
-        end
 
         function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
 
