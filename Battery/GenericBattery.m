@@ -1687,19 +1687,24 @@ classdef GenericBattery < BaseModel
 
             ns = numel(states);
 
-            for i = 1 : ns
-                E    = states{i}.Control.E;
-                I    = states{i}.Control.I;
-                time = states{i}.time;
+            if ns == 0
+                % This happens when simulation fail to converge at first step
+                outputvars = [];
+            else
+                for i = 1 : ns
+                    E    = states{i}.Control.E;
+                    I    = states{i}.Control.I;
+                    time = states{i}.time;
 
-                outputvars{i} = struct('E'   , E   , ...
-                                       'I'   , I   , ...
-                                       'time', time);
-                if model.use_thermal
-                    T    = states{i}.ThermalModel.T;
-                    outputvars{i}.Tmax = max(T);
+                    outputvars{i} = struct('E'   , E   , ...
+                                           'I'   , I   , ...
+                                           'time', time);
+                    if model.use_thermal
+                        T    = states{i}.ThermalModel.T;
+                        outputvars{i}.Tmax = max(T);
+                    end
+
                 end
-
             end
         end
 
