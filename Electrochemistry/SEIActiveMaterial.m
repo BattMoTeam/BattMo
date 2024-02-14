@@ -9,18 +9,14 @@ classdef SEIActiveMaterial < ActiveMaterial
 
     methods
 
-        function model = SEIActiveMaterial(paramobj)
+        function model = SEIActiveMaterial(inputparams)
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
 
-            model = model@ActiveMaterial(paramobj);
+            model = model@ActiveMaterial(inputparams);
 
-            model.SideReaction = SideReaction(paramobj.SideReaction);
-            model.SolidElectrodeInterface = SolidElectrodeInterface(paramobj.SolidElectrodeInterface);
-
-            if model.standAlone
-                model = model.setupStandAloneModel();
-            end
+            model.SideReaction = SideReaction(inputparams.SideReaction);
+            model.SolidElectrodeInterface = SolidElectrodeInterface(inputparams.SolidElectrodeInterface);
 
         end
 
@@ -43,9 +39,9 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             model = model.registerVarNames(varnames);
 
-            if model.standAlone
-                model = model.registerStaticVarNames({{sei, 'cExternal'}, ...
-                                                      {sr, 'phiElectrolyte'}});
+            if model.isRootSimulationModel
+                model = model.setAsStaticVarNames({{sei, 'cExternal'}, ...
+                                                   {sr, 'phiElectrolyte'}});
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
@@ -62,7 +58,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             fn = @SEIActiveMaterial.Interface.updateEtaWithEx;
             % Comment about the syntax used below : Here we use the more cumbersome syntax (using VarName)
-            % because we use a different model thant the current model in the definition of the propfunction. The
+            % because we use a different model than the current model in the definition of the propfunction. The
             % handy-syntax could have been implemented here too (but this has not been done...)
             varname = VarName({itf}, 'eta');
             inputvarnames = {VarName({itf}, 'phiElectrolyte'), ...
@@ -81,7 +77,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             inputnames = {{sei, 'cInterface'}};
             model = model.registerPropFunction({{sr, 'c'}, fn, inputnames});
 
-            if model.standAlone
+            if model.isRootSimulationModel
 
                 fn = @SEIActiveMaterial.updatePhi;
                 model = model.registerPropFunction({{sr, 'phiElectrode'}, fn, {'E'}});
@@ -96,14 +92,51 @@ classdef SEIActiveMaterial < ActiveMaterial
         end
 
 
-        function model = setupStandAloneModel(model)
+        function model = setupForSimulation(model)
 
-            if isempty(model.SideReaction)
-                return
-            end
+            model = model.equipModelForComputation();
 
-            model = setupStandAloneModel@ActiveMaterial(model);
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+            sei = 'SolidElectrodeInterface';
+            sr  = 'SideReaction';
 
+            % add scaling 
+            F = model.(sd).constants.F;
+            scalingcoef = F;
+
+            scalings = {{{'chargeCons'}, scalingcoef}};
+
+            % add scaling
+            rp  = model.(sd).particleRadius;
+            vsa = model.(sd).volumetricSurfaceArea;
+            scalingcoef = vsa*(4*pi*rp^3/3);
+
+            scalings = horzcat(scalings, ...
+                               {{{sd, 'massCons'}, scalingcoef}, ...
+                                {{sd, 'solidDiffusionEq'}, scalingcoef}});
+
+            % add scaling
+            
+            Mw  = model.(sei).molecularWeight;
+            rho = model.(sei).density;
+            scalingcoef = 0.5*Mw/rho;
+
+            scalings = horzcat(scalings, ...
+                               {{{sei, 'widthEq'}, scalingcoef}});
+
+            % add scaling
+
+            deltaref = 1*nano*meter;
+            scalingcoef = deltaref;
+            
+            scalings = horzcat(scalings, ...
+                               {{{sei, 'interfaceBoundaryEq'}, scalingcoef}, ...
+                                {{sei, 'massCons'}, scalingcoef}});
+
+
+            model.scalings = scalings;
+            
         end
 
         function state = dispatchTemperature(model, state)
@@ -202,62 +235,12 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
-            cleanState.(sei).cExternal     = state.(sei).cExternal;
-            cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
+            if model.isRootSimulationModel
+                
+                cleanState.(sei).cExternal     = state.(sei).cExternal;
+                cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
 
-        end
-
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            sei = 'SolidElectrodeInterface';
-            sr  = 'SideReaction';
-
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
             end
-
-            %% Setup equations and add some scaling
-            F   = model.(sd).constants.F;
-
-            scalingcoef = F;
-            state.chargeCons = (1/scalingcoef)*state.chargeCons;
-
-            rp  = model.(sd).particleRadius;
-            vsa = model.(sd).volumetricSurfaceArea;
-
-            scalingcoef = vsa*(4*pi*rp^3/3);
-            state.(sd).massCons         = (1/scalingcoef)*state.(sd).massCons;
-            state.(sd).solidDiffusionEq = (1/scalingcoef)*state.(sd).solidDiffusionEq;
-
-            Mw  = model.(sei).molecularWeight;
-            rho = model.(sei).density;
-
-            scalingcoef = 0.5*Mw/rho;
-            state.(sei).widthEq = (1/scalingcoef)*state.(sei).widthEq;
-
-            deltaref = 1*nano*meter;
-
-            scalingcoef = deltaref;
-            state.(sei).interfaceBoundaryEq = (1/scalingcoef)*state.(sei).interfaceBoundaryEq;
-            state.(sei).massCons            = (1/scalingcoef)*state.(sei).massCons;
-
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
-
         end
 
     end
@@ -266,7 +249,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -24,9 +24,9 @@ classdef CurrentCollector < ElectronicComponent
 
     methods
 
-        function model = CurrentCollector(paramobj)
+        function model = CurrentCollector(inputparams)
 
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'externalCouplingTerm', ...
                        'thermalConductivity' , ...
@@ -34,7 +34,7 @@ classdef CurrentCollector < ElectronicComponent
                        'density'             , ...
                        'effectiveVolumetricHeatCapacity'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             if isempty(model.effectiveElectronicConductivity)
                 model.effectiveElectronicConductivity = model.electronicConductivity;
@@ -97,7 +97,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

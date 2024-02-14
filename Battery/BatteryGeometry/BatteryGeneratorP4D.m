@@ -15,9 +15,9 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         %
         % vector of y-lengths
         %
-        % - x(1) : y-length of first tab (default : 1mm)
-        % - x(2) : y-length between the tabs (default : 2cm)
-        % - x(3) : y-length of last tab (default : 1mm)
+        % - y(1) : y-length of first tab (default : 1mm)
+        % - y(2) : y-length between the tabs (default : 2cm)
+        % - y(3) : y-length of last tab (default : 1mm)
         %
         ylength = 1e-2*[0.1; 2; 0.1];
 
@@ -43,8 +43,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         facz = 1;
 
         sep_nz   = 3; % discretization number in z-direction for separator (default: 3)
-        ne_am_nz = 3; % discretization number in z-direction for positive active material (default: 3)
-        pe_am_nz = 3; % discretization number in z-direction for negative active material (default: 3)
+        ne_co_nz = 3; % discretization number in z-direction for positive active material (default: 3)
+        pe_co_nz = 3; % discretization number in z-direction for negative active material (default: 3)
         ne_cc_nz = 2; % discretization number in z-direction for negative current collector (default: 3)
         pe_cc_nz = 2; % discretization number in z-direction for positive current collector (default: 3)
 
@@ -71,7 +71,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
         invcellmap;
 
         externalHeatTransferCoefficientTab = 1e3; % Heat transfer coefficient at the tab
-        externalHeatTransferCoefficient = 1e3; % Heat transfer coefficient for the non-tab regions
+        externalHeatTransferCoefficient = 1e2;    % Heat transfer coefficient for the non-tab regions
 
         use_thermal
 
@@ -83,15 +83,19 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
-            assert(paramobj.include_current_collectors, 'This geometry must include current collectors');
-            gen.use_thermal = paramobj.use_thermal;
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            assert(inputparams.include_current_collectors, 'This geometry must include current collectors');
+
+            fdnames = {'use_thermal'};
+
+            gen = dispatchParams(gen, inputparams, fdnames);
+
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
             % shorthands
             ne    = 'NegativeElectrode';
@@ -105,7 +109,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             nxs = [gen.ne_cc_nx; gen.int_elyte_nx; gen.pe_cc_nx];
             nys = [gen.ne_cc_ny; gen.elyte_ny; gen.pe_cc_ny];
-            nzs = [gen.ne_cc_nz; gen.ne_am_nz; gen.sep_nz; gen.ne_am_nz; gen.pe_cc_nz];
+            nzs = [gen.ne_cc_nz; gen.ne_co_nz; gen.sep_nz; gen.pe_co_nz; gen.pe_cc_nz];
 
             x = gen.xlength./nxs;
             x = rldecode(x, nxs);
@@ -127,26 +131,26 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             dimGrid = [nx; ny; nz];
 
-            gen.elyte_nz = gen.sep_nz + gen.ne_am_nz + gen.pe_am_nz;
+            gen.elyte_nz = gen.sep_nz + gen.ne_co_nz + gen.pe_co_nz;
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.elyte_nz];
             allparams.(elyte).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + 1];
+            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_co_nz + 1];
             dimSubGrid   = [nx; gen.elyte_ny; gen.sep_nz];
             allparams.(sep).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_eac
 
             startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_am_nz];
+            dimSubGrid   = [nx; gen.elyte_ny; gen.ne_co_nz];
             allparams.(ne).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.pe_eac
 
-            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_am_nz + gen.sep_nz + 1];
-            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_am_nz];
+            startSubGrid = [1; gen.ne_cc_ny + 1; gen.ne_cc_nz + gen.ne_co_nz + gen.sep_nz + 1];
+            dimSubGrid   = [nx; gen.elyte_ny; gen.pe_co_nz];
             allparams.(pe).(co).cellind = pickTensorCells3D(startSubGrid, dimSubGrid, dimGrid);
 
             %% setup gen.ne_cc
@@ -186,13 +190,15 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             invcellmap = zeros(nGlob, 1);
             invcellmap(cellmap) = (1 : G.cells.num)';
 
-            G = computeGeometry(G);
+            parentGrid = Grid(G);
 
-            paramobj.G = G;
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G = G;
 
             gen.invcellmap = invcellmap;
-            gen.allparams = allparams;
-            gen.G = G;
+            gen.allparams  = allparams;
+            gen.parentGrid = parentGrid;
 
         end
 
@@ -201,8 +207,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             facz = gen.facz;
 
             gen.sep_nz   = facz*gen.sep_nz;
-            gen.ne_am_nz = facz*gen.ne_am_nz;
-            gen.pe_am_nz = facz*gen.pe_am_nz;
+            gen.ne_co_nz = facz*gen.ne_co_nz;
+            gen.pe_co_nz = facz*gen.pe_co_nz;
             gen.ne_cc_nz = facz*gen.ne_cc_nz;
             gen.pe_cc_nz = facz*gen.pe_cc_nz;
 
@@ -220,28 +226,28 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
 
             params = gen.allparams.Electrolyte;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
 
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupSeparator(gen, paramobj, params)
+        function inputparams = setupSeparator(gen, inputparams, params)
 
             params = gen.allparams.Separator;
             imap = gen.invcellmap;
             params.cellind = imap(params.cellind);
 
-            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
@@ -261,14 +267,17 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             params.(pe).(cc).name = 'positive';
             params.(pe).cellind = [params.(pe).(co).cellind; params.(pe).(cc).cellind];
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
+        function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
 
-            G = paramobj.G;
-            yf = G.faces.centroids(:, 2);
+            G = inputparams.G;
+            mrstG = G.mrstFormat();
+            fc = mrstG.faces.centroids;
+            
+            yf = fc(:, 2);
 
             switch params.name
               case 'negative'
@@ -278,33 +287,33 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             end
 
             params.bcfaces = find(abs(yf - myf) < eps*1000);
-            params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
+            params.bccells = sum(G.parentGrid.topology.faces.neighbors(params.bcfaces, :), 2);
 
-            paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function inputparams = setupThermalModel(gen, inputparams, params)
 
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             cc    = 'CurrentCollector';
 
             % the cooling is done on the external faces
-            G = gen.G;
-            extfaces = any(G.faces.neighbors == 0, 2);
+            pG = gen.parentGrid;
+            extfaces = any(pG.topology.faces.neighbors == 0, 2);
             couplingfaces = find(extfaces);
-            couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
+            couplingcells = sum(pG.topology.faces.neighbors(couplingfaces, :), 2);
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             tabcellinds = [gen.allparams.(pe).(cc).cellindtab; gen.allparams.(ne).(cc).cellindtab];
-            tabtbl.cells = tabcellinds;
+            tabtbl.cells = gen.invcellmap(tabcellinds);
             tabtbl = IndexArray(tabtbl);
 
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(pG.mrstFormat());
             cellfacetbl = tbls.cellfacetbl;
 
             tabcellfacetbl = crossIndexArray(tabtbl, cellfacetbl, {'cells'});
@@ -324,7 +333,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             coef = gen.externalHeatTransferCoefficient*ones(bcfacetbl.num, 1);
             coef(ind) = gen.externalHeatTransferCoefficientTab;
 
-            paramobj.ThermalModel.externalHeatTransferCoefficient = coef;
+            inputparams.ThermalModel.externalHeatTransferCoefficient = coef;
 
         end
 
@@ -334,7 +343,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

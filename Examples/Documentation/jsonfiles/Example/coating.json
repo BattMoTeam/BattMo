@@ -1,0 +1,19 @@
+{
+  "ActiveMaterial": {
+    "isFile": true,
+    "filename" : "activeMaterial.json"
+  },
+  "Binder": {
+    "isFile": true,
+    "filename" : "binder.json"
+  },
+  "ConductingAdditive": {
+    "isFile": true,
+    "filename" : "conductingAdditive.json"
+  },
+  
+  "effectiveDensity": 1900,
+  "bruggemanCoefficient": 1.5,
+  "active_material_type": "default"
+
+}

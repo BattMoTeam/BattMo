@@ -2,12 +2,13 @@ classdef PhysicalConstants
 
     properties (Constant)
         
-        R  = 8.31446261815324 % Ideal gas constant
-        F  = 96485.3329       % Faraday constant
-        c0 = 1000             % Standard concentration
-        Na = 6.02e23          % Avogadro
-        kb = 1.380649e-23     % Boltzmann (J/K)
-        eV = 1.602176634e-19  % Electronvolt (J)
+        R    = 8.31446261815324 % Ideal gas constant
+        F    = 96485.3329       % Faraday constant
+        c0   = 1000             % Standard concentration
+        Na   = 6.02e23          % Avogadro
+        kb   = 1.380649e-23     % Boltzmann (J/K)
+        eV   = 1.602176634e-19  % Electronvolt (J)
+        absoluteTemperature = -273.15          % Absolute temperature (celsius)
         
     end
     
@@ -17,7 +18,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

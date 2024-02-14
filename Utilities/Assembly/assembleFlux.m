@@ -1,14 +1,14 @@
 function flux = assembleFlux(model, potential, fluxCoefficient)
     
-    op = model.operators;
-    flux = - op.harmFace(fluxCoefficient).*op.Grad(potential);
+    subG = model.G;
+    flux = - subG.getTransHarmFace(fluxCoefficient).*subG.getGrad(potential);
     
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

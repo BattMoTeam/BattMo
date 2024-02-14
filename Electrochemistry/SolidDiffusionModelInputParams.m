@@ -19,8 +19,8 @@ classdef SolidDiffusionModelInputParams < InputParams
     
     methods
         
-        function paramobj = SolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@InputParams(jsonstruct);
+        function inputparams = SolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@InputParams(jsonstruct);
         end
         
     end
@@ -31,7 +31,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

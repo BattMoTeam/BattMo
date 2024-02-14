@@ -1,4 +1,5 @@
 {
+  "comment": "Data set from Chen 2020",
   "SOC": 1,
   "initT": 298.15,
   "use_thermal": false,

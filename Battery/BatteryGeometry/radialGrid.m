@@ -1,4 +1,4 @@
-function output = radialGrid(params)
+function [output, G] = radialGrid(params)
 
     %% Parameters
     %
@@ -88,7 +88,7 @@ function output = radialGrid(params)
     cartG.nodes.coords(:, 1) = (rInner + y).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y).*sin(theta);
 
-    tbls = setupSimpleTables(cartG);
+    tbls = setupTables(cartG);
 
     % We add cartesian indexing for the nodes
     nodetbl.nodes = (1 : cartG.nodes.num)';
@@ -214,7 +214,7 @@ function output = radialGrid(params)
     cellfacetbl = replacefield(cellfacetbl, {{'newfaces', 'faces'}});
 
     facenodetbl = tbls.facenodetbl;
-    % facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
+    facenodetbl = facenodetbl.addInd('order', repmat((1 : 2)', cartG.faces.num, 1));
     facenodetbl = crossIndexArray(facenodetbl, newfacetbl, {'faces'});
     facenodetbl = crossIndexArray(facenodetbl, newnodetbl, {'nodes'});
 
@@ -271,7 +271,7 @@ function output = radialGrid(params)
     G = computeGeometry(G);
 
     % setup the standard tables
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
 
     clear extfacetbl
@@ -469,9 +469,13 @@ function output = radialGrid(params)
         end
     end
 
+    parentGrid = Grid(G);
+
+    G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
     %% setup output structure
     output = params;
-    output.G                       = G;
+    output.parentGrid              = parentGrid;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
     output.celltbl                 = celltbl;
@@ -483,7 +487,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

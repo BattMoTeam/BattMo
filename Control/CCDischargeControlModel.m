@@ -1,11 +1,27 @@
 classdef CCDischargeControlModel < CCcontrolModel
 
+
+    properties
+
+        Imax
+        rampupTime
+        useCVswitch
+        lowerCutoffVoltage
+        
+    end
+    
     methods
 
-        function model = CCDischargeControlModel(paramobj)
+        function model = CCDischargeControlModel(inputparams)
             
-            model = model@CCcontrolModel(paramobj);
+            model = model@CCcontrolModel(inputparams);
             
+            fdnames = {'rampupTime', ...
+                       'useCVswitch', ...
+                       'lowerCutoffVoltage'};
+
+            model = dispatchParams(model, inputparams, fdnames);            
+
         end
         
 
@@ -60,7 +76,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

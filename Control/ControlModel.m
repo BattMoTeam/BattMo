@@ -14,30 +14,24 @@ classdef ControlModel < BaseModel
         % Control policy (string). It can take following values
         %
         % - 'CCDischarge'
-        % - 'CCCV'
-        % - 'CV'
+        % - 'CCCharge'
         % - 'CC'
+        % - 'CCCV'
         %
         controlPolicy
-
-        lowerCutoffVoltage
-        upperCutoffVoltage
         
     end
     
     
     methods
 
-        function model = ControlModel(paramobj)
+        function model = ControlModel(inputparams)
 
             model = model@BaseModel();
             
-            fdnames = {'controlPolicy'     , ...
-                       'initialControl'    , ...
-                       'lowerCutoffVoltage', ...
-                       'upperCutoffVoltage', ... 
+            fdnames = {'controlPolicy', ...
                        'CRate'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
         
@@ -58,6 +52,11 @@ classdef ControlModel < BaseModel
             
             model = model.registerVarNames(varnames);
 
+        end
+
+        function cleanState = addStaticVariables(model, cleanState, state)
+        % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
+        % Base class behaviour is do nothing.
         end
 
         function state = prepareStepControl(model, state, state0, dt, drivingForces)
@@ -82,10 +81,6 @@ classdef ControlModel < BaseModel
                 
         end
 
-        function cleanState = addStaticVariables(model, cleanState, state)
-        % If the control model includes some static variable (that should be initialized at each Newton step), they can be added here.
-        % Base class behaviour is do nothing.
-        end
 
         function func = setupStopFunction(model)
         % setup and return a "stop function" for the given control, with signature
@@ -107,7 +102,6 @@ classdef ControlModel < BaseModel
 
 
         function func = setupControlFunction(model)
-
         % Setup and return a "control function". We do not require a special signature for this function. The user
         % should instead make sure the method :code:`updateControl` in  :code:`Battery` cover the implemented control policy.
 
@@ -115,16 +109,77 @@ classdef ControlModel < BaseModel
             
         end
 
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+
+            error('virtual method')
+
+            
+        end
+
         function control = setupScheduleControl(model)
+        % Setup and return the control structure that is sent to :mrst:`simulateScheduleAD`
             
             control.stopFunction = model.setupStopFunction();
             control.src          = model.setupControlFunction();
             
         end
 
+        function schedule = setupSchedule(model, jsonstruct)
+        % Convenience function to setup schedule from main jsonstruct with property TimeStepping
+            
+            if isfield(jsonstruct, 'TimeStepping')
+                timeSteppingParams = jsonstruct.TimeStepping;
+            else
+                timeSteppingParams = [];
+            end
+
+            step    = model.setupScheduleStep(timeSteppingParams);
+            control = model.setupScheduleControl();
+
+            schedule = struct('step', step, ...
+                              'control', control);
+            
+        end
         
     end
     
+    methods(Static)
+
+        function params = parseTimeSteppingStruct(params)
+
+            paramstemplate = struct('totalTime'          , []   , ...
+                                    'numberOfTimeSteps'  , 100  , ...
+                                    'timeStepDuration'   , []   , ...
+                                    'useRampup'          , false, ...
+                                    'numberOfRampupSteps', 5);
+
+            if (nargin > 0) && ~isempty(params)
+                
+                params = resolveUnitInputJson(params);
+
+                vals    = struct2cell(params);
+                fdnames = fieldnames(params);
+
+                params = horzcat(fdnames, vals)';
+                params = params(:);
+
+
+                params = merge_options(paramstemplate, params{:});
+                
+            else
+                
+                params = paramstemplate;
+                
+            end
+
+
+        end
+    end
     
         
 end
@@ -132,7 +187,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -70,8 +70,8 @@
                         "type": "function",
                         "functionname": "computeOCP_graphite",
                         "argumentlist": [
-                            "cElectrode",
-                            "T",
+                            "concentration",
+                            "temperature",
                             "cmax"
                         ]
                     }
@@ -231,8 +231,8 @@
                         "type": "function",
                         "functionname": "computeOCP_nmc111",
                         "argumentlist": [
-                            "cElectrode",
-                            "T",
+                            "concentration",
+                            "temperature",
                             "cmax"
                         ]
                     }
@@ -330,6 +330,8 @@
     },
     "Electrolyte": {
         "name": "orgLiPF6",
+        "initialConcentration": {"value" : 1,
+                                 "unit" : "mol/litre"},
         "specificHeatCapacity": {
             "value": 2055.0,
             "unit": ""
@@ -346,25 +348,22 @@
             "type": "function",
             "functionname": "computeElectrolyteConductivity_default",
             "argumentlist": [
-                "c",
-                "T"
+                "concentration",
+                "temperature"
             ]
         },
         "diffusionCoefficient": {
             "type": "function",
             "functionname": "computeDiffusionCoefficient_default",
             "argumentlist": [
-                "c",
-                "T"
+                "concentration",
+                "temperature"
             ]
         },
-        "compnames": [
-            "Li",
-            "PF6"
-        ],
-        "sp": {
-            "z": 1,
-            "t": 0.2594
+        "species": {
+            "chargeNumber": 1,
+            "transferenceNumber": 0.2594,
+          "nominalConcentration": 1000
         },
         "bruggemanCoefficient": {
             "value": 1.5,

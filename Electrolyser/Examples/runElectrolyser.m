@@ -1,22 +1,22 @@
-%% Alkaline Membrane Electrolyser 
+%% Alkaline Membrane Electrolyser
 
 %% Load MRST modules
 %
 
-mrstModule add ad-core matlab_bgl
+mrstModule add ad-core
 
 %% Setup input
 % Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
 
 jsonstruct= parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
-paramobj = ElectrolyserInputParams(jsonstruct);
+inputparams = ElectrolyserInputParams(jsonstruct);
 
 %%
 % Setup the grids. We consider a 1D model and the specifications can be read from a json input file, here :battmofile:`electrolysergeometry1d.json<Electrolyser/Parameters/electrolysergeometry1d.json>`, using
 % :battmo:`setupElectrolyserGridFromJson`.
 
 jsonstruct= parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
-paramobj = setupElectrolyserGridFromJson(paramobj, jsonstruct);
+inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 %%
 % We define shortcuts for the different submodels.
@@ -29,7 +29,7 @@ ctl = 'CatalystLayer';
 
 %% Setup model
 
-model = Electrolyser(paramobj);
+model = Electrolyser(inputparams);
 
 %% Setup the initial condition
 % We use the default initial setup implemented in the model
@@ -49,7 +49,7 @@ dts = rampupTimesteps(total, dt, 5);
 % We use the function :battmo:`rampupControl` to increase the current linearly in time
 
 controlI = -3*ampere/(centi*meter)^2; % if negative, O2 and H2 are produced
-tup      = total; 
+tup      = total;
 srcfunc  = @(time) rampupControl(time, tup, controlI, 'rampupcase', 'linear');
 control  = struct('src', srcfunc);
 
@@ -110,56 +110,60 @@ title('Input current')
 % We consider the three domains and plot the pH in each of those. We setup the helper structures to iterate over each
 % domain for the plot.
 
-models = {model.(oer).(ptl), ...
-          model.(her).(ptl), ...
-          model.(inm)};
+doplot = false;
 
-fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
-          {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
-          {'IonomerMembrane', 'cOH'}};
+if doplot
 
-h = figure();
-set(h, 'position', [10, 10, 800, 450]);
-hold on
-    
-ntime = numel(time);
-times = linspace(1, ntime, 10);
-cmap  = cmocean('deep', 10);
+    models = {model.(oer).(ptl), ...
+              model.(her).(ptl), ...
+              model.(inm)};
 
-for ifield = 1 : numel(fields)
+    fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
+              {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
+              {'IonomerMembrane', 'cOH'}};
 
-    fd       = fields{ifield};
-    submodel = models{ifield};
+    h = figure();
+    set(h, 'position', [10, 10, 800, 450]);
+    hold on
 
-    x    = submodel.G.cells.centroids;
-    
-    for itimes = 1 : numel(times);
-        
-        itime = floor(times(itimes));
-        % The method :code:`getProp` is used to recover the value from the state structure
-        val   = model.getProp(states{itime}, fd);
-        pH    = 14 + log10(val/(mol/litre));
+    ntime = numel(time);
+    times = linspace(1, ntime, 10);
+    cmap  = cmocean('deep', 10);
 
-        % plot of pH for the current submodel.
-        plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
-        
+    for ifield = 1 : numel(fields)
+
+        fd       = fields{ifield};
+        submodel = models{ifield};
+
+        x    = submodel.G.cells.centroids;
+
+        for itimes = 1 : numel(times);
+
+            itime = floor(times(itimes));
+            % The method :code:`getProp` is used to recover the value from the state structure
+            val   = model.getProp(states{itime}, fd);
+            pH    = 14 + log10(val/(mol/litre));
+
+            % plot of pH for the current submodel.
+            plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
+
+        end
+
     end
 
+    xlabel('x  /  mm');
+    ylabel('pH');
+    title('pH distribition in electrolyser')
+
+    colormap(cmap)
+    hColorbar = colorbar;
+    caxis([0 3]);
+    hTitle = get(hColorbar, 'Title');
+    set(hTitle, 'string', 'J (A/cm^2)');
 end
 
-xlabel('x  /  mm');
-ylabel('pH');
-title('pH distribition in electrolyser')
-
-colormap(cmap)
-hColorbar = colorbar;
-caxis([0 3]);
-hTitle = get(hColorbar, 'Title');
-set(hTitle, 'string', 'J (A/cm^2)');
-
-
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

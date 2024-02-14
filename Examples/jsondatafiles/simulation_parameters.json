@@ -1,7 +1,0 @@
-{"TimeStepping" : {
-  "totalTime" : {"unit" : "hour",
-                 "value" : 1.5},
-  "numberOfTimeSteps" : 40,
-  "useRampup" : true,
-  "rampupTime" : 10}
-}

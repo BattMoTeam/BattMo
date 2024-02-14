@@ -4,9 +4,8 @@ classdef ElectrolyteInputParams < ComponentInputParams
 %
     properties
 
-        compnames % Names of the components in the electrolyte
-        sp % Structure given properties of each component
-
+        species % Structure given properties of the main ion (Lithium)
+        
         %% Standard parameters
 
         density              % the mass density of the material (symbol: rho)
@@ -29,9 +28,9 @@ classdef ElectrolyteInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ElectrolyteInputParams(jsonstruct)
+        function inputparams = ElectrolyteInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
         end
 
@@ -42,7 +41,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

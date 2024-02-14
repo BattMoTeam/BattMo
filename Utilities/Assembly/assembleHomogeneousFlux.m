@@ -1,14 +1,15 @@
 function flux = assembleHomogeneousFlux(model, potential, fluxCoefficient)
+
+    subG = model.G;
     
-    op = model.operators;
-    flux = - fluxCoefficient*op.T.*op.Grad(potential);
-    
+    flux = - fluxCoefficient .* subG.getTrans() .* subG.getGrad(potential);
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

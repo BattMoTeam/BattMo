@@ -14,10 +14,10 @@ classdef CvControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function paramobj = CvControlModelInputParams(jsonstruct);
+        function inputparams = CvControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CV';
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CV';
             
         end
 
@@ -28,7 +28,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

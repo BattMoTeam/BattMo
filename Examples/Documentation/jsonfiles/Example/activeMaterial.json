@@ -1,0 +1,16 @@
+{
+  "Interface": {
+    "isFile": true,
+    "filename" : "interface.json"
+  },
+  "SolidDiffusion": {
+    "isFile": true,
+    "filename" : "solidDiffusion.json"
+  },
+  "diffusionModelType": "full",
+  "electronicConductivity": 100,
+  "density": 2240,
+  "massFraction": 0.94,
+  "thermalConductivity": 1.04,
+  "specificHeatCapacity": 632
+}

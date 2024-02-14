@@ -28,7 +28,6 @@ This examples are ready to be published
 .. toctree::
    :hidden:
 
-   runFirstJsonScript
    publishedExamples/runJsonScript   
    publishedExamples/battMoTutorial
    publishedExamples/runBatteryP2D

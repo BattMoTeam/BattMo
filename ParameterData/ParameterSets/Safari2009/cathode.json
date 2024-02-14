@@ -3,21 +3,21 @@
   "diffusionModelType": "full", 
   "volumeFraction": 0.665,
   "Interface" : { "name": "cathode(safari)",
-                  "theta0": 0.99,
-                  "theta100": 0.5,
-                  "cmax": 51555,
-                  "k0": 1.04e-11,
-                  "Eak": 17800,
+                  "guestStoichiometry0": 0.99,
+                  "guestStoichiometry100": 0.5,
+                  "saturationConcentration": 51555,
+                  "reactionRateConstant": 1.04e-11,
+                  "activationEnergyOfReaction": 17800,
                   "volumetricSurfaceArea": 382183,
-                  "n" : 1,
-                  "OCP" : {"type" : "function",
+                  "numberOfElectronsTransferred" : 1,
+                  "openCircuitPotential" : {"type" : "function",
                            "functionname" : "computeOCP_nmc111",
-                           "argumentlist" : ["concentration", "temperature", "maximum concentration"]}
+                           "argumentlist" : ["concentration", "temperature", "cmax"]}
                   
                 },
   "SolidDiffusion" : {
-    "EaD": 0,
-    "D0": 1e-14,
-    "rp": 2e-6
+    "activationEnergyOfDiffusion": 0,
+    "referenceDiffusionCoefficient": 1e-14,
+    "particleRadius": 2e-6
   }
 }

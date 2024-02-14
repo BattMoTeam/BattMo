@@ -34,19 +34,19 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
     
     methods
         
-        function paramobj = FullSolidDiffusionModelInputParams(jsonstruct)
-            paramobj = paramobj@SolidDiffusionModelInputParams(jsonstruct);
+        function inputparams = FullSolidDiffusionModelInputParams(jsonstruct)
+            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            D0 = paramobj.referenceDiffusionCoefficient;
-            D  = paramobj.diffusionCoefficient;
+            D0 = inputparams.referenceDiffusionCoefficient;
+            D  = inputparams.diffusionCoefficient;
             
             assert(~isempty(D0) || ~isempty(D), 'Either D0 or D should be provided');
 
             if ~isempty(D) & strcmp(D.type, 'constant')
-                paramobj.referenceDiffusionCoefficient = paramobj.diffusionCoefficient.value;
+                inputparams.referenceDiffusionCoefficient = inputparams.diffusionCoefficient.value;
             end
             
         end
@@ -59,7 +59,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

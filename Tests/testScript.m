@@ -2,9 +2,9 @@ clear all
 close all
 
 import matlab.unittest.TestSuite;
-import matlab.unittest.selectors.HasParameter;
+import matlab.unittest.selectors.*;
 import matlab.unittest.parameters.Parameter;
-import matlab.unittest.TestRunner
+import matlab.unittest.TestRunner;
 
 doCreateReferenceData = false;
 if doCreateReferenceData
@@ -18,8 +18,12 @@ end
 doRunTestInParallel = false;
 if doRunTestInParallel
     % We run the test suite in parallel
-    suite = TestSuite.fromClass(?TestBatteryP2D);
-    runner = TestRunner.withNoPlugins();
+    param = Parameter.fromData('compareWithReferenceData', {false});
+    suite = TestSuite.fromClass(?TestBatteryP2D, 'ExternalParameters', param);
+    suite = suite.selectIf(HasParameter('Property', 'controlPolicy', 'Value', 'CCDischarge'));
+    suite = suite.selectIf(HasParameter('Property', 'use_thermal', 'Value', false));
+    suite = suite.selectIf(HasParameter('Property', 'include_current_collectors', 'Value', false));
+    runner = TestRunner.withTextOutput();
     result = runner.runInParallel(suite);
 end
 
@@ -27,7 +31,10 @@ doRunFilteredSuite = false;
 if doRunFilteredSuite
     % We using a subset of a suite based on parameter selection
     suite = TestSuite.fromClass(?TestBatteryP2D);
-    suite = suite.selectIf(HasParameter('Property', 'testSize', 'Value', 'short'));
+    selector1 = HasParameter('Property', 'testSize', 'Value', 'short');
+    selector2 = HasParameter('Property', 'use_thermal', 'Value', false);
+    selector = selector1 & selector2;
+    suite = suite.selectIf(selector);
     suite.run();
 end
 
@@ -40,7 +47,7 @@ if doStopOnFirstFailure
    results = runner.run(suite);
 end
 
-doTestExamples = true;
+doTestExamples = false;
 if doTestExamples
     suite = testsuite('TestRunExamples');
     runner = testrunner('textoutput');
@@ -52,9 +59,33 @@ if doTestExamples
     %results = runner.runInParallel(suite);
 end
 
+doTestJsonFiles = false;
+if doTestJsonFiles
+    suite = testsuite('TestJsonFiles');
+    runner = testrunner('textoutput');
+
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+    %results = runner.runInParallel(suite);
+end
+
+doTestChen2020 = true;
+if doTestChen2020
+
+    suite = testsuite('TestChen2020');
+    runner = testrunner('textoutput');
+
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+end
+
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

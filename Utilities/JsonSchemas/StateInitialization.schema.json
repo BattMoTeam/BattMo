@@ -1,6 +1,6 @@
 {
   "$id": "file://./StateInitialization.schema.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Input to setup the initial state of the battery",
   "type": "object",
   "properties": {
@@ -9,7 +9,8 @@
       "enum": [
         "given SOC",
         "given input"
-      ]
+      ],
+      "description": "Choice of initialization between a given state of charge (\"given SOC\") or a given input function (\"given input\"). If this property is not given, the default is a given SOC"
     },
     "initT": {
       "$ref": "PhysicalQuantity.schema.json",
@@ -17,8 +18,15 @@
     },
     "SOC": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description": "Initial state of charge"
+      "description": "Initial state of charge."
     },
+    "Electrolyte" : {
+      "type" : "object",
+      "properties" : {
+        "initialConcentration" : {
+          "$ref" : "PhysicalQuantity.schema.json",
+          "description" : "Initial Lithium concentration in the electrolyte. This is not used if a given input is given through loadStateCmd. The default value is 1 mol/Liter"
+        }}},
     "loadStateCmd": {
       "type": "string",
       "description": "string that when run by matlab eval function return the initial state in the structure initstate"

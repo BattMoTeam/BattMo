@@ -2,11 +2,10 @@
 Intermediate usage
 ==================
 
-.. note::
-  This section is still under development.
+.. _mergeJsonStructs:
 
-Pseudo-Four-Dimensional (P4D) Model
-===================================
+Setup a P4D Model using :code:`mergeJsonStructs`
+================================================
 
 Let's build a pseudo-four-dimensional Li-ion battery model and explore more about how to mix-and-match |battmo| parameter definitions!
 
@@ -69,11 +68,11 @@ We can now merge these parameter definitions into a single parameter set and run
 .. code:: matlab
           
    jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
-                               jsonstruct_material , ...
-                               jsonstruct_control  , ...
-                               jsonstruct_simparams, ...
-                               jsonstruct_output   , ...                               
-                              });
+                                  jsonstruct_material , ...
+                                  jsonstruct_control  , ...
+                                  jsonstruct_simparams, ...
+                                  jsonstruct_output   , ...                               
+                                 });
 
 Run Simulation
 --------------
@@ -98,40 +97,42 @@ We plot the model using :battmo:`plotBatteryGrid` (note that the different axis 
 We find a extensive set of plotting functions in `MRST <https://www.sintef.no/Projectweb/MRST/>`_. You may be interested
 to have a look at the `Visualization Tutorial
 <https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/>`_. Let us use the
-:mrstfile:`plotGrid<core/plotting/plotGrid.m>` and :mrstfile:`plotCellData<core/plotting/plotCellData.m>` to plot the
+:mrstfile:`plotGrid<mrst-core/plotting/plotGrid.m>` and :mrstfile:`plotCellData<mrst-core/plotting/plotCellData.m>` to plot the
 surface particle concentrations in both electrode at a given time step.
           
 ..
-   The plots presented below are obtained using the script runExample3D in Documentation/scripts/runExample3D
+   The plots presented below are obtained using the script runExample3D_doc 
 
 .. code:: matlab
           
    state = output.states{20};
    E = state.Control.E
-   plotGrid(model.G, 'facecolor', 'none', 'edgealpha', 0.1)
-   plotCellData(model.NegativeElectrode.Coating.G, state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
-   plotCellData(model.PositiveElectrode.Coating.G, state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+   plotGrid(model.grid, 'facecolor', 'none', 'edgealpha', 0.1)
+   plotCellData(model.NegativeElectrode.Coating.grid, state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
+   plotCellData(model.PositiveElectrode.Coating.grid, state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre))
    title('Particle Surface Lithium Concentration');
 
 .. figure:: img/3dconc.png
    :target: _images/3dconc.png
    
 
-
-
-
-Direct insertion using :code:`parseBattmoJson`
-==============================================
+File links and insertions with :code:`parseBattmoJson`
+======================================================
 
 There are two mechanisms which can be used to combine JSON input files:
 
-#. Direct insertion using :code:`parseBattmoJson`
 #. Merge function using :code:`mergeJsonStruct`
+#. Direct insertion using :code:`parseBattmoJson`
 
-The function :battmo:`parseBattmoJson` parses the JSON input to create the corresponding matlab structure, basically
-relying on `jsondecode <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_. In this process the reserved
-keyword properties :code:`isFile` combined with :code:`filename` are used to fetch and insert in place JSON data located
-in separate files. Here is an example, taken from :battmofile:`lithium_ion_battery_nmc_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json>` where we have the following lines
+We have just seen an example of the first mechanism, which can be used within Matlab when we setup the simulation.
+
+The function :battmo:`parseBattmoJson` is used to parse a JSON input and create the corresponding matlab structure. It
+basically relies on `jsondecode <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_.
+
+In this process the reserved keyword properties :code:`isFile` combined with :code:`filename` are used to fetch and
+insert in place JSON data located in separate files. Here is an example, taken from
+:battmofile:`lithium_ion_battery_nmc_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json>`
+where we have the following lines
 
 .. code:: json
           
@@ -176,7 +177,4 @@ the :code:`jsonstruct` that is obtained is equivalent to the one where we would 
              "argumentlist" : ["cElectrode", "T", "cmax"]
              }}},          
 
-.. _mergeJsonStructs:
 
-Merge function using :code:`mergeJsonStructs`
----------------------------------------------

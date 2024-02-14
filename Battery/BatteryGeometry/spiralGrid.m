@@ -25,9 +25,19 @@ function output = spiralGrid(params)
     %
     % RETURNS
     %
-    % - G       : grid
-    % - tag     : cell-valued vector giving component number (indexing is given by tagdict)
-    % - tagdict : dictionary giving the component number
+    % - output structure with fields
+    %    - G
+    %    - tag
+    %    - tagdict
+    %    - positiveExtCurrentFaces
+    %    - negativeExtCurrentFaces
+    %    - thermalExchangeFaces
+    %    - thermalExchangeFacesTag
+    %    - widthLayer
+    %    - nWidthLayer
+    %    - heightLayer
+    %    - nHeightLayer
+    %    - celltbl
 
     nwindings = params.nwindings;
     rInner    = params.rInner;
@@ -38,7 +48,6 @@ function output = spiralGrid(params)
     nL        = params.nL;
     unifang   = params.angleuniform;
     tabparams = params.tabparams;
-
 
     %% component names
 
@@ -122,7 +131,7 @@ function output = spiralGrid(params)
     cartG.nodes.coords(:, 1) = (rInner + y + (theta/(2*pi))*layerwidth).*cos(theta);
     cartG.nodes.coords(:, 2) = (rInner + y + (theta/(2*pi))*layerwidth).*sin(theta);
 
-    tbls = setupSimpleTables(cartG);
+    tbls = setupTables(cartG);
 
     % We add cartesian indexing for the nodes
     nodetbl.nodes = (1 : cartG.nodes.num)';
@@ -306,7 +315,7 @@ function output = spiralGrid(params)
         netab = [];
     end
 
-    if ~isempty(petab) | ~isempty(netab)
+    if ~isempty(petab) || ~isempty(netab)
         clear data
         data.nas     = nas;
         data.nrs     = nrs;
@@ -332,12 +341,12 @@ function output = spiralGrid(params)
 
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
-        [pe_tabcelltbl, pe_tabwidths] = getTabCellTbl(cccelltbl     , ...
-                                                      cclinewidth   , ...
-                                                      indj0         , ...
-                                                      petab         , ...
-                                                      windingnumbers, ...
-                                                      data);
+        pe_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      cclinewidth   , ...
+                                      indj0         , ...
+                                      petab         , ...
+                                      windingnumbers, ...
+                                      data);
 
     end
 
@@ -358,12 +367,12 @@ function output = spiralGrid(params)
 
         windingnumbers = computeWindingNumbers(fractions, rInner, layerwidth, nwindings);
 
-        [ne_tabcelltbl, ne_tabwidths] = getTabCellTbl(cccelltbl     , ...
-                                                      cclinewidth   , ...
-                                                      indj0         , ...
-                                                      netab         , ...
-                                                      windingnumbers, ...
-                                                      data);
+        ne_tabcelltbl = getTabCellTbl(cccelltbl     , ...
+                                      cclinewidth   , ...
+                                      indj0         , ...
+                                      netab         , ...
+                                      windingnumbers, ...
+                                      data);
 
     end
 
@@ -375,7 +384,7 @@ function output = spiralGrid(params)
     tag = repmat(tag, [nL, 1]);
 
     % setup the standard tables
-    tbls = setupSimpleTables(G);
+    tbls = setupTables(G);
     cellfacetbl = tbls.cellfacetbl;
 
     clear extfacetbl
@@ -487,6 +496,7 @@ function output = spiralGrid(params)
     %% recover faces on top and bottom for the current collector
 
     ccnames = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
+    ccfaces = cell(numel(ccnames), 1);
 
     for ind = 1 : numel(ccnames)
 
@@ -533,7 +543,7 @@ function output = spiralGrid(params)
          'PositiveCurrentCollector', ...
          'Separator'               , ...
          'NegativeCoating'         , ...
-         'NegativeCurrentCollector'}, [1 : 5]');
+         'NegativeCurrentCollector'}, (1 : 5)');
 
     mappings = {{'PositiveCoating'          , {'PositiveCoating1', 'PositiveCoating2'}}, ...
                 {'NegativeCoating'          , {'NegativeCoating1', 'NegativeCoating2'}}, ...
@@ -551,7 +561,6 @@ function output = spiralGrid(params)
     end
 
     %% setup output structure
-    output = params;
     output.G                       = G;
     output.tag                     = tag;
     output.tagdict                 = tagdict;
@@ -574,13 +583,12 @@ function output = spiralGrid(params)
 end
 
 
-function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
+function tabcelltbl = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
 
-    nas            = data.nas;
-    nrs            = data.nrs;
-    celltbl        = data.celltbl;
-    G              = data.G;
-    tagdict        = data.tagdict;
+    nas     = data.nas;
+    nrs     = data.nrs;
+    celltbl = data.celltbl;
+    G       = data.G;
 
     for ind = 1 : numel(windingnumbers)
 
@@ -598,7 +606,9 @@ function [tabcelltbl, tabwidths] = getTabCellTbl(cccelltbl, cclinewidth, indj0, 
         l = cumsum(G.cells.volumes(c)/cclinewidth);
 
         indl = find(l > tabparams.width, 1, 'first');
-        tabwidths(ind) = l(indl);
+
+        % We can compute tabwidths as follows (commented because not used)
+        % tabwidths(ind) = l(indl);
 
         clear tabcelltbl
         tabcelltbl.curvindi = o(1 : indl);
@@ -620,7 +630,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

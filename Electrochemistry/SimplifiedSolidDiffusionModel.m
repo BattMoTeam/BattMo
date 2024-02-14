@@ -5,9 +5,9 @@ classdef SimplifiedSolidDiffusionModel < SolidDiffusionModel
 %
     methods
 
-        function model = SimplifiedSolidDiffusionModel(paramobj)
+        function model = SimplifiedSolidDiffusionModel(inputparams)
 
-            model = model@SolidDiffusionModel(paramobj);
+            model = model@SolidDiffusionModel(inputparams);
 
         end
 
@@ -106,7 +106,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -8,7 +8,7 @@ classdef SolidDiffusionModel < BaseModel
         %% Input parameters
 
         % Standard input parameters
-        
+
         particleRadius                % the characteristic radius of the particle (symbol: rp)
         activationEnergyOfDiffusion   % the Arrhenius-type activation energy for diffusion (symbol: EaD)
         referenceDiffusionCoefficient % the pre-exponential reference diffusion coefficient in an Arrhenius-type equation (symbol: D0)
@@ -16,17 +16,17 @@ classdef SolidDiffusionModel < BaseModel
 
         % Advanced input parameters
         volumeFraction % the ratio of the volume of the active material to the total volume
-        
+
     end
 
     methods
 
-        function model = SolidDiffusionModel(paramobj)
+        function model = SolidDiffusionModel(inputparams)
 
             model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
             fdnames = {'particleRadius'               , ...
                        'activationEnergyOfDiffusion'  , ...
@@ -34,10 +34,10 @@ classdef SolidDiffusionModel < BaseModel
                        'volumetricSurfaceArea'        , ...
                        'volumeFraction'};
 
-            model = dispatchParams(model, paramobj, fdnames);
-        
+            model = dispatchParams(model, inputparams, fdnames);
+
         end
-        
+
         function model = registerVarAndPropfuncNames(model)
 
             %% Declaration of the Dynamical Variables and Function of the model
@@ -68,7 +68,7 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
         end
-        
+
         function state = updateDiffusionCoefficient(model, state)
 
             Tref = 298.15;  % [K]
@@ -83,16 +83,16 @@ classdef SolidDiffusionModel < BaseModel
             D = D0.*exp(-EaD./R*(1./T - 1/Tref));
 
             state.D = D;
-            
+
         end
-    
+
     end
-    
+
 end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
@@ -110,5 +110,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
-    
-

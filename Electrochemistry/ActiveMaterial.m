@@ -23,10 +23,6 @@ classdef ActiveMaterial < BaseModel
         specificHeatCapacity   % Specific Heat capacity of the active component
 
         diffusionModelType     % either 'full' or 'simple'
-        
-        % Advanded parameters
-        
-        standAlone % Set to true if model is used as main model for development purpose (standard use is as a sub-model)
 
         % Coupling parameters
         
@@ -36,9 +32,9 @@ classdef ActiveMaterial < BaseModel
     
     methods
         
-        function model = ActiveMaterial(paramobj)
+        function model = ActiveMaterial(inputparams)
         %
-        % ``paramobj`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
+        % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
             model = model@BaseModel();
             
@@ -50,29 +46,23 @@ classdef ActiveMaterial < BaseModel
                        'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
-                       'standAlone'};
+                       'isRootSimulationModel'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Interface = Interface(paramobj.Interface);
+            model.Interface = Interface(inputparams.Interface);
 
             diffusionModelType = model.diffusionModelType;
 
             switch model.diffusionModelType
               case 'simple'
-                model.SolidDiffusion = SimplifiedSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.SolidDiffusion = SimplifiedSolidDiffusionModel(inputparams.SolidDiffusion);
               case 'full'
-                model.SolidDiffusion = FullSolidDiffusionModel(paramobj.SolidDiffusion);
+                model.SolidDiffusion = FullSolidDiffusionModel(inputparams.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
-            if model.standAlone
-
-                model = model.setupStandAloneModel();
-                
-            end
-            
             
         end
         
@@ -93,7 +83,7 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             
-            if model.standAlone
+            if model.isRootSimulationModel
 
                 varnames = {};
 
@@ -108,14 +98,14 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerVarNames(varnames);
 
                 varnames = {{itf, 'dUdT'}, ...
-                            'jCoupling', ...
+                            'jCoupling'  , ...
                             'jExternal'};
                 model = model.removeVarNames(varnames);
 
-                varnames = {'T', ...
-                            {itf, 'cElectrolyte'},... 
+                varnames = {'T'                  , ...
+                            {itf, 'cElectrolyte'}, ... 
                             {itf, 'phiElectrolyte'}};
-                model = model.registerStaticVarNames(varnames);
+                model = model.setAsStaticVarNames(varnames);
                 
             end
 
@@ -125,7 +115,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
-            if model.standAlone
+            if model.isRootSimulationModel
                 
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -142,65 +132,22 @@ classdef ActiveMaterial < BaseModel
             end
             
         end
-        
 
-        function model = setupStandAloneModel(model)
+        function model = setupForSimulation(model)
+            
+            model = model.equipModelForComputation();
 
-            model = model.setupComputationalGraph();
-
-            cgt = model.computationalGraph();
-            
-            model.funcCallList     = cgt.getOrderedFunctionCallList();
-            model.primaryVarNames  = cgt.getPrimaryVariableNames();
-            model.equationVarNames = cgt.getEquationVariableNames();
-            
-            function str = setupName(varname)
-                shortvarname = cellfun(@(elt) Battery.shortenName(elt), varname, 'uniformoutput', false);
-                str = Battery.varToStr(shortvarname);
-            end
-            model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
-            model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
-            
-        end
-
-        
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
-            
-            sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
-            time = state0.time + dt;
-            state = model.initStateAD(state);
-            
-            %% We call the assembly equations ordered from the graph
+            sd  = 'SolidDiffusion';
 
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            % some scaling of the equations
-
-            %% Setup equations and add some scaling
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             rp = model.(sd).particleRadius;
-            
-            scalingcoef = n*F/(4*pi*rp^3/3);
+            scalingcoef = 1/(n*F/(4*pi*rp^3/3));
+            scalings = {{{sd, 'massCons'}, scalingcoef}, ...
+                        {{sd, 'solidDiffusionEq'}, scalingcoef}};
 
-            state.(sd).massCons         = scalingcoef*state.(sd).massCons;
-            state.(sd).solidDiffusionEq = scalingcoef*state.(sd).solidDiffusionEq;
-            
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            
-            names       = model.equationNames;
-            types       = model.equationTypes;
-            primaryVars = model.primaryVarNames;
-            
-            problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
+            model.scalings = scalings;
 
         end
 
@@ -209,12 +156,6 @@ classdef ActiveMaterial < BaseModel
             forces = getValidDrivingForces@PhysicalModel(model);
             forces.src = [];
             
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-
         end
 
 
@@ -236,7 +177,7 @@ classdef ActiveMaterial < BaseModel
             
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             
-            if model.standAlone
+            if model.isRootSimulationModel
                 
                 itf = 'Interface';
                 
@@ -264,11 +205,6 @@ classdef ActiveMaterial < BaseModel
 
         end
         
-        function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
-            
-            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
-            
-        end
          
         function model = validateModel(model, varargin)
         % 
@@ -314,7 +250,7 @@ classdef ActiveMaterial < BaseModel
 
             vf       = model.volumeFraction;
             am_frac  = model.activeMaterialFraction;
-            vols     = model.G.cells.volumes;
+            vols     = model.G.getVolumes();
             
             c = state.(sd).cAverage;
 
@@ -362,7 +298,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

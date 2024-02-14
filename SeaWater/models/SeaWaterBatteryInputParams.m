@@ -17,30 +17,30 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
     
     methods
 
-        function paramobj = SeaWaterBatteryInputParams(jsonstruct)
+        function inputparams = SeaWaterBatteryInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
-            paramobj.Cathode               = HydrogenElectrodeInputParams(jsonstruct.Cathode);
-            paramobj.CathodeActiveMaterial = HydrogenActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
-            paramobj.Anode                 = SeaWaterElectrodeInputParams(jsonstruct.Anode);
-            paramobj.AnodeActiveMaterial   = MagnesiumActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
-            if paramobj.include_precipitation
-                paramobj.Electrolyte = SeaWaterElectrolyteInputParams(jsonstruct.Electrolyte);
+            inputparams.Cathode               = HydrogenElectrodeInputParams(jsonstruct.Cathode);
+            inputparams.CathodeActiveMaterial = HydrogenActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
+            inputparams.Anode                 = SeaWaterElectrodeInputParams(jsonstruct.Anode);
+            inputparams.AnodeActiveMaterial   = MagnesiumActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
+            if inputparams.include_precipitation
+                inputparams.Electrolyte = SeaWaterElectrolyteInputParams(jsonstruct.Electrolyte);
             else
-                paramobj.Electrolyte = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct.Electrolyte);
+                inputparams.Electrolyte = SeaWaterElectrolyteNoPrecipitationInputParams(jsonstruct.Electrolyte);
             end
             
-            paramobj.couplingTerms = {};
+            inputparams.couplingTerms = {};
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            if paramobj.include_precipitation
-                assert(isa(paramobj.Electrolyte, 'SeaWaterElectrolyteInputParams'), 'The input class SeaWaterElectrolyteNoPrecipitationInputParams is used. The input parameters for the electrolyte may include precipitation data.');
+            if inputparams.include_precipitation
+                assert(isa(inputparams.Electrolyte, 'SeaWaterElectrolyteInputParams'), 'The input class SeaWaterElectrolyteNoPrecipitationInputParams is used. The input parameters for the electrolyte may include precipitation data.');
             end
             
         end
@@ -49,3 +49,25 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
     
 end
 
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

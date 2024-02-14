@@ -41,8 +41,9 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinx.ext.intersphinx',
               'sphinx.ext.autosectionlabel',
               'sphinxcontrib.youtube',
-              'sphinx_collapse'
-              ]
+              'sphinx_collapse',
+              'sphinx_design']
+
 bibtex_bibfiles = ['refs.bib']
 
 autosectionlabel_prefix_document = True
@@ -321,7 +322,7 @@ repo_url    = 'https://github.com/BattMoTeam/BattMo'
 branch_name = 'dev'
 
 def find_battmo_file(filename):
-    ignored_dirs = ['output', 'MRST', '.git', 'Documentation']
+    ignored_dirs = ['output', 'Externals', '.git', '.github']
     for root, dirs, files in os.walk(matlab_src_dir):
         for r in ignored_dirs:
             if r in dirs:
@@ -371,8 +372,27 @@ class BattMoFileRole(ReferenceRole):
 
 roles.register_local_role('battmofile', BattMoFileRole())
 
-mrst_repo_url    = 'https://github.com/SINTEF-AppliedCompSci/MRST'
-mrst_branch_name = 'main'
+class BattMoRawFileRole(ReferenceRole):
+
+    def run(self):
+        target = self.target
+        title = self.title
+        if "#" in target:
+            target, lineno = docutils.utils.unescape(target).split("#", 1)
+        else:
+            lineno = None
+        target = repo_url + '/raw/' + branch_name + '/' + target
+        if lineno is not None:
+            target += "#L"+lineno
+        node = docutils.nodes.reference(self.rawtext, title, refuri=target)
+        return [node], []
+
+
+roles.register_local_role('battmorawfile', BattMoRawFileRole())
+
+
+mrst_repo_url    = 'https://bitbucket.org/mrst/'
+mrst_branch_name = 'battmo-dev'
 
 
 class MrstFileRole(ReferenceRole):
@@ -384,9 +404,12 @@ class MrstFileRole(ReferenceRole):
             target, lineno = docutils.utils.unescape(target).split("#", 1)
         else:
             lineno = None
-        target = mrst_repo_url + '/blob/' + mrst_branch_name + '/' + target
+        reponame = target.split('/')
+        target = '/'.join(reponame[1:])
+        reponame = reponame[0]
+        target = mrst_repo_url + reponame + '/src/' + mrst_branch_name + '/' + target
         if lineno is not None:
-            target += "#L"+lineno
+            target += "#lines-"+lineno
         node = docutils.nodes.reference(self.rawtext, title, refuri=target)
         return [node], []
 

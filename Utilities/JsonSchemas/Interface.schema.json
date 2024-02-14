@@ -1,6 +1,6 @@
 {
   "$id": "file://./Interface.schema.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "interface",
   "type": "object",
   "properties": {
@@ -13,11 +13,6 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description": "stoichiometric number of electrons transferred in the electrochemical reaction",
       "symbol": "n"
-    },
-    "volumeFraction": {
-      "$ref": "PhysicalQuantity.schema.json",
-      "description": "volume fraction of the active material",
-      "symbol": "varepsilon"
     },
     "volumetricSurfaceArea": {
       "$ref": "PhysicalQuantity.schema.json",
@@ -34,9 +29,15 @@
       "symbol": "k0"
     },
     "exchangeCurrentDensity": {
-      "$ref": "function.schema.json",
-      "description": "the exchange current at the electrode-electrolyte interface under equilibrium conditions",
-      "symbol": "j0"
+      "allOf": [
+        {"$ref": "Function.schema.json"},
+        { "properties" : {
+          "argumentlist": {"type" : "array",
+                           "prefixItems": [{"const": "soc"}]
+                          },
+          "symbol": {"const" : "j0"}}}
+        ],
+      "description": "The exchange current at the electrode-electrolyte interface under equilibrium conditions. If not given, it is computed from the reaction rate constant"
     },
     "guestStoichiometry100": {
       "$ref": "PhysicalQuantity.schema.json",
@@ -54,7 +55,16 @@
       "symbol": "rho"
     },
     "openCircuitPotential": {
-      "$ref": "function.schema.json",
+      "allOf": [
+        {"$ref": "Function.schema.json"},
+        { "properties" : {
+          "argumentlist": {"type" : "array",
+                           "prefixItems": [{"const": "concentration"},
+                                           {"const": "temperature"},
+                                           {"const": "cmax"}]
+                          },
+          "symbol": {"const" : "OCP"}}}
+        ],
       "description": "a function to determine the open-circuit potential of the electrode under given conditions"
     },
     "chargeTransferCoefficient": {

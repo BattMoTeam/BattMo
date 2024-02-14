@@ -33,15 +33,25 @@ classdef FlatJsonViewer
         end
 
 
-        function print(fjv, filterdesc)
+        function print(fjv, varargin)
 
-            if nargin > 1
-                fjv = fjv.filter(filterdesc);
+            opt = struct('filter', [], ...
+                         'filename', []);
+
+            opt = merge_options(opt, varargin{:});
+            
+            if ~isempty(opt.filter)
+                fjv = fjv.filter(opt.filterdesc);
             end
             
-            cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
+            T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
+
+            if ~isempty(opt.filename)
+                writetable(T, opt.filename);
+            end
             
         end
+
 
         function sortedfjv = sort(fjv, orderdesc)
 
@@ -110,3 +120,25 @@ classdef FlatJsonViewer
     end
     
 end
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

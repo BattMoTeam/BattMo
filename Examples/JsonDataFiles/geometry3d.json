@@ -1,0 +1,43 @@
+{
+  "include_current_collectors" : true,
+  "Geometry" : {
+    "case" : "3D-demo",
+    "width" : 1e-2,
+    "height" : 2e-2,
+    "Nw" : 10,
+    "Nh" : 10},
+  "NegativeElectrode": {
+    "Coating": {
+      "thickness" : 100e-6,
+      "N" : 3},
+    "CurrentCollector": {
+      "thickness" : 10e-6,
+      "N" : 2,
+      "tab" : {
+        "width" : 4e-3,
+        "height" : 1e-3,
+        "Nw" : 3,
+        "Nh" : 3
+      }}},
+  
+  "PositiveElectrode": {
+    "Coating": {
+      "thickness" : 80e-6,
+      "N" : 3},
+    "CurrentCollector": {
+      "thickness" : 10e-6,
+      "N" : 2,
+      "tab" : {
+        "width" : 4e-3,
+        "height" : 1e-3,
+        "Nw" : 3,
+        "Nh" : 3
+      }}},
+  "Separator" : {
+    "thickness" : 50e-6,
+    "N" : 3},
+  "ThermalModel" : {
+    "externalHeatTransferCoefficientTab" : 1e3,
+    "externalHeatTransferCoefficient" : 1e2
+  }
+}

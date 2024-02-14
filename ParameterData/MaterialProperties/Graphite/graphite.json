@@ -9,6 +9,6 @@
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential" : {"type": "function",
            "functionname" : "computeOCP_graphite",
-           "argumentlist" : ["cElectrode", "T", "cmax"]
+           "argumentlist" : ["concentration", "temperature", "cmax"]
           }
 }

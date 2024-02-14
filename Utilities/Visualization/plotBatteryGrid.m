@@ -20,7 +20,9 @@ function plotBatteryGrid(model, varargin)
     hold on
     legtext = {};
 
-    if model.G.griddim == 1
+    G = model.grid;
+
+    if G.griddim == 1
         edgeparams = {'linewidth', 2};
         facecolorname = 'color';
     else
@@ -29,21 +31,21 @@ function plotBatteryGrid(model, varargin)
     end
 
     if model.include_current_collectors
-        plotGrid(model.(pe).(cc).G, facecolorname, colors(5,:), edgeparams{:});
+        plotGrid(model.(pe).(cc).grid, facecolorname, colors(5,:), edgeparams{:});
         legtext{end+1} = 'positive electrode current collector';
     end
 
-    plotGrid(model.(pe).(co).G, facecolorname, colors(4,:), edgeparams{:});
-    plotGrid(model.(sep).G,     facecolorname, colors(3,:), edgeparams{:});
-    plotGrid(model.(ne).(co).G, facecolorname, colors(2,:), edgeparams{:});
+    plotGrid(model.(pe).(co).grid, facecolorname, colors(4,:), edgeparams{:});
+    plotGrid(model.(sep).grid,     facecolorname, colors(3,:), edgeparams{:});
+    plotGrid(model.(ne).(co).grid, facecolorname, colors(2,:), edgeparams{:});
     legtext = [legtext, {'positive electrode active material', 'separator', 'negative electrode active material'}];
 
     if model.include_current_collectors
-        plotGrid(model.(ne).(cc).G, facecolorname, colors(1,:), edgeparams{:});
+        plotGrid(model.(ne).(cc).grid, facecolorname, colors(1,:), edgeparams{:});
         legtext{end+1} = 'negative electrode current collector';
     end
 
-    if model.G.griddim == 3
+    if G.griddim == 3
         view(3)
     end
 
@@ -57,3 +59,25 @@ function plotBatteryGrid(model, varargin)
     drawnow();
 
 end
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

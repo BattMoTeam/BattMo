@@ -32,7 +32,7 @@ classdef CatalystLayer < BaseModel
 
     methods
 
-        function model = CatalystLayer(paramobj)
+        function model = CatalystLayer(inputparams)
             
             model = model@BaseModel();
             
@@ -48,10 +48,10 @@ classdef CatalystLayer < BaseModel
                         'include_dissolution'   , ...
                         'tortuosity'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            if paramobj.include_dissolution
-                model.DissolutionModel = DissolutionModel(paramobj.DissolutionModel);
+            if inputparams.include_dissolution
+                model.DissolutionModel = DissolutionModel(inputparams.DissolutionModel);
             else
                 model.subModelNameList = {};
             end
@@ -257,7 +257,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

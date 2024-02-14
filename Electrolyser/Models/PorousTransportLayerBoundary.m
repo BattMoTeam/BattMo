@@ -18,7 +18,7 @@ classdef PorousTransportLayerBoundary < BaseModel
     
     methods
         
-        function model = PorousTransportLayerBoundary(paramobj)
+        function model = PorousTransportLayerBoundary(inputparams)
             
             model = model@BaseModel();
 
@@ -27,7 +27,7 @@ classdef PorousTransportLayerBoundary < BaseModel
                        'liquidInd'  , ...
                        'mobPhaseInd', ...
                        'gasInd'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             
         end
@@ -110,7 +110,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

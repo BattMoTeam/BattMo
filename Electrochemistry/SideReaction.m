@@ -7,32 +7,32 @@ classdef SideReaction < BaseModel
 
         chargeTransferCoefficient % side reaction buttler-volmer  coefficient [-]
         reactionRateConstant      % side reaction rate constant [m/s]
-        
+
     end
 
     methods
 
-        function model = SideReaction(paramobj)
+        function model = SideReaction(inputparams)
 
             model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
             fdnames = {'chargeTransferCoefficient', ...
                        'reactionRateConstant'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
         end
 
         function model = registerVarAndPropfuncNames(model)
-            
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
@@ -46,13 +46,13 @@ classdef SideReaction < BaseModel
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';
-            
+
             model = model.registerVarNames(varnames);
-            
+
             fn = @SideReaction.updateReactionRate;
             inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            
+
         end
 
 
@@ -68,7 +68,7 @@ classdef SideReaction < BaseModel
             phiElyte = state.phiElectrolyte;
             phiElde  = state.phiElectrode;
             dphi     = state.externalPotentialDrop;
-            
+
             eta = (phiElde - phiElyte - dphi);
 
             % Reaction rate in mol/(m^2*s) (not Coulomb and therefore no Faraday number in front). It is always negative
@@ -77,14 +77,14 @@ classdef SideReaction < BaseModel
             state.R = -k*c.*exp(-(beta*F)./(R*T).*eta);
 
         end
-        
+
 
 
     end
 end
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

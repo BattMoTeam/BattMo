@@ -18,7 +18,11 @@ classdef Coating < ElectronicComponent
         % Standard parameters
         effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
+        
+        active_material_type % Active material type string with one of following values:
+                             % - 'default'   (only one particle type : uses ActiveMaterial model)
+                             % - 'composite' (two different particles: uses CompositeActiveMaterial)
+                             % - 'sei'       (one particle with sei layer: uses SEIActiveMaterial)
 
         % Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
@@ -35,13 +39,14 @@ classdef Coating < ElectronicComponent
         compInds  % index of the sub models in the massFractions structure
         compnames % names of the components
 
+        
     end
 
     methods
 
-        function model = Coating(paramobj)
+        function model = Coating(inputparams)
 
-            model = model@ElectronicComponent(paramobj);
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'effectiveDensity'               , ...
                        'bruggemanCoefficient'           , ...
@@ -54,15 +59,18 @@ classdef Coating < ElectronicComponent
                        'effectiveVolumetricHeatCapacity', ...
                        'externalCouplingTerm'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            sd = 'SolidDiffusion';
-            am = 'ActiveMaterial';
-            bd = 'Binder';
-            ad = 'ConductingAdditive';
-
+            % Shortcuts
+            sd  = 'SolidDiffusion';
+            am  = 'ActiveMaterial';
+            bd  = 'Binder';
+            ad  = 'ConductingAdditive';
+            sei = 'SolidElectrodeInterface';
+            sr  = 'SideReaction';
+            
             switch model.active_material_type
-              case 'default'
+              case {'default', 'sei'}
                 am = 'ActiveMaterial';
                 compnames = {am, bd, ad};
               case 'composite'
@@ -84,9 +92,9 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 compInds.(compname) = icomp;
-                if ~isempty(paramobj.(compname))
-                    rho = paramobj.(compname).density;
-                    mf  = paramobj.(compname).massFraction;
+                if ~isempty(inputparams.(compname))
+                    rho = inputparams.(compname).density;
+                    mf  = inputparams.(compname).massFraction;
                     if ~isempty(rho) & ~isempty(mf)
                         specificVolumes(icomp) = mf/rho;
                     end
@@ -98,7 +106,7 @@ classdef Coating < ElectronicComponent
             % We treat special cases
 
             switch model.active_material_type
-              case 'default'
+              case {'default', 'sei'}
                 if all(specificVolumes == 0)
                     % No data has been given, we assume that there is no binder and conducting additive
                     model.volumeFractions = zeros(numel(compnames), 1);
@@ -123,7 +131,7 @@ classdef Coating < ElectronicComponent
             if isempty(model.volumeFractions)
 
                 updateMassFractions = false;
-                
+
                 volumeFractions = zeros(numel(compnames), 1);
                 sumSpecificVolumes = sum(specificVolumes);
                 for icomp = 1 : numel(compnames)
@@ -131,7 +139,7 @@ classdef Coating < ElectronicComponent
                 end
 
                 model.volumeFractions = volumeFractions;
-                
+
             else
 
                 updateMassFractions = true;
@@ -143,7 +151,7 @@ classdef Coating < ElectronicComponent
             if isempty(model.volumeFraction)
 
                 updateEffectiveDensity = false;
-                
+
                 % If the volumeFraction is given, we use it otherwise it is computed from the density and the specific
                 % volumes of the components
                 assert(~isempty(model.effectiveDensity), 'At this point we need an effective density in the model');
@@ -152,7 +160,7 @@ classdef Coating < ElectronicComponent
             else
 
                 updateEffectiveDensity = true;
-                
+
             end
 
             %% We setup the electronic conductivity
@@ -162,8 +170,8 @@ classdef Coating < ElectronicComponent
                 kappa = 0;
                 for icomp = 1 : numel(compnames)
                     compname = compnames{icomp};
-                    if ~isempty(paramobj.(compname)) && ~isempty(paramobj.(compname).electronicConductivity)
-                        kappa = kappa + model.volumeFractions(icomp)*paramobj.(compname).electronicConductivity;
+                    if ~isempty(inputparams.(compname)) && ~isempty(inputparams.(compname).electronicConductivity)
+                        kappa = kappa + model.volumeFractions(icomp)*inputparams.(compname).electronicConductivity;
                     end
                 end
                 assert(abs(kappa) > 0, 'The electronicConductivity must be provided for at least one component');
@@ -180,6 +188,57 @@ classdef Coating < ElectronicComponent
 
             end
 
+
+            %% Setup the submodels
+
+            np = inputparams.G.getNumberOfCells();
+            switch inputparams.active_material_type
+                
+              case 'default'
+                inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                if strcmp(inputparams.(am).diffusionModelType, 'full')
+                    inputparams.(am).(sd).np = np;
+                end
+                model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
+                
+              case 'sei'
+                inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                inputparams.(am).(sd).np  = np;
+                inputparams.(am).(sei).np = np;
+                model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
+                
+              case 'composite'
+                ams = {am1, am2};
+                for iam = 1 : numel(ams)
+                    amc = ams{iam};
+                    inputparams.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
+                    if strcmp(inputparams.(amc).diffusionModelType, 'full')
+                        inputparams.(amc).(sd).np = np;
+                    end
+                    model.(amc) = ActiveMaterial(inputparams.(amc));
+                end
+                
+              otherwise
+                error('active_material_type not recognized');
+                
+            end
+
+            model.Binder             = Binder(inputparams.Binder);
+            model.ConductingAdditive = ConductingAdditive(inputparams.ConductingAdditive);
+
+            if updateMassFractions
+
+                model = model.updateMassFractions();
+
+            end
+
+            if updateEffectiveDensity
+
+                model = model.updateEffectiveDensity();
+
+            end
+
+
             %% We setup the thermal parameters
 
             if model.use_thermal
@@ -191,7 +250,9 @@ classdef Coating < ElectronicComponent
                     thermalConductivity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*paramobj.(compname).thermalConductivity;
+                        if ~isempty(model.(compname).thermalConductivity)
+                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*model.(compname).thermalConductivity;
+                        end
                     end
                     model.thermalConductivity = thermalConductivity;
                 end
@@ -207,7 +268,9 @@ classdef Coating < ElectronicComponent
                     specificHeatCapacity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + paramobj.(compname).massFraction*paramobj.(compname).specificHeatCapacity;
+                        if ~isempty(model.(compname).specificHeatCapacity)
+                            specificHeatCapacity = specificHeatCapacity + model.(compname).massFraction*model.(compname).specificHeatCapacity;
+                        end
                     end
                     model.specificHeatCapacity = specificHeatCapacity;
                 end
@@ -218,47 +281,6 @@ classdef Coating < ElectronicComponent
 
             end
 
-            %% Setup the submodels
-
-            np = paramobj.G.cells.num;
-            switch paramobj.active_material_type
-              case 'default'
-                paramobj.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                if strcmp(paramobj.(am).diffusionModelType, 'full')
-                    paramobj.(am).(sd).np = np;
-                end
-                model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
-              case 'composite'
-                ams = {am1, am2};
-                for iam = 1 : numel(ams)
-                    amc = ams{iam};
-                    paramobj.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
-                    if strcmp(paramobj.(amc).diffusionModelType, 'full')
-                        paramobj.(amc).(sd).np = np;
-                    end
-                    model.(amc) = ActiveMaterial(paramobj.(amc));
-                end
-              otherwise
-                error('active_material_type not recognized');
-            end
-
-            model.Binder             = Binder(paramobj.Binder);
-            model.ConductingAdditive = ConductingAdditive(paramobj.ConductingAdditive);
-
-            if updateMassFractions
-                
-                model = model.updateMassFractions();
-                
-            end
-            
-            if updateEffectiveDensity
-                
-                model = model.updateEffectiveDensity();
-                
-            end
-            
-
-            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -283,7 +305,7 @@ classdef Coating < ElectronicComponent
 
             switch model.active_material_type
 
-              case 'default'
+              case {'default', 'sei'}
 
                 am = 'ActiveMaterial';
 
@@ -371,6 +393,12 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function model = setTPFVgeometry(model, tPFVgeometry)
+        % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry
+
+            model = setTPFVgeometry@ElectronicComponent(model, tPFVgeometry);
+
+        end
 
         function model = updateMassFractions(model)
 
@@ -390,15 +418,15 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 model.(compname).massFraction = massfractions(icomp);
-            end            
-            
+            end
+
         end
-        
+
         function model = updateEffectiveDensity(model)
 
             compnames = model.compnames;
             vf = model.volumeFraction;
-            
+
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 if ~isempty(model.(compname).density)
@@ -411,9 +439,9 @@ classdef Coating < ElectronicComponent
             rho = sum(massfractions)*vf;
 
             model.effectiveDensity = rho;
-            
+
         end
-        
+
         function state = updatejBcSource(model, state)
 
             state.jBcSource = state.jCoupling + state.jExternal;
@@ -448,7 +476,7 @@ classdef Coating < ElectronicComponent
 
             F    = model.constants.F;
             n    = model.(am).(itf).numberOfElectronsTransferred;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             state.eSource =  - n*F*vols.*state.(am).(sd).Rvol;
 
@@ -462,7 +490,7 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
 
             F    = model.constants.F;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             ams = {am1, am2};
 
@@ -539,7 +567,7 @@ classdef Coating < ElectronicComponent
 
             vf       = model.volumeFraction;
             am_frac  = model.volumeFractions(model.compInds.(am));
-            vols     = model.G.cells.volumes;
+            vols     = model.G.getVolumes();
             cmax     = model.(am).(itf).saturationConcentration;
             theta100 = model.(am).(itf).guestStoichiometry100;
             theta0   = model.(am).(itf).guestStoichiometry0;
@@ -566,7 +594,7 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
 
             vf    = model.volumeFraction;
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
 
             ams = {am1, am2};
 
@@ -602,3 +630,25 @@ classdef Coating < ElectronicComponent
 
     end
 end
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

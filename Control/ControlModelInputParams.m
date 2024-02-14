@@ -3,10 +3,7 @@ classdef ControlModelInputParams < InputParams
 % Base class for input parameters for control model
 %
     
-    
     properties
-
-        
 
         %
         % C Rate
@@ -16,47 +13,21 @@ classdef ControlModelInputParams < InputParams
         %
         % Control policy (sring). It can take following values
         %
-        % - 'CCCV'
         % - 'CCDischarge'
-        % - 'CV'
+        % - 'CCCharge'
         % - 'CC'
+        % - 'CCCV'
         %
         controlPolicy
 
-        %
-        % Lower cut-off voltage limit
-        %
-        lowerCutoffVoltage
-
-        %
-        % Lower cut-off voltage limit
-        %
-        upperCutoffVoltage
-        
     end
     
     methods
 
-        function paramobj = ControlModelInputParams(jsonstruct);
+        function inputparams = ControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
-        end
-        
-        function paramobj = set.controlPolicy(paramobj, controlPolicy)
-            switch controlPolicy
-              case {'CCDischarge', 'CCCharge'}
-                % ok in any case
-              case 'CCCV'
-                assert(isa(paramobj, 'CcCvControlModelInputParams'), 'The model is not a CcCvControlModelInputParams class')
-              case 'CV'
-                assert(isa(paramobj, 'CvControlModelInputParams'), 'The model is not a CvControlModelInputParams class')
-              case 'powerControl'
-                assert(isa(paramobj, 'PowerControlModelInputParams'), 'The model is not a PowerControlInputParams class')
-              otherwise
-                error('controlPolicy not recognized');
-            end
-            paramobj.controlPolicy = controlPolicy;                
         end
         
     end
@@ -66,7 +37,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

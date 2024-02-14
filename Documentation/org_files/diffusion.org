@@ -1,9 +1,0 @@
-#+TITLE: Diffusion models
-#+AUTHOR:
-#+OPTIONS: num:nil toc:nil
-#+EXPORT_FILE_NAME: ../diffusion
-
-
-* Full solid diffusion model
-
-* Simplified solid diffusion model

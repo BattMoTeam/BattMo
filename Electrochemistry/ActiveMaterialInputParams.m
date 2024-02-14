@@ -26,7 +26,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         %% Advanced parameters
 
-        standAlone % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial example)
+        isRootSimulationModel % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial for an example)
 
         %% Coupling parameters
         
@@ -36,12 +36,12 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ActiveMaterialInputParams(jsonstruct)
+        function inputparams = ActiveMaterialInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
-            if isempty(paramobj.standAlone)
-                paramobj.standAlone = false;
+            if isempty(inputparams.isRootSimulationModel)
+                inputparams.isRootSimulationModel = false;
             end
 
             sd  = 'SolidDiffusion';
@@ -49,23 +49,23 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(itf) = InterfaceInputParams(pick('Interface'));
+            inputparams.(itf) = InterfaceInputParams(pick('Interface'));
 
-            if isempty(paramobj.diffusionModelType)
-                paramobj.diffusionModelType = 'full';
+            if isempty(inputparams.diffusionModelType)
+                inputparams.diffusionModelType = 'full';
             end
 
-            diffusionModelType = paramobj.diffusionModelType;
+            diffusionModelType = inputparams.diffusionModelType;
             
             switch diffusionModelType
                 
               case 'simple'
                 
-                paramobj.(sd) = SimplifiedSolidDiffusionModelInputParams(pick(sd));
+                inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pick(sd));
                 
               case 'full'
 
-                paramobj.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
+                inputparams.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
                 
               otherwise
                 
@@ -73,45 +73,45 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
 
-            diffusionModelType = paramobj.diffusionModelType;
+            diffusionModelType = inputparams.diffusionModelType;
             
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            paramobj = mergeParameters(paramobj, {{'density'}, {itf, 'density'}});
+            inputparams = mergeParameters(inputparams, {{'density'}, {itf, 'density'}});
 
-            if paramobj.standAlone
+            if inputparams.isRootSimulationModel
                 % only one particle in the stand-alone model
-                paramobj.(sd).np = 1;
+                inputparams.(sd).np = 1;
                 % For the standalone model, we set the volume fraction to one (no other component is present)
-                paramobj.(sd).volumeFraction = 1;
+                inputparams.(sd).volumeFraction = 1;
             end
             
             switch diffusionModelType
                 
               case 'simple'
                 
-                paramobj = mergeParameters(paramobj, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
+                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
                 
               case 'full'
                 
-                paramobj = mergeParameters(paramobj, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
+                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
                 
-                if ~isempty(paramobj.(sd).diffusionCoefficient)
+                if ~isempty(inputparams.(sd).diffusionCoefficient)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
                     paramnames = {'saturationConcentration', ...
                                   'guestStoichiometry100', ...
                                   'guestStoichiometry0'};
                     for iparam = 1 : numel(paramnames)
                         paramname = paramnames{iparam};
-                        paramobj = mergeParameters(paramobj, {{sd, paramname}, {itf, paramname}}, 'force', false);
+                        inputparams = mergeParameters(inputparams, {{sd, paramname}, {itf, paramname}}, 'force', false);
                     end
                     
                 end
@@ -122,7 +122,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            paramobj = validateInputParams@ComponentInputParams(paramobj);
+            inputparams = validateInputParams@ComponentInputParams(inputparams);
             
         end
         
@@ -132,7 +132,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

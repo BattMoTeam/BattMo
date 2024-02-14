@@ -16,20 +16,18 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
 
         function states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
 
+            run('/home/xavier/Matlab/Projects/battmo/startupBattMo.m')
+            
+            mrstModule add ad-core mrst-gui mpfa
+            
             jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
             json = parseBattmoJson(jsonfile);
 
             % Change json params
             params = {'include_current_collectors', include_current_collectors, ...
                       'use_thermal', use_thermal};
-
-            if strcmp(diffusionModelType, 'none')
-                params = [params, {'NegativeElectrode.ActiveMaterial.diffusionModelType', 'interParticleOnly'}];
-                params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', 'interParticleOnly'}];
-            else
-                params = [params, {'NegativeElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
-                params = [params, {'PositiveElectrode.ActiveMaterial.diffusionModelType', diffusionModelType}];
-            end
+            params = [params, {'NegativeElectrode.Coating.ActiveMaterial.diffusionModelType', diffusionModelType}];
+            params = [params, {'PositiveElectrode.Coating.ActiveMaterial.diffusionModelType', diffusionModelType}];
 
             % Validation doesn't run in parallel (probably due to
             % writing to file). It doesn't run if python is not
@@ -41,9 +39,10 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             end
             has_python = pyenv().Version ~= "";
             validate = serial & has_python;
+            validate = false;
             json = updateJson(json, params, 'validate', validate);
 
-            paramobj = BatteryInputParams(json);
+            inputparams = BatteryInputParams(json);
 
             use_cccv = strcmpi(controlPolicy, 'CCCV');
             if use_cccv
@@ -54,8 +53,8 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
                                      'upperCutoffVoltage', 4.1          , ...
                                      'dIdtLimit'         , 0.01         , ...
                                      'dEdtLimit'         , 0.01);
-                cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-                paramobj.Control = cccvparamobj;
+                cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+                inputparams.Control = cccvinputparams;
             end
 
             % We define some shorthand names for simplicity.
@@ -74,67 +73,20 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             % in the class BatteryGeneratorP2D.
             gen = BatteryGeneratorP2D();
 
-            % Now, we update the paramobj with the properties of the grid.
-            paramobj = gen.updateBatteryInputParams(paramobj);
+            % Now, we update the inputparams with the properties of the grid.
+            inputparams = gen.updateBatteryInputParams(inputparams);
 
             %%  Initialize the battery model.
-            % The battery model is initialized by sending paramobj to the Battery class
+            % The battery model is initialized by sending inputparams to the Battery class
             % constructor. see :class:`Battery <Battery.Battery>`.
-            model = Battery(paramobj);
+            model = Battery(inputparams);
             model.AutoDiffBackend = AutoDiffBackend();
 
-            %% Compute the nominal cell capacity and choose a C-Rate
-            % The nominal capacity of the cell is calculated from the active materials.
-            % This value is then combined with the user-defined C-Rate to set the cell
-            % operational current.
-
-            CRate = model.Control.CRate;
-
-            %% Setup the time step schedule
-            % Smaller time steps are used to ramp up the current from zero to its
-            % operational value. Larger time steps are then used for the normal
-            % operation.
-            switch model.(ctrl).controlPolicy
-              case 'CCCV'
-                total = 3.5*hour/CRate;
-              case 'CCDischarge'
-                total = 1.4*hour/CRate;
-              otherwise
-                error('control policy not recognized');
-            end
-
-            n     = 100;
-            dt    = total/n;
-
-            switch testSize
-              case 'long'
-                % do nothing
-              case 'short'
-                n = 10;
-              otherwise
-                error('testSize not recognized')
-            end
-
-            step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-            % we setup the control by assigning a source and stop function.
-            % control = struct('CCCV', true);
-            %  !!! Change this to an entry in the JSON with better variable names !!!
-
-            switch model.Control.controlPolicy
-              case 'CCDischarge'
-                tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-                srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                            model.Control.Imax, ...
-                                                            model.Control.lowerCutoffVoltage);
-                % we setup the control by assigning a source and stop function.
-                control = struct('src', srcfunc, 'CCDischarge', true);
-              case 'CCCV'
-                control = struct('CCCV', true);
-              otherwise
-                error('control policy not recognized');
-            end
-
+            %% Setup schedule
+            
+            step    = model.Control.setupScheduleStep();
+            control = model.Control.setupScheduleControl();
+            
             % This control is used to set up the schedule
             schedule = struct('control', control, 'step', step);
 
@@ -172,6 +124,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
                              testSize                  , ...
                              createReferenceData       , ...
                              compareWithReferenceData)
+
 
             states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize);
 
@@ -216,7 +169,7 @@ along with MRST.  If not, see <http://www.gnu.org/licenses/>.
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

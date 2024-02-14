@@ -1,13 +1,10 @@
 {
   "$id": "file://./ModelSpecification.schema.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Overall model specification. Choice of physics and component that will be included in the model",
   "type": "object",
   "properties": {
     "include_current_collectors": {
-      "type": "boolean"
-    },
-    "use_particle_diffusion": {
       "type": "boolean"
     },
     "use_thermal": {

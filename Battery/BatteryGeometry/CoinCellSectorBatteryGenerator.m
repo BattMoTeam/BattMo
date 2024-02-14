@@ -30,29 +30,29 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             gen = gen@BatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
 
-            gen.thickness = params.thickness;
-            gen.diameter  = params.diameter;
-            gen.angle     = params.angle;
-            %gen.offset    = params.offset;
-            gen.numCellLayers    = params.numCellLayers;
-            gen.nR        = params.nR;
+            gen.thickness     = params.thickness;
+            gen.diameter      = params.diameter;
+            gen.angle         = params.angle;
+            %gen.offset       = params.offset;
+            gen.numCellLayers = params.numCellLayers;
+            gen.nR            = params.nR;
 
-            gen.use_thermal = paramobj.use_thermal;
+            gen.use_thermal = inputparams.use_thermal;
 
-            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
+            [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             gen = coinCellSectorGrid(gen);
-            paramobj.G = gen.G;
+            inputparams.G = gen.G;
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
 
             inds = [gen.tagdict('PositiveActiveMaterial');
                     gen.tagdict('ElectrolyteSeparator');
@@ -63,11 +63,11 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             cellind = ismember(gen.tag, inds);
             params.Separator.cellind = find(cellind);
 
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             % shorthands
             ne  = 'NegativeElectrode';
@@ -89,32 +89,32 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             params.(pe).(cc).extfaces = gen.positiveExtCurrentFaces;
             params.(pe).cellind = [params.(pe).(am).cellind; params.(pe).(cc).cellind];
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupCurrentCollectorBcCoupTerm(gen, paramobj, params)
-        % paramobj is instance of CurrentCollectorInputParams
+        function inputparams = setupCurrentCollectorBcCoupTerm(gen, inputparams, params)
+        % inputparams is instance of CurrentCollectorInputParams
 
-            G = paramobj.G; % grid of the current collector
+            G = inputparams.G; % grid of the current collector
             extfaces = params.extfaces;
 
             clear params
             globG = G.mappings.parentGrid;
             facemap = G.mappings.facemap;
-            invfacemap = zeros(globG.faces.num, 1);
-            invfacemap(facemap) = (1 : G.faces.num)';
+            invfacemap = zeros(globG.getNumberOfFaces(), 1);
+            invfacemap(facemap) = (1 : G.getNumberOfFaces())';
 
             params.bcfaces = invfacemap(extfaces);
             params.bccells = sum(G.faces.neighbors(params.bcfaces, :), 2);
 
-            paramobj = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, ~)
-        % paramobj is instance of BatteryInputParams
+        function inputparams = setupThermalModel(gen, inputparams, ~)
+        % inputparams is instance of BatteryInputParams
 
             G = gen.G;
 
@@ -122,7 +122,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
             couplingcells = sum(G.faces.neighbors(couplingfaces, :), 2);
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
 
             couplingfaces = gen.thermalExchangeFaces;
@@ -131,19 +131,19 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
 
             params = struct('couplingfaces', couplingfaces, ...
                             'couplingcells', couplingcells);
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
             thermal = 'ThermalModel'; % shorcut
 
-            if isempty(paramobj.(thermal).externalHeatTransferCoefficientTopFaces) || ...
-                    isempty(paramobj.(thermal).externalHeatTransferCoefficientSideFaces)
-                paramobj.(thermal).externalHeatTransferCoefficient = ...
-                    paramobj.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
+            if isempty(inputparams.(thermal).externalHeatTransferCoefficientTopFaces) || ...
+                    isempty(inputparams.(thermal).externalHeatTransferCoefficientSideFaces)
+                inputparams.(thermal).externalHeatTransferCoefficient = ...
+                    inputparams.(thermal).externalHeatTransferCoefficient*ones(numel(couplingfaces), 1);
             else
                 externalHeatTransferCoefficient = nan(numel(couplingfaces), 1);
-                externalHeatTransferCoefficient(couplingtags == 1) = paramobj.(thermal).externalHeatTransferCoefficientTopFaces;
-                externalHeatTransferCoefficient(couplingtags == 2) = paramobj.(thermal).externalHeatTransferCoefficientSideFaces;
-                paramobj.(thermal).externalHeatTransferCoefficient = externalHeatTransferCoefficient;
+                externalHeatTransferCoefficient(couplingtags == 1) = inputparams.(thermal).externalHeatTransferCoefficientTopFaces;
+                externalHeatTransferCoefficient(couplingtags == 2) = inputparams.(thermal).externalHeatTransferCoefficientSideFaces;
+                inputparams.(thermal).externalHeatTransferCoefficient = externalHeatTransferCoefficient;
             end
         end
 
@@ -152,7 +152,7 @@ classdef CoinCellSectorBatteryGenerator < BatteryGenerator
 end
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

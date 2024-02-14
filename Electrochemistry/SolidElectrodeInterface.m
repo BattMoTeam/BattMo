@@ -8,38 +8,38 @@ classdef SolidElectrodeInterface < BaseModel
         %% Input parameters
 
         % standard parameters
-        
+
         molecularWeight      % SEI molecular weight [kg/mol]
         density              % SEI density [kg/m^3]
         conductivity         % SEI conductivity
         diffusionCoefficient % SEI diffusion coefficient [m^2/s]
 
         % Discretization parameters
-        
+
         N  % Number of discretization intervals in the sei layer model [-]
         np % Number of computational grid cells (typically set by parent model)
-        
+
     end
 
     methods
 
-        function model = SolidElectrodeInterface(paramobj)
+        function model = SolidElectrodeInterface(inputparams)
 
             model = model@BaseModel();
 
              % OBS : All the submodels should have same backend (this is not assigned automaticallly for the moment)
-            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', false);
+            model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
             fdnames = {'molecularWeight'     , ...
                        'density'             , ...
-                       'conductivity'        , ... 
-                       'diffusionCoefficient', ... 
+                       'conductivity'        , ...
+                       'diffusionCoefficient', ...
                        'np'                  , ...
                        'N'};
-            model = dispatchParams(model, paramobj, fdnames);
-            
+            model = dispatchParams(model, inputparams, fdnames);
+
             model.operators = model.setupOperators();
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -48,7 +48,7 @@ classdef SolidElectrodeInterface < BaseModel
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-                        
+
             varnames = {};
             % Solvent concentration in the SEI film
             varnames{end + 1} = 'c';
@@ -74,27 +74,27 @@ classdef SolidElectrodeInterface < BaseModel
             varnames{end + 1} = 'interfaceBoundaryEq';
             % SEI Width equation
             varnames{end + 1} = 'widthEq';
-            
+
             model = model.registerVarNames(varnames);
 
             fn = @SolidElectrodeInterface.updateFlux;
             inputnames = {'c', 'v', 'delta'};
             model = model.registerPropFunction({'flux', fn, inputnames});
-            
+
             fn = @SolidElectrodeInterface.updateSEIgrowthVelocity;
             inputnames = {'R'};
             model = model.registerPropFunction({'v', fn, inputnames});
-            
+
             fn = @SolidElectrodeInterface.updateMassConservation;
             inputnames = {'massAccum', 'flux', 'massSource'};
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @SolidElectrodeInterface.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'R', 'c', 'v', 'cExternal'}});
-            
+
             fn = @SolidElectrodeInterface.assembleInterfaceBoundaryEquation;
             model = model.registerPropFunction({'interfaceBoundaryEq', fn, {'c', 'cInterface', 'massSource'}});
-            
+
             fn = @SolidElectrodeInterface.assembleWidthEquation;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'widthEq', fn, {'delta', 'v'}});
@@ -104,13 +104,13 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'massAccum', fn, {'delta', 'c'}});
 
         end
-        
+
         function operators = setupOperators(model)
-            
+
             np = model.np;
             N  = model.N;
             D  = model.diffusionCoefficient;
-            
+
             celltbl.cells = (1 : np)';
             celltbl = IndexArray(celltbl);
 
@@ -123,31 +123,31 @@ classdef SolidElectrodeInterface < BaseModel
             endScelltbl.Scells = N;
             endScelltbl = IndexArray(endScelltbl);
             endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
-            
+
             startScelltbl.Scells = 1;
             startScelltbl = IndexArray(startScelltbl);
             startcellScelltbl = crossIndexArray(cellScelltbl, startScelltbl, {'Scells'});
-            
+
             Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
-            
-            % The governing equation is setup in a fixed grid of length 1            
-            G = cartGrid(N, 1); 
+
+            % The governing equation is setup in a fixed grid of length 1
+            G = cartGrid(N, 1);
             G = computeGeometry(G);
-            
+
             rock.perm = ones(N, 1);
             rock.poro = ones(N, 1);
             op = setupOperatorsTPFA(G, rock);
             C = op.C;
             T = op.T; % in Sfacetbl
             T_all = op.T_all;
-            
+
             TExtBc = D*T_all(N); % half-transmissibility for of the external boundary face
             TIntBc = D*T_all(1); % half-transmissibility for of the internal boundary face (close to solid particle)
-            
+
             Grad = -diag(T)*C;
-            
+
             [i, j, grad] = find(Grad);
             ScellSfacetbl.Sfaces = i;
             ScellSfacetbl.Scells = j;
@@ -228,7 +228,7 @@ classdef SolidElectrodeInterface < BaseModel
             mapFromExtBc = mapFromExtBc.getMatrix();
 
             mapToExtBc = mapFromExtBc';
-            
+
             % same procedure for internal bc
             map = TensorMap();
             map.fromTbl = startcellScelltbl;
@@ -251,9 +251,9 @@ classdef SolidElectrodeInterface < BaseModel
             mapToIntBc = mapFromIntBc';
 
             %% setup Average mapping
-            
-            M = op.M; 
-            
+
+            M = op.M;
+
             [i, j, M]  = find(M);
 
             clear ScellSfacetbl
@@ -270,7 +270,7 @@ classdef SolidElectrodeInterface < BaseModel
             map = map.setup();
 
             M = map.eval(M);
-            
+
             prod = TensorProd();
             prod.tbl1 = cellScellSfacetbl;
             prod.tbl2 = cellScelltbl;
@@ -278,14 +278,14 @@ classdef SolidElectrodeInterface < BaseModel
             prod.reducefds = {'Scells'};
             prod.mergefds = {'cells'};
             prod = prod.setup();
-            
+
             faceAverage = SparseTensor();
             faceAverage = faceAverage.setFromTensorProd(M, prod);
             faceAverage = faceAverage.getMatrix();
-            
-            
+
+
             %% mapToSei (mapping from celltbl to cellScelltbl) and Centroids values
-            
+
             map = TensorMap();
             map.fromTbl = celltbl;
             map.toTbl = cellScelltbl;
@@ -295,18 +295,18 @@ classdef SolidElectrodeInterface < BaseModel
             mapToSei = SparseTensor();
             mapToSei = mapToSei.setFromTensorMap(map);
             mapToSei = mapToSei.getMatrix();
-            
+
             %%  assemble cell centroids and volumes
-            
+
             map = TensorMap();
             map.fromTbl = Scelltbl;
             map.toTbl = cellScelltbl;
             map.mergefds = {'Scells'};
             map = map.setup();
-            
+
             cellCentroids = map.eval(G.cells.centroids);
             vols = map.eval(G.cells.volumes);
-            
+
             operators = struct('div'          , div          , ...
                                'diffFlux'     , diffFlux     , ...
                                'faceAverage'  , faceAverage  , ...
@@ -319,99 +319,99 @@ classdef SolidElectrodeInterface < BaseModel
                                'mapToSei'     , mapToSei     , ...
                                'cellCentroids', cellCentroids, ...
                                'vols'         , vols);
-            
+
         end
 
         function state = updateMassSource(model, state)
-            
+
             op = model.operators;
-            
+
             R     = state.R;
             c     = state.c;
             cext  = state.cExternal;
             delta = state.delta;
-            
+
             c = op.mapToExtBc*c;
             %% FIXME : add epsilon term before cext (as in Safari paper)
             % The convection term vanishes for xi = 1
             srcExternal = -op.TExtBc.*(c - cext);
             srcExternal = op.mapFromExtBc*srcExternal;
-            
-            % Here, we use conversion relation between source terms given in moving and fixed grid : 
+
+            % Here, we use conversion relation between source terms given in moving and fixed grid :
             % xi*v*delta*c_fixed = delta*src_moving - src_fixed (see doc).
             srcInterface = op.mapFromIntBc*(delta.*R);
             state.massSource = srcExternal + srcInterface;
-            
+
         end
 
-        
+
         function state = assembleWidthEquation(model, state, state0, dt)
-            
+
             state.widthEq = 1/dt*(state.delta - state0.delta) - state.v;
-            
+
         end
-        
-        
+
+
         function state = updateMassAccumTerm(model, state, state0, dt)
 
             op = model.operators;
-            
+
             c      = state.c;
             c0     = state0.c;
             delta  = state.delta;
             delta0 = state0.delta;
-            
+
             delta  = op.mapToSei*delta;
             delta0 = op.mapToSei*delta0;
-            
+
             state.massAccum = 1/dt*op.vols.*delta.*(delta.*c - delta0.*c0);
-            
+
         end
-            
+
         function state = updateMassConservation(model, state)
-           
+
             op = model.operators;
-            
+
             flux       = state.flux;
             massSource = state.massSource;
             massAccum  = state.massAccum;
-            
+
             state.massCons = massAccum + op.div(flux) - massSource;
 
         end
-        
+
         function state = updateSEIgrowthVelocity(model, state)
-            
+
             Mw = model.molecularWeight;
             rho = model.density;
-            
+
             R = state.R;
-            
+
             % Note that R is (for the moment) always negative so that we only have sei layer growth.
             state.v = -0.5*R*(Mw/rho);
-            
+
         end
-        
+
         function state = updateFlux(model, state)
-            
+
             op       = model.operators;
             xi       = op.cellCentroids;
             mapToSei = op.mapToSei;
             faceAver = op.faceAverage;
-            
+
             c     = state.c;
             v     = state.v;
             delta = state.delta;
-            
+
             coef = mapToSei*(delta.*v);
-            
+
             state.flux = op.diffFlux(c) + faceAver*(coef.*(1 - xi).*c);
-            
+
         end
 
         function state = assembleInterfaceBoundaryEquation(model, state)
         % Boundary equation at the interface side, which relates flux with source term.
-            
+
             op = model.operators;
 
             c     = state.c;
@@ -419,22 +419,22 @@ classdef SolidElectrodeInterface < BaseModel
             R     = state.R;
             v     = state.v;
             delta = state.delta;
-            
+
             % Here, xi = 0
             eq = - op.TIntBc.*(op.mapToIntBc*c - cInt) + delta.*v.*cInt - delta.*R;
-            
+
             state.interfaceBoundaryEq = eq;
-            
+
         end
-        
-        
+
+
     end
-    
+
 end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
@@ -452,5 +452,3 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
-    
-

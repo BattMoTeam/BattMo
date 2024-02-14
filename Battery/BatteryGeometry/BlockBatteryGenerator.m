@@ -7,10 +7,10 @@ classdef BlockBatteryGenerator < SpiralBatteryGenerator
         end
         
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
     
             gen = flatGrid(gen);
-            paramobj.G = gen.G;
+            inputparams.G = gen.G;
             
         end
 
@@ -21,7 +21,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

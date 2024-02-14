@@ -1,11 +1,11 @@
-function paramobj = jsonfileToParams(paramobj, filename)
+function inputparams = jsonfileToParams(inputparams, filename)
 
     fileroot = fullfile('..', '..');
     fullfilename = fullfile(fileroot, filename);
     jsonsrc = fileread(filename);
-    data = jsondecode(jsonsrc);
+    data = battMojsondecode(jsonsrc);
 
-    paramobj = assignStructParams(paramobj, data);
+    inputparams = assignStructParams(inputparams, data);
     
 end
 
@@ -13,7 +13,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

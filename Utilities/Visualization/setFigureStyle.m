@@ -33,7 +33,7 @@ end
 
 for fig = 1 : n
 
-    set(0, 'CurrentFigure', fig);
+    set(0, 'CurrentFigure', gcf);
     ax = gca;
     hLegend = findobj(gcf, 'Type', 'Legend');
     hColorbar = findobj(gcf, 'Type', 'Colorbar');
@@ -146,7 +146,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

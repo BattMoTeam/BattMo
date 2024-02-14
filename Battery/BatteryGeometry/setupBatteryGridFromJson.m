@@ -1,4 +1,4 @@
-function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstruct)
+function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct)
 
     ne    = 'NegativeElectrode';
     pe    = 'PositiveElectrode';
@@ -19,10 +19,10 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         xlength(3) = jsonstruct.Separator.thickness;
         xlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
 
-        if paramobj.NegativeElectrode.include_current_collectors
+        if inputparams.NegativeElectrode.include_current_collectors
             xlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         end
-        if paramobj.PositiveElectrode.include_current_collectors
+        if inputparams.PositiveElectrode.include_current_collectors
             xlength(5) = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
         end
 
@@ -32,10 +32,10 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         gen.nenx   = jsonstruct.NegativeElectrode.Coating.N;
         gen.penx   = jsonstruct.PositiveElectrode.Coating.N;
 
-        if paramobj.NegativeElectrode.include_current_collectors
+        if inputparams.NegativeElectrode.include_current_collectors
             gen.ccnenx = jsonstruct.NegativeElectrode.CurrentCollector.N;
         end
-        if paramobj.PositiveElectrode.include_current_collectors
+        if inputparams.PositiveElectrode.include_current_collectors
             gen.ccpenx = jsonstruct.PositiveElectrode.CurrentCollector.N;
         end
 
@@ -43,8 +43,13 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
             gen.faceArea = jsonstruct.Geometry.faceArea;
         end
 
-        % Now, we update the paramobj with the properties of the grid.
-        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+        if isfield(jsonstruct.Geometry, 'resolutionFactor')
+            gen.resolutionFactor = jsonstruct.Geometry.resolutionFactor;
+            gen = gen.applyResolutionFactors();
+        end
+
+        % Now, we update the inputparams with the properties of the grid.
+        [inputparams, gen] = gen.updateBatteryInputParams(inputparams);
 
       case 'multiLayerPouch'
 
@@ -52,24 +57,25 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
         gen = BatteryGeneratorMultilayerPouch();
 
-        gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness     ; ...
-                                   jsonstruct.(ne).(am).thickness     ; ...
-                                   jsonstruct.(elyte).(sep).thickness ; ...
-                                   jsonstruct.(pe).(am).thickness     ; ...
+        gen.pouch_width  = jsonstruct.(geom).width;
+        gen.pouch_height = jsonstruct.(geom).length;
+
+        gen.unit_cell_thickness = [jsonstruct.(ne).(cc).thickness ; ...
+                                   jsonstruct.(ne).(co).thickness ; ...
+                                   jsonstruct.(sep).thickness     ; ...
+                                   jsonstruct.(pe).(co).thickness ; ...
                                    jsonstruct.(pe).(cc).thickness];
 
-        gen.sep_nz   = jsonstruct.(elyte).(sep).N;
-        gen.ne_am_nz = jsonstruct.(ne).(am).N;
-        gen.pe_am_nz = jsonstruct.(pe).(am).N;
+        gen.sep_nz   = jsonstruct.(sep).N;
+        gen.ne_co_nz = jsonstruct.(ne).(co).N;
+        gen.pe_co_nz = jsonstruct.(pe).(co).N;
         gen.ne_cc_nz = jsonstruct.(ne).(cc).N;
         gen.pe_cc_nz = jsonstruct.(pe).(cc).N;
 
-        gen.pouch_width = jsonstruct.(geom).width;
-        gen.pouch_height = jsonstruct.(geom).height;
 
         gen.tab_width     = jsonstruct.(geom).tab.width;
-        gen.ne_tab_height = jsonstruct.(geom).tab.(ne).height;
-        gen.pe_tab_height = jsonstruct.(geom).tab.(pe).height;
+        gen.ne_tab_height = jsonstruct.(geom).tab.(ne).length;
+        gen.pe_tab_height = jsonstruct.(geom).tab.(pe).length;
 
         gen.n_layers = jsonstruct.(geom).nLayers;
 
@@ -84,8 +90,8 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         else
             gen.cap_tabs = false;
         end
-        % Now, we update the paramobj with the properties of the grid.
-        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+        % Now, we update the inputparams with the properties of the grid.
+        [inputparams, gen] = gen.updateBatteryInputParams(inputparams);
 
       case '2D-demo'
 
@@ -102,8 +108,8 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
         gen.zlength = zlength;
 
         gen.sep_nz   = jsonstruct.Separator.N;
-        gen.ne_am_nz = jsonstruct.NegativeElectrode.Coating.N;
-        gen.pe_am_nz = jsonstruct.PositiveElectrode.Coating.N;
+        gen.ne_co_nz = jsonstruct.NegativeElectrode.Coating.N;
+        gen.pe_co_nz = jsonstruct.PositiveElectrode.Coating.N;
         gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
         gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
 
@@ -134,8 +140,8 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
             gen.externalHeatTransferCoefficientTab = gen.externalHeatTransferCoefficient;
         end
 
-        % Now, we update the paramobj with the properties of the grid.
-        [paramobj, gen] = gen.updateBatteryInputParams(paramobj);
+        % Now, we update the inputparams with the properties of the grid.
+        [inputparams, gen] = gen.updateBatteryInputParams(inputparams);
 
       case {'jellyRoll', 'sectorModel'}
 
@@ -214,7 +220,7 @@ function [paramobj, gridGenerator] = setupBatteryGridFromJson(paramobj, jsonstru
 
         end
 
-        [paramobj, gen] = gen.updateBatteryInputParams(paramobj, params);
+        [inputparams, gen] = gen.updateBatteryInputParams(inputparams, params);
 
       otherwise
 
@@ -229,7 +235,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

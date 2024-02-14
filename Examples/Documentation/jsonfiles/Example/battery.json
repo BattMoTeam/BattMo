@@ -1,0 +1,22 @@
+{
+  "NegativeElectrode": {
+    "isFile": true,
+    "filename": "negativeElectrode.json"
+  },
+  "PositiveElectrode": {
+    "isFile": true,
+    "filename": "positiveElectrode.json"
+  },
+  "Electrolyte": {
+    "isFile": true,
+    "filename": "electrolyte.json"
+  },
+  "Separator": {
+    "isFile": true,
+    "filename": "separator.json"
+  },
+  "ThermalModel": {
+    "isFile": true,
+    "filename": "thermalComponent.json"
+  }
+}

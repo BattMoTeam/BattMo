@@ -11,8 +11,8 @@
     "type": "function",
     "functionname": "computeOCP_nmc111_Chen",
     "argumentlist": [
-      "cElectrode",
-      "T",
+      "concentration",
+      "temperature",
       "cmax"
     ]
   }

@@ -15,9 +15,9 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = EvolutionElectrodeInputParams(jsonstruct)
+        function inputparams = EvolutionElectrodeInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
@@ -25,23 +25,23 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            switch paramobj.porousTransportLayerType
+            switch inputparams.porousTransportLayerType
               case {'Hydrogen', 'Oxygen'}
                 % for the moment no difference in the input for both models
-                paramobj.(ptl) = PorousTransportLayerInputParams(pick(ptl));
+                inputparams.(ptl) = PorousTransportLayerInputParams(pick(ptl));
               otherwise
                 error('porousTransportLayerType not recognized')
             end
 
-            switch paramobj.catalystLayerType
+            switch inputparams.catalystLayerType
               case {'Platinium', 'Iridium'}
                 % for the moment no difference in the input for both models
-                paramobj.(ctl) = CatalystLayerInputParams(pick(ctl));
+                inputparams.(ctl) = CatalystLayerInputParams(pick(ctl));
               otherwise
                 error('catalystLayerType not recognized')
             end
             
-            paramobj.(exr) = ExchangeReactionInputParams(pick(exr));
+            inputparams.(exr) = ExchangeReactionInputParams(pick(exr));
             
         end
         
@@ -53,7 +53,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

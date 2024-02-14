@@ -1,9 +1,7 @@
 {
   "$id": "file://./SimplifiedSolidDiffusionModel.schema.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "solid diffusion",
   "type": "object",
-  
-  "$ref" : "SolidDiffusionModel.schema.json"
-  
+  "$ref" : "SolidDiffusionModel.schema.json"  
 }

@@ -1,22 +1,33 @@
 classdef CCDischargeControlModelInputParams < CCcontrolModelInputParams
 
+    
+    properties
+
+        Imax
+        rampupTime
+        useCVswitch
+        lowerCutoffVoltage
+        
+    end
+
+
     methods
 
-        function paramobj = CCDischargeControlModelInputParams(jsonstruct);
+        function inputparams = CCDischargeControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@CCcontrolModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCDischarge';
+            inputparams = inputparams@CCcontrolModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CCDischarge';
             
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
 
-            if isempty(paramobj.useCVswitch)
+            if isempty(inputparams.useCVswitch)
                 % Default value is false
-                paramobj.useCVswitch = false;
+                inputparams.useCVswitch = false;
             end
             
-            paramobj = validateInputParams@ControlModelInputParams(paramobj);
+            inputparams = validateInputParams@ControlModelInputParams(inputparams);
             
         end
     end
@@ -26,7 +37,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

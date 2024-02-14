@@ -6,6 +6,9 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     properties
 
+        lowerCutoffVoltage
+        upperCutoffVoltage
+
         % When voltage control, we wait for the derivative of the current to be below the value of dIdtLimit between we
         % switch to the following constant current control.
         dIdtLimit
@@ -27,10 +30,10 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function paramobj = CcCvControlModelInputParams(jsonstruct);
+        function inputparams = CcCvControlModelInputParams(jsonstruct);
             
-            paramobj = paramobj@ControlModelInputParams(jsonstruct);
-            paramobj.controlPolicy = 'CCCV';
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            inputparams.controlPolicy = 'CCCV';
             
         end
 
@@ -41,7 +44,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

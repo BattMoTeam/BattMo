@@ -6,7 +6,7 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
             gen = gen@SpiralBatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams, params)
 
             gen.nwindings    = params.nwindings;
             gen.rInner       = params.rInner;
@@ -16,16 +16,16 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
             gen.L            = params.L;
             gen.nL           = params.nL;
 
-            gen.use_thermal = paramobj.use_thermal;
+            gen.use_thermal = inputparams.use_thermal;
 
-            [paramobj, gen] = gen.setupBatteryInputParams(paramobj, []);
+            [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
-            gen = sectorGrid(gen);
-            paramobj.G = gen.G;
+            [gen, G] = sectorGrid(gen);
+            inputparams.G = G;
 
         end
 
@@ -35,7 +35,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -16,7 +16,7 @@ classdef BaseModel < PhysicalModel
         %% The following properties are set when a model is equiped for simulation. It is then a root model (as opposed to the sub-models)
         % See method equipModelForComputation
 
-        isSimulationModel % boolean if the model is meant to be run for simulation
+        isRootSimulationModel % boolean if the model is meant to be run for simulation
         
         funcCallList
         primaryVarNames
@@ -562,8 +562,7 @@ classdef BaseModel < PhysicalModel
                 end
             end
             
-            funcCall = join(funcCallList, '');
-            funcCall = funcCall{1};
+            funcCall = strjoin(funcCallList, '');
             eval(funcCall);
             
         end
@@ -573,11 +572,17 @@ classdef BaseModel < PhysicalModel
         
         function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
             
+            opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
+            opt = merge_options(opt, varargin{:});
+            
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
             time = state0.time + dt;
-            state = model.initStateAD(state);
+
+            if ~opt.ResOnly
+                state = model.initStateAD(state);
+            end
             
             %% We call the assembly equations ordered from the graph
 
@@ -620,7 +625,7 @@ classdef BaseModel < PhysicalModel
                     coef = scaling{2};
 
                     val = model.getProp(state, name);
-                    val = 1/coef*val;
+                    val = 1./coef.*val;
 
                     state = model.setProp(state, name, val);
                     
@@ -673,13 +678,27 @@ classdef BaseModel < PhysicalModel
 
         function cgt = cgt(model)
         % Shortcut to retrieve the computational graph
+            if isempty(model.computationalGraph)
+                model = model.setupComputationalGraph();
+            end
             cgt =  model.computationalGraph;
-            
         end
 
         function cgp = cgp(model)
         % Shortcut to setup and retrieve the computational graph plot 
             cgp = ComputationalGraphPlot(model.computationalGraph);
+        end
+
+
+        function G = grid(model)
+        % Shorcut to retrieve grid in defaut MRST format, which can be used for plotting
+
+            if isa(model.G, 'GenericGrid')
+                G = model.G.mrstFormat();
+            else
+                G = model.G;
+            end
+            
         end
         
     end
@@ -720,7 +739,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

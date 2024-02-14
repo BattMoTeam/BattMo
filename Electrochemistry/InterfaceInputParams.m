@@ -8,7 +8,6 @@ classdef InterfaceInputParams < InputParams
 
         saturationConcentration      % the saturation concentration of the guest molecule in the host material
         numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
-        volumeFraction               % volume fraction of the active material
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
         activationEnergyOfReaction   % the activation energy of the electrochemical reaction
         reactionRateConstant         % the reaction rate constant of the electrochemical reaction
@@ -39,9 +38,9 @@ classdef InterfaceInputParams < InputParams
     
     methods
         
-        function paramobj = InterfaceInputParams(jsonstruct)
+        function inputparams = InterfaceInputParams(jsonstruct)
 
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         
@@ -52,7 +51,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

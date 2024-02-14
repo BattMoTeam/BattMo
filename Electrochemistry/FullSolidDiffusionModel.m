@@ -35,9 +35,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
     methods
 
-        function model = FullSolidDiffusionModel(paramobj)
+        function model = FullSolidDiffusionModel(inputparams)
 
-            model = model@SolidDiffusionModel(paramobj);
+            model = model@SolidDiffusionModel(inputparams);
 
             fdnames = {'volumeFraction'         , ...
                        'diffusionCoefficient'   , ...
@@ -47,17 +47,17 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'np'                     , ...
                        'N'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             model.operators = model.setupOperators();
 
-            D = paramobj.diffusionCoefficient;
+            D = inputparams.diffusionCoefficient;
             if ~isempty(D)
-                switch paramobj.D.type
+                switch inputparams.D.type
                   case 'constant'
                     model.useDFunc = false;
                   case 'function'
                     model.useDFunc = true;
-                    model.computeDFunc = str2func(paramobj.D.functionname);
+                    model.computeDFunc = str2func(inputparams.D.functionname);
                   otherwise
                     errror('type of D not recognized.')
                 end
@@ -153,7 +153,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             rock.perm = ones(N, 1);
             rock.poro = ones(N, 1);
 
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
 
             hT = computeTrans(G, rock); % hT is in cellfacetbl
@@ -404,7 +404,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -1,26 +1,26 @@
 classdef ElectroChemicalComponent < ElectronicComponent
-    
+
     properties
 
         EffectiveDiffusionCoefficient % Effective diffusion coefficient
-        
+
     end
 
     methods
-        
-        function model = ElectroChemicalComponent(paramobj)
-        % Here, :code:`paramobj` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
-        
-            model = model@ElectronicComponent(paramobj);
+
+        function model = ElectroChemicalComponent(inputparams)
+        % Here, :code:`inputparams` is instance of :class:`ElectronicChemicalInputParams <Electrochemistry.ElectronicChemicalInputParams>`
+
+            model = model@ElectronicComponent(inputparams);
 
         end
 
-        
+
         function model = registerVarAndPropfuncNames(model)
-        
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
-            
+
             model = registerVarAndPropfuncNames@ElectronicComponent(model);
 
             varnames = {'c'         , ...
@@ -29,43 +29,43 @@ classdef ElectroChemicalComponent < ElectronicComponent
                         'massAccum' , ...
                         'massCons'};
             model = model.registerVarNames(varnames);
-            
+
             fn = @ElectroChemicalComponent.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c'}});
-            
+
             fn = @ElectroChemicalComponent.updateMassConservation;
             model = model.registerPropFunction({'massCons', fn, {'massFlux', 'massSource', 'massAccum'}});
-            
-            
+
+
         end
-        
+
         function state = updateMassFlux(model, state)
         % Assemble diffusion flux which is stored in :code:`state.Flux`
 
             D = model.EffectiveDiffusionCoefficient;
-            
+
             c = state.c;
 
-            massflux = assembleFlux(model, c, D);
-            
+            massflux = assembleHomogeneousFlux(model, c, D);
+
             state.massFlux = massflux;
-            
+
         end
-        
+
         function state = updateMassConservation(model, state)
         % Assemble residual of the mass conservation equation which is stored in :code:`state.massCons`
-            
+
             flux   = state.massFlux;
             source = state.massSource;
             accum  = state.massAccum;
             bcsource = 0;
-            
+
             masscons = assembleConservationEquation(model, flux, bcsource, source, accum);
-            
+
             state.massCons = masscons;
-            
+
         end
-        
+
     end
 end
 
@@ -73,7 +73,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

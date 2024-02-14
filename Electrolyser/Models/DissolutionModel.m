@@ -18,7 +18,7 @@ classdef DissolutionModel < BaseModel
 
     methods
 
-        function model = DissolutionModel(paramobj)
+        function model = DissolutionModel(inputparams)
             
             model = model@BaseModel();
             
@@ -31,7 +31,7 @@ classdef DissolutionModel < BaseModel
                        'volumeFraction0', ...
                        'volumetricSurfaceArea0'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants();
 
@@ -168,7 +168,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateMassAccum(model, state, state0, dt)
 
-                vols = model.G.cells.volumes;
+                vols = model.G.getVolumes();
                 
                 vf  = state.volumeFraction;
                 vf0 = state0.volumeFraction;
@@ -182,7 +182,7 @@ classdef DissolutionModel < BaseModel
 
                 V    = model.V;
                 F    = model.constants.F;
-                vols = model.G.cells.volumes;
+                vols = model.G.getVolumes();
                 
                 rRate = state.reactionRate;
 
@@ -207,7 +207,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

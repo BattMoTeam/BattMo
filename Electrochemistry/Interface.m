@@ -12,7 +12,6 @@ classdef Interface < BaseModel
         
         saturationConcentration      % the saturation concentration of the guest molecule in the host material
         numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
-        volumeFraction               % volume fraction of the active material
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
         activationEnergyOfReaction   % the activation energy of the electrochemical reaction
         reactionRateConstant         % the reaction rate constant of the electrochemical reaction
@@ -50,14 +49,13 @@ classdef Interface < BaseModel
 
     methods
 
-        function model = Interface(paramobj)
+        function model = Interface(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'G'                           , ...
                        'saturationConcentration'     , ...
                        'numberOfElectronsTransferred', ...
-                       'volumeFraction'              , ...
                        'volumetricSurfaceArea'       , ...
                        'activationEnergyOfReaction'  , ...
                        'reactionRateConstant'        , ...
@@ -68,11 +66,11 @@ classdef Interface < BaseModel
                        'openCircuitPotential'        , ...
                        'chargeTransferCoefficient'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeOCPFunc = str2func(paramobj.openCircuitPotential.functionname);
+            model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionname);
 
-            j0 = paramobj.exchangeCurrentDensity;
+            j0 = inputparams.exchangeCurrentDensity;
             
             if ~isempty(j0)
                 switch j0.type
@@ -269,7 +267,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -5,19 +5,25 @@ classdef seiCcCvControlModel < ControlModel
         Imax
         dIdtLimit
         dEdtLimit
+
+        % Control used initially. String that can take one of the following values
+        % - 'discharging'
+        % - 'charging'
+        initialControl
         
     end
     
     
     methods
 
-        function model = seiCcCvControlModel(paramobj)
+        function model = seiCcCvControlModel(inputparams)
 
-            model = model@ControlModel(paramobj);
+            model = model@ControlModel(inputparams);
             
             fdnames = {'dEdtLimit', ...
-                       'dIdtLimit'};
-            model = dispatchParams(model, paramobj, fdnames);
+                       'dIdtLimit', ...
+                       'initialControl'};
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 
@@ -173,7 +179,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -17,10 +17,16 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         %% Standard parameters
 
-        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed in wet or calendared state (meaning including the volume of the pores)
-        bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
+        effectiveDensity % the mass density of the material (symbol: rho). Important : the density is computed in wet or
+                         % calendared state (meaning including the volume of the pores)
 
+        bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
+        
+        active_material_type % Active material type string with one of following values:
+                             % - 'default'   (only one particle type : uses ActiveMaterial model)
+                             % - 'composite' (two different particles: uses CompositeActiveMaterial)
+                             % - 'sei'       (one particle with sei layer: uses SEIActiveMaterial)
+        
         %% Advanced parameters
 
         volumeFractions
@@ -38,36 +44,42 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
     methods
 
-        function paramobj = CoatingInputParams(jsonstruct)
+        function inputparams = CoatingInputParams(jsonstruct)
 
-            paramobj = paramobj@ElectronicComponentInputParams(jsonstruct);
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            if isempty(paramobj.active_material_type)
-                paramobj.active_material_type = 'default';
+            if isempty(inputparams.active_material_type)
+                inputparams.active_material_type = 'default';
             end
 
-            switch paramobj.active_material_type
+            switch inputparams.active_material_type
+
               case 'default'
 
                 am = 'ActiveMaterial';
-                paramobj.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+
+              case 'sei'
+
+                am = 'ActiveMaterial';
+                inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
 
               case 'composite'
 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
-                paramobj.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
-                paramobj.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
+                inputparams.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
+                inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
               otherwise
                 error('active_material_type not recognized');
             end
-            paramobj.Binder             = BinderInputParams(pick('Binder'));
-            paramobj.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
+            inputparams.Binder             = BinderInputParams(pick('Binder'));
+            inputparams.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
 
         end
 
@@ -77,7 +89,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

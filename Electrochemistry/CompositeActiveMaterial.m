@@ -27,11 +27,9 @@ classdef CompositeActiveMaterial < ElectronicComponent
 
     methods
 
-        function model = CompositeActiveMaterial(paramobj)
-        %
-        % ``paramobj`` is instance of :class:`CompositeActiveMaterialInputParams <Electrochemistry.CompositeActiveMaterialInputParams>`
-        %
-            model = model@ElectronicComponent(paramobj);
+        function model = CompositeActiveMaterial(inputparams)
+
+            model = model@ElectronicComponent(inputparams);
 
             fdnames = {'volumeFraction'        , ...
                        'thermalConductivity'   , ...
@@ -40,15 +38,15 @@ classdef CompositeActiveMaterial < ElectronicComponent
                        'externalCouplingTerm'  , ...
                        'use_thermal'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
 
-            model.FirstMaterial = ActiveMaterial(paramobj.FirstMaterial);
-            model.SecondMaterial = ActiveMaterial(paramobj.SecondMaterial);
+            model.FirstMaterial = ActiveMaterial(inputparams.FirstMaterial);
+            model.SecondMaterial = ActiveMaterial(inputparams.SecondMaterial);
 
             nc = model.G.cells.num;
 
-            model.volumeFraction = paramobj.volumeFraction*ones(nc, 1);
+            model.volumeFraction = inputparams.volumeFraction*ones(nc, 1);
             model.porosity       = 1 - model.volumeFraction;
 
             model.isRoot = false;
@@ -287,7 +285,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
         function state = updateControl(model, state, drivingForces, dt)
 
             G = model.G;
-            coef = G.cells.volumes;
+            coef = G.getVolumes();
             coef = coef./(sum(coef));
 
             state.controlCurrentSource = drivingForces.src.*coef;
@@ -368,7 +366,7 @@ classdef CompositeActiveMaterial < ElectronicComponent
             itf = 'Interface';
 
             %% TODO : check whether constants n should always be the same for graphite and silicon (and impose them from parent)
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             F    = model.(gr).(itf).constants.F;
             nGr  = model.(gr).(itf).n;
             nSi  = model.(si).(itf).n;
@@ -471,7 +469,7 @@ end
 
 
 %{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

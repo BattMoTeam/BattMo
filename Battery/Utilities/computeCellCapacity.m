@@ -24,21 +24,21 @@ function [capacity, capacities] = computeCellCapacity(model)
     co  = 'Coating';
     itf = 'Interface';
     sd  = 'SolidDiffusion';
-    
+
     eldes = {ne, pe};
-    
+
     for ielde = 1 : numel(eldes)
-        
+
         elde = eldes{ielde};
 
         switch model.(elde).(co).active_material_type
 
-          case 'default'
-            
+          case {'default', 'sei'}
+
             am  = 'ActiveMaterial';
-            
+
             itfmodel = model.(elde).(co).(am).(itf);
-            
+
             n    = itfmodel.numberOfElectronsTransferred;
             F    = itfmodel.constants.F;
             G    = itfmodel.G;
@@ -50,20 +50,20 @@ function [capacity, capacities] = computeCellCapacity(model)
                 thetaMin = itfmodel.guestStoichiometry0;
               case 'PositiveElectrode'
                 thetaMax = itfmodel.guestStoichiometry0;
-                thetaMin = itfmodel.guestStoichiometry100;            
+                thetaMin = itfmodel.guestStoichiometry100;
               otherwise
                 error('Electrode not recognized');
             end
-            
+
             vol_fraction = model.(elde).(co).volumeFraction;
-            
+
             amind = model.(elde).(co).compInds.(am);
             am_fraction  = model.(elde).(co).volumeFractions(amind);
-            
-            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
-            
+
+            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
+
             cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
-            
+
           case 'composite'
 
             am1 = 'ActiveMaterial1';
@@ -72,15 +72,15 @@ function [capacity, capacities] = computeCellCapacity(model)
             ams = {am1, am2};
 
             cap_usable{ielde} = 0;
-            
+
             vol_fraction = model.(elde).(co).volumeFraction;
-            
+
             for iam = 1 : numel(ams)
-                
+
                 amc = ams{iam};
 
                 itfmodel = model.(elde).(co).(amc).(itf);
-                
+
                 n    = itfmodel.numberOfElectronsTransferred;
                 F    = itfmodel.constants.F;
                 G    = itfmodel.G;
@@ -92,29 +92,29 @@ function [capacity, capacities] = computeCellCapacity(model)
                     thetaMin = itfmodel.guestStoichiometry0;
                   case 'PositiveElectrode'
                     thetaMax = itfmodel.guestStoichiometry0;
-                    thetaMin = itfmodel.guestStoichiometry100;            
+                    thetaMin = itfmodel.guestStoichiometry100;
                   otherwise
                     error('Electrode not recognized');
                 end
-                
+
                 amind = model.(elde).(co).compInds.(amc);
                 am_fraction  = model.(elde).(co).volumeFractions(amind);
-                
-                vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.cells.volumes);
-                
+
+                vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
+
                 cap_usable{ielde} = cap_usable{ielde} + (thetaMax - thetaMin)*cMax*vol*n*F;
 
             end
-            
+
           otherwise
-            
+
             error('active_material_type not recognized');
-            
+
         end
-           
-        
+
+
     end
-    
+
     capacities.(ne) = cap_usable{1};
     capacities.(pe) = cap_usable{2};
 
@@ -123,13 +123,13 @@ function [capacity, capacities] = computeCellCapacity(model)
     if any(ind)
         capacity(ind) = capacities.(pe)(ind);
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

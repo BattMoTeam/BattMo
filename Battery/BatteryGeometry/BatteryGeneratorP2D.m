@@ -16,8 +16,6 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         sepnx  = 10; % discretization number for negative current collector (default = 10)
         nenx   = 10; % discretization number for negative active material (default = 10)
         penx   = 10; % discretization number for separator (default = 10)
-        nenr   = 10; % discretization for solid diffusion (default = 10)
-        penr   = 10; % discretization for solid diffusion (default = 10)
         ccnenx = 10; % discretization number for positive current collector (default = 10)
         ccpenx = 10; % discretization number for positive active material (default = 10)
 
@@ -25,7 +23,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         % refinement factor (can be used to easily increase discretization refinement)
         % see applyResolutionFactors method
         %
-        fac = 1;
+        resolutionFactor = 1;
 
         % boolean : true if grid for current collectors should be included
         include_current_collectors
@@ -39,46 +37,22 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
     methods
 
+
         function gen = BatteryGeneratorP2D()
             gen = gen@BatteryGenerator();
         end
 
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
 
-            gen.include_current_collectors = paramobj.include_current_collectors;
-            gen.use_thermal = paramobj.use_thermal;
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
-            % We define some shorthand names for simplicity.
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
-            sep     = 'Separator';
-            thermal = 'ThermalModel';
-            co      = 'Coating';
-            cc      = 'CurrentCollector';
-
-            % we update all the grids to adjust grid to faceArea
-            paramobj.G         = gen.adjustGridToFaceArea(paramobj.G);
-            paramobj.(elyte).G = gen.adjustGridToFaceArea(paramobj.(elyte).G);
-            paramobj.(sep).G   = gen.adjustGridToFaceArea(paramobj.(sep).G);
-
-            eldes = {ne, pe};
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                paramobj.(elde).(co).G = gen.adjustGridToFaceArea(paramobj.(elde).(co).G);
-                if gen.include_current_collectors
-                    paramobj.(elde).(cc).G = gen.adjustGridToFaceArea(paramobj.(elde).(cc).G);
-                end
-            end
-
-            if gen.use_thermal
-                paramobj.(thermal).G = gen.adjustGridToFaceArea(paramobj.(thermal).G);
-            end
+            gen.include_current_collectors = inputparams.include_current_collectors;
+            gen.use_thermal = inputparams.use_thermal;
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
 
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
 
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -100,16 +74,20 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             x = [0; cumsum(x)];
 
             G = tensorGrid(x);
-            G = computeGeometry(G);
 
-            paramobj.G = G;
-            gen.G = G;
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
 
         end
 
+
         function gen = applyResolutionFactors(gen)
 
-            fac = gen.fac;
+            fac = gen.resolutionFactor;
 
             gen.sepnx  = gen.sepnx*fac;
             gen.nenx   = gen.nenx*fac;
@@ -119,30 +97,32 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
         end
 
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+
+        function inputparams = setupElectrolyte(gen, inputparams, params)
 
             if gen.include_current_collectors
                 params.cellind = gen.ccnenx + (1 : (gen.nenx + gen.sepnx + gen.penx))';
             else
                 params.cellind = (1 : (gen.nenx + gen.sepnx + gen.penx))';
             end
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
+
         end
 
 
-        function paramobj = setupSeparator(gen, paramobj, params)
+        function inputparams = setupSeparator(gen, inputparams, params)
 
             if gen.include_current_collectors
                 params.cellind = gen.ccnenx + gen.nenx + (1 : gen.sepnx)';
             else
                 params.cellind =  gen.nenx + (1 : gen.sepnx)';
             end
-            paramobj = setupSeparator@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupSeparator@BatteryGenerator(gen, inputparams, params);
 
         end
 
 
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
@@ -202,25 +182,27 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
             end
 
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+
+        function inputparams = setupThermalModel(gen, inputparams, params)
 
             params.couplingfaces = [];
-            params.couplingcells = (1 : gen.G.cells.num)';
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            params.couplingcells = (1 : gen.parentGrid.getNumberOfCells())';
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
 
         end
 
-        function G = adjustGridToFaceArea(gen, G);
+
+        function G = adjustGridToFaceArea(gen, G)
 
             fa = gen.faceArea;
 
             G.faces.areas   = fa*G.faces.areas;
             G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.cells.volumes;
+            G.cells.volumes = fa*G.getVolumes();
 
         end
 
@@ -234,7 +216,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

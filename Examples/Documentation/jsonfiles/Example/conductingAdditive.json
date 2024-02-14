@@ -1,0 +1,10 @@
+{
+  "density": {
+    "value": 1.95,
+    "unit": "gram/((centi*meter)^3)"
+  },
+  "massFraction": 0.03,
+  "electronicConductivity": 100,
+  "specificHeatCapacity": 632,
+  "thermalConductivity": 1.04 
+}

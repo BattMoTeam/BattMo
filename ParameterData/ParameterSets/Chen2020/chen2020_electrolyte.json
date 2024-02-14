@@ -1,27 +1,26 @@
 {
+  "initialConcentration": {"value" : 1,
+                           "unit" : "mol/litre"},
   "ionicConductivity": {
     "type": "function",
     "functionname": "computeElectrolyteConductivity_Nyman2008",
     "argumentlist": [
-      "c",
-      "T"
+      "concentration",
+      "temperature"
     ]
   },
   "diffusionCoefficient": {
     "type": "function",
     "functionname": "computeDiffusionCoefficient_Nyman2008",
     "argumentlist": [
-      "c",
-      "T"
+      "concentration",
+      "temperature"
     ]
   },
-  "compnames": [
-    "Li",
-    "PF6"
-  ],
-  "sp": {
-    "z": 1,
-    "t": 0.2594
+  "species": {
+    "chargeNumber": 1,
+    "transferenceNumber": 0.2594,
+    "nominalConcentration": 1000
   },
   "bruggemanCoefficient": 1.5
 }

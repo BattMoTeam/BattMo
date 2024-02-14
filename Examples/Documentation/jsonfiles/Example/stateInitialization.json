@@ -1,0 +1,8 @@
+{
+  "initializationSetup": "given SOC",
+  "initT": 298.15,
+  "SOC": 0.99,
+  "Electrolyte" : {
+    "initialConcentration" : {
+      "value": 1,
+      "unit": "mol/litre"}}}

@@ -211,14 +211,14 @@ function debugPlot(G)
     plot(G.faces.centroids(:,1), G.faces.centroids(:,2), 'r.')
     text(G.faces.centroids(:,1), G.faces.centroids(:,2), num2str((1:G.faces.num)'), 'color', 'r');
     plot(G.cells.centroids(:,1), G.cells.centroids(:,2), 'b.')
-    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.cells.num)'), 'color', 'b');
+    text(G.cells.centroids(:,1), G.cells.centroids(:,2), num2str((1:G.getNumberOfCells())'), 'color', 'b');
 
 end
 
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

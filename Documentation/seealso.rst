@@ -1,13 +1,8 @@
-==========
+========
 See Also
-==========
+========
 
-.. toctree::
-   :maxdepth: 2
-   :hidden:
 
-   MRST <mrst>
-   FAIR Data <fair>
+.. include:: mrst.rst.inc
+.. include:: fair.rst.inc
 
-* :ref:`MRST <mrst:MRST>`
-* :ref:`FAIR Data <fair:FAIR Data>`

@@ -1,6 +1,6 @@
 classdef BatteryLinearSolver < handle
 % Most of the basic methods are essentially taken from MRST LinearSolver class
-    
+
     properties
 
         verbose                    % Verbose output enabler
@@ -19,18 +19,18 @@ classdef BatteryLinearSolver < handle
         initialGuessFun = [];
 
         linearSolverSetup  % Structure described in schema battmodDir()/Utilities/JsonSchemas/linearsolver.schema.json (recommended reference)
-        
+
         first
         reuse_setup
-        
+
         precondReports % handler value to store report for each preconditioner
 
     end
 
     methods
-        
+
         function solver = BatteryLinearSolver(varargin)
-            
+
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
@@ -45,7 +45,7 @@ classdef BatteryLinearSolver < handle
             solver.linearSolverSetup         = [];
             solver.reuse_setup               = false;
             solver.first                     = true;
-            
+
             solver = merge_options(solver, varargin{:});
 
             if ~isempty(solver.linearSolverSetup)
@@ -65,7 +65,7 @@ classdef BatteryLinearSolver < handle
             if isfield(setup, 'verbose') && setup.verbose > 0
                 solver.verbose = setup.verbose;
             end
-            
+
         end
 
         function solver = processSolverSetup(solver)
@@ -90,36 +90,36 @@ classdef BatteryLinearSolver < handle
                 lss.gmres_options = default_gmres_options;
             end
             solver.linearSolverSetup = lss;
-            
+
         end
-        
+
         function [dx, result, report] = solveLinearProblem(solver, problem, model)
         % Solve a linearized problem
         % QUESTION : Do we want to simplify solveLinearProblem ?
-            
+
             timer = tic();
             lsys = [];
             eliminated = {};
             keepNumber0 = solver.keepNumber;
             initialGuess = solver.getInitialGuess(problem);
-            
+
             if solver.reduceToCell && isempty(solver.keepNumber)
                 % Eliminate non-cell variables
-                
+
                 s = getSampleAD(problem.equations{:});
                 keep = problem.indexOfType('cell');
-                
+
                 if ~all(keep)
-                    
+
                     [problem, eliminated] = solver.reduceToVariable(problem, keep);
-                    
+
                     if ~isempty(initialGuess{1})
                         initialGuess = initialGuess(keep);
                     end
                 end
-                
+
             end
-            
+
             problem = problem.assembleSystem();
             if (not(all(isfinite(problem.b))))
                 dx = [];
@@ -128,7 +128,7 @@ classdef BatteryLinearSolver < handle
                 report.failureMsg = 'Linear system rhs have infinite entries';
                 return
             end
-            
+
             % Get linearized system
             [A, b] = problem.getLinearSystem();
             x0     = vertcat(initialGuess{:});
@@ -151,7 +151,7 @@ classdef BatteryLinearSolver < handle
                 dx = [];
                 return
             end
-            
+
             t_solve = toc(timer) - t_prepare;
             % Undo scaling
             result = solver.undoScaling(result, scaling);
@@ -159,13 +159,13 @@ classdef BatteryLinearSolver < handle
             result = solver.deorderLinearSystem(result, ordering);
             % Recover eliminated variables on linear level
             result = solver.recoverLinearSystem(result, lsys);
-            
+
             [result, report] = problem.processResultAfterSolve(result, report);
             report.SolverTime         = toc(timer);
             report.LinearSolutionTime = t_solve;
             report.PreparationTime    = t_prepare;
             report.PostProcessTime    = report.SolverTime - t_solve - t_prepare;
-            
+
             if solver.replaceNaN
                 result(isnan(result)) = solver.replacementNaN;
             end
@@ -179,20 +179,20 @@ classdef BatteryLinearSolver < handle
             if ~isempty(eliminated)
                 dx = solver.recoverResult(dx, eliminated, keep);
             end
-            
+
             solver.keepNumber = keepNumber0;
-            
+
         end
 
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem) % ok
-            
+
             report = solver.getSolveReport();
 
             setup  = solver.linearSolverSetup;
             library = setup.library;
-            
+
             switch library
-                
+
               case 'matlab'
 
                 if ~isfield(setup, 'method')
@@ -204,9 +204,9 @@ classdef BatteryLinearSolver < handle
                 switch method
 
                   case 'direct'
-                    
+
                     result = A\b;
-                    
+
                   case 'grouped-gmres'
 
                     preconditioner = setup.preconditioner;
@@ -220,24 +220,24 @@ classdef BatteryLinearSolver < handle
                           case 'standard'
 
                             solver.precondReports.Iterations = 0;
-                            
+
                             f = @(b) solver.standardAGMGwithReport(b, A)
-                           
-                            
+
+
                           case 'amg'
-                            
-                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1); 
+
+                            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1);
                             agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], 1);
 
-                            
+
                             f = @(b) solver.agmgprecond(A, b)
 
                           otherwise
-                            
+
                             error('method not recognized');
-                            
+
                         end
-                        
+
                         a=tic;
 
                         gopts = setup.gmres_options;
@@ -247,7 +247,7 @@ classdef BatteryLinearSolver < handle
                                                              gopts.tol, ...
                                                              gopts.maxit, ...
                                                              precond);
-                        
+
                         % add diagnostic fields in report
                         report.Iterations         = (iter(1) - 1)*gopts.maxit + iter(2);
                         report.Residual           = relres;
@@ -268,25 +268,28 @@ classdef BatteryLinearSolver < handle
                         error('library not recognized or not supported yet');
 
                     end
-                    
-                  case 'separate-variable-gmres' 
+
+                  case 'separate-variable-gmres'
 
                     preconditioners = setup.preconditioners;
 
                     precondsolvers = {};
-                    
+
                     for isolver = 1 : numel(preconditioners)
 
                         precondSolverStruct = preconditioners(isolver);
                         variables = precondSolverStruct.variables;
 
-                        % setup indices 
+                        % setup indices
                         varinds = [];
                         for ivar = 1 : numel(variables)
-                            varinds = [varinds, solver.getVarIndex(problem, variables{ivar})];
+                            addvarinds = solver.getVarIndex(problem, variables{ivar});
+                            assert(~isempty(addvarinds), 'For one of the preconditioners (given in the separate-variable-gmres setup), some of the variables cannot be found, check their description');
+                            varinds = [varinds, addvarinds];
                         end
+
                         ind = solver.getIndex(problem, varinds);
-                        
+
                         precondsolver.ind = ind;
 
                         % setup the solver function that will be run
@@ -310,7 +313,7 @@ classdef BatteryLinearSolver < handle
                     solver.precondReports = precondReports;
 
                     precond = @(b) solver.blockFieldSchwarz(b, A, precondsolvers);
-                    
+
                     a=tic;
 
                     gopts = setup.gmres_options;
@@ -355,7 +358,7 @@ classdef BatteryLinearSolver < handle
                   otherwise
                     error('method not recognized');
                 end
-                
+
 
               case 'agmg'
 
@@ -366,7 +369,7 @@ classdef BatteryLinearSolver < handle
                   case 'standard'
 
                     error('not yet implemented ...');
-                    
+
                   case 'separate-variable-gmres'
 
                     error('not yet implemented ...');
@@ -374,35 +377,36 @@ classdef BatteryLinearSolver < handle
                   otherwise('method not recognized')
 
                 end
-                
+
               case 'amgcl'
 
                 opts = solver.getAmgclOptions(setup);
-                
+
                 a = tic;
                 [result, flag, relres, iter] = solver.amgcl(A, b, opts);
-                
+
                 report.Iterations         = iter;
                 report.Residual           = relres;
                 report.Converged          = flag;
                 report.LinearSolutionTime = toc(a);
-                
-              otherwise
-                
-                error('linear solver library not recognized');
-                 
-            end                
-                    
 
-       end
-        
+              otherwise
+
+                error('linear solver library not recognized');
+
+            end
+
+
+        end
+
 
         function varinds = getVarIndex(solver, problem, varname)
 
             varinds = [];
             anymodel = strcmp('*', varname{1});
-            
+
             for ivar = 1 : numel(problem.primaryVariables)
+
                 pvarname = problem.primaryVariables{ivar};
                 takeivar = true;
 
@@ -429,20 +433,20 @@ classdef BatteryLinearSolver < handle
 
             end
         end
-        
+
         function indb = getIndex(solver, problem, varinds)
-            
-            numVars = problem.equations{1}.getNumVars(); 
+
+            numVars = problem.equations{1}.getNumVars();
             % QUESTION : why call getNumVars for equations{1}?
-            pos = cumsum(numVars); 
-            pos = [[1; pos(1:end - 1) + 1], pos]; 
-            posvar = pos(varinds, :); 
-            ind = mcolon(posvar(:, 1), posvar(:, 2)); 
-            indb = false(pos(end), 1); 
+            pos = cumsum(numVars);
+            pos = [[1; pos(1:end - 1) + 1], pos];
+            posvar = pos(varinds, :);
+            ind = mcolon(posvar(:, 1), posvar(:, 2));
+            indb = false(pos(end), 1);
             indb(ind) = true;
-            
+
         end
-        
+
         function report = getSolveReport(solver, varargin) % ok
             report = struct('Iterations'        , 0 , ... % Number of iterations (if iterative)
                             'Residual'          , 0 , ... % Final residual
@@ -473,12 +477,12 @@ classdef BatteryLinearSolver < handle
             x = b*0;
 
             for iter = 1 : iteration
-                
+
                 for isolver = 1 : numel(precondsolvers)
 
                     precondsolver = precondsolvers{isolver};
                     ind = precondsolver.ind;
-                    
+
                     if any(ind)
                         func = precondsolver.func;
                         if solver.verbose
@@ -488,7 +492,7 @@ classdef BatteryLinearSolver < handle
                                 name = "";
                             end
                             fprintf('*** block preconditioner %d %s\n\n', isolver, name);
-                        end                        
+                        end
 
                         switch type
                           case 'gauss-seidel'
@@ -504,25 +508,25 @@ classdef BatteryLinearSolver < handle
                     end
                 end
             end
-            
+
         end
 
         function r = standardAGMGwithReport(solver, b, A)
-            
+
             nmax = 20;
             [r, flag, res, iter] = agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
-            
+
             solver.precondReports.Iterations = solver.precondReports.Iterations + iter;
-            
+
         end
-        
+
 
         function elliptic_solver = getElipticSolver(solver, ellipticSolver) % ok
 
             switch ellipticSolver.library
-                
+
               case 'matlab'
-                
+
                 % We use direct solver when matlab library is chosen
                 elliptic_solver = @(A, b) deal(mldivide(A,b), 1, 0, 1);
 
@@ -531,41 +535,41 @@ classdef BatteryLinearSolver < handle
                 if ~isfield(ellipticSolver, 'method')
                     ellipticSolver.method = 'standard';
                 end
-                
+
                 switch ellipticSolver.method
 
                   case 'standard'
 
                     % Full agmg solver (gmres +  amg preconditioner) agmg.eu
-                    
+
                     nmax = 20;
                     elliptic_solver = @(A, b) agmg(A, b, nmax, 1e-5, nmax, 1, [], 0);
-                    
+
                   case 'amg'
-                
+
                     % Do one apply of AGMG preconditionner
-                
+
                     elliptic_solver = @(A, b) solver.agmgprecond(A, b);
 
                   otherwise
 
                     error('options for agmg not recognized')
                 end
-                
+
               case 'amgcl'
-                
+
                 opts = solver.getAmgclOptions(ellipticSolver);
                 elliptic_solver = @(A, b) solver.amgcl(A, b, opts);
-                
+
               otherwise
-                
+
                 error('Wrong solver type for cpr voltage preconditioner')
-                
+
             end
-            
+
         end
-        
-        function  [x, flag, relres, iter] = amgcl(solver, A, b, opt) 
+
+        function  [x, flag, relres, iter] = amgcl(solver, A, b, opt)
 
             if strcmp(opt.precond.coarsening.type, 'aggregation')
                 opt.block_size = opt.precond.coarsening.aggr.block_size;
@@ -579,81 +583,81 @@ classdef BatteryLinearSolver < handle
             flag   = extra.err < opt.solver.tol;
             relres = extra.err;
             iter   = extra.nIter;
-            
+
             if solver.verbose > 0
                 fprintf('**** AMGCL final report\n');
                 fprintf('error : %g\n', extra.err);
                 fprintf('number iterations : %g\n', extra.nIter);
                 fprintf('****\n\n\n');
             end
-            
+
         end
 
         function  [x, flag, relres, iter] = agmgprecond(solver, A, b)% ok
-            
-            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1); 
+
+            agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], -1);
             agmg(A, b, 20, solver.tolerance, solver.maxIterations, solver.verbose, [], 1);
-            
+
             [x, flag, relres, iter] = agmg(A, b, 20, 1e-10, 20, 0, [], 3);
-            
+
             iter = 1;
-            
+
         end
 
         function smoother = getSmoother(smoother_type) % ok
-            
+
             switch smoother_type
 
               case 'ilu0'
-                
-                iluopt = struct('type', 'nofill'); % , 'droptol', 0.1); 
-                [L, U] = ilu(A(inds, inds), iluopt); 
+
+                iluopt = struct('type', 'nofill'); % , 'droptol', 0.1);
+                [L, U] = ilu(A(inds, inds), iluopt);
                 opt = struct('L'       , L, ...
                              'U'       , U, ...
-                             'smoother', 'ilu0'); 
-                dd = abs(diag(U)); 
+                             'smoother', 'ilu0');
+                dd = abs(diag(U));
 
                 if (max(dd)/min(dd) > 1e14)
-                    error(); 
+                    error();
                 end
-                
-                smoother = @(A, x) opt.U\(opt.L\x); 
+
+                smoother = @(A, x) opt.U\(opt.L\x);
 
               case 'gs'
-               
-                Atmp = A(inds, inds); 
+
+                Atmp = A(inds, inds);
                 U    = triu(Atmp);
-                L    = Atmp - U; 
+                L    = Atmp - U;
                 dd   = abs(diag(U));
-                
+
                 if(max(dd)/min(dd) > 1e14)
-                    error(); 
+                    error();
                 end
-                
+
                 opt = struct('L'       , L   , ...
                              'U'       , U   , ...
                              'ind'     , inds, ...
-                             'smoother', 'gs'); 
-                rhs = opt.U\x(opt.ind); 
-                smoother = @(A, x) - opt.U\(opt.L*(opt.U\x)) + opt.U\x; 
-                
+                             'smoother', 'gs');
+                rhs = opt.U\x(opt.ind);
+                smoother = @(A, x) - opt.U\(opt.L*(opt.U\x)) + opt.U\x;
+
               otherwise
                 error('smoother_type not recognized');
             end
-            
+
         end
-                
-        
+
+
         function dx = storeIncrements(solver, problem, result) % ok
-            % Extract the results from a vector into a cell array with one
-            % entry per primary variable in the linearized problem.
-            
-            % Find first index corresponding to ADI equation
+        % Extract the results from a vector into a cell array with one
+        % entry per primary variable in the linearized problem.
+
+        % Find first index corresponding to ADI equation
             ix = find(cellfun(@(x) isa(x, 'ADI'), problem.equations), 1);
             if isempty(ix)
                 % No ADI equations, we return empty increments
                 assert(isempty(result), ...
-                    'No ADI equations returned. Unable to map increments to variables.');
+                       'No ADI equations returned. Unable to map increments to variables.');
                 dx = {};
                 return
             end
@@ -661,16 +665,16 @@ classdef BatteryLinearSolver < handle
             numVars = problem.equations{ix}.getNumVars();
             cumVars = cumsum(numVars);
             ii = [[1;cumVars(1:end-1)+1], cumVars];
-            
+
             eqn = size(ii,1);
             dx = cell(eqn,1);
             for i = 1:eqn
                 dx{i} = result(ii(i,1):ii(i,2), :);
             end
         end
-        
+
         function [A, b, sys, x0] = reduceLinearSystem(solver, A, b, isAdjoint, x0) %ok
-            % Perform Schur complement reduction of linear system
+        % Perform Schur complement reduction of linear system
             if nargin < 4
                 isAdjoint = false;
             end
@@ -700,15 +704,15 @@ classdef BatteryLinearSolver < handle
         end
 
         function x = recoverLinearSystem(solver, x, sys) % ok
-            % Recover eliminated variables
+        % Recover eliminated variables
             if ~isempty(sys.E_U)
                 s = sys.E_U\(sys.E_L\(sys.h - sys.D*x));
                 x = [x; s];
             end
         end
-        
+
         function x = recoverLinearSystemAdjoint(solver, x, sys) %ok
-            % Recover eliminated variables
+        % Recover eliminated variables
             if ~isempty(sys.E)
                 s = (sys.E')\(sys.h - sys.C'*x);
                 x = [x; s];
@@ -716,7 +720,7 @@ classdef BatteryLinearSolver < handle
         end
 
         function [A, b, scaling, x0] = applyScaling(solver, A, b, x0) %ok
-            % Apply left or right diagonal scaling
+        % Apply left or right diagonal scaling
             if nargin == 4
                 x0 = [];
             end
@@ -739,28 +743,28 @@ classdef BatteryLinearSolver < handle
             end
             scaling.M = M;
         end
-        
+
         function x = undoScaling(solver, x, scaling) %ok
-            % Undo effects of scaling applied to linear system
+        % Undo effects of scaling applied to linear system
             if solver.applyRightDiagonalScaling
                 x = scaling.M*x;
             end
         end
-        
+
         function x = undoScalingAdjoint(solver, x, scaling) % ok
-            % Undo effects of scaling applied to linear system (adjoint
-            % version)
+        % Undo effects of scaling applied to linear system (adjoint
+        % version)
             if solver.applyLeftDiagonalScaling
                 x = scaling.M*x;
             end
         end
 
         function x = preconditionerInverse(solver, M, x) % keep ?
-            % Apply a preconditioner. Either a handle or a matrix.
+        % Apply a preconditioner. Either a handle or a matrix.
             if isempty(M)
                 return
             end
-            
+
             if isa(M, 'function_handle')
                 % We got a function handle for the inverse
                 x = M(x);
@@ -769,9 +773,9 @@ classdef BatteryLinearSolver < handle
                 x = M\x;
             end
         end
-        
+
         function [A, b, order, x0] = reorderLinearSystem(solver, A, b, order, x0) %ok
-        
+
             if nargin < 5
                 x0 = [];
             end
@@ -818,7 +822,7 @@ classdef BatteryLinearSolver < handle
             end
             order = struct('variableOrdering', vo, 'equationOrdering', eo);
         end
-        
+
         function x = deorderLinearSystem(solver, x, order) % ok
             if nargin < 3
                 tmp = solver;
@@ -831,7 +835,7 @@ classdef BatteryLinearSolver < handle
         end
 
         function x = deorderLinearSystemAdjoint(solver, x, order) % ok
-            
+
             if nargin < 3
                 tmp = solver;
             else
@@ -840,23 +844,23 @@ classdef BatteryLinearSolver < handle
             if ~isempty(solver.equationOrdering)
                 x(tmp.equationOrdering) = x(1:numel(tmp.equationOrdering));
             end
-            
+
         end
 
         function [problem, eliminated] = reduceToVariable(solver, problem, keep) % ok
-            
+
             remove = find(~keep);
-            
+
             problem = problem.clearSystem();
-            
+
             eliminated = cell(numel(remove), 1);
             elimNames = problem.equationNames(remove);
             for i = 1:numel(remove)
                 [problem, eliminated{i}] = problem.eliminateVariable(elimNames{i});
             end
-            
+
         end
-        
+
         function dx = recoverResult(solver, dxElim, eliminatedEqs, keep)
 
             kept = find(keep);
@@ -866,20 +870,20 @@ classdef BatteryLinearSolver < handle
             for i=1:numel(nokept)
                 keptEqNo(i) = sum(kept<nokept(i));
             end
-            
+
             % Find number of variables
             nP = numel(keep);
-            
+
             % Set up storage for all variables, including those we eliminated previously
             dx = cell(nP, 1);
-            
+
             % Recover non-cell variables
             recovered = false(nP, 1);
             recovered(kept) = true;
-            
+
             % Put the recovered variables into place
             dx(recovered) = dxElim;
-            
+
             for i = numel(eliminatedEqs) : -1 : 1
                 pos = left(i);
                 dVal = recoverVars(eliminatedEqs{i}, keptEqNo(i) + 1, dx(recovered));
@@ -887,9 +891,9 @@ classdef BatteryLinearSolver < handle
                 recovered(pos) = true;
             end
         end
-        
+
         function M = getDiagonalInverse(solver, A) % ok
-            % Reciprocal of diagonal matrix
+        % Reciprocal of diagonal matrix
             sz = size(A);
             assert(sz(1) == sz(2), 'Matrix must be square!');
             n = sz(1);
@@ -898,7 +902,7 @@ classdef BatteryLinearSolver < handle
             I = (1:n)';
             M = sparse(I, I, d, n, n);
         end
-        
+
         function initialGuess = getInitialGuess(solver, problem) % ok
             if isempty(solver.initialGuessFun)
                 initialGuess = {[]};
@@ -916,29 +920,29 @@ classdef BatteryLinearSolver < handle
             else
                 amgclverbose = false;
             end
-            
+
             itersolver = struct('type'   , 'gmres'     , ...
                                 'M'      , 50          , ...
                                 'tol'    , 1e-5        , ...
                                 'verbose', amgclverbose, ...
                                 "maxiter", 20);
-            
+
             relaxation = struct('type', 'ilu0');
 
             coarsening_type = 'ruge_stuben';
 
             switch coarsening_type
-                
+
               case 'aggregation'
-                
+
                 alpha = 0.01;
                 aggr = struct('eps_strong', alpha);
-                
+
                 coarsening = struct('type', 'aggregation', ...
                                     'aggr', aggr)
 
               case 'ruge_stuben'
-                
+
                 alpha = 0.01;
                 coarsening = struct('type'      , 'ruge_stuben', ...
                                     'eps_strong', alpha        , ...
@@ -948,11 +952,11 @@ classdef BatteryLinearSolver < handle
               otherwise
 
                 error('coarsening_case not recognized');
-                
+
             end
 
             coarsetarget = 1200;
-            
+
             precond = struct('class'        , 'amg'       , ...
                              'coarsening'   , coarsening  , ...
                              'relax'        , relaxation  , ...
@@ -964,11 +968,11 @@ classdef BatteryLinearSolver < handle
                              'npost'        , 1           , ...
                              'pre_cycles'   , 1);
             defaultOpts = struct('solver'      , itersolver, ...
-                          'precond'     , precond   , ...
-                          'reuse_mode'  , 1         , ...
-                          'solver_type' , 'regular' , ...
-                          'write_params', false     , ...
-                          'verbose'     , solver.verbose);
+                                 'precond'     , precond   , ...
+                                 'reuse_mode'  , 1         , ...
+                                 'solver_type' , 'regular' , ...
+                                 'write_params', false     , ...
+                                 'verbose'     , solver.verbose);
 
 
             if nargin > 1
@@ -977,32 +981,29 @@ classdef BatteryLinearSolver < handle
             else
                 opts = defaultOpts;
             end
-                
+
         end
-        
+
     end
 end
 
 
-
-
-
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

@@ -22,8 +22,6 @@ classdef SeaWaterBattery < BaseModel
         % implementation).
         T
 
-        addedVariableNames
-
         indexAnodeChargeCarrier
         indexCathodeChargeCarrier
     
@@ -34,8 +32,6 @@ classdef SeaWaterBattery < BaseModel
         dodebugplot = false;
         dodebugtext
 
-        primaryVarNames
-        funcCallList
 
         %% Parameter variable for Newton API methods
         
@@ -56,7 +52,7 @@ classdef SeaWaterBattery < BaseModel
 
     methods
 
-        function model = SeaWaterBattery(paramobj)
+        function model = SeaWaterBattery(inputparams)
 
             model = model@BaseModel();
 
@@ -65,20 +61,18 @@ classdef SeaWaterBattery < BaseModel
                        'couplingTerms'       , ...
                        'include_precipitation', ...
                        'T'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             % Setup Anode
-            model = model.setupAnode(paramobj.Anode);
+            model = model.setupAnode(inputparams.Anode);
             % Setup Anode Active Material            
-            model = model.setupAnodeActiveMaterial(paramobj.AnodeActiveMaterial);
+            model = model.setupAnodeActiveMaterial(inputparams.AnodeActiveMaterial);
             % Setup Electrolyte
-            model = model.setupElectrolyte(paramobj);
+            model = model.setupElectrolyte(inputparams);
             % Setup Cathode Active Material                        
-            model.CathodeActiveMaterial = HydrogenActiveMaterial(paramobj.CathodeActiveMaterial);
+            model.CathodeActiveMaterial = HydrogenActiveMaterial(inputparams.CathodeActiveMaterial);
             % Setup Cathode
-            model.Cathode = HydrogenElectrode(paramobj.Cathode);
-
-            model.addedVariableNames = {{'time'}};
+            model.Cathode = HydrogenElectrode(inputparams.Cathode);
 
             elyte = 'Electrolyte';
             ctam  = 'CathodeActiveMaterial';
@@ -101,10 +95,11 @@ classdef SeaWaterBattery < BaseModel
             model = model.setupUtilities();
 
             model.dodebugtext = '';
+
         end
 
-        function model = setupAnode(model, paramobj)
-            model.Anode = SeaWaterElectrode(paramobj);
+        function model = setupAnode(model, inputparams)
+            model.Anode = SeaWaterElectrode(inputparams);
         end
             
         function model = registerVarAndPropfuncNames(model)
@@ -199,14 +194,14 @@ classdef SeaWaterBattery < BaseModel
                                           {ct, 'T'},
                                          });
 
-            model = model.registerStaticVarName('T');
+            model = model.setAsStaticVarName('T');
 
             if ~model.include_precipitation
                 melyte = model.(elyte);
-                model = model.registerStaticVarNames({{an, 'volumeFraction'},
-                                                      {ct, 'volumeFraction'},
-                                                      {elyte, 'volumeFraction'},
-                                                      VarName({elyte}, 'cs', melyte.indsolidsp, melyte.nsp)});
+                model = model.setAsStaticVarNames({{an, 'volumeFraction'},
+                                                   {ct, 'volumeFraction'},
+                                                   {elyte, 'volumeFraction'},
+                                                   VarName({elyte}, 'cs', melyte.indsolidsp, melyte.nsp)});
                 varnames = {'accumTerm', 'sourceTerm', 'massCons'};
                 eldes = {an, ct};
                 for ielde = 1 : numel(eldes)
@@ -260,7 +255,7 @@ classdef SeaWaterBattery < BaseModel
         %% Assembly functions
         
         function state = initializeTemperature(model, state)
-            state.T = model.T*ones(model.G.cells.num, 1);
+            state.T = model.T*ones(model.G.getNumberOfCells(), 1);
         end
 
 
@@ -354,7 +349,7 @@ classdef SeaWaterBattery < BaseModel
             
             c = state.(elyte).cs{indcc};
 
-            cElectrolyte = zeros(model.(ct).G.cells.num, 1);
+            cElectrolyte = zeros(model.(ct).G.getNumberOfCells(), 1);
             cElectrolyte = adbackend.convertToAD(cElectrolyte, c);
 
             coupcells = coupDict('Cathode-Electrolyte');
@@ -402,7 +397,7 @@ classdef SeaWaterBattery < BaseModel
             
             c = state.(elyte).cs{indcc};
 
-            cElectrolyte = zeros(model.(an).G.cells.num, 1);
+            cElectrolyte = zeros(model.(an).G.getNumberOfCells(), 1);
             cElectrolyte = adbackend.convertToAD(cElectrolyte, c);
 
             coupcells = coupDict('Anode-Electrolyte');
@@ -419,7 +414,7 @@ classdef SeaWaterBattery < BaseModel
 
             spdict    = model.(elyte).spdict;
             coupDict  = model.couplingCellDict;
-            nc        = model.(an).G.cells.num;
+            nc        = model.(an).G.getNumberOfCells();
             adbackend = model.(an).AutoDiffBackend;
             
             anphi    = state.(an).phi;
@@ -449,7 +444,7 @@ classdef SeaWaterBattery < BaseModel
             elyte = 'Electrolyte';
 
             V    = model.Anode.V;
-            vols = model.Anode.G.cells.volumes;
+            vols = model.Anode.G.getVolumes();
             F    = model.con.F;
             z    = model.stochAnodeElectron;
             
@@ -463,7 +458,7 @@ classdef SeaWaterBattery < BaseModel
         % Update cathode source term
 
             % V = model.Cathode.V;
-            % vols = model.Anode.G.cells.volumes;
+            % vols = model.Anode.G.getVolumes();
             % R = state.CathodeActiveMaterial.R;
             % state.Cathode.sourceTerm = -R.*vols.*V;
                 
@@ -475,7 +470,7 @@ classdef SeaWaterBattery < BaseModel
         % Update Electrolyte Current source
             elyte = 'Electrolyte';
 
-            vols     = model.(elyte).G.cells.volumes;
+            vols     = model.(elyte).G.getVolumes();
             zan      = model.stochAnodeElectron;
             zct      = model.stochCathodeElectron;
             coupDict = model.couplingCellDict;
@@ -571,7 +566,9 @@ classdef SeaWaterBattery < BaseModel
         end
 
         function validforces = getValidDrivingForces(model)
-            validforces=struct('src', [], 'stopFunction', []);
+            
+            validforces = struct('src', [], 'stopFunction', []);
+            
         end
 
         function model = validateModel(model, varargin)
@@ -597,12 +594,6 @@ classdef SeaWaterBattery < BaseModel
             end
 
             model.logVariablesIndices = logVariablesIndices;
-
-        end
-
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
 
         end
 
@@ -716,3 +707,25 @@ classdef SeaWaterBattery < BaseModel
 
 end
 
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

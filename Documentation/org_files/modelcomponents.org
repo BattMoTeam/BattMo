@@ -1,7 +1,0 @@
-#+TITLE: Model components
-#+AUTHOR:
-#+OPTIONS: num:nil toc:nil
-#+EXPORT_FILE_NAME: ../modelcomponents
-
-A very basic battery model will contain a positive electrode, a negative electrode and an electrolyte.
-We can also add current collectors to our models by setting include_current_collectors = true.

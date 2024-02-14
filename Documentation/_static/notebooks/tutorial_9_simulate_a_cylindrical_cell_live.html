@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,chrome=1"><meta name="generator" content="MATLAB 2023b"><title>Tutorial 9 - Simulate a cylindrical cell</title><style type="text/css">.rtcContent { padding: 30px; } .S0 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 28.8px; min-height: 0px; white-space: pre-wrap; color: rgb(192, 76, 11); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 24px; font-weight: 400; text-align: left;  }
+.S1 { margin: 20px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }
+.S2 { margin: 2px 10px 9px 4px; padding: 0px; line-height: 21px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 14px; font-weight: 400; text-align: left;  }
+.CodeBlock { background-color: #F5F5F5; margin: 10px 0 10px 0; }
+.S3 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 4px; padding: 6px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S4 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 1px solid rgb(217, 217, 217); border-bottom: 0px none rgb(33, 33, 33); border-radius: 4px 4px 0px 0px; padding: 6px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S5 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 1px solid rgb(217, 217, 217); border-radius: 0px 0px 4px 4px; padding: 0px 45px 4px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S6 { border-left: 1px solid rgb(217, 217, 217); border-right: 1px solid rgb(217, 217, 217); border-top: 0px none rgb(33, 33, 33); border-bottom: 0px none rgb(33, 33, 33); border-radius: 0px; padding: 0px 45px 0px 13px; line-height: 18.004px; min-height: 0px; white-space: nowrap; color: rgb(33, 33, 33); font-family: Menlo, Monaco, Consolas, "Courier New", monospace; font-size: 14px;  }
+.S7 { margin: 3px 10px 5px 4px; padding: 0px; line-height: 20px; min-height: 0px; white-space: pre-wrap; color: rgb(33, 33, 33); font-family: Helvetica, Arial, sans-serif; font-style: normal; font-size: 20px; font-weight: 700; text-align: left;  }</style></head><body><div class = rtcContent><h1  class = 'S0'><span>Tutorial 9 - Simulate a cylindrical cell</span></h1><h2  class = 'S1'><span>Introduction</span></h2><div  class = 'S2'><span>In this tutorial, we simulate a multilayer pouch cell. We use the same material property as in the other tutorials</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >jsonstruct_material = parseBattmoJson(</span><span style="color: #a709f5;">'Examples/jsondatafiles/sample_input.json'</span><span >);</span></span></div></div></div><div  class = 'S2'><span>Next, we load and parse a json file where we have chosen some parameters for the multilayer pouch domain. Note that all the parameters are described in a json schema, see</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Geometry.schema.json"><span>Geometry.schema.json</span></a><span>, even if the simplest way to proceed is to start with an example, in this case given by</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/4680-geometry.json"><span>4680-geometry.json</span></a><span>.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >jsonfilename = </span><span style="color: #a709f5;">'Examples/JsonDataFiles/4680-geometry.json'</span><span >;</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >jsonstruct_geometry = parseBattmoJson(jsonfilename);</span></span></div></div></div><div  class = 'S2'><span>We change some parameters to get a smaller model and simulation time.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >jsonstruct_geometry.Geometry.rOuter = jsonstruct_geometry.Geometry.rInner + 4*milli*meter;</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >jsonstruct_geometry.Geometry.nL     = 2;</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >jsonstruct_geometry.Geometry.nas    = 20;</span></span></div></div></div><div  class = 'S2'><span>We use</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/FlatJsonViewer.m"><span>FlatJsonViewer.m</span></a><span> to flatten the json structure and print it to screen.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >fjv = flattenJson(jsonstruct_geometry);</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >fjv.print();</span></span></div></div></div><div  class = 'S2'><span>We load and parse the control protocol</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >jsonfilename = fullfile(</span><span style="color: #a709f5;">'Examples'</span><span >, </span><span style="color: #a709f5;">'jsondatafiles'</span><span >, </span><span style="color: #a709f5;">'cc_discharge_control.json'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >jsonstruct_control = parseBattmoJson(jsonfilename);</span></span></div></div></div><div  class = 'S2'><span>We load and parse the simulation settings. This is optional. Typically, reasonable choices are made by default.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >jsonfilename = fullfile(</span><span style="color: #a709f5;">'Examples'</span><span >, </span><span style="color: #a709f5;">'jsondatafiles'</span><span >, </span><span style="color: #a709f5;">'simulation_parameters.json'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >jsonstruct_simparams = parseBattmoJson(jsonfilename);</span></span></div></div></div><div  class = 'S2'><span>Now, we can merge these parameter definitions into a single parameter set to obtain a jsonstruct that has all the input needed by the simulator.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >jsonstruct = mergeJsonStructs({jsonstruct_geometry , </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    jsonstruct_material , </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    jsonstruct_control  , </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >    jsonstruct_simparams}, </span><span style="color: #a709f5;">'warn'</span><span >, false);</span></span></div></div></div><h2  class = 'S7'><span>Setup the model for inspection</span></h2><div  class = 'S2'><span>When we run the simulation using function</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonInput/runBatteryJson.m"><span>runBatteryJson.m</span></a><span>, the model is setup. In the case where we want to setup the model for inspection, prior to simulation, we can use the function</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m"><span>setupModelFromJson.m</span></a></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >model = setupModelFromJson(jsonstruct);</span></span></div></div></div><div  class = 'S2'><span>We use the</span><span> </span><a href = "https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotBatteryGrid.m"><span>plotBatteryGrid.m</span></a><span> function to show the grid</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >plotBatteryGrid(model)</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% make the axis tight and set the camera viewing angle</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >axis </span><span style="color: #a709f5;">tight</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >view(45,45)</span></span></div></div></div><h2  class = 'S7'><span>Run the simulation</span></h2><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S3'><span style="white-space: pre"><span >output = runBatteryJson(jsonstruct);</span></span></div></div></div><h2  class = 'S7'><span>Visualize the Results</span></h2><div  class = 'S2'><span>extract the time and voltage quantities</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >states = output.states;</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >time    = cellfun(@(state) state.time, states);</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >voltage = cellfun(@(state) state.(</span><span style="color: #a709f5;">'Control'</span><span >).E, states);</span></span></div></div></div><div  class = 'S2'><span>We plot the discharge curves together in a new figure</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span >figure();</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >plot((time/hour), voltage, </span><span style="color: #a709f5;">'-'</span><span >, </span><span style="color: #a709f5;">'linewidth'</span><span >, 3)</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >xlabel(</span><span style="color: #a709f5;">'Time  /  h'</span><span >)</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >ylabel(</span><span style="color: #a709f5;">'Cell Voltage  /  V'</span><span >)</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >title(</span><span style="color: #a709f5;">'Voltage'</span><span >);</span></span></div></div></div><div  class = 'S2'><span>For a given time step, we plot the concentration on the grid in the negative and positive electrodes.</span></div><div class="CodeBlock"><div class="inlineWrapper"><div  class = 'S4'><span style="white-space: pre"><span style="color: #008013;">% Set the timestep we want to visualize</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >timestep = 20;</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% get the state of the simulation at the given timestep</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >state = states{timestep};</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% create a new figure</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >figure()</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% plot the surface concentration of lithium in the negative electrode active material</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >plotCellData(model.NegativeElectrode.Coating.grid, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'edgecolor'</span><span >, </span><span style="color: #a709f5;">'none'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% plot the surface concentration of lithium in the positive electrode active material</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >plotCellData(model.PositiveElectrode.Coating.grid, </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre), </span><span style="color: #0e00ff;">...</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >    </span><span style="color: #a709f5;">'edgecolor'</span><span >, </span><span style="color: #a709f5;">'none'</span><span >)</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'>&nbsp;</div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >title(</span><span style="color: #a709f5;">'Active Material Surface Lithium Concentration  /  mol \cdot L^{-1}'</span><span >);</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span style="color: #008013;">% add a colorbar</span></span></div></div><div class="inlineWrapper"><div  class = 'S6'><span style="white-space: pre"><span >colorbar()</span></span></div></div><div class="inlineWrapper"><div  class = 'S5'><span style="white-space: pre"><span >view(45,45)</span></span></div></div></div>
+<br>
+<!-- 
+##### SOURCE BEGIN #####
+%% Tutorial 9 - Simulate a cylindrical cell
+%% Introduction
+% In this tutorial, we simulate a multilayer pouch cell. We use the same material 
+% property as in the other tutorials
+
+jsonstruct_material = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
+%% 
+% Next, we load and parse a json file where we have chosen some parameters for 
+% the multilayer pouch domain. Note that all the parameters are described in a 
+% json schema, see <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Geometry.schema.json 
+% Geometry.schema.json>, even if the simplest way to proceed is to start with 
+% an example, in this case given by <https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/4680-geometry.json 
+% 4680-geometry.json>.
+
+jsonfilename = 'Examples/JsonDataFiles/4680-geometry.json';
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
+%% 
+% We change some parameters to get a smaller model and simulation time.
+
+jsonstruct_geometry.Geometry.rOuter = jsonstruct_geometry.Geometry.rInner + 4*milli*meter;
+jsonstruct_geometry.Geometry.nL     = 2;
+jsonstruct_geometry.Geometry.nas    = 20;
+%% 
+% We use <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/FlatJsonViewer.m 
+% FlatJsonViewer.m> to flatten the json structure and print it to screen.
+
+fjv = flattenJson(jsonstruct_geometry);
+fjv.print();
+%% 
+% We load and parse the control protocol
+
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
+jsonstruct_control = parseBattmoJson(jsonfilename);
+%% 
+% We load and parse the simulation settings. This is optional. Typically, reasonable 
+% choices are made by default.
+
+jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
+jsonstruct_simparams = parseBattmoJson(jsonfilename);
+%% 
+% Now, we can merge these parameter definitions into a single parameter set 
+% to obtain a jsonstruct that has all the input needed by the simulator.
+
+jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+    jsonstruct_material , ...
+    jsonstruct_control  , ...
+    jsonstruct_simparams}, 'warn', false);
+%% Setup the model for inspection
+% When we run the simulation using function <https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonInput/runBatteryJson.m 
+% runBatteryJson.m>, the model is setup. In the case where we want to setup the 
+% model for inspection, prior to simulation, we can use the function <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m 
+% setupModelFromJson.m>
+
+model = setupModelFromJson(jsonstruct);
+%% 
+% We use the <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotBatteryGrid.m 
+% plotBatteryGrid.m> function to show the grid
+
+plotBatteryGrid(model)
+% make the axis tight and set the camera viewing angle
+axis tight
+view(45,45)
+%% Run the simulation
+
+output = runBatteryJson(jsonstruct);
+%% Visualize the Results
+% extract the time and voltage quantities
+
+states = output.states;
+
+time    = cellfun(@(state) state.time, states);
+voltage = cellfun(@(state) state.('Control').E, states);
+%% 
+% We plot the discharge curves together in a new figure
+
+figure();
+plot((time/hour), voltage, '-', 'linewidth', 3)
+xlabel('Time  /  h')
+ylabel('Cell Voltage  /  V')
+title('Voltage');
+%% 
+% For a given time step, we plot the concentration on the grid in the negative 
+% and positive electrodes.
+
+% Set the timestep we want to visualize
+timestep = 20;
+
+% get the state of the simulation at the given timestep
+state = states{timestep};
+
+% create a new figure
+figure()
+
+% plot the surface concentration of lithium in the negative electrode active material
+plotCellData(model.NegativeElectrode.Coating.grid, ...
+    state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre), ...
+    'edgecolor', 'none');
+
+% plot the surface concentration of lithium in the positive electrode active material
+plotCellData(model.PositiveElectrode.Coating.grid, ...
+    state.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface/(mol/litre), ...
+    'edgecolor', 'none')
+
+title('Active Material Surface Lithium Concentration  /  mol \cdot L^{-1}');
+% add a colorbar
+colorbar()
+view(45,45)
+##### SOURCE END #####
+-->
+</div></body></html>
