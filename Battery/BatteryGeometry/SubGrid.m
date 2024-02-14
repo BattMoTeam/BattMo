@@ -269,7 +269,9 @@ classdef SubGrid < GenericGrid
         end
 
         function tpfvGeometry = getTPFVgeometry(grid)
+
             tpfvGeometry = grid.parentGrid.tPFVgeometry;
+            
         end
                 
         function areas = getFaceAreas(grid)

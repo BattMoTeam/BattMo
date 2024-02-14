@@ -185,6 +185,8 @@ classdef GenericGrid
         end
 
         function [bchT, bccells, bcsgn] = getBcTrans(grid, bcfaces)
+        % Recover the half-transmissibilities at boundary faces
+        % The indexing of bcfaces is in the current grid (that is, not indexed within helpers.extfaces)
 
             tpfvGeometry = grid.getTPFVgeometry();
             hT           = tpfvGeometry.hT;
