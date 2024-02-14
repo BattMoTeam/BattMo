@@ -20,9 +20,9 @@ classdef PEMgridGenerator1D < PEMgridGenerator
             
         end
 
-        function [inputparams, gen] = updatePEMinputParams(gen, inputparams, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
 
-            inputparams = gen.setupPEMinputParams(inputparams, []);
+            inputparams = gen.setupInputParams(inputparams, []);
             
             inputparams.dx       = gen.xlength/gen.N;
             inputparams.faceArea = gen.faceArea;

@@ -21,9 +21,9 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             
         end
 
-        function [inputparams, gen] = updatePEMinputParams(gen, inputparams, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
 
-            inputparams = gen.setupPEMinputParams(inputparams, []);
+            inputparams = gen.setupInputParams(inputparams, []);
             
         end
 

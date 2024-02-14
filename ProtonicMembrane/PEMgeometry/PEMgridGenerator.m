@@ -8,16 +8,16 @@ classdef PEMgridGenerator
 
     methods
         
-        function [inputparams, gen] = updatePEMinputParams(gen, inputparams, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function [inputparams, gen] = setupPEMinputParams(gen, inputparams, params)
-        % This is the main function which should be called by the derived class at the end of the :meth:`updatePEMinputParams` method
+        function [inputparams, gen] = setupInputParams(gen, inputparams, params)
+        % This is the main function which should be called by the derived class at the end of the :meth:`updateInputParams` method
         % The function set up the grid and the coupling terms and add those in the :code:`inputparams` structure which is
-        % an instance of :class:`PEMinputParams <PEM.PEMinputParams>`
+        % an instance of :class:`InputParams <PEM.PEMinputParams>`
         % 
             
             [inputparams, gen] = gen.setupGrid(inputparams, params);

@@ -14,7 +14,7 @@ function [inputparams, gridGenerator] = setupProtonicMembraneCellGrid(inputparam
         gen.faceArea = jsonstruct.(elyte).faceArea;
         gen.N        = jsonstruct.(elyte).Nx;
 
-        inputparams = gen.updatePEMinputParams(inputparams);
+        inputparams = gen.updateInputParams(inputparams);
 
       case '2D'
 
@@ -25,7 +25,7 @@ function [inputparams, gridGenerator] = setupProtonicMembraneCellGrid(inputparam
         gen.xlength = convertUnitBattMo(jsonstruct.(elyte).xlength);
         gen.Nx      = jsonstruct.(elyte).Nx;
         
-        inputparams = gen.updatePEMinputParams(inputparams);
+        inputparams = gen.updateInputParams(inputparams);
         
       otherwise
 
