@@ -71,4 +71,4 @@ model.nonlinearTolerance = 1e-8;
 
 close all
 
-plotToolbar(model.G, states);
+plotToolbar(model.grid, states);

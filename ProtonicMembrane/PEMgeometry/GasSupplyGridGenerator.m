@@ -2,7 +2,7 @@ classdef GasSupplyGridGenerator
 
     properties
         
-        G
+        parentGrid
 
     end
 

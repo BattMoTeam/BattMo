@@ -28,23 +28,26 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
             ly = gen.ly;
 
             G = cartGrid([nx, ny], [lx, ly]);
-            G = computeGeometry(G);
-
+            
+            parentGrid = Grid(G);
+            
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+            
             inputparams.G = G;
-            gen.G      = G;
+            gen.parentGrid = parentGrid;
             
         end
 
 
         function [inputparams, gen] = setupExternalCoupling(gen, inputparams, params)
 
-            G  = gen.G;
+            G  = gen.parentGrid.mrstFormat;
             nx = gen.nx;
             ny = gen.ny;
             lx = gen.lx;
             ly = gen.ly;
             
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
 
             clear bcfacecouptbl1;

@@ -41,8 +41,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.GasSupplyBc = ProtonicMembraneGasSupplyBc(inputparams);
             model.Control     = BaseModel();
             
-            model.operators = localSetupOperators(model.G);
-            
             model.constants = PhysicalConstants();
             
             model.gasInd.H2O = 1;
@@ -56,7 +54,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         function model = setupForSimulation(model)
             
-            model.isSimulationModel = true;
+            model.isRootSimulationModel = true;
 
             shortNames = {'1', 'H2O';
                           '2', 'O2';
@@ -462,11 +460,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
             bccells = model.helpers.bccells;
             bcfaces = model.helpers.bcfaces;
 
-            Tbc = model.operators.transFaceBC(bcfaces);
+            Tbc = model.G.getBcTrans(bcfaces);
 
             pIn   = state.pressure(bccells);
             pBc   = state.GasSupplyBc.pressure;
-            rhoBc = state.GasSupplyBc.density; % note that this has been already "upwinded" (see specific update of volumefractions)
+            rhoBc = state.GasSupplyBc.density ; % note that this has been already "upwinded" (see specific update of volumefractions)
             vfsBc = state.GasSupplyBc.volumefractions; % note that those has been already "upwinded" (see specific update)
 
             for igas = 1 : nGas
@@ -505,7 +503,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
         
         function state = updateMassAccums(model, state, state0, dt)
 
-            vols = model.G.cells.volumes;
+            vols = model.G.getVolumes();
             nGas = model.nGas;
 
             vfs  = state.volumefractions;
@@ -525,11 +523,10 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function state = updateMassConses(model, state)
 
             nGas = model.nGas;
-            op   = model.operators;
 
             for igas = 1 : nGas
 
-                state.massConses{igas} = state.massAccums{igas} + op.Div(state.massFluxes{igas}) - state.massSources{igas};
+                state.massConses{igas} = state.massAccums{igas} + model.G.getDiv(state.massFluxes{igas}) - state.massSources{igas};
                 
             end
             
@@ -538,7 +535,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function initstate = setupInitialState(model)
 
             nGas    = model.nGas;
-            nc      = model.G.cells.num;
+            nc      = model.G.getNumberOfCells();
             nbc     = numel(model.helpers.bcfaces);
             gasInd  = model.gasInd;
             control = model.control;
