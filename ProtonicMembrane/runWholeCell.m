@@ -1,6 +1,6 @@
 clear all
 
-% mrstDebug(20);
+mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -84,7 +84,8 @@ initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaHp'}, {{'drivingForce
 sigmaHp = initstate.(ce).(elyte).sigmaHp(1);
 sigmaEl = initstate.(ce).(elyte).sigmaEl(1);
 phi0    = abs(model.(ce).(an).E_0 - model.(ce).(ct).E_0); % characteristic voltage
-T       = model.(ce).(elyte).operators.T_all(1);
+T       = model.(ce).(elyte).G.getTrans();
+T       = T(1);
 
 sHp = T*sigmaHp*phi0;
 sEl = T*sigmaEl*phi0;

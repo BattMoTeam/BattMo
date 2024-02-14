@@ -26,7 +26,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'T', ...
+            fdnames = {'G', ...
+                       'T', ...
                        'couplingTerm'};
             
             model = dispatchParams(model, inputparams, fdnames);
@@ -169,16 +170,15 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
                 end
             end
 
-            faces = model.Cell.Electrolyte.G.mappings.parentGrid.mappings.facemap(faces);
+            % face interface indices in parent grid.
+            pfaces = model.Cell.Electrolyte.G.mappings.facemap(faces);
 
-            G = model.GasSupply.G;
+            invfacemap = model.GasSupply.G.mappings.invfacemap;
 
-            invfacemap = zeros(G.mappings.parentGrid.faces.num, 1);
-            invfacemap(G.mappings.facemap) = (1 : G.faces.num)';
+            %  face interface indices in gas supply grid
+            faces = invfacemap(pfaces);
 
-            faces = invfacemap(faces);
-
-            tbls = setupSimpleTables(G);
+            tbls = setupTables(model.GasSupply.grid);
 
             cellfacetbl = tbls.cellfacetbl;
             celltbl     = tbls.celltbl;
@@ -199,8 +199,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
-            T = model.GasSupply.operators.T_all;
-            T = T(bccellfaceindtbl.get('faces'));
+            
+            T = model.GasSupply.G.getBcTrans(bccellfaceindtbl.get('faces'));
             
             model.helpers.interfaceMap   = M;
             model.helpers.interfaceT     = T;
@@ -310,7 +310,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         function model = setupForSimulation(model)
 
-            model.isSimulationModel = true;
+            model.isRootSimulationModel = true;
 
             shortNames = {'1'                    , 'H2O';
                           '2'                    , 'O2';

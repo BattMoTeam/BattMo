@@ -2,7 +2,7 @@ classdef GasSupplyPEMgridGenerator
 
     properties
 
-        G
+        parentGrid
         
         % Use to generate the structure of the internal coupling terms
         cellGridGenerator
@@ -24,9 +24,12 @@ classdef GasSupplyPEMgridGenerator
             
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            [inputparams, gen] = gen.setupCellGridGenerator(inputparams, params);
-            [inputparams, gen] = gen.setupGasSupplyGridGenerator(inputparams, params);
+            gen = gen.setupCellGridGenerator(inputparams, params);
+            gen = gen.setupGasSupplyGridGenerator(inputparams, params);
 
+            inputparams.Cell.G      = genSubGrid(gen.parentGrid, params.Cell.cellinds);
+            inputparams.GasSupply.G = genSubGrid(gen.parentGrid, params.GasSupply.cellinds);
+            
             [inputparams.Cell, gen]      = gen.setupCell(inputparams.Cell, params.Cell);
             [inputparams.GasSupply, gen] = gen.setupGasSupply(inputparams.GasSupply, params.GasSupply);
 
@@ -40,68 +43,47 @@ classdef GasSupplyPEMgridGenerator
             
         end
         
-        function [inputparams, gen] = setupCellGridGenerator(gen, inputparams, params)
-        % setup cellGridGenerator
+        function gen = setupCellGridGenerator(gen, inputparams, params)
+        % setup gen.cellGridGenerator
 
             error('virtual function');
             
         end
 
-        function [inputparams, gen] = setupGasSupplyGridGenerator(gen, inputparams, params)
-        % setup gasSupplyGridGenerator
+        function gen = setupGasSupplyGridGenerator(gen, inputparams, params)
+        % setup gen.gasSupplyGridGenerator
             
             error('virtual function');
-            
-        end
-
-        function [inputparams, gen] = setupCellGrid(gen, inputparams, params)
-        % inputparams belongs to CellGeneratorInputParams
-
-            globG    = gen.G;
-            cellinds = params.cellinds;
-
-            G = genSubGrid(globG, cellinds);
-
-            inputparams.G = G;
-            gen.cellGridGenerator.G = G;
-            
-        end
-
-        function [inputparams, gen] = setupGasSupplyGrid(gen, inputparams, params)
-        % inputparams belongs to GasSupplyGridGeneratorInputParams
-            
-            globG    = gen.G;
-            cellinds = params.cellinds;
-
-            G = genSubGrid(globG, cellinds);
-
-            inputparams.G = G;
-            gen.gasSupplyGridGenerator.G = G;
             
         end
 
         function [inputparams, gen] = setupCell(gen, inputparams, params)
+        % - inputparams is instance of ProtonicMembraneInputParams
+        % - The setup is taken from setupInputParams method in PEMgridGenerator except for the grid setup.
+        %   Note that we assume that electrolyte and PEM have same grid (this may changed...)
+        % - params has the same fields as the one sent to setupInputParams method.
+        %   params.Electrolyte.cellind should correspond to gen.parentGrid (which is same as gen.cellGridGenerator.parentGrid).
 
-            [inputparams, gen] = setupCellGrid(gen, inputparams, params);
-            
             cgen = gen.cellGridGenerator;
-            params_elyte = pickField(params, 'Electrolyte');
-            inputparams.Electrolyte = cgen.setupElectrolyte(inputparams.Electrolyte, params_elyte);
-            inputparams = cgen.setupElectrodeElectrolyteCoupTerm(inputparams, params);
-
+            
+            inputparams.Electrolyte = cgen.setupElectrolyte(inputparams.Electrolyte, params.Electrolyte);
+            
+            inputparams = cgen.setupElectrodeElectrolyteCoupTerm(inputparams);
+            
         end
 
         function [inputparams, gen] = setupGasSupply(gen, inputparams, params)
-        % inputparams belongs to GasSupplyInputParams
+        % - inputparams is instance of ProtonicMembraneGasSupplyInputParams
+        % - The setup is taken from setupInputParams method in GasSupplyGridGenerator except for the grid setup.
+        % - params has the same fields as the one sent to setupInputParams method.
             
-            [inputparams, gen] = setupGasSupplyGrid(gen, inputparams, params);
+            gsgen = gen.gasSupplyGridGenerator;
             
-            glgen = gen.gasSupplyGridGenerator;
-            [inputparams, glgen] = glgen.setupExternalCoupling(inputparams, params);
-            
-            gen.gasSupplyGridGenerator = glgen;
+            inputparams = gsgen.setupExternalCoupling(inputparams, params);
             
         end
+
+
         
     end
     
