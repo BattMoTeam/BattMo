@@ -1,6 +1,6 @@
 clear all
 
-mrstDebug(20);
+% mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -135,7 +135,7 @@ model.verbose = true;
 %% Start simulation
 
 dopack = true;
-clearSimulation = false;
+clearSimulation = true;
 
 if dopack
 
@@ -165,12 +165,12 @@ set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
 N = gen.nxCell;
-xc = model.(ce).(elyte).G.cells.centroids(1 : N, 1);
+xc = model.(ce).(elyte).grid.cells.centroids(1 : N, 1);
 
 state = states{end};
 
-X = reshape(model.(ce).(elyte).G.cells.centroids(:, 1), N, [])/(milli*meter);
-Y = reshape(model.(ce).(elyte).G.cells.centroids(:, 2), N, [])/(milli*meter);
+X = reshape(model.(ce).(elyte).grid.cells.centroids(:, 1), N, [])/(milli*meter);
+Y = reshape(model.(ce).(elyte).grid.cells.centroids(:, 2), N, [])/(milli*meter);
 
 figure
 val = state.(ce).(elyte).pi;
@@ -201,8 +201,8 @@ colorbar
 
 N = gen.nxGasSupply;
 
-X = reshape(model.(gs).G.cells.centroids(:, 1), N, [])/(milli*meter);
-Y = reshape(model.(gs).G.cells.centroids(:, 2), N, [])/(milli*meter);
+X = reshape(model.(gs).grid.cells.centroids(:, 1), N, [])/(milli*meter);
+Y = reshape(model.(gs).grid.cells.centroids(:, 2), N, [])/(milli*meter);
 
 figure('position', [1290, 755, 1275, 559])
 
@@ -243,10 +243,10 @@ view([50, 51]);
 i = state.Cell.Anode.i;
 
 ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
-yc    = model.Cell.Electrolyte.G.faces.centroids(ind, 2);
-areas = model.Cell.Electrolyte.G.faces.areas(ind);
+yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
+areas = model.Cell.Electrolyte.grid.faces.areas(ind);
 
-i = (i./areas)/(1/(centi*meter))
+i = (i./areas)/(1/(centi*meter));
 
 figure
 plot(yc/(milli*meter), i);
@@ -262,7 +262,7 @@ i   = state.Cell.Anode.i;
 iHp = state.Cell.Anode.iHp;
 
 ind = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
-yc  = model.Cell.Electrolyte.G.faces.centroids(ind, 2);
+yc  = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
 
 figure
 plot(yc/(milli*meter), iHp./i);
