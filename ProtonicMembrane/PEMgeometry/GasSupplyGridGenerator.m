@@ -9,28 +9,28 @@ classdef GasSupplyGridGenerator
 
     methods
         
-        function [paramobj, gen] = updateInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function [paramobj, gen] = setupInputParams(gen, paramobj, params)
+        function [inputparams, gen] = setupInputParams(gen, inputparams, params)
         % This is the main function which should be called by the derived class at the end of the :meth:`updateInputParams` method
 
             
-            [paramobj, gen] = gen.setupGrid(paramobj, params);
-            [paramobj, gen] = gen.setupExternalCoupling(paramobj, params);
+            [inputparams, gen] = gen.setupGrid(inputparams, params);
+            [inputparams, gen] = gen.setupExternalCoupling(inputparams, params);
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             error('virtual function');
             
         end
 
-        function [paramobj, gen] = setupExternalCoupling(gen, paramobj, params)
+        function [inputparams, gen] = setupExternalCoupling(gen, inputparams, params)
             
             error('virtual function');
             

@@ -14,14 +14,14 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
     
     methods
         
-        function model = ProtonicMembraneGasSupplyBc(paramobj)
+        function model = ProtonicMembraneGasSupplyBc(inputparams)
             
             model = model@BaseModel();
             
             fdnames = {'molecularWeights', ...
                        'T'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             model.gasInd.H2O = 1;
             model.gasInd.O2  = 2;

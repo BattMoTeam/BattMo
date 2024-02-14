@@ -22,17 +22,17 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
     
     methods
         
-        function model = ProtonicMembraneCellWithGasSupply(paramobj)
+        function model = ProtonicMembraneCellWithGasSupply(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'T', ...
                        'couplingTerm'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Cell      = ProtonicMembraneCell(paramobj.Cell);
-            model.GasSupply = ProtonicMembraneGasSupply(paramobj.GasSupply);
+            model.Cell      = ProtonicMembraneCell(inputparams.Cell);
+            model.GasSupply = ProtonicMembraneGasSupply(inputparams.GasSupply);
             model.Interface = BaseModel();
             
             model = model.setupInterface();

@@ -9,12 +9,12 @@ classdef ProtonicMembraneControl < BaseModel
     
     methods
         
-        function model = ProtonicMembraneControl(paramobj)
+        function model = ProtonicMembraneControl(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'controlType'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

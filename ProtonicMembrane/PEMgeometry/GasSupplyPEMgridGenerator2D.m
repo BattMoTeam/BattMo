@@ -17,7 +17,7 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
     methods
         
-        function [paramobj, gen] = updateInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
 
             nxCell      = gen.nxCell;
             nxGasSupply = gen.nxGasSupply;
@@ -49,11 +49,11 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
                         
             params.GasSupply.cellinds = gassupplytbl.get('cells');
             
-            [paramobj, gen] = setupInputParams(gen, paramobj, params);
+            [inputparams, gen] = setupInputParams(gen, inputparams, params);
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             nx1 = gen.nxGasSupply;
             nx2 = gen.nxCell;
@@ -69,12 +69,12 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
             G = tensorGrid(x, y);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G      = G;
             
         end
         
-        function [paramobj, gen] = setupCellGridGenerator(gen, paramobj, params)
+        function [inputparams, gen] = setupCellGridGenerator(gen, inputparams, params)
         % setup cellGridGenerator
 
             cgen = PEMgridGenerator2D();
@@ -88,7 +88,7 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
         end
 
-        function [paramobj, gen] = setupGasSupplyGridGenerator(gen, paramobj, params)
+        function [inputparams, gen] = setupGasSupplyGridGenerator(gen, inputparams, params)
         % setup gasSupplyGridGenerator
 
             gsgen = GasSupplyGridGenerator2D();
@@ -102,10 +102,10 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
         end
 
-        function [paramobj, gen] = setupCellGasSupplyCoupling(gen, paramobj, params)
+        function [inputparams, gen] = setupCellGasSupplyCoupling(gen, inputparams, params)
 
 
-            coupTerms = paramobj.Cell.couplingTerms;
+            coupTerms = inputparams.Cell.couplingTerms;
 
             for icoup = 1 : numel(coupTerms)
                 coupTerm = coupTerms{icoup};
@@ -123,12 +123,12 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             coupcfacetbl = IndexArray(coupcfacetbl);
 
             % We setup Cell mapping
-            cG = paramobj.Cell.G;
+            cG = inputparams.Cell.G;
             cfacefacetbl.cfaces = (1 : cG.faces.num)';
             cfacefacetbl.faces = cG.mappings.facemap;
             cfacefacetbl = IndexArray(cfacefacetbl);
             % We setup GasSupply mapping
-            gsG = paramobj.GasSupply.G;
+            gsG = inputparams.GasSupply.G;
             gfacefacetbl.gfaces = (1 : gsG.faces.num)';
             gfacefacetbl.faces = gsG.mappings.facemap;
             gfacefacetbl = IndexArray(gfacefacetbl);
@@ -148,7 +148,7 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             coupTerm.couplingcells = [tbl.get('gcells'), tbl.get('ind')];
             coupTerm.couplingfaces = [tbl.get('gfaces'), tbl.get('ind')];
 
-            paramobj.couplingTerm = coupTerm;
+            inputparams.couplingTerm = coupTerm;
             
         end        
     end

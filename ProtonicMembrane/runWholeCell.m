@@ -18,7 +18,7 @@ jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
-paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
+inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
@@ -30,7 +30,7 @@ gen.lxGasSupply = 0.5*milli*meter;
 gen.ny = 30;
 gen.ly = 1.5e-3;
 
-paramobj = gen.updateInputParams(paramobj);
+inputparams = gen.updateInputParams(inputparams);
 
 doplot = false;
 
@@ -39,21 +39,21 @@ if doplot
     close all
 
     figure('position', [337, 757, 3068, 557])
-    plotGrid(paramobj.G)
-    plotGrid(paramobj.Cell.G, 'facecolor', 'red')
-    plotGrid(paramobj.GasSupply.G, 'facecolor', 'blue')
+    plotGrid(inputparams.G)
+    plotGrid(inputparams.Cell.G, 'facecolor', 'red')
+    plotGrid(inputparams.GasSupply.G, 'facecolor', 'blue')
 
-    plotGrid(paramobj.GasSupply.G, paramobj.GasSupply.couplingTerms{1}.couplingcells);
-    plotGrid(paramobj.GasSupply.G, paramobj.GasSupply.couplingTerms{2}.couplingcells);
-    plotGrid(paramobj.Cell.G, paramobj.Cell.couplingTerms{1}.couplingcells(:, 2));
-    plotGrid(paramobj.Cell.G, paramobj.Cell.couplingTerms{2}.couplingcells(:, 2));
-    plotGrid(paramobj.GasSupply.G, paramobj.GasSupply.couplingTerms{3}.couplingcells );
+    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{1}.couplingcells);
+    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{2}.couplingcells);
+    plotGrid(inputparams.Cell.G, inputparams.Cell.couplingTerms{1}.couplingcells(:, 2));
+    plotGrid(inputparams.Cell.G, inputparams.Cell.couplingTerms{2}.couplingcells(:, 2));
+    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{3}.couplingcells );
 
     return
     
 end
 
-model = ProtonicMembraneCellWithGasSupply(paramobj);
+model = ProtonicMembraneCellWithGasSupply(inputparams);
 
 model = model.setupForSimulation();
 

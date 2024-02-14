@@ -6,7 +6,7 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gas_supply.json
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-paramobj = ProtonicMembraneGasSupplyInputParams(jsonstruct);
+inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 gen = GasSupplyGridGenerator2D();
 
 gen.nx = 100;
@@ -14,11 +14,11 @@ gen.ny = 70;
 gen.lx = 10;
 gen.ly = 10;
 
-paramobj = gen.updateInputParams(paramobj);
+inputparams = gen.updateInputParams(inputparams);
 
 % Setup model
 
-model = ProtonicMembraneGasSupply(paramobj);
+model = ProtonicMembraneGasSupply(inputparams);
 model = model.setupForSimulation();
 
 cgt = model.computationalGraph;

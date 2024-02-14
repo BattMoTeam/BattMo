@@ -21,38 +21,38 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             
         end
 
-        function [paramobj, gen] = updatePEMinputParams(gen, paramobj, params)
+        function [inputparams, gen] = updatePEMinputParams(gen, inputparams, params)
 
-            paramobj = gen.setupPEMinputParams(paramobj, []);
+            inputparams = gen.setupPEMinputParams(inputparams, []);
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             G = cartGrid([gen.Nx, gen.Ny], [gen.xlength, gen.ylength]);
             G = computeGeometry(G);
             
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G = G;
             
         end
         
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
         % Method that setups the grid and the coupling for the electrolyte model
 
             ncells = gen.G.cells.num;
             params.cellind = (1 : ncells)';
-            paramobj = setupElectrolyte@PEMgridGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@PEMgridGenerator(gen, inputparams, params);
             
         end
 
-        function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
+        function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
 
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             
-            G = paramobj.Electrolyte.G;
+            G = inputparams.Electrolyte.G;
 
             Nx = gen.Nx;
             Ny = gen.Ny;
@@ -65,7 +65,7 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             params.(ct).couplingcells = Nx + Nx*(0 : (Ny - 1))';
             params.(ct).couplingfaces = (Nx + 1) + (Nx + 1)*(0 : (Ny - 1))';
 
-            paramobj = setupElectrodeElectrolyteCoupTerm@PEMgridGenerator(gen, paramobj, params);
+            inputparams = setupElectrodeElectrolyteCoupTerm@PEMgridGenerator(gen, inputparams, params);
             
         end
 

@@ -13,16 +13,16 @@ classdef ProtonicMembraneCellWithGasSupplyInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            paramobj.Cell      = ProtonicMembraneCellInputParams(pick('Cell'));
-            paramobj.GasSupply = ProtonicMembraneGasSupplyInputParams(pick('GasSupply'));
+            inputparams.Cell      = ProtonicMembraneCellInputParams(pick('Cell'));
+            inputparams.GasSupply = ProtonicMembraneGasSupplyInputParams(pick('GasSupply'));
             
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
             
         end

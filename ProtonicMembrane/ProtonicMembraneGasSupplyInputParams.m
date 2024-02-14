@@ -14,9 +14,9 @@ classdef ProtonicMembraneGasSupplyInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ProtonicMembraneGasSupplyInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
         end
         

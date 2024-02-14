@@ -33,7 +33,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
     methods
 
-        function model = ProtonicMembraneElectrolyte(paramobj)
+        function model = ProtonicMembraneElectrolyte(inputparams)
 
             model = model@BaseModel();
 
@@ -51,7 +51,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
                        'SU'         , ...
                        'Ea_prot'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.operators = localSetupOperators(model.G);
 

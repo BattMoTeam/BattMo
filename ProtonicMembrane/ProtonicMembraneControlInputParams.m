@@ -8,9 +8,9 @@ classdef ProtonicMembraneControlInputParams < InputParams
     
     methods
         
-        function paramobj = ProtonicMembraneControlInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneControlInputParams(jsonstruct)
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

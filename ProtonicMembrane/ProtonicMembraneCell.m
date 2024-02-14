@@ -19,19 +19,19 @@ classdef ProtonicMembraneCell < BaseModel
 
     methods
 
-        function model = ProtonicMembraneCell(paramobj)
+        function model = ProtonicMembraneCell(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'T'       , ...
                        'couplingTerms'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Anode       = ProtonicMembraneAnode(paramobj.Anode);
-            model.Cathode     = ProtonicMembraneCathode(paramobj.Cathode);
-            model.Electrolyte = ProtonicMembraneElectrolyte(paramobj.Electrolyte);
-            model.Control     = ProtonicMembraneControl(paramobj.Control);
+            model.Anode       = ProtonicMembraneAnode(inputparams.Anode);
+            model.Cathode     = ProtonicMembraneCathode(inputparams.Cathode);
+            model.Electrolyte = ProtonicMembraneElectrolyte(inputparams.Electrolyte);
+            model.Control     = ProtonicMembraneControl(inputparams.Control);
 
 
             cps = model.couplingTerms;

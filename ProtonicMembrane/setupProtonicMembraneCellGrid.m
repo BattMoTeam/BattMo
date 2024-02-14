@@ -1,4 +1,4 @@
-function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
+function inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct)
 
     an    = 'Anode';
     ct    = 'Cathode';
@@ -14,7 +14,7 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
         gen.faceArea = jsonstruct.(elyte).faceArea;
         gen.N        = jsonstruct.(elyte).N;
 
-        paramobj = gen.updatePEMinputParams(paramobj);
+        inputparams = gen.updatePEMinputParams(inputparams);
 
       case '2D'
 
@@ -25,7 +25,7 @@ function paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct)
         gen.xlength = convertUnitBattMo(jsonstruct.(elyte).xlength);
         gen.Nx      = jsonstruct.(elyte).Nx;
         
-        paramobj = gen.updatePEMinputParams(paramobj);
+        inputparams = gen.updatePEMinputParams(inputparams);
         
       otherwise
 

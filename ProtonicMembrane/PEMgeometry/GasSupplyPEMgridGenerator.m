@@ -12,92 +12,92 @@ classdef GasSupplyPEMgridGenerator
 
     methods
         
-        function [paramobj, gen] = updateInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function [paramobj, gen] = setupInputParams(gen, paramobj, params)
+        function [inputparams, gen] = setupInputParams(gen, inputparams, params)
         % This is the main function which should be called by the derived class at the end of the :meth:`updateInputParams` method
 
             
-            [paramobj, gen] = gen.setupGrid(paramobj, params);
+            [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            [paramobj, gen] = gen.setupCellGridGenerator(paramobj, params);
-            [paramobj, gen] = gen.setupGasSupplyGridGenerator(paramobj, params);
+            [inputparams, gen] = gen.setupCellGridGenerator(inputparams, params);
+            [inputparams, gen] = gen.setupGasSupplyGridGenerator(inputparams, params);
 
-            [paramobj.Cell, gen]      = gen.setupCell(paramobj.Cell, params.Cell);
-            [paramobj.GasSupply, gen] = gen.setupGasSupply(paramobj.GasSupply, params.GasSupply);
+            [inputparams.Cell, gen]      = gen.setupCell(inputparams.Cell, params.Cell);
+            [inputparams.GasSupply, gen] = gen.setupGasSupply(inputparams.GasSupply, params.GasSupply);
 
-            [paramobj, gen] = gen.setupCellGasSupplyCoupling(paramobj);
+            [inputparams, gen] = gen.setupCellGasSupplyCoupling(inputparams);
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function [paramobj, gen] = setupCellGridGenerator(gen, paramobj, params)
+        function [inputparams, gen] = setupCellGridGenerator(gen, inputparams, params)
         % setup cellGridGenerator
 
             error('virtual function');
             
         end
 
-        function [paramobj, gen] = setupGasSupplyGridGenerator(gen, paramobj, params)
+        function [inputparams, gen] = setupGasSupplyGridGenerator(gen, inputparams, params)
         % setup gasSupplyGridGenerator
             
             error('virtual function');
             
         end
 
-        function [paramobj, gen] = setupCellGrid(gen, paramobj, params)
-        % paramobj belongs to CellGeneratorInputParams
+        function [inputparams, gen] = setupCellGrid(gen, inputparams, params)
+        % inputparams belongs to CellGeneratorInputParams
 
             globG    = gen.G;
             cellinds = params.cellinds;
 
             G = genSubGrid(globG, cellinds);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.cellGridGenerator.G = G;
             
         end
 
-        function [paramobj, gen] = setupGasSupplyGrid(gen, paramobj, params)
-        % paramobj belongs to GasSupplyGridGeneratorInputParams
+        function [inputparams, gen] = setupGasSupplyGrid(gen, inputparams, params)
+        % inputparams belongs to GasSupplyGridGeneratorInputParams
             
             globG    = gen.G;
             cellinds = params.cellinds;
 
             G = genSubGrid(globG, cellinds);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.gasSupplyGridGenerator.G = G;
             
         end
 
-        function [paramobj, gen] = setupCell(gen, paramobj, params)
+        function [inputparams, gen] = setupCell(gen, inputparams, params)
 
-            [paramobj, gen] = setupCellGrid(gen, paramobj, params);
+            [inputparams, gen] = setupCellGrid(gen, inputparams, params);
             
             cgen = gen.cellGridGenerator;
             params_elyte = pickField(params, 'Electrolyte');
-            paramobj.Electrolyte = cgen.setupElectrolyte(paramobj.Electrolyte, params_elyte);
-            paramobj = cgen.setupElectrodeElectrolyteCoupTerm(paramobj, params);
+            inputparams.Electrolyte = cgen.setupElectrolyte(inputparams.Electrolyte, params_elyte);
+            inputparams = cgen.setupElectrodeElectrolyteCoupTerm(inputparams, params);
 
         end
 
-        function [paramobj, gen] = setupGasSupply(gen, paramobj, params)
-        % paramobj belongs to GasSupplyInputParams
+        function [inputparams, gen] = setupGasSupply(gen, inputparams, params)
+        % inputparams belongs to GasSupplyInputParams
             
-            [paramobj, gen] = setupGasSupplyGrid(gen, paramobj, params);
+            [inputparams, gen] = setupGasSupplyGrid(gen, inputparams, params);
             
             glgen = gen.gasSupplyGridGenerator;
-            [paramobj, glgen] = glgen.setupExternalCoupling(paramobj, params);
+            [inputparams, glgen] = glgen.setupExternalCoupling(inputparams, params);
             
             gen.gasSupplyGridGenerator = glgen;
             

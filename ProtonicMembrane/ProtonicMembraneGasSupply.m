@@ -24,7 +24,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
     
     methods
         
-        function model = ProtonicMembraneGasSupply(paramobj)
+        function model = ProtonicMembraneGasSupply(inputparams)
             
             model = model@BaseModel();
 
@@ -36,9 +36,9 @@ classdef ProtonicMembraneGasSupply < BaseModel
                        'couplingTerms'   , ...
                        'T'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.GasSupplyBc = ProtonicMembraneGasSupplyBc(paramobj);
+            model.GasSupplyBc = ProtonicMembraneGasSupplyBc(inputparams);
             model.Control     = BaseModel();
             
             model.operators = localSetupOperators(model.G);

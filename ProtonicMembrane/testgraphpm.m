@@ -8,12 +8,12 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembran
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-paramobj = ProtonicMembraneCellInputParams(jsonstruct);
+inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
-paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
+inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
-model = ProtonicMembraneCell(paramobj);
+model = ProtonicMembraneCell(inputparams);
 
 % Setup computational graph
 model = model.setupComputationalGraph();

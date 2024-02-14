@@ -13,14 +13,14 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
     methods
 
         
-        function [paramobj, gen] = updateInputParams(gen, paramobj, params)
+        function [inputparams, gen] = updateInputParams(gen, inputparams, params)
 
-            paramobj = gen.setupInputParams(paramobj, []);
+            inputparams = gen.setupInputParams(inputparams, []);
             
         end
         
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
             nx = gen.nx;
             ny = gen.ny;
@@ -30,13 +30,13 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
             G = cartGrid([nx, ny], [lx, ly]);
             G = computeGeometry(G);
 
-            paramobj.G = G;
+            inputparams.G = G;
             gen.G      = G;
             
         end
 
 
-        function [paramobj, gen] = setupExternalCoupling(gen, paramobj, params)
+        function [inputparams, gen] = setupExternalCoupling(gen, inputparams, params)
 
             G  = gen.G;
             nx = gen.nx;
@@ -87,7 +87,7 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
                 
             end
 
-            paramobj.couplingTerms = couplingTerms;
+            inputparams.couplingTerms = couplingTerms;
 
         end
 

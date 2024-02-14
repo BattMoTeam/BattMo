@@ -8,58 +8,56 @@ classdef PEMgridGenerator
 
     methods
         
-        function [paramobj, gen] = updatePEMinputParams(gen, paramobj, params)
+        function [inputparams, gen] = updatePEMinputParams(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function [paramobj, gen] = setupPEMinputParams(gen, paramobj, params)
+        function [inputparams, gen] = setupPEMinputParams(gen, inputparams, params)
         % This is the main function which should be called by the derived class at the end of the :meth:`updatePEMinputParams` method
-        % The function set up the grid and the coupling terms and add those in the :code:`paramobj` structure which is
+        % The function set up the grid and the coupling terms and add those in the :code:`inputparams` structure which is
         % an instance of :class:`PEMinputParams <PEM.PEMinputParams>`
         % 
             
-            [paramobj, gen] = gen.setupGrid(paramobj, params);
+            [inputparams, gen] = gen.setupGrid(inputparams, params);
 
             params = pickField(params, 'Electrolyte');
-            paramobj.Electrolyte = gen.setupElectrolyte(paramobj.Electrolyte, params);
+            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
 
-            paramobj = gen.setupElectrodeElectrolyteCoupTerm(paramobj);
+            inputparams = gen.setupElectrodeElectrolyteCoupTerm(inputparams);
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             error('virtual function');
             
         end
         
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
         % Method that setups the grid and the coupling for the electrolyte model
-        % Here paramobj is instance of ProtonicMembraneElectrolyteInputParams
+        % Here inputparams is instance of ProtonicMembraneElectrolyteInputParams
            
-            paramobj = gen.setupElectrolyteGrid(paramobj, params);
+            inputparams = gen.setupElectrolyteGrid(inputparams, params);
             
         end
 
-        function paramobj = setupElectrolyteGrid(gen, paramobj, params)
+        function inputparams = setupElectrolyteGrid(gen, inputparams, params)
         % Setup the grid for the electrolyte
             
             % Default setup
-            paramobj.G = genSubGrid(gen.G, params.cellind);
+            inputparams.G = genSubGrid(gen.G, params.cellind);
             
         end
 
-        function paramobj = setupElectrodeElectrolyteCoupTerm(gen, paramobj, params)
+        function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
 
 
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             
-            G = paramobj.Electrolyte.G;
-
             params.(an).couplingcells;
             params.(ct).couplingcells;
             
@@ -77,7 +75,7 @@ classdef PEMgridGenerator
             coupterm.couplingfaces = [(1 : nc)', params.(ct).couplingfaces];
             couplingTerms{end + 1} = coupterm;
 
-            paramobj.couplingTerms = couplingTerms;
+            inputparams.couplingTerms = couplingTerms;
             
         end
 

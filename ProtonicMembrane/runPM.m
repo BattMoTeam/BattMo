@@ -13,12 +13,12 @@ jsonstruct = parseBattmoJson(filename);
 
 jsonstruct.(elyte).N = 10000;
 
-paramobj = ProtonicMembraneCellInputParams(jsonstruct);
+inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
-paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
+inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
-model = ProtonicMembraneCell(paramobj);
+model = ProtonicMembraneCell(inputparams);
 
 model = model.setupForSimulation();
 

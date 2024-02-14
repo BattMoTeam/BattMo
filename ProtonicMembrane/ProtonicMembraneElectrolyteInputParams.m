@@ -22,9 +22,9 @@ classdef ProtonicMembraneElectrolyteInputParams < ComponentInputParams
 
     methods
 
-        function paramobj = ProtonicMembraneElectrolyteInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneElectrolyteInputParams(jsonstruct)
 
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
         end
 

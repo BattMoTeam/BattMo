@@ -18,7 +18,7 @@ classdef ProtonicMembraneElectrode < BaseModel
     
     methods
         
-        function model = ProtonicMembraneElectrode(paramobj)
+        function model = ProtonicMembraneElectrode(inputparams)
 
             model = model@BaseModel();
 
@@ -26,7 +26,7 @@ classdef ProtonicMembraneElectrode < BaseModel
                        'E_0', ...
                        'N'  , ...
                        'gasSupplyType'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             if isempty(model.gasSupplyType)
                 model.gasSupplyType = 'notCoupled';

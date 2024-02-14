@@ -18,9 +18,9 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = ProtonicMembraneCellInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneCellInputParams(jsonstruct)
             
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             an    = 'Anode';
             ct    = 'Cathode';
@@ -28,30 +28,30 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
             ctrl  = 'Control';
     
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(an)    = ProtonicMembraneAnodeInputParams(pick(an));
-            paramobj.(ct)    = ProtonicMembraneCathodeInputParams(pick(ct));
-            paramobj.(elyte) = ProtonicMembraneElectrolyteInputParams(pick(elyte));
-            paramobj.(ctrl)  = ProtonicMembraneControlInputParams(pick(ctrl));
+            inputparams.(an)    = ProtonicMembraneAnodeInputParams(pick(an));
+            inputparams.(ct)    = ProtonicMembraneCathodeInputParams(pick(ct));
+            inputparams.(elyte) = ProtonicMembraneElectrolyteInputParams(pick(elyte));
+            inputparams.(ctrl)  = ProtonicMembraneControlInputParams(pick(ctrl));
 
-            paramobj = mergeParameters(paramobj, {{'T'}       , ...
+            inputparams = mergeParameters(inputparams, {{'T'}       , ...
                                                   {elyte, 'T'}, ...
                                                   {an, 'T'}   , ...
                                                   {ct, 'T'}});
             
-            paramobj = mergeParameters(paramobj, {{elyte, 'Ptot'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'Ptot'}, ...
                                                   {an, 'Ptot'}   , ...
                                                   {ct, 'Ptot'}});
 
-            paramobj = mergeParameters(paramobj, {{elyte, 'SU'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'SU'}, ...
                                                   {an, 'SU'}});
 
-            paramobj = mergeParameters(paramobj, {{elyte, 'steam_ratio'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'steam_ratio'}, ...
                                                   {an, 'steam_ratio'}});
 
-            paramobj = mergeParameters(paramobj, {{elyte, 'E_0'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'E_0'}, ...
                                                   {an, 'E_0'}});
             
-            paramobj.couplingTerms = {};
+            inputparams.couplingTerms = {};
             
         end
         

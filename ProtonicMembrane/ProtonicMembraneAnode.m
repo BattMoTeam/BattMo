@@ -29,9 +29,9 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
     
     methods
         
-        function model = ProtonicMembraneAnode(paramobj)
+        function model = ProtonicMembraneAnode(inputparams)
 
-            model = model@ProtonicMembraneElectrode(paramobj);
+            model = model@ProtonicMembraneElectrode(inputparams);
 
             fdnames = {'beta'        , ...
                        'ila'         , ...
@@ -44,7 +44,7 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
                        'steam_ratio' , ...
                        'Ptot'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
             model.constants = PhysicalConstants();
 

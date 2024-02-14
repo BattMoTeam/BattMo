@@ -11,14 +11,14 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
     
     methods
         
-        function model = ProtonicMembraneCathode(paramobj)
+        function model = ProtonicMembraneCathode(inputparams)
 
-            model = model@ProtonicMembraneElectrode(paramobj);
+            model = model@ProtonicMembraneElectrode(inputparams);
 
             fdnames = {'R_ct_H', ...
                        'Ptot'};
                        
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.pRef = 1*barsa;
 
