@@ -15,7 +15,7 @@ classdef GenericGrid
 % - getVolumes
 % - getNumberOfCells
 % - getNumberOfFaces
-% - getIntFaces()
+% - getIntFaces
 % - getFaceAreas
 % - getGrad
 % - getDiv
@@ -23,6 +23,7 @@ classdef GenericGrid
 % - getBcTrans
 % - getTransBcHarmFace
 % - getTrans
+% - getFaceUpstreamValue
 % - getCellFluxNorm
 
 
@@ -43,16 +44,16 @@ classdef GenericGrid
         topology
 
         % Helper structures that are used in the computation of the gradient, divergence, harmonic face averages, ...
-        % - helpers.intfaces                    (Index of the internal faces)
-        % - helpers.diffop.grad                 (sparse matrix used in getGradient)
-        % - helpers.diffop.div                  (sparse matrix used in getDiv)
-        % - helpers.trans.D                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.trans.P                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.trans.S                     (sparse matrix used in getTransHarmFace method)
-        % - helpers.extfaces.faces              (index of the external faces)
-        % - helpers.extfaces.cells              (index of the corresponding cells)
-        % - helpers.extfaces.cellfacemap        (index of the corresponding cell-face index. This is used to retrieve half transmissibilities)
-        % - helpers.faceextfacemap              (mapping from face to extface)
+        % - helpers.intfaces              (Index of the internal faces)
+        % - helpers.diffop.grad           (sparse matrix used in getGradient)
+        % - helpers.diffop.div            (sparse matrix used in getDiv)
+        % - helpers.trans.D               (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.P               (sparse matrix used in getTransHarmFace method)
+        % - helpers.trans.S               (sparse matrix used in getTransHarmFace method)
+        % - helpers.extfaces.faces        (index of the external faces)
+        % - helpers.extfaces.cells        (index of the corresponding cells)
+        % - helpers.extfaces.cellfacemap  (index of the corresponding cell-face index. This is used to retrieve half transmissibilities)
+        % - helpers.faceextfacemap        (mapping from face to extface)
         helpers
 
         % Operators to compute norm of the flux velocity at the cell centers, see getCellFluxNorm
@@ -161,7 +162,7 @@ classdef GenericGrid
 
         end
 
-        function v = getFaceUpstream(grid, flag, x)
+        function v = getFaceUpstreamValue(grid, flag, x)
 
             intfaces = grid.helpers.intfaces;
             N        = grid.topology.faces.neighbors;
@@ -184,6 +185,8 @@ classdef GenericGrid
         end
 
         function [bchT, bccells, bcsgn] = getBcTrans(grid, bcfaces)
+        % Recover the half-transmissibilities at boundary faces
+        % The indexing of bcfaces is in the current grid (that is, not indexed within helpers.extfaces)
 
             tpfvGeometry = grid.getTPFVgeometry();
             hT           = tpfvGeometry.hT;
