@@ -17,6 +17,7 @@ classdef SubGrid < GenericGrid
         % - mappings.intfacemap
         % - mappings.nodemap
         % - mappings.invcellmap
+        % - mappings.invfacemap
         mappings
         
     end
@@ -48,15 +49,19 @@ classdef SubGrid < GenericGrid
             intfaces = all(subG.topology.faces.neighbors> 0, 2);
             intfaces = find(intfaces);
             
-            invcellmap = zeros(pnc, 1);
-            invcellmap(cellmap) = (1 : nc)';
-
             pnc     = subG.parentGrid.topology.cells.num;
             nc      = subG.topology.cells.num;
             cellmap = subG.mappings.cellmap;
 
             invcellmap = zeros(pnc, 1);
             invcellmap(cellmap) = (1 : nc)';
+
+            pnf     = subG.parentGrid.topology.faces.num;
+            nf      = subG.topology.faces.num;
+            facemap = subG.mappings.facemap;
+
+            invfacemap = zeros(pnf, 1);
+            invfacemap(facemap) = (1 : nf)';
 
             intfacefacetbl.faces    = intfaces;
             intfacefacetbl.intfaces = (1 : numel(intfaces))';
@@ -102,6 +107,7 @@ classdef SubGrid < GenericGrid
             subG.mappings.intfacemap  = intfacemap;
             subG.mappings.cellfacemap = cellfacemap;
             subG.mappings.invcellmap  = invcellmap;
+            subG.mappings.invfacemap  = invfacemap;
             
         end
 
