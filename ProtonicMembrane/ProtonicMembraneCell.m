@@ -54,7 +54,8 @@ classdef ProtonicMembraneCell < BaseModel
             sigmaHp = model.(elyte).sigma_prot;
             sigmaEl = model.(elyte).sigma_n0;
             phi0    = abs(model.(an).E_0 - model.(ct).E_0); % characteristic voltage
-            T       = model.(elyte).operators.T_all(1);
+            T       = model.(elyte).G.getTrans();
+            T       = mean(T);
 
             sHp = T*sigmaHp*phi0;
             sEl = T*sigmaEl*phi0;
@@ -286,7 +287,7 @@ classdef ProtonicMembraneCell < BaseModel
             piElde  = state.(elde).pi;
             iEl     = state.(elde).iEl;
 
-            T = op.harmFaceBC(sigmaEl, cfs(:, 2));
+            T = model.(elyte).G.getTransBcHarmFace(sigmaEl, cfs(:, 2));
 
             state.(elde).iElEquation = iEl - T.*(piElde(ccs(:, 1)) - piElyte(ccs(:, 2)));
 
@@ -320,8 +321,8 @@ classdef ProtonicMembraneCell < BaseModel
             phiElde  = state.(elde).phi;
             iHp      = state.(elde).iHp;
 
-            T = op.harmFaceBC(sigmaHp, cfs(:, 2));
-
+            T = model.(elyte).G.getTransBcHarmFace(sigmaHp, cfs(:, 2));
+            
             state.(elde).iHpEquation = iHp - T.*(phiElde(ccs(:, 1)) - phiElyte(ccs(:, 2)));
 
         end
@@ -341,7 +342,7 @@ classdef ProtonicMembraneCell < BaseModel
             initState.(an).iEl = 0*onevec;
             initState.(an).i   = 0*onevec;
 
-            nc = model.(elyte).G.cells.num;
+            nc = model.(elyte).G.getNumberOfCells();
             initState.(elyte).pi  = zeros(nc, 1);
             initState.(elyte).phi = zeros(nc, 1);
 
@@ -363,7 +364,7 @@ classdef ProtonicMembraneCell < BaseModel
 
         function model = setupForSimulation(model)
 
-            model.isSimulationModel = true;
+            model.isRootSimulationModel = true;
 
             shortNames = {'Electrolyte', 'elyte';
                           'Anode'      , 'an';

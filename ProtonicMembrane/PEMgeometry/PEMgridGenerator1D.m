@@ -24,12 +24,7 @@ classdef PEMgridGenerator1D < PEMgridGenerator
 
             inputparams = gen.setupPEMinputParams(inputparams, []);
             
-            elyte = 'Electrolyte';
-            
-            inputparams.G         = gen.adjustGridToFaceArea(inputparams.G);
-            inputparams.(elyte).G = gen.adjustGridToFaceArea(inputparams.(elyte).G);
-            
-            inputparams.dx    = gen.xlength/gen.N;
+            inputparams.dx       = gen.xlength/gen.N;
             inputparams.faceArea = gen.faceArea;
             
         end
@@ -37,10 +32,13 @@ classdef PEMgridGenerator1D < PEMgridGenerator
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             G = cartGrid(gen.N, gen.xlength);
-            G = computeGeometry(G);
+
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+            
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
             
             inputparams.G = G;
-            gen.G = G;
+            gen.parentGrid = parentGrid;
             
         end
         
@@ -58,25 +56,15 @@ classdef PEMgridGenerator1D < PEMgridGenerator
             ct    = 'Cathode';
             elyte = 'Electrolyte';
 
-            G = inputparams.G;
+            G = gen.parentGrid;
             
             params.(an).couplingcells = 1;
             params.(an).couplingfaces = 1;
-            params.(ct).couplingcells = G.cells.num;
-            params.(ct).couplingfaces = G.faces.num;
+            params.(ct).couplingcells = G.getNumberOfCells();
+            params.(ct).couplingfaces = G.getNumberOfFaces();
 
             inputparams = setupElectrodeElectrolyteCoupTerm@PEMgridGenerator(gen, inputparams, params);
             
-        end
-
-        function G = adjustGridToFaceArea(gen, G);
-
-            fa = gen.faceArea;
-
-            G.faces.areas   = fa*G.faces.areas;
-            G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.cells.volumes;
-
         end
         
     end

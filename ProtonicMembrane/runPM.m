@@ -11,11 +11,17 @@ ctrl  = 'Control';
 filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembrane.json';
 jsonstruct = parseBattmoJson(filename);
 
-jsonstruct.(elyte).N = 10000;
+jsonstruct.(elyte).Nx = 1000;
+
+do1D = true;
+if do1D
+    jsonstruct.Geometry.type = '1D';
+    jsonstruct.(elyte).faceArea = 1;
+end
 
 inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
-inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+[inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
 model = ProtonicMembraneCell(inputparams);
@@ -68,9 +74,13 @@ states = states(ind);
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
-N = model.(elyte).G.cartDims(1);
+if do1D
+    N = gen.N;
+else
+    N = gen.Nx;
+end
 
-xc = model.(elyte).G.cells.centroids(1 : N, 1);
+xc = model.(elyte).grid.cells.centroids(1 : N, 1);
 
 dothisplot = true;
 if dothisplot

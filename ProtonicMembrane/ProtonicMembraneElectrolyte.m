@@ -53,8 +53,6 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.operators = localSetupOperators(model.G);
-
             model.constants = PhysicalConstants();
 
             model.pRef = 1*barsa;
@@ -183,7 +181,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
         function state = updateSigmaHp(model, state)
 
-            nc = model.G.cells.num;
+            nc = model.G.getNumberOfCells();
 
             state.sigmaHp = model.sigma_prot*ones(nc, 1);
 
@@ -262,12 +260,11 @@ classdef ProtonicMembraneElectrolyte < BaseModel
 
         function state = updateChargeConsEl(model, state)
 
-            op = model.operators;
 
             sourceEl = state.sourceEl;
             iEl      = state.iEl;
 
-            state.chargeConsEl =  op.Div(iEl) - sourceEl;
+            state.chargeConsEl =  model.G.getDiv(iEl) - sourceEl;
 
         end
 
@@ -278,7 +275,7 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             sourceHp = state.sourceHp;
             iHp      = state.iHp;
 
-            state.massConsHp =  op.Div(iHp) - sourceHp;
+            state.massConsHp =  model.G.getDiv(iHp) - sourceHp;
 
         end
 

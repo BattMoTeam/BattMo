@@ -2,7 +2,7 @@ classdef PEMgridGenerator
 
     properties
 
-        G
+        parentGrid
         
     end
 
@@ -47,7 +47,7 @@ classdef PEMgridGenerator
         % Setup the grid for the electrolyte
             
             % Default setup
-            inputparams.G = genSubGrid(gen.G, params.cellind);
+            inputparams.G = genSubGrid(gen.parentGrid, params.cellind);
             
         end
 

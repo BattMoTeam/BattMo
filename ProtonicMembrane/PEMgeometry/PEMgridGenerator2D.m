@@ -30,17 +30,20 @@ classdef PEMgridGenerator2D < PEMgridGenerator
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
             
             G = cartGrid([gen.Nx, gen.Ny], [gen.xlength, gen.ylength]);
-            G = computeGeometry(G);
+
+            parentGrid = Grid(G);
+            
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
             
             inputparams.G = G;
-            gen.G = G;
+            gen.parentGrid = parentGrid;
             
         end
         
         function inputparams = setupElectrolyte(gen, inputparams, params)
         % Method that setups the grid and the coupling for the electrolyte model
 
-            ncells = gen.G.cells.num;
+            ncells = gen.parentGrid.getNumberOfCells();
             params.cellind = (1 : ncells)';
             inputparams = setupElectrolyte@PEMgridGenerator(gen, inputparams, params);
             
@@ -52,8 +55,6 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             
-            G = inputparams.Electrolyte.G;
-
             Nx = gen.Nx;
             Ny = gen.Ny;
 
