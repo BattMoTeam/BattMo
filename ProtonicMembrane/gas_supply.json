@@ -10,6 +10,7 @@
    "value" : 0.018369247,
    "unit" : "centi*poise"
  },
+ "diffusionCoefficients" : [1e-4, 1e-4],
  "T" : 298,
  "control" : [{"name" : "External input",
                "type" : "rate-composition",

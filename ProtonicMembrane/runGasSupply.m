@@ -21,7 +21,8 @@ inputparams = gen.updateInputParams(inputparams);
 model = ProtonicMembraneGasSupply(inputparams);
 model = model.setupForSimulation();
 
-cgt = model.computationalGraph;
+cgt = model.cgt;
+cgp = model.cgp;
 
 %% Setup initial state
 
@@ -69,6 +70,6 @@ model.nonlinearTolerance = 1e-8;
 
 %%
 
-close all
+figure
 
 plotToolbar(model.grid, states);

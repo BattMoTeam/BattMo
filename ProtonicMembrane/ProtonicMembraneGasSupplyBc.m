@@ -45,6 +45,8 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             varnames{end + 1} = 'pressure';
             % Density
             varnames{end + 1} = 'density';
+            % Densities
+            varnames{end + 1} = VarName({}, 'densities', nGas);
             % Mass Flux terms at boundary (outward)
             varnames{end + 1} = VarName({}, 'massFluxes', nGas);
             % Boundary Equation relating boundary massFluxes and boundary pressure values
@@ -57,11 +59,19 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             outputvarname = VarName({}, 'volumefractions', nGas, 2);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
-            
             fn = @(model, state) ProtonicMembraneGasSupply.updateDensity(model, state);
             fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
             inputvarnames = {VarName({}, 'volumefractions', nGas), 'pressure'};
             model = model.registerPropFunction({'density', fn, inputvarnames});
+            
+            fn = @(model, state) ProtonicMembraneGasSupply.updateDensities(model, state);
+            fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
+            for igas = 1 : nGas
+                inputvarnames = {'density', ...
+                                 VarName({}, 'volumefractions', nGas, igas)};
+                outputvarname = VarName({}, 'densities', nGas, igas);
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
             
         end
         

@@ -5,6 +5,7 @@ classdef ProtonicMembraneGasSupplyInputParams < ComponentInputParams
         molecularWeights
         permeability
         viscosity
+        diffusionCoefficients % vector of diffusion coefficients, one per component
         T
         control
 
