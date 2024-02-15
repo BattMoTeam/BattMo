@@ -238,9 +238,9 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             pBcs    = state.Interface.pressures;
             mfluxes = state.Interface.massFluxes;
 
-            rho = map*rho;
-            pIn = map*pIn;
-            pBc = 0*pBcs{1}; % hacky initialisation
+            rho   = map*rho;
+            pIn   = map*pIn;
+            pBc   = 0*pBcs{1}; % hacky initialisation
             mflux = 0*pBcs{1}; % hacky initialisation
             for igas = 1 : nGas
                 vfIns{igas} = map*vfIns{igas};

@@ -40,7 +40,7 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             varnames = {};
 
             % Volume fractions
-            varnames{end + 1} = VarName({}, 'volumefractions', nGas);
+            varnames{end + 1} = VarName({}, 'massfractions', nGas);
             % Total pressure
             varnames{end + 1} = 'pressure';
             % Density
@@ -54,21 +54,21 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             
             model = model.registerVarNames(varnames);
 
-            fn = @ProtonicMembraneGasSupply.updateVolumeFraction;
-            inputvarnames = {VarName({}, 'volumefractions', nGas, 1)};
-            outputvarname = VarName({}, 'volumefractions', nGas, 2);
+            fn = @ProtonicMembraneGasSupply.updateMassFraction;
+            inputvarnames = {VarName({}, 'massfractions', nGas, 1)};
+            outputvarname = VarName({}, 'massfractions', nGas, 2);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
             fn = @(model, state) ProtonicMembraneGasSupply.updateDensity(model, state);
             fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
-            inputvarnames = {VarName({}, 'volumefractions', nGas), 'pressure'};
+            inputvarnames = {VarName({}, 'massfractions', nGas), 'pressure'};
             model = model.registerPropFunction({'density', fn, inputvarnames});
             
             fn = @(model, state) ProtonicMembraneGasSupply.updateDensities(model, state);
             fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
             for igas = 1 : nGas
                 inputvarnames = {'density', ...
-                                 VarName({}, 'volumefractions', nGas, igas)};
+                                 VarName({}, 'massfractions', nGas, igas)};
                 outputvarname = VarName({}, 'densities', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             end
@@ -80,9 +80,9 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
     methods
 
 
-        function state = updateVolumeFraction(model, state)
+        function state = updateMassFraction(model, state)
 
-            state.volumefractions{2} = 1 - state.volumefractions{1};
+            state.massfractions{2} = 1 - state.massfractions{1};
             
         end
 
