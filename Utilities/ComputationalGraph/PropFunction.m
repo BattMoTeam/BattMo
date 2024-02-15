@@ -106,7 +106,12 @@ classdef PropFunction
 
         function callstr = literalFunctionCallSetupFn(propfunction)
 
-            [funcstr, statestr, nmstr] = propfunction.setupCallStringElements();
+        % First, we define string callstr1, which when evalulated will define the function called fn.
+        %
+        % Second, with the second string callstr2, the function fn is called with the correct argument (model and state
+        % with the correct submodel setup).
+            
+            [~, statestr, nmstr] = propfunction.setupCallStringElements();
 
             callstr1 = sprintf('fn = %s;\n', func2str(propfunction.fn));
 
