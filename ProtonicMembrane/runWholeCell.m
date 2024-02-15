@@ -57,6 +57,11 @@ model = ProtonicMembraneCellWithGasSupply(inputparams);
 
 model = model.setupForSimulation();
 
+cgt = model.cgt;
+cgp = model.cgp;
+
+return
+
 %% Setup initial state
 
 initstate = model.setupInitialState();
