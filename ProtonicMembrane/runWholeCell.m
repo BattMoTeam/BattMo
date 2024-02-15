@@ -60,8 +60,6 @@ model = model.setupForSimulation();
 cgt = model.cgt;
 cgp = model.cgp;
 
-return
-
 %% Setup initial state
 
 initstate = model.setupInitialState();
@@ -211,23 +209,23 @@ Y = reshape(model.(gs).grid.cells.centroids(:, 2), N, [])/(milli*meter);
 
 figure('position', [1290, 755, 1275, 559])
 
-val = state.(gs).volumefractions{1};
+val = state.(gs).massfractions{1};
 Z = reshape(val, N, []);
 
 surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
-title('Volume Fraction H2O');
+title('Mass Fraction H2O');
 xlabel('x [mm]')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
 
-val = state.(gs).volumefractions{2};
+val = state.(gs).massfractions{2};
 Z = reshape(val, N, []);
 
 surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
-title('Volume Fraction O2');
+title('Mass Fraction O2');
 xlabel('x [mm]')
 view([50, 51]);
 

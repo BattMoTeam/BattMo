@@ -15,8 +15,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
         helpers
         pmin  = 1e-3*barsa % cutoff value used in updateState method
-        vfmin = 1e-6       % cutoff value used in updateState method
-        vfmax = 1 - 1e-6   % cutoff value used in updateState method
+        mfmin = 1e-6       % cutoff value used in updateState method
+        mfmax = 1 - 1e-6   % cutoff value used in updateState method
         
     end
     
@@ -34,7 +34,11 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             model.Cell      = ProtonicMembraneCell(inputparams.Cell);
             model.GasSupply = ProtonicMembraneGasSupply(inputparams.GasSupply);
-            model.Interface = BaseModel();
+
+            % Setup interface model
+            interfaceinputparams.T                = inputparams.GasSupply.T;
+            interfaceinputparams.molecularWeights = inputparams.GasSupply.molecularWeights;
+            model.Interface = ProtonicMembraneGasSupplyBc(interfaceinputparams);
             
             model = model.setupInterface();
             
@@ -65,20 +69,20 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             varnames{end + 1} = 'beta';
             % pressure variable at the interface
             varnames{end + 1} = VarName({'Interface'}, 'pressures', nGas);
-            % massFluxes variable at the interface
-            varnames{end + 1} = VarName({'Interface'}, 'massFluxes', nGas);
-            % massFlux equation at Interface (used to decouple)
-            varnames{end + 1} = VarName({'Interface'}, 'massFluxEqs', nGas);
-
             
             model = model.registerVarNames(varnames);
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateInterfaceEquation;
-            inputvarnames = {{'GasSupply', 'pressure'}                      , ...
-                             VarName({'GasSupply'}, 'volumefractions', nGas), ...
-                             VarName({'Interface'}, 'pressures', nGas)      , ...
-                             VarName({'Interface'}, 'massFluxes', nGas)};
-            outputvarname = VarName({'Interface'}, 'massFluxEqs', nGas);
+            inputvarnames = {VarName({'Interface'}, 'massFluxes', nGas)   , ...
+                             VarName({'Interface'}, 'massfractions', nGas), ...
+                             VarName({'Interface'}, 'densities', nGas)    , ...
+                             VarName({'Interface'}, 'pressure')           , ...
+                             VarName({'Interface'}, 'density')            , ...
+                             VarName({'GasSupply'}, 'massfractions', nGas), ...
+                             VarName({'GasSupply'}, 'densities', nGas)    , ...
+                             VarName({'GasSupply'}, 'pressure')           , ...
+                             VarName({'GasSupply'}, 'density')};
+            outputvarname = VarName({'Interface'}, 'boundaryEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateAnodePressures;
@@ -106,6 +110,15 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             fn = @ProtonicMembraneCell.updateBeta;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'beta', fn, {'time'}});
+
+            fn = @ProtonicMembraneCell.updateInterface;
+            inputvarnames = {VarName({'Interface'}, 'pressures', nGas)};
+            outputvarnames = {VarName({'Interface'}, 'pressure'), ...
+                              VarName({'Interface'}, 'massfractions', nGas)};
+            for ioutput = 1 : numel(outputvarnames)
+                outputvarname = outputvarnames{ioutput};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
             
         end
 
@@ -117,18 +130,22 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
             gasInd = model.(gs).gasInd;
             nGas   = model.(gs).nGas;
+            Mws    = model.(gs).molecularWeights;
             
             model.(gs) = model.(gs).setupComputationalGraph();
             
             initstate.(gs) = model.(gs).setupInitialState();
 
-            p = initstate.(gs).pressure;
-            s = initstate.(gs).volumefractions{1};
-
-            initstate.(gs).volumefractions{2} = 1 - initstate.(gs).volumefractions{1};
-
+            p   = initstate.(gs).pressure;
+            mfs = initstate.(gs).massfractions;
+            
+            tot = 0;
             for igas = 1 : nGas
-                pgs{igas} = initstate.(gs).volumefractions{igas}.*initstate.(gs).pressure;
+                tot = tot + mfs{igas}/Mws(igas);
+            end
+            
+            for igas = 1 : nGas
+                pgs{igas} = p.*tot.*mfs{igas}/Mws(igas);
             end
 
             pH2O = pgs{gasInd.H2O};
@@ -209,6 +226,32 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
         end
 
+        function state = updateInterface(model, state)
+            
+            nGas = model.GasSupply.nGas;
+            Mws  = model.GasSupply.molecularWeights;
+            
+            itf = 'Interface';
+            
+            ps = state.(itf).pressures;
+            p   = 0*ps{1}; % hacky AD initialisation
+            tot = 0*ps{1}; % hacky AD initialisation
+            
+            for igas = 1 : nGas
+                p = p + ps{igas};
+                tot = tot + ps{igas}*Mws(igas);
+            end
+            
+            for igas = 1 : nGas
+                xs{igas} = ps{igas}*Mws(igas)./tot;
+            end
+
+
+            state.(itf).pressure = p;
+            state.(itf).massfractions = xs;
+            
+        end
+        
         function state = updateBeta(model, state, drivingForces)
             
             time = state.time;
@@ -225,34 +268,36 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         end
 
         function state = updateInterfaceEquation(model, state)
-
+            
+        % Implementation is basically the same as updateBCequations method in ProtonicMembraneGasSupply, except for the
+        % helper structure (hence an other implementation, but it could be cleaned-up and have just one implementation)
+            
             map  = model.helpers.interfaceMap;
-            T    = model.helpers.interfaceT;
-            nGas = model.GasSupply.nGas;
+            Tbc  = model.helpers.interfaceT;
+            nGas = model.Interface.nGas;
+            
             K    = model.GasSupply.permeability;
             mu   = model.GasSupply.viscosity;
+            D    = model.GasSupply.diffusionCoefficients;
             
-            pIn     = state.GasSupply.pressure;
-            vfIns   = state.GasSupply.volumefractions;
-            rho     = state.GasSupply.density;
-            pBcs    = state.Interface.pressures;
-            mfluxes = state.Interface.massFluxes;
+            pIn = map*state.GasSupply.pressure;
+            pBc = state.Interface.pressure;
 
-            rho   = map*rho;
-            pIn   = map*pIn;
-            pBc   = 0*pBcs{1}; % hacky initialisation
-            mflux = 0*pBcs{1}; % hacky initialisation
+            rhoBc = state.Interface.density ;      
+
             for igas = 1 : nGas
-                vfIns{igas} = map*vfIns{igas};
-                pBc = pBc + pBcs{igas};
-                mflux = mflux + mfluxes{igas};
+
+                mfBc      = state.Interface.massfractions{igas};
+                bcFlux    = state.Interface.massFluxes{igas};
+                rhoInigas = map*state.GasSupply.densities{igas};
+                rhoBcigas = state.Interface.densities{igas};
+
+                bceqs{igas} = rhoBc.*mfBc*K/mu.*Tbc.*(pIn - pBc) + D(igas).*Tbc.*(rhoInigas - rhoBcigas) - bcFlux;
+
             end
 
-            eqs{1} = mflux - rho.*K/mu.*T.*(pIn - pBc);
-            eqs{2} = vfIns{1}.*pBc - pBcs{1};
+            state.Interface.boundaryEquations = bceqs;
 
-            state.Interface.massFluxEqs = eqs;
-            
         end
 
 
@@ -358,17 +403,17 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             nGas = model.(gs).nGas;
 
             pmin  = model.pmin;
-            vfmin = model.vfmin;
-            vfmax = model.vfmax;
+            mfmin = model.mfmin;
+            mfmax = model.mfmax;
             
             state.(gs).pressure             = max(pmin, state.(gs).pressure);
             state.(gs).GasSupplyBc.pressure = max(pmin, state.(gs).GasSupplyBc.pressure);
             
-            state.(gs).volumefractions{1}             = max(vfmin, state.(gs).volumefractions{1});
-            state.(gs).GasSupplyBc.volumefractions{1} = max(vfmin, state.(gs).GasSupplyBc.volumefractions{1});
+            state.(gs).massfractions{1}             = max(mfmin, state.(gs).massfractions{1});
+            state.(gs).GasSupplyBc.massfractions{1} = max(mfmin, state.(gs).GasSupplyBc.massfractions{1});
             
-            state.(gs).volumefractions{1}             = min(vfmax, state.(gs).volumefractions{1});
-            state.(gs).GasSupplyBc.volumefractions{1} = min(vfmax, state.(gs).GasSupplyBc.volumefractions{1});
+            state.(gs).massfractions{1}             = min(mfmax, state.(gs).massfractions{1});
+            state.(gs).GasSupplyBc.massfractions{1} = min(mfmax, state.(gs).GasSupplyBc.massfractions{1});
             
         end
         
