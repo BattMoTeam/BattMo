@@ -3,7 +3,10 @@ classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
 
     properties
 
-        Imax
+        %
+        % Charge rate
+        CRate
+        
         rampupTime
         useCVswitch
         upperCutoffVoltage

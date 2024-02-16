@@ -6,6 +6,12 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
     
     properties
 
+
+        %
+        % Charge and discharge rates
+        CRate
+        DRate
+        
         lowerCutoffVoltage
         upperCutoffVoltage
 

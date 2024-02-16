@@ -3,11 +3,15 @@ classdef CCDischargeControlModel < CCcontrolModel
 
     properties
 
-        Imax
+        DRate
+        
         rampupTime
         useCVswitch
         lowerCutoffVoltage
-        
+
+        % This value is initiated depending on DRate and battery model
+        Imax
+
     end
     
     methods
@@ -16,7 +20,8 @@ classdef CCDischargeControlModel < CCcontrolModel
             
             model = model@CCcontrolModel(inputparams);
             
-            fdnames = {'rampupTime', ...
+            fdnames = {'DRate'      , ...
+                       'rampupTime' , ...
                        'useCVswitch', ...
                        'lowerCutoffVoltage'};
 

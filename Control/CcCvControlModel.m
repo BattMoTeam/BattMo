@@ -5,9 +5,12 @@ classdef CcCvControlModel < ControlModel
 
     
     properties
-        
-        Imax
 
+        %
+        % Charge and discharge rates
+        CRate
+        DRate
+        
         lowerCutoffVoltage
         upperCutoffVoltage
 
@@ -20,6 +23,12 @@ classdef CcCvControlModel < ControlModel
         % - 'discharging'
         % - 'charging'
         initialControl
+
+        % This values are initiated depending on C/D rate values and battery model
+        ImaxCharge
+        ImaxDischarge
+        
+        
     end
     
     
@@ -29,7 +38,9 @@ classdef CcCvControlModel < ControlModel
 
             model = model@ControlModel(inputparams);
             
-            fdnames = {'lowerCutoffVoltage', ...
+            fdnames = {'CRate'             , ...
+                       'DRate'             , ...
+                       'lowerCutoffVoltage', ...
                        'upperCutoffVoltage', ...
                        'dEdtLimit'         , ...
                        'dIdtLimit'         , ...
@@ -73,9 +84,10 @@ classdef CcCvControlModel < ControlModel
         
         function state = updateControlEquation(model, state)
             
-            Imax = model.Imax;
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
+            ImaxD = model.ImaxDischarge;
+            ImaxC = model.ImaxCharge;
+            Emin  = model.lowerCutoffVoltage;
+            Emax  = model.upperCutoffVoltage;
             
             E = state.E;
             I = state.I;            
@@ -83,11 +95,11 @@ classdef CcCvControlModel < ControlModel
             
             switch ctrlType
               case 'CC_discharge1'
-                ctrleq = I - Imax;
+                ctrleq = I - ImaxD;
               case 'CC_discharge2'
                 ctrleq = I;
               case 'CC_charge1'
-                ctrleq = I + Imax;
+                ctrleq = I + ImaxC;
               case 'CV_charge2'
                 % TODO fix scaling
                 ctrleq = (E - Emax)*1e5;
@@ -101,9 +113,9 @@ classdef CcCvControlModel < ControlModel
 
         function state = updateControlState(model, state)
             
-            Emin = model.lowerCutoffVoltage;
-            Emax = model.upperCutoffVoltage;
-            Imax = model.Imax;
+            Emin  = model.lowerCutoffVoltage;
+            Emax  = model.upperCutoffVoltage;
+            ImaxD = model.ImaxDischarge;
             
             ctrlType = state.ctrlType;
             E = state.E;
@@ -117,7 +129,7 @@ classdef CcCvControlModel < ControlModel
             end
             
             if strcmp(ctrlType, 'CV_discharge2')
-                if I > Imax
+                if I > ImaxDischarge
                     state.ctrlType = 'CC_discharge1';
                     fprintf('switch control from CV to CC\n');
                 end
@@ -135,9 +147,8 @@ classdef CcCvControlModel < ControlModel
         
         function  [arefulfilled, state] = checkConstraints(model, state)
 
-            Imax    = model.Imax;
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
+            Emin  = model.lowerCutoffVoltage;
+            Emax  = model.upperCutoffVoltage;
             
             E        = state.E;
             I        = state.I;
@@ -168,7 +179,6 @@ classdef CcCvControlModel < ControlModel
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
-            Imax     = model.Imax;
             Emin     = model.lowerCutoffVoltage;
             Emax     = model.upperCutoffVoltage;
             dEdtMin  = model.dEdtLimit;
@@ -261,6 +271,7 @@ classdef CcCvControlModel < ControlModel
             params = model.parseTimeSteppingStruct(params);
             
             CRate   = model.CRate;
+            DRate   = model.DRate;
             ncycles = model.numberOfCycles;
 
             if ~isempty(params.totalTime) & isempty(ncycles)
@@ -269,7 +280,7 @@ classdef CcCvControlModel < ControlModel
                 if ~isempty(ncycles)
                     warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
                 end
-                totalTime = 2*ncycles*1.1*(1*hour/CRate);
+                totalTime = ncycles*1.2*(1*hour/CRate + 1*hour/DRate);
             end
 
             if ~isempty(params.timeStepDuration)

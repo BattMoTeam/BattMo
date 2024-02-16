@@ -69,10 +69,10 @@ inputparams.(ne).(co).(ad).massFraction  = 0.01;
 gen = BatteryGeneratorP2D();
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-%% We change the given CRate
+%% We change the given DRate
 
-CRate = 0.1;
-inputparams.(ctrl).CRate = CRate;
+DRate = 0.1;
+inputparams.(ctrl).DRate = DRate;
 
 % Allow for switching to voltage control
 inputparams.(ctrl).useCVswitch = true;
@@ -137,7 +137,7 @@ initstate = states{end};
 % We use a new control model.
 
 inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
-inputparams.(ctrl).CRate = CRate;
+inputparams.(ctrl).CRate = DRate;
 
 inputparams = inputparams.validateInputParams();
 

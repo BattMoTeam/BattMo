@@ -61,8 +61,8 @@ classdef NPlengthSetter1D
 
             C = computeCellCapacity(model);
 
-            CRate = model.(ctrl).CRate;
-            model.(ctrl).Imax = (C/hour)*CRate;
+            DRate = model.(ctrl).DRate;
+            model.(ctrl).Imax = (C/hour)*DRate;
 
         end
 

@@ -39,16 +39,17 @@ jsonstruct.include_current_collectors = false;
 
 inputparams = BatteryInputParams(jsonstruct);
 
-use_cccv = false;
+use_cccv = true;
 if use_cccv
-    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
                          'initialControl'    , 'discharging', ...
-                         'numberOfCycles'    , 1            , ...
-                         'CRate'             , 1            , ...
-                         'lowerCutoffVoltage', 2.4          , ...
-                         'upperCutoffVoltage', 4.1          , ...
-                         'dIdtLimit'         , 0.01         , ...
-                         'dEdtLimit'         , 0.01);
+                         'numberOfCycles'    , 3            , ...
+                         'CRate'             , 1.5          , ...
+                         'DRate'             , 1            , ...
+                         'lowerCutoffVoltage', 3            , ...
+                         'upperCutoffVoltage', 4            , ...
+                         'dIdtLimit'         , 1e-5         , ...
+                         'dEdtLimit'         , 1e-5);
     cccvinputparams = CcCvControlModelInputParams(cccvstruct);
     inputparams.Control = cccvinputparams;
 end
@@ -75,12 +76,6 @@ if inspectgraph
     return
 end
 
-%% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current.
-
-CRate = model.Control.CRate;
 
 %% Setup the schedule
 %
@@ -128,7 +123,13 @@ nls.maxIterations = 10;
 nls.errorOnFailure = false;
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+
+if use_cccv
+    Imax = (model.(ctrl).ImaxDischarge + model.(ctrl).ImaxCharge);
+else
+    Imax = model.(ctrl).Imax;
+end
+model.nonlinearTolerance = 1e-3*Imax;
 % Set verbosity
 model.verbose = true;
 

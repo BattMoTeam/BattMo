@@ -408,21 +408,23 @@ classdef GenericBattery < BaseModel
               case "CCDischarge"
 
                 control = CCDischargeControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                rate = control.DRate;
+                control.Imax = (C/hour)*rate;
 
               case 'CCCharge'
 
                 control = CCChargeControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                rate = control.CRate;
+                control.Imax = (C/hour)*rate;
 
               case "CCCV"
 
                 control = CcCvControlModel(inputparams);
                 CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
-
+                DRate = control.DRate;
+                control.ImaxCharge    = (C/hour)*CRate;
+                control.ImaxDischarge = (C/hour)*DRate;
+                
               case "powerControl"
 
                 control = PowerControlModel(inputparams);
@@ -732,11 +734,11 @@ classdef GenericBattery < BaseModel
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
                     initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I            = model.(ctrl).Imax;
+                    initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
                   case 'charging'
                     initstate.(ctrl).ctrlType     = 'CC_charge1';
                     initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I            = - model.(ctrl).Imax;
+                    initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
                   otherwise
                     error('initialControl not recognized');
                 end

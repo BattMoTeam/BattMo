@@ -84,15 +84,15 @@ plotBatteryGrid(model, 'setstyle', false);
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
 C      = computeCellCapacity(model);
-CRate  = 2;
-inputI = (C/hour)*CRate;
+DRate  = 2;
+inputI = (C/hour)*DRate;
 inputE = jsonstruct.Control.upperCutoffVoltage;
 
 %% Setup the parameters of the GITT protocol
 pulseFraction  = 0.01;
 relaxationTime = 4*hour;
 switchTime     = 1*milli*second; % switching time (linear interpolation between the two states)
-dischargeTime  = pulseFraction*CRate*hour; % time of discharging
+dischargeTime  = pulseFraction*DRate*hour; % time of discharging
 
 % Discretization parameters
 tfac                          = 1;

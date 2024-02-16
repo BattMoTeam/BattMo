@@ -48,8 +48,8 @@ model = Battery(inputparams);
 % operational value. Larger time steps are then used for the normal
 % operation.
 
-CRate = model.Control.CRate;
-total = 1.2*hour/CRate;
+DRate = model.Control.DRate;
+total = 1.2*hour/DRate;
 
 n    = 40;
 dt   = total*0.7/n;

@@ -96,24 +96,24 @@ gen = SectorBatteryGenerator();
 
 inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 
-CRate = 0.1;
+DRate = 0.1;
 inputparams.Control.lowerCutoffVoltage = 3;
-inputparams.Control.CRate              = CRate;
-inputparams.Control.rampupTime         = 0.1/CRate;
+inputparams.Control.DRate              = DRate;
+inputparams.Control.rampupTime         = 0.1/DRate;
 
 model = Battery(inputparams);
 
 %% Setup schedule
-CRate = 1;
+DRate = 1;
 fac   = 2;
-total = 1.4*hour/CRate;
+total = 1.4*hour/DRate;
 n     = 10;
 dt0   = total*1e-6;
 times = getTimeSteps(dt0, n, total, fac);
 
-% Compute the cell capacity, which used to compute schedule from CRate
+% Compute the cell capacity, which used to compute schedule from DRate
 capacity = computeCellCapacity(model);
-inputI   = (capacity/hour)*CRate;
+inputI   = (capacity/hour)*DRate;
 inputE   = 3;
 
 tt   = times(2 : end);

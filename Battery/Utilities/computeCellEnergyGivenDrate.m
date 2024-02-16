@@ -1,5 +1,5 @@
-function output = computeCellEnergyGivenCrate(model, CRate, varargin)
-% Given a model and a CRate, compute the produced energy
+function output = computeCellEnergyGivenDrate(model, DRate, varargin)
+% Given a model and a DRate, compute the produced energy
 % The output consists of the fields
 % - energy
 % - dischargeFunction
@@ -30,9 +30,9 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
     assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
 
     capacity = computeCellCapacity(model);
-    Imax = (capacity/hour)*CRate;
+    Imax = (capacity/hour)*DRate;
 
-    model.Control.CRate       = CRate;
+    model.Control.DRate       = DRate;
     model.Control.Imax        = Imax;
     model.Control.useCVswitch = true;
 

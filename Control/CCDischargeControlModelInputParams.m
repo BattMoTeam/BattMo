@@ -3,7 +3,9 @@ classdef CCDischargeControlModelInputParams < CCcontrolModelInputParams
     
     properties
 
-        Imax
+        % Discharge rate
+        DRate
+        
         rampupTime
         useCVswitch
         lowerCutoffVoltage

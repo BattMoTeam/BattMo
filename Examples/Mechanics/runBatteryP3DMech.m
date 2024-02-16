@@ -54,8 +54,8 @@ plotBatteryGrid(model);
 %% Compute the nominal cell capacity and choose a C-Rate
 
 C      = computeCellCapacity(model);
-CRate  = model.(ctrl).CRate;
-inputI = (C/hour)*CRate; % current
+DRate  = model.(ctrl).DRate;
+inputI = (C/hour)*DRate; % current
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used
@@ -64,7 +64,7 @@ inputI = (C/hour)*CRate; % current
 n           = 25;
 dt          = [];
 dt          = [dt; repmat(0.5e-4, n, 1).*1.5.^[1:n]'];
-totalTime   = 1.4*hour/CRate;
+totalTime   = 1.4*hour/DRate;
 n           = 40;
 dt          = [dt; repmat(totalTime/n, n, 1)];
 times       = [0; cumsum(dt)];

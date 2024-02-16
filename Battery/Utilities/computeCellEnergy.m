@@ -1,19 +1,19 @@
 function [energy, output] = computeCellEnergy(model, varargin)
 %% Compute the cell energy.
 %
-% If no CRate is given, it corresponds to the maximum theoritical cell energy, at infinitly small CRate. Otherwise,
+% If no DRate is given, it corresponds to the maximum theoritical cell energy, at infinitly small DRate. Otherwise,
 % simulate the discharge and gives the corresponding energy.
 %
 % The output structure provides more detailed information with the fields
 % - energy
 % - dischargeFunction % function handler giving the voltage as a function of the state of charge
-% - E                 % Voltage output (raw computation data in case CRate is given)
-% - I                 % Current output (raw computation data in case CRate is given)
-% - time              % time output (raw computation data in case CRate is given)
+% - E                 % Voltage output (raw computation data in case DRate is given)
+% - I                 % Current output (raw computation data in case DRate is given)
+% - time              % time output (raw computation data in case DRate is given)
     
-    opt = struct('capacities' , [], ...
+    opt = struct('capacities' , [] , ...
                  'temperature', 298, ...
-                 'CRate', []);
+                 'DRate', []);
     [opt, extra] = merge_options(opt, varargin{:});
 
     ne  = 'NegativeElectrode';
@@ -23,7 +23,7 @@ function [energy, output] = computeCellEnergy(model, varargin)
     itf = 'Interface';
     sd  = 'SolidDiffusion';
 
-    if isempty(opt.CRate)
+    if isempty(opt.DRate)
         
         if isempty(opt.capacities)
             [~, capacities] = computeCellCapacity(model);
@@ -77,8 +77,8 @@ function [energy, output] = computeCellEnergy(model, varargin)
         
     else
 
-        CRate = opt.CRate;
-        output = computeCellEnergyGivenCrate(model, CRate, extra{:});
+        DRate = opt.DRate;
+        output = computeCellEnergyGivenCrate(model, DRate, extra{:});
         
     end
 

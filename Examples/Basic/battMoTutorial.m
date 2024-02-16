@@ -156,7 +156,7 @@ legend(eldes, 'location', 'nw')
 %
 % The input parameters for the control have been given as part of the json structure
 % :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`. The
-% total simulation time is setup for us, computed from the CRate value. We use the method :code:`setupScheduleStep` in
+% total simulation time is setup for us, computed from the DRate value. We use the method :code:`setupScheduleStep` in
 % :battmo:`ControlModel` to setup the :code:`step` structure.
 
 step = model.Control.setupScheduleStep();

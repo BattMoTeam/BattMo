@@ -71,12 +71,18 @@ classdef CCcontrolModel < ControlModel
 
             params = model.parseTimeSteppingStruct(params);
             
-            CRate = model.CRate;
+            if isa(model, 'CCChargeControlModel')
+                rate = model.CRate;
+            elseif isa(model, 'CCDischargeControlModel')
+                rate = model.DRate;
+            else
+                error('model not recognized')
+            end
 
             if ~isempty(params.totalTime)
                 totalTime = params.totalTime;
             else
-                totalTime = 1.4*(1*hour/CRate);
+                totalTime = 1.4*(1*hour/rate);
             end
 
             if ~isempty(params.timeStepDuration)

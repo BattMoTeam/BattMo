@@ -23,11 +23,6 @@ function  output = runBatteryJson(jsonstruct, varargin)
         validateJsonStruct(jsonstruct);
     end
 
-    %%  Initialize the battery model.
-    % The battery model is setup using :battmo:`setupModelFromJson`
-
-    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
-
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
@@ -38,22 +33,19 @@ function  output = runBatteryJson(jsonstruct, varargin)
         initializationSetup = "given SOC";
     end
 
+    %%  Initialize the battery model.
+    % The battery model is setup using :battmo:`setupModelFromJson`
+
+    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
+
     switch initializationSetup
       case "given SOC"
-        inputparams.initT = jsonstruct.initT;
-        inputparams.SOC   = jsonstruct.SOC;
+        % nothing to do
       case "given input"
         eval(jsonstruct.loadStateCmd);
       otherwise
         error('initializationSetup not recognized');
     end
-
-    %% Compute the nominal cell capacity and choose a C-Rate
-    % The nominal capacity of the cell is calculated from the active materials.
-    % This value is then combined with the user-defined C-Rate to set the cell
-    % operational current.
-
-    CRate = model.Control.CRate;
 
     %% Setup the time step schedule
     %

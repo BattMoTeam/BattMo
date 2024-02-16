@@ -1,7 +1,7 @@
 classdef CellSpecificationSummary
 % Utility class to compute standard cell specifications (see list in properties below) using the model
 %
-% Energy computation for given CRate can be added using the method addCrate. The results will be stored in the property
+% Energy computation for given DRate can be added using the method addDrate. The results will be stored in the property
 % dischargeSimulations.
     
     properties (SetAccess = private)
@@ -33,7 +33,7 @@ classdef CellSpecificationSummary
         temperature
 
         dischargeSimulations % cell array with struct elements with field
-                             % - CRate
+                             % - DRate
                              % - energy
                              % - specificEnergy
                              % - energyDensity
@@ -168,16 +168,16 @@ classdef CellSpecificationSummary
             lines = addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
             lines = addLine(lines, 'Initial Voltage'            , 'V'    , css.initialVoltage);
 
-            function str = appendCrate(str, crate)
+            function str = appendDrate(str, crate)
 
-                str = sprintf('%s (CRate = %g)', str, crate);
+                str = sprintf('%s (DRate = %g)', str, crate);
                 
             end
             
             for isim = 1 : numel(css.dischargeSimulations)
                 
                 simres = css.dischargeSimulations{isim};
-                ac = @(str) appendCrate(str, simres.CRate); 
+                ac = @(str) appendDrate(str, simres.DRate); 
                 lines = addLine(lines, ac('Energy'), 'Wh', simres.energy/hour);
                 lines = addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
                 lines = addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
@@ -209,30 +209,30 @@ classdef CellSpecificationSummary
             
         end
 
-        function css = addCrates(css, CRates, varargin)
+        function css = addDrates(css, DRates, varargin)
 
-            for icrate = 1 : numel(CRates)
+            for icrate = 1 : numel(DRates)
 
-                CRate = CRates(icrate);
-                css = css.addCrate(CRate, varargin{:});
+                DRate = DRates(icrate);
+                css = css.addDrate(DRate, varargin{:});
 
             end
             
         end
         
-        function css = addCrate(css, CRate, varargin)
+        function css = addDrate(css, DRate, varargin)
 
             % the extras options are passed to computeCellEnergy
             extras = varargin;
             
             model = css.model;
             
-            [energy, output] = computeCellEnergy(model, 'CRate', CRate, extras{:});
+            [energy, output] = computeCellEnergy(model, 'DRate', DRate, extras{:});
             
             specificEnergy = energy/css.mass;
             energyDensity  = energy/css.volume;
 
-            simresult = struct('CRate'            , CRate                   , ...
+            simresult = struct('DRate'            , DRate                   , ...
                                'energy'           , energy                  , ...
                                'specificEnergy'   , specificEnergy          , ...
                                'energyDensity'    , energyDensity           , ...

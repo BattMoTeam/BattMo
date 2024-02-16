@@ -8,6 +8,7 @@
   "Control" : {"controlPolicy"     : "CCCV",
                "initialControl"    : "charging",
                "CRate"             : 0.5,
+               "DRate"             : 0.8,
                "lowerCutoffVoltage": 2.7,
                "upperCutoffVoltage": 4.2,
                "dIdtLimit"         : 0.0001,

@@ -6,11 +6,6 @@ classdef ControlModel < BaseModel
     properties
 
         %
-        % C Rate
-        %
-        CRate
-
-        %
         % Control policy (string). It can take following values
         %
         % - 'CCDischarge'
@@ -29,8 +24,7 @@ classdef ControlModel < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'controlPolicy', ...
-                       'CRate'};
+            fdnames = {'controlPolicy'};
             model = dispatchParams(model, inputparams, fdnames);
             
         end
