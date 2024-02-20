@@ -275,7 +275,7 @@ classdef CellSpecificationSummary
                 lgths        = cellfun(@(str) length(str), descriptions);
                 s            = max(lgths);
 
-                fmt = sprintf('%%%ds : %%g [%%s]\n', s);
+                fmt = sprintf('%%%ds : %%-8g %%s\n', s);
 
                 for iline = 1 : numel(lines)
                     line = lines{iline};
