@@ -1,5 +1,5 @@
 {
-  "description" :  "Data from  @article{Mao_2020, title={Entropy Change Characteristics of the LiNi0.5Mn1.5O4 Cathode Material for Lithium-Ion Batteries}, volume={5}, ISSN={2470-1343}, url={http://dx.doi.org/10.1021/acsomega.9b03794}, DOI={10.1021/acsomega.9b03794}, number={8}, journal={ACS Omega}, publisher={American Chemical Society (ACS)}, author={Mao, Jing and Zhang, Peng and Liu, Xin and Liu, Yanxia and Shao, Guosheng and Dai, Kehua}, year={2020}, month=feb, pages={4109–4114} }"
+  "description" :  "Data from  @article{Mao_2020, title={Entropy Change Characteristics of the LiNi0.5Mn1.5O4 Cathode Material for Lithium-Ion Batteries}, volume={5}, ISSN={2470-1343}, url={http://dx.doi.org/10.1021/acsomega.9b03794}, DOI={10.1021/acsomega.9b03794}, number={8}, journal={ACS Omega}, publisher={American Chemical Society (ACS)}, author={Mao, Jing and Zhang, Peng and Liu, Xin and Liu, Yanxia and Shao, Guosheng and Dai, Kehua}, year={2020}, month=feb, pages={4109–4114} }",
   "saturationConcentration": 24358,
   "volumeFraction": 0.8,
   "volumetricSurfaceArea": 885000,
@@ -10,7 +10,7 @@
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
   "openCircuitPotential" : {"type" : "function",
-           "functionname" : "updateOCPFunc_lnmo_Mao",
+           "functionname" : "updateOCPFunc_LNMO_Mao",
            "argumentlist" : ["concentration", "temperature", "maximum concentration"]
                            },
   "chargeTransferCoefficient" : 0.5} 
