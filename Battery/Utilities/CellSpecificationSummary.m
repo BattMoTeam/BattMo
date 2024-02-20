@@ -10,10 +10,12 @@ classdef CellSpecificationSummary
         model
         
         packingMass
-        
+        thicknesses % Used to compute mass loading
         mass
         masses % structure with mass of each of the cell components
 
+        massLoadings % Computed if thicknesses are available
+        
         volume
         volumes % structure with volume of each of the cell components
         
@@ -48,7 +50,9 @@ classdef CellSpecificationSummary
 
         function css = CellSpecificationSummary(model, varargin)
 
-            opt = struct('packingMass', 0, ...
+            opt = struct('packingMass', 0 , ...
+                         'thicknesses', [], ...
+                         'jsonstruct', [] , ...
                          'temperature', 298);
             opt = merge_options(opt, varargin{:});
 
@@ -57,6 +61,21 @@ classdef CellSpecificationSummary
             css.dischargeSimulations = {};
             css.model                = model;
 
+            thicknesses = css.extractThicknessFromModel(model); % can be done in 1D model
+            
+            if ~isempty(opt.jsonstruct)
+                % We fetch the thicknesses from the jsonstruct
+                thicknesses.NegativeElectrode = opt.jsonstruct.NegativeElectrode.Coating.thickness;
+                thicknesses.PositiveElectrode = opt.jsonstruct.PositiveElectrode.Coating.thickness;
+            end
+
+            if ~isempty(opt.thicknesses)
+                % We fetch the thicknesses from the jsonstruct
+                thicknesses = opt.thicknesses;
+            end
+
+            css.thicknesses = thicknesses;
+            
             css = css.computeSpecs();
             
         end
@@ -65,6 +84,7 @@ classdef CellSpecificationSummary
 
             css.model = model;
             css = css.computeSpecs();
+            
         end
 
         function css = updatePackingMass(css, packingMass)
@@ -73,11 +93,61 @@ classdef CellSpecificationSummary
             css = css.computeSpecs();
             
         end
+
+        function thicknesses = extractThicknessFromModel(css, model)
+
+            if model.grid.griddim > 1
+                thicknesses = [];
+                return
+            end
+
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+            co = 'Coating';
             
+            eldes = {ne, pe};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                G = model.(elde).(co).grid;
+                xmax = max(G.faces.centroids(:, 1));
+                xmin = min(G.faces.centroids(:, 1));
+
+                thicknesses.(elde) = xmax - xmin;
+                
+            end
+            
+        end
+
         
+        function css = updateNegativeElectrodeThickness(css, thickness)
+            
+            css.thicknesses.NegativeElectrode = thickness;
+            css = css.computeSpecs();
+            
+        end
+        
+        function css = updatePositiveElectrodeThickness(css, thickness)
+            
+            css.thicknesses.PositiveElectrode = thickness;
+            css = css.computeSpecs();
+            
+        end
+
+        function css = updateThicknesses(css, thicknesses)
+            
+            css.thicknesses = thicknesses;
+            css = css.computeSpecs();
+            
+        end
+        
+
         function css = computeSpecs(css)
 
             % Reset the simulations 
+
             css.dischargeSimulations = {};
 
             model = css.model;
@@ -96,6 +166,11 @@ classdef CellSpecificationSummary
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
+            % Compute Mass Loadings
+
+            massLoadings.(ne) = css.thicknesses.(ne)*model.(ne).(co).effectiveDensity;
+            massLoadings.(pe) = css.thicknesses.(pe)*model.(pe).(co).effectiveDensity;
+            
             % Compute specific energy and energy density
 
             volume = volumes.val;
@@ -127,6 +202,7 @@ classdef CellSpecificationSummary
             css.masses            = masses;
             css.volume            = volume;
             css.volumes           = volumes;
+            css.massLoadings      = massLoadings;
             css.energy            = energy;
             css.specificEnergy    = specificEnergy;
             css.energyDensity     = energyDensity;
@@ -155,10 +231,16 @@ classdef CellSpecificationSummary
             
             lines = {};
 
-            lines = addLine(lines, 'Packing mass'               , 'kg'   , css.packingMass);
-            lines = addLine(lines, 'Temperature'                , 'C'    , css.temperature -  273.15);
-            lines = addLine(lines, 'Mass'                       , 'kg'   , css.mass);
-            lines = addLine(lines, 'Volume'                     , 'L'    , css.volume/litre);
+            lines = addLine(lines, 'Packing mass', 'kg', css.packingMass);
+            lines = addLine(lines, 'Temperature' , 'C' , css.temperature -  273.15);
+            lines = addLine(lines, 'Mass'        , 'kg', css.mass);
+            lines = addLine(lines, 'Volume'      , 'L' , css.volume/litre);
+            if ~isempty(css.thicknesses)
+                lines = addLine(lines, 'Negative Electrode Coating Thickness', 'µm', css.thicknesses.(ne)/(micro*meter));
+                lines = addLine(lines, 'Positive Electrode Coating Thickness', 'µm', css.thicknesses.(pe)/(micro*meter));
+                lines = addLine(lines, 'Negative Electrode Mass Loading', 'mg/cm^2', css.massLoadings.(ne)/(milli*gram/((centi*meter)^2)));
+                lines = addLine(lines, 'Positive Electrode Mass Loading', 'mg/cm^2', css.massLoadings.(pe)/(milli*gram/((centi*meter)^2)));
+            end
             lines = addLine(lines, 'Total Capacity'             , 'Ah'   , css.capacity/hour);
             lines = addLine(lines, 'Negative Electrode Capacity', 'Ah'   , css.capacities.(ne)/hour);
             lines = addLine(lines, 'Positive Electrode Capacity', 'Ah'   , css.capacities.(pe)/hour);
