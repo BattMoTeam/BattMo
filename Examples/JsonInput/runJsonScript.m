@@ -49,6 +49,12 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
 
 output = runBatteryJson(jsonstruct);
 
+%% Plot model specifications (could be done prior to simulation with the model only)
+
+model = output.model;
+css = CellSpecificationSummary(model);
+css.printSpecifications();
+
 %% Plotting
 
 states = output.states;
