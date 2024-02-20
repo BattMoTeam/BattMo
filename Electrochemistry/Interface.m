@@ -149,6 +149,24 @@ classdef Interface < BaseModel
             
             
         end
+
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'exchangeCurrentDensity', ...
+                       'guestStoichiometry100' , ...
+                       'guestStoichiometry0'   , ...
+                       'density'               , ...
+                       'chargeTransferCoefficient'};
+
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+                
+
+        end
         
         function state = dipatchTemperature(model, state)
 

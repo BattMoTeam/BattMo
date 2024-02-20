@@ -68,6 +68,23 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
         end
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'particleRadius'               , ...
+                       'activationEnergyOfDiffusion'  , ...
+                       'referenceDiffusionCoefficient', ...
+                       'volumetricSurfaceArea'        , ...
+                       'volumeFraction'};
+
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
 
         function state = updateDiffusionCoefficient(model, state)
 

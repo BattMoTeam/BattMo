@@ -856,6 +856,23 @@ classdef GenericBattery < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+            
+            fdnames = {'SOC'        , ...
+                       'initT'      , ...
+                       'use_thermal', ...
+                       'include_current_collectors'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+
+        
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 

@@ -274,6 +274,25 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@SolidDiffusionModel(model);
+
+            fdnames = {'diffusionCoefficient'   , ...
+                       'saturationConcentration', ...
+                       'guestStoichiometry100'  , ...
+                       'guestStoichiometry0'    , ...
+                       'useDFunc'               , ...
+                       'computeDFunc'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
+        
         function state = updateMassSource(model, state)
 
             op  = model.operators;

@@ -422,6 +422,27 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@ElectronicComponent(model);
+            
+            fdnames = {'effectiveDensity'            , ...     
+                       'bruggemanCoefficient'        , ... 
+                       'volumeFractions'             , ...                 
+                       'volumeFraction'              , ...
+                       'thermalConductivity'         , ...             
+                       'specificHeatCapacity'        , ...            
+                       'effectiveThermalConductivity', ...    
+                       'effectiveVolumetricHeatCapacity' };
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
+        
         function model = updateEffectiveDensity(model)
 
             compnames = model.compnames;

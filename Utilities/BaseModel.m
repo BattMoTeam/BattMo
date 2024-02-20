@@ -676,6 +676,23 @@ classdef BaseModel < PhysicalModel
             
         end
 
+        function jsonstruct = exportParams(model)
+
+            submodelnames = model.getSubModelNames();
+
+            if numel(submodelnames) > 0
+                for isubmodel = 1 : numel(submodelnames)
+
+                    submodelname = submodelnames{isubmodel};
+
+                    jsonstruct.(submodelname) = model.(submodelname).exportParams();
+                    
+                end
+            else
+                jsonstruct = [];
+            end
+        end
+        
         function cgt = cgt(model)
         % Shortcut to retrieve the computational graph
             if isempty(model.computationalGraph)
