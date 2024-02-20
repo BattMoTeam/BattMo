@@ -312,9 +312,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             if model.useDFunc
 
                 computeD = model.computeDFunc;
-                cmax     = model.cmax;
-                theta0   = model.theta0;
-                theta100 = model.theta100;
+                cmax     = model.saturationConcentration;
+                theta0   = model.guestStoichiometry0;
+                theta100 = model.guestStoichiometry100;
 
                 c = state.c;
 
