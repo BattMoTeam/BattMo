@@ -8,7 +8,9 @@ classdef PorositySetter
         compinds  % index of the components
         elytemaps
         refvalues
-
+        
+        sumspecvols % Sum of the specific volumes for each electrodes. Used to set effective density of the coating.
+        
     end
 
     methods
@@ -20,6 +22,9 @@ classdef PorositySetter
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
             co    = 'Coating';
+            am    = 'ActiveMaterial';
+            bd    = 'Binder';
+            ad    = 'ConductingAdditive';
 
             if model.use_thermal
                 error('Porisity setter is not implemented for thermal model yet (not difficult but not done...)')
@@ -34,18 +39,22 @@ classdef PorositySetter
 
             refvalues = nan(numel(compnames), 1);
 
+            mats = {am, bd, ad};
+            
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 switch compname
-                  case ne
-                    compmodel = model.(ne).(co);
+                  case {ne, pe}
+                    compmodel = model.(compname).(co);
                     poro = 1 - compmodel.volumeFraction;
+                    sumspecvols.(compname) = 0;
+                    for imat = 1 : numel(mats)
+                        mat = mats{imat};
+                        sumspecvols.(compname) = sumspecvols.(compname) + model.(compname).(co).(mat).massFraction/model.(compname).(co).(mat).density;
+                    end
                   case sep
                     compmodel = model.(sep);
                     poro = compmodel.porosity;
-                  case pe
-                    compmodel = model.(pe).(co);
-                    poro = 1 - compmodel.volumeFraction;
                   otherwise
                     error('compname not recognized');
                 end
@@ -54,11 +63,12 @@ classdef PorositySetter
 
             end
 
-            porosetter.compnames = compnames;
-            porosetter.compinds  = compinds;
-            porosetter.refvalues = refvalues;
-            porosetter.elytemaps = elytemaps;
-
+            porosetter.compnames   = compnames;
+            porosetter.compinds    = compinds;
+            porosetter.refvalues   = refvalues;
+            porosetter.elytemaps   = elytemaps;
+            porosetter.sumspecvols = sumspecvols;
+            
         end
 
         function model = setValues(porosetter, model, v)
@@ -112,6 +122,9 @@ classdef PorositySetter
 
                 model.(compname).(co).effectiveElectronicConductivity = kappa*vf^bg;
 
+                % we set the effective density of the coating
+                model.(compname).(co).effectiveDensity = vf/porosetter.sumspecvols.(compname);
+                
               case sep
 
                 model.(sep).porosity = poro;
