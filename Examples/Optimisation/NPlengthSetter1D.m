@@ -8,7 +8,7 @@ classdef NPlengthSetter1D
         porositySetter
 
         % helpers
-        alpha   % For a given NP ratio, alpha is equal the corresponding ratio between the thicknesses of the electrodes
+        cRatio   % For a given NP ratio, cRatio  = (volumefraction(ne)*length(ne))/(volumefraction(pe)*length(pe)) is a constant
         fdnames
         fdinds
 
@@ -33,7 +33,7 @@ classdef NPlengthSetter1D
             nplengthsetter.NPratio        = NPratio;
             nplengthsetter.fdinds         = fdinds;
             nplengthsetter.fdnames        = fdnames;
-            nplengthsetter.alpha          = nplengthsetter.computeMultiplicationCoefficient(model);
+            nplengthsetter.cRatio         = nplengthsetter.computeMultiplicationCoefficient(model);
             nplengthsetter.lengthSetter   = lengthSetter;
             nplengthsetter.porositySetter = porositySetter;
 
@@ -44,7 +44,7 @@ classdef NPlengthSetter1D
             ctrl = 'Control';
 
             fdinds         = nplengthsetter.fdinds;
-            alpha          = nplengthsetter.alpha;
+            cRatio         = nplengthsetter.cRatio;
             lengthSetter   = nplengthsetter.lengthSetter;
             porositySetter = nplengthsetter.porositySetter;
 
@@ -53,7 +53,7 @@ classdef NPlengthSetter1D
             peporo   = values(fdinds.peporo);
 
             v = double2ADI(zeros(2, 1), pelength);
-            v(1) = alpha*(1 - peporo)./(1 - neporo).*pelength;
+            v(1) = cRatio*(1 - peporo)./(1 - neporo).*pelength;
             v(2) = pelength;
 
             model = lengthSetter.setLengths(model, v);
@@ -81,7 +81,7 @@ classdef NPlengthSetter1D
         end
 
 
-        function alpha = computeMultiplicationCoefficient(nplengthsetter, model)
+        function cRatio = computeMultiplicationCoefficient(nplengthsetter, model)
 
             NPratio = nplengthsetter.NPratio;
 
@@ -100,17 +100,16 @@ classdef NPlengthSetter1D
                 theta100 = model.(elde).(co).(am).(itf).guestStoichiometry100;
                 theta0   = model.(elde).(co).(am).(itf).guestStoichiometry0;
                 cmax     = model.(elde).(co).(am).(itf).saturationConcentration;
-                eldevf   = model.(elde).(co).volumeFraction;
                 idx      = model.(elde).(co).compInds.(am);
                 amvf     = model.(elde).(co).volumeFractions(idx);
 
                 F        = model.(elde).(co).constants.F;
 
-                d.(elde) = abs(theta100 - theta0)*cmax*eldevf*amvf*F/hour;
+                d.(elde) = abs(theta100 - theta0)*cmax*amvf*F/hour;
 
             end
 
-            alpha = d.(pe)/d.(ne)*NPratio;
+            cRatio = d.(pe)/d.(ne)*NPratio;
 
         end
     end
