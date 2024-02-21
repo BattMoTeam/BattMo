@@ -82,14 +82,14 @@ classdef PorositySetter
 
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
-                model = porosetter.setComponentPorosity(model, poros(icomp), compname);
+                model = porosetter.setupComponent(model, poros(icomp), compname);
             end
 
         end
 
-        function model = setComponentPorosity(porosetter, model, poro, compname)
+        function model = setupComponent(porosetter, model, poro, compname)
         % We update the porosities and the dependent values.
-
+            
             elytemaps = porosetter.elytemaps;
 
             ne    = 'NegativeElectrode';
@@ -97,19 +97,27 @@ classdef PorositySetter
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
             co    = 'Coating';
-            am    = 'ActiveMaterial';
             sd    = 'SolidDiffusion';
+            am    = 'ActiveMaterial';
+            bd    = 'ActiveMaterial';
+            ca    = 'ConductingAdditive';
 
             switch compname
 
               case {ne, pe}
 
                 model.(compname).(co).volumeFraction = 1 - poro;
+
                 switch model.(compname).(co).(am).diffusionModelType
-                  case {'simple', 'interParticleOnly'}
+                  case 'simple'
                     % nothing to do
                   case 'full'
-                    model.(compname).(co).(am).(sd).volumeFraction = 1 - poro;
+
+                    compInds = model.(compname).(co).compInds;
+                    amvf     = model.(compname).(co).volumeFractions(compInds.(am));
+                    
+                    model.(compname).(co).(am).(sd).volumeFraction = (1 - poro)*amvf;
+                    
                   otherwise
                     error('Unknown diffusionModelType %s', diffusionModelType);
                 end
