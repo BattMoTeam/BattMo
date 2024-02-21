@@ -1,4 +1,4 @@
-classdef NPlengthSetter1D
+classdef NPlengthPorositySetter1D
 
     properties
 
@@ -16,7 +16,7 @@ classdef NPlengthSetter1D
 
     methods
 
-        function nplengthsetter = NPlengthSetter1D(model, gridGenerator, NPratio)
+        function nplengthsetter = NPlengthPorositySetter1D(model, gridGenerator, NPratio)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
