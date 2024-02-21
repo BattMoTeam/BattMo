@@ -9,6 +9,7 @@ function output = computeCellEnergyGivenDrate(model, DRate, varargin)
 
     opt = struct('computationType'   , 'sharp', ...
                  'lowerCutoffVoltage', []     , ...
+                 'verbose'           , true   , ...
                  'cutoffparams'      , []);
     opt = merge_options(opt, varargin{:});
 
@@ -72,8 +73,10 @@ function output = computeCellEnergyGivenDrate(model, DRate, varargin)
             cutoffparams = opt.cutoffparams;
         end
 
-        cutoff = @(E) cutoffGeneric(E, cutoffparams);
+        dt = diff(time);
+        dt = [time(1); dt];
 
+        cutoff = @(E) cutoffGeneric(E, cutoffparams);
         energy = sum(I.*E.*cutoff(E).*dt);
 
         E = E.*cutoff(E);
@@ -82,7 +85,15 @@ function output = computeCellEnergyGivenDrate(model, DRate, varargin)
         % We detect the lowercutoffvoltage point
 
         ind = find(E <= lowerCutoffVoltage, 1, 'first');
-        ind = (1 : ind)';
+
+        if isempty(ind)
+            if opt.verbose
+                warning('The lower cutoff voltage has not been reached, probably due to convergence issue. We use the last value of the simulation')
+            end
+            ind = (1 : numel(E))';
+        else
+            ind = (1 : ind)';
+        end
 
         I  = I(ind);
         E  = E(ind);

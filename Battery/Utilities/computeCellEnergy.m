@@ -78,7 +78,7 @@ function [energy, output] = computeCellEnergy(model, varargin)
     else
 
         DRate = opt.DRate;
-        output = computeCellEnergyGivenCrate(model, DRate, extra{:});
+        output = computeCellEnergyGivenDrate(model, DRate, extra{:});
         
     end
 
