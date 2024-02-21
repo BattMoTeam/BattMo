@@ -59,8 +59,10 @@ classdef CCcontrolModel < ControlModel
             
         % Setup and a return the step structure that is part of the schedule which is used as input for
         % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
-        % why we include this method here, for convenience. It can be overloaded by derived classes. The
-        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+        % why we include this method here, for convenience. It can be overloaded by derived classes.
+        %
+        % The timeSteppingParams structure by default is given by the data described in
+        % :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
 
 
             if (nargin > 1)
@@ -69,6 +71,7 @@ classdef CCcontrolModel < ControlModel
                 params = [];
             end
 
+            % Call parser for TimeStepping structure with some default values
             params = model.parseTimeSteppingStruct(params);
             
             if isa(model, 'CCChargeControlModel')

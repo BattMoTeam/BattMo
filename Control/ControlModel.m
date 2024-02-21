@@ -145,7 +145,9 @@ classdef ControlModel < BaseModel
     methods(Static)
 
         function params = parseTimeSteppingStruct(params)
-
+        % Parser for TimeStepping structure (see schema :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`)
+        % which defines default values if not given
+            
             paramstemplate = struct('totalTime'          , []   , ...
                                     'numberOfTimeSteps'  , 100  , ...
                                     'timeStepDuration'   , []   , ...
