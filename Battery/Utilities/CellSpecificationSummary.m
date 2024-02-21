@@ -248,7 +248,6 @@ classdef CellSpecificationSummary
             lines = addLine(lines, 'Energy'                     , 'Wh'   , css.energy/hour);
             lines = addLine(lines, 'Specific Energy'            , 'Wh/kg', css.specificEnergy/hour);
             lines = addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
-            lines = addLine(lines, 'Initial Voltage'            , 'V'    , css.initialVoltage);
 
             function str = appendDrate(str, crate)
 
