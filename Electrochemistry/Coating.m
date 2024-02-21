@@ -39,7 +39,7 @@ classdef Coating < ElectronicComponent
         compInds  % index of the sub models in the massFractions structure
         compnames % names of the components
 
-        
+        specificVolumes % One value per component (ActiveMaterial, Binder, ConductingAdditive) giving the specific volume (volume of 1kg of the component)
     end
 
     methods
@@ -101,9 +101,10 @@ classdef Coating < ElectronicComponent
                 end
             end
 
-            model.compInds = compInds;
-
-            % We treat special cases
+            model.compInds        = compInds;
+            model.specificVolumes = specificVolumes;
+            
+            % We treat special cases for the specific volumes
 
             switch model.active_material_type
               case {'default', 'sei'}
