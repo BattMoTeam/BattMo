@@ -1,11 +1,11 @@
 {"Control": {
   "controlPolicy": "CCCV",
   "initialControl" : "discharging",
-  "numberOfCycles" : 3,
-  "CRate": 1.5,
+  "numberOfCycles" : 2,
+  "CRate": 0.5,
   "DRate": 1,
   "lowerCutoffVoltage": 2.8,
-  "upperCutoffVoltage": 4,
+  "upperCutoffVoltage": 4.2,
   "dIdtLimit": 2e-6,
   "dEdtLimit": 2e-6}}
 
