@@ -1,8 +1,13 @@
 function [bp, simlist] = setupSimList(directory)
 
-    mrstModule add   mpfa
+    mrstModule add mpfa
 
-    dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+    if nargin < 1
+        dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+    else
+        dataDirectory = directory;
+    end
+    
     dataFolderObjs = dir(dataDirectory);
     dataFolderObjs = dataFolderObjs(3 : end);
     dataFolders = {};
