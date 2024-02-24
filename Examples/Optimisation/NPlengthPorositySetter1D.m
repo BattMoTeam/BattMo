@@ -16,7 +16,7 @@ classdef NPlengthPorositySetter1D
 
     methods
 
-        function nplengthsetter = NPlengthPorositySetter1D(model, gridGenerator, NPratio)
+        function nplpsetter = NPlengthPorositySetter1D(model, gridGenerator, NPratio)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -30,23 +30,23 @@ classdef NPlengthPorositySetter1D
                 fdinds.(fdname) = ifd;
             end
 
-            nplengthsetter.NPratio        = NPratio;
-            nplengthsetter.fdinds         = fdinds;
-            nplengthsetter.fdnames        = fdnames;
-            nplengthsetter.cRatio         = nplengthsetter.computeMultiplicationCoefficient(model);
-            nplengthsetter.lengthSetter   = lengthSetter;
-            nplengthsetter.porositySetter = porositySetter;
+            nplpsetter.NPratio        = NPratio;
+            nplpsetter.fdinds         = fdinds;
+            nplpsetter.fdnames        = fdnames;
+            nplpsetter.cRatio         = nplpsetter.computeMultiplicationCoefficient(model);
+            nplpsetter.lengthSetter   = lengthSetter;
+            nplpsetter.porositySetter = porositySetter;
 
         end
 
-        function model = setValues(nplengthsetter, model, values)
+        function model = setValues(nplpsetter, model, values)
 
             ctrl = 'Control';
 
-            fdinds         = nplengthsetter.fdinds;
-            cRatio         = nplengthsetter.cRatio;
-            lengthSetter   = nplengthsetter.lengthSetter;
-            porositySetter = nplengthsetter.porositySetter;
+            fdinds         = nplpsetter.fdinds;
+            cRatio         = nplpsetter.cRatio;
+            lengthSetter   = nplpsetter.lengthSetter;
+            porositySetter = nplpsetter.porositySetter;
 
             pelength = values(fdinds.pelength);
             neporo   = values(fdinds.neporo);
@@ -66,10 +66,10 @@ classdef NPlengthPorositySetter1D
 
         end
 
-        function values = getValues(nplengthsetter, model)
+        function values = getValues(nplpsetter, model)
 
-            lengthSetter   = nplengthsetter.lengthSetter;
-            porositySetter = nplengthsetter.porositySetter;
+            lengthSetter   = nplpsetter.lengthSetter;
+            porositySetter = nplpsetter.porositySetter;
 
             pelength = lengthSetter.getAllLengths(model);
             pelength = pelength(3);
@@ -81,9 +81,9 @@ classdef NPlengthPorositySetter1D
         end
 
 
-        function cRatio = computeMultiplicationCoefficient(nplengthsetter, model)
+        function cRatio = computeMultiplicationCoefficient(nplpsetter, model)
 
-            NPratio = nplengthsetter.NPratio;
+            NPratio = nplpsetter.NPratio;
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
