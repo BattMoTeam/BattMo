@@ -232,7 +232,7 @@ classdef Battery < GenericBattery
 
             massConsScaling = model.con.F;
 
-            state.(elyte).massCons = state.(elyte).massCons*massConsScaling;
+            state.(elyte).massCons = state.(elyte).massCons.*massConsScaling;
 
             for ielde = 1 : numel(eldes)
 
@@ -255,7 +255,7 @@ classdef Battery < GenericBattery
 
                       case 'simple'
 
-                        state.(elde).(co).(amc).(sd).massCons         = massConsScaling*state.(elde).(co).(amc).(sd).massCons;
+                        state.(elde).(co).(amc).(sd).massCons         = massConsScaling.*state.(elde).(co).(amc).(sd).massCons;
                         state.(elde).(co).(amc).(sd).solidDiffusionEq = massConsScaling.*battery.(elde).(co).G.getVolumes()/dt.*state.(elde).(co).(amc).(sd).solidDiffusionEq;
 
                       case 'full'
@@ -270,8 +270,8 @@ classdef Battery < GenericBattery
 
                         scalingcoef = (vsf*vol(1)*n*F)/surfp;
 
-                        state.(elde).(co).(amc).(sd).massCons         = scalingcoef*state.(elde).(co).(amc).(sd).massCons;
-                        state.(elde).(co).(amc).(sd).solidDiffusionEq = scalingcoef*state.(elde).(co).(amc).(sd).solidDiffusionEq;
+                        state.(elde).(co).(amc).(sd).massCons         = scalingcoef.*state.(elde).(co).(amc).(sd).massCons;
+                        state.(elde).(co).(amc).(sd).solidDiffusionEq = scalingcoef.*state.(elde).(co).(amc).(sd).solidDiffusionEq;
 
                       otherwise
 
