@@ -80,13 +80,6 @@ classdef CellSpecificationSummary
             
         end
 
-        function css = updateModel(css, model)
-
-            css.model = model;
-            css = css.computeSpecs();
-            
-        end
-
         function css = updatePackingMass(css, packingMass)
 
             css.packingMass = packingMass;
