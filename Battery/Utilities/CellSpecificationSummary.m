@@ -161,8 +161,8 @@ classdef CellSpecificationSummary
 
             % Compute Mass Loadings
 
-%            massLoadings.(ne) = css.thicknesses.(ne)*model.(ne).(co).effectiveDensity;
- %           massLoadings.(pe) = css.thicknesses.(pe)*model.(pe).(co).effectiveDensity;
+            massLoadings.(ne) = css.thicknesses.(ne)*model.(ne).(co).effectiveDensity;
+            massLoadings.(pe) = css.thicknesses.(pe)*model.(pe).(co).effectiveDensity;
             
             % Compute specific energy and energy density
 
@@ -195,7 +195,7 @@ classdef CellSpecificationSummary
             css.masses            = masses;
             css.volume            = volume;
             css.volumes           = volumes;
-%            css.massLoadings      = massLoadings;
+            css.massLoadings      = massLoadings;
             css.energy            = energy;
             css.specificEnergy    = specificEnergy;
             css.energyDensity     = energyDensity;
