@@ -972,17 +972,19 @@ classdef GenericBattery < BaseModel
 
               case {'CCDischarge', 'CCCharge'}
 
+                Imax = model.(ctrl).Imax;
+
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
                 time = state.time;
 
                 if model.(ctrl).useCVswitch
 
-                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
+                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E), Imax);
                     state.(ctrl).ctrlType = ctrltype;
 
                 else
-                    ctrlVal = drivingForces.src(time);
+                    ctrlVal = drivingForces.src(time, Imax);
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
