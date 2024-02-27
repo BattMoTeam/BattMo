@@ -3,14 +3,23 @@ classdef CellSpecificationSummary
 %
 % Energy computation for given DRate can be added using the method addDrate. The results will be stored in the property
 % dischargeSimulations.
+
+    properties (SetAccess = immutable)
+
+        % We want the computed values to remain synchronized with the model. To do so we set the "setAccess" property to
+        % immutable.
+        
+        model
+
+        gridGenerator
+        
+    end
     
     properties (SetAccess = private)
-        % We want the computed values to remain synchronized with the model. To do so we set the "setAccess" property to
-        % private. See function updateModel to change model and updatePackingMass to change the packingMass.
-        model
-        
         packingMass
+
         thicknesses % Used to compute mass loading
+        
         mass
         masses % structure with mass of each of the cell components
 
@@ -50,18 +59,20 @@ classdef CellSpecificationSummary
 
         function css = CellSpecificationSummary(model, varargin)
 
-            opt = struct('packingMass', 0 , ...
-                         'thicknesses', [], ...
-                         'jsonstruct', [] , ...
-                         'temperature', 298);
+            opt = struct('packingMass'  , 0 , ...
+                         'thicknesses'  , [], ...
+                         'jsonstruct'   , [], ...
+                         'gridGenerator', [], ...
+                         'temperature'  , 298);
             opt = merge_options(opt, varargin{:});
 
             css.packingMass          = opt.packingMass;
             css.temperature          = opt.temperature;
+            css.gridGenerator        = opt.gridGenerator;
             css.dischargeSimulations = {};
             css.model                = model;
 
-            thicknesses = css.extractThicknessFromModel(model); % can be done in 1D model
+            thicknesses = css.extractThicknessFromModel(); % can be done in 1D model or when gridGenerator is given (if possible)
             
             if ~isempty(opt.jsonstruct)
                 % We fetch the thicknesses from the jsonstruct
@@ -87,9 +98,12 @@ classdef CellSpecificationSummary
             
         end
 
-        function thicknesses = extractThicknessFromModel(css, model)
+        function thicknesses = extractThicknessFromModel(css)
 
-            if model.grid.griddim > 1
+            gridgen = css.gridGenerator;
+            model   = css.model;
+            
+            if isempty(gridgen) & model.grid.griddim > 1
                 thicknesses = [];
                 return
             end
@@ -98,17 +112,37 @@ classdef CellSpecificationSummary
             pe = 'PositiveElectrode';
             co = 'Coating';
             
-            eldes = {ne, pe};
+            if model.grid.griddim == 1
+                
+                % we recover the lengths from the model directly
+                
+                eldes = {ne, pe};
 
-            for ielde = 1 : numel(eldes)
+                for ielde = 1 : numel(eldes)
 
-                elde = eldes{ielde};
+                    elde = eldes{ielde};
 
-                G = model.(elde).(co).grid;
-                xmax = max(G.faces.centroids(:, 1));
-                xmin = min(G.faces.centroids(:, 1));
+                    G = model.(elde).(co).grid;
+                    xmax = max(G.faces.centroids(:, 1));
+                    xmin = min(G.faces.centroids(:, 1));
 
-                thicknesses.(elde) = xmax - xmin;
+                    thicknesses.(elde) = xmax - xmin;
+                    
+                end
+
+                return
+            end
+
+            switch class(gridgen)
+                
+              case {'BatteryGeneratorP4D'}
+
+                thicknesses.(ne) = gridgen.zlength(2);
+                thicknesses.(pe) = gridgen.zlength(4);
+
+              otherwise
+                
+                error('grid generator class not recognized');
                 
             end
             
@@ -273,13 +307,21 @@ classdef CellSpecificationSummary
                 s            = max(lgths);
 
                 fmt = sprintf('%%%ds : %%-8g %%s\n', s);
-
+                fmt2 = sprintf('%%%ds :          %%s\n', s);
+                
                 for iline = 1 : numel(lines)
                     line = lines{iline};
-                    fprintf(fmt             , ...
-                            line.description, ...
-                            line.value      , ...
-                            line.unit);
+                    if ~isempty(line.value)
+                        fprintf(fmt             , ...
+                                line.description, ...
+                                line.value      , ...
+                                line.unit);
+                    else
+                        fprintf(fmt2            , ...
+                                line.description, ...
+                                line.value      , ...
+                                line.unit);
+                    end
                 end
                 
             end
