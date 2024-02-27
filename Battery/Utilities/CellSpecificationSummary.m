@@ -12,10 +12,13 @@ classdef CellSpecificationSummary
         model
 
         gridGenerator
+
+        jsonstruct
         
     end
     
     properties (SetAccess = private)
+
         packingMass
 
         thicknesses % Used to compute mass loading
@@ -59,6 +62,9 @@ classdef CellSpecificationSummary
 
         function css = CellSpecificationSummary(model, varargin)
 
+
+
+            
             opt = struct('packingMass'  , 0 , ...
                          'thicknesses'  , [], ...
                          'jsonstruct'   , [], ...
@@ -66,6 +72,12 @@ classdef CellSpecificationSummary
                          'temperature'  , 298);
             opt = merge_options(opt, varargin{:});
 
+            if isstruct(model)
+                css.jsonstruct = model;
+                [model, ~, ~, gridGenerator] = setupModelFromJson(model);
+                opt.gridGenerator = gridGenerator;
+            end
+            
             css.packingMass          = opt.packingMass;
             css.temperature          = opt.temperature;
             css.gridGenerator        = opt.gridGenerator;
