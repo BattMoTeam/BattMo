@@ -274,10 +274,10 @@ classdef CcCvControlModel < ControlModel
             DRate   = model.DRate;
             ncycles = model.numberOfCycles;
 
-            if ~isempty(params.totalTime) & isempty(ncycles)
-                totalTime = params.totalTimes;
-            else
-                if ~isempty(ncycles)
+            if isempty(ncycles)
+                totalTime = params.totalTime;
+            else 
+                if ~isempty(params.totalTime) 
                     warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
                 end
                 totalTime = ncycles*1.2*(1*hour/CRate + 1*hour/DRate);
