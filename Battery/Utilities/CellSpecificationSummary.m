@@ -146,6 +146,11 @@ classdef CellSpecificationSummary
             end
 
             switch class(gridgen)
+
+              case {'BatteryGeneratorMultilayerPouch'}
+                
+                thicknesses.(ne) = gridgen.unit_cell_thickness(2);
+                thicknesses.(pe) = gridgen.unit_cell_thickness(4);
                 
               case {'BatteryGeneratorP4D'}
 
