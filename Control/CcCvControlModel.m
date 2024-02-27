@@ -120,19 +120,23 @@ classdef CcCvControlModel < ControlModel
             ctrlType = state.ctrlType;
             E = state.E;
             I = state.I;
-            
-            if strcmp(ctrlType, 'CC_discharge1')
+
+            switch ctrlType
+                
+              case 'CC_discharge1'
+
                 if E <= Emin
                     state.ctrlType = 'CC_discharge2';
                     fprintf('switch control from CC_discharge1 to CC_discharge2\n');
                 end
-            end
             
-            if strcmp(ctrlType, 'CV_discharge2')
-                if I > ImaxDischarge
-                    state.ctrlType = 'CC_discharge1';
-                    fprintf('switch control from CV to CC\n');
+              case 'CC_charge1'
+
+                if E > Emax
+                    state.ctrlType = 'CV_charge2';
+                    fprintf('switch control from CC_charge1 to CV_charge2\n');
                 end
+
             end    
             
         end
