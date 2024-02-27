@@ -161,8 +161,13 @@ classdef CellSpecificationSummary
 
             % Compute Mass Loadings
 
-            massLoadings.(ne) = css.thicknesses.(ne)*model.(ne).(co).effectiveDensity;
-            massLoadings.(pe) = css.thicknesses.(pe)*model.(pe).(co).effectiveDensity;
+            if ~isempty(css.thicknesses)
+                massLoadings.(ne) = css.thicknesses.(ne)*model.(ne).(co).effectiveDensity;
+                massLoadings.(pe) = css.thicknesses.(pe)*model.(pe).(co).effectiveDensity;
+            else
+                massLoadings.(ne) = [];
+                massLoadings.(pe) = [];
+            end
             
             % Compute specific energy and energy density
 
