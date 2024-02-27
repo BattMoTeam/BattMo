@@ -32,40 +32,57 @@ for i = 1:numStates
 end
 
 % plot the concentration values at the given grid centroid locations
-fig = figure();
-subplot(2,3,1), contourf(x, time, c_ne, 20, 'LineWidth',0.1)
+figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
+contourf(x, time, c_ne ./ jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration, 20, 'LineStyle', 'none')
 xlim([min(x_ne), max(x_ne)])
 xlabel('Position  /  µm')
 ylabel('Time  /  h')
+title('Negative Electrode Lithiation  /  -')
 colorbar()
+cm = flipud(crameri('lajolla'));
+colormap(cm)
+set(gca, 'FontSize', 18);
 
-subplot(2,3,2), contourf(x, time, c_elyte, 20, 'LineWidth',0.1)
+figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
+contourf(x, time, c_elyte, 20, 'LineStyle', 'none')
 xlabel('Position  /  µm')
 ylabel('Time  /  h')
+title('Electrolyte Concentration  /  mol \cdot m^{-3}')
 colorbar()
+cm = cmocean('curl', 'pivot', 1000);
+colormap(cm)
+set(gca, 'FontSize', 18);
 
-subplot(2,3,3), contourf(x+max(x_sep), time, c_pe, 20, 'LineWidth',0.1)
+figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
+contourf(x+max(x_sep), time, c_pe ./ jsonstruct.PositiveElectrode.Coating.ActiveMaterial.Interface.saturationConcentration, 20, 'LineStyle', 'none')
 xlim([min(x_pe), max(x_pe)])
 xlabel('Position  /  µm')
 ylabel('Time  /  h')
+title('Positive Electrode Lithiation  /  -')
 colorbar()
+cm = crameri('nuuk');
+colormap(cm)
+set(gca, 'FontSize', 18);
 
-subplot(2,3,4), contourf(x, time, phi_ne, 20, 'LineWidth',0.1)
-xlim([min(x_ne), max(x_ne)])
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-colorbar()
-
-subplot(2,3,5), contourf(x, time, phi_elyte, 20, 'LineWidth',0.1)
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-colorbar()
-
-subplot(2,3,6), contourf(x+max(x_sep), time, phi_pe, 20, 'LineWidth',0.1)
-xlim([min(x_pe), max(x_pe)])
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-colorbar()
+% subplot(2,3,4), contourf(x, time, phi_ne, 20, 'LineWidth',0.1)
+% xlim([min(x_ne), max(x_ne)])
+% xlabel('Position  /  µm')
+% ylabel('Time  /  h')
+% title('Negative Electrode Potential')
+% colorbar()
+% 
+% subplot(2,3,5), contourf(x, time, phi_elyte, 20, 'LineWidth',0.1)
+% xlabel('Position  /  µm')
+% ylabel('Time  /  h')
+% title('Electrolyte Potential')
+% colorbar()
+% 
+% subplot(2,3,6), contourf(x+max(x_sep), time, phi_pe, 20, 'LineWidth',0.1)
+% xlim([min(x_pe), max(x_pe)])
+% xlabel('Position  /  µm')
+% ylabel('Time  /  h')
+% title('Positive Electrode Potential')
+% colorbar()
 
 
 %
