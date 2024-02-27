@@ -43,11 +43,9 @@
     "faceArea": 0.208
   },
   "NegativeElectrode": {
-    "ActiveMaterial": {
-      "massFraction": 1
-    },
-    "Binder": {
-      "massFraction": 0
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Copper/copper.json"
     },
     "Coating": {
       "ActiveMaterial": {
@@ -110,20 +108,12 @@
         0.058993544204640605,
         0.03327840955133572
       ]
-    },
-    "ConductingAdditive": {
-      "massFraction": 0
-    },
-    "include_current_collectors": false,
-    "use_thermal": false
+    }
   },
   "PositiveElectrode": {
-    "ActiveMaterial": {
-      "massFraction": 1
-    },
-    "Binder": {
-      "massFraction": 0
-    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"},
     "Coating": {
       "ActiveMaterial": {
         "Interface": {
@@ -187,12 +177,7 @@
         0.058541771802469784,
         0.05662236944829044
       ]
-    },
-    "ConductingAdditive": {
-      "massFraction": 0
-    },
-    "include_current_collectors": false,
-    "use_thermal": false
+    }
   },
   "SOC": 0.99,
   "Separator": {
