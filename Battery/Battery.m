@@ -224,7 +224,7 @@ classdef Battery < GenericBattery
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 

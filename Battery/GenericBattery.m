@@ -331,7 +331,7 @@ classdef GenericBattery < BaseModel
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
@@ -809,7 +809,7 @@ classdef GenericBattery < BaseModel
             am1     = 'ActiveMaterial1';
             am2     = 'ActiveMaterial2';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
