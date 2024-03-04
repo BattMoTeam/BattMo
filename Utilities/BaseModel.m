@@ -497,36 +497,6 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-
-        
-        function scale = getScales()
-            scale = [];
-            error();
-        end
-        
-        function [state, report] = updateStateNew(model, state, problem, dx, drivingForces)
-            
-            scales = model.getScales();
-            for i = 1:numel(problem.primaryVariables)
-                p = problem.primaryVariables{i};
-                % Update the state
-                scale=model.getProp(scales,p);
-                if(isempty(scale))
-                     state = model.updateStateFromIncrement(state, dx{i}, ...
-                                                            problem, p);
-                else
-                    state = model.updateStateFromIncrement(state, dx{i}, ...
-                                                           problem, p, ...
-                                                           scale.relchangemax, ...
-                                                           scale.abschangemax);
-                    val = model.getProp(state, p);
-                    val = max(val,scale.min);
-                    val = min(val,scale.max);
-                    state = model.setProp(state, p, val);
-                end               
-            end
-            report = []
-        end
         
         function state = reduceState(model, state, removeContainers)
             state = value(state, false);
@@ -575,11 +545,6 @@ classdef BaseModel < PhysicalModel
             opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
             opt = merge_options(opt, varargin{:});
             
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            time = state0.time + dt;
-
             if ~opt.ResOnly
                 state = model.initStateAD(state);
             end
@@ -702,8 +667,9 @@ classdef BaseModel < PhysicalModel
         end
 
         function cgp = cgp(model)
-        % Shortcut to setup and retrieve the computational graph plot 
-            cgp = ComputationalGraphPlot(model.computationalGraph);
+        % Shortcut to setup and retrieve the computational graph plot
+            cgt = model.cgt;
+            cgp = ComputationalGraphPlot(cgt);
         end
 
 
