@@ -52,8 +52,8 @@ classdef BaseModel < PhysicalModel
         % - registerPropFunction
         % - registerStaticVarName
         % - registerStaticVarNames
-        % - registerExtraVarName
-        % - registerExtraVarNames
+        % - setAsExtraVarName
+        % - setAsExtraVarNames
         %
         % This function can be used to modify the same list but for the submodels.
         %
