@@ -147,78 +147,75 @@
       "specificHeatCapacity": 385,
       "thermalConductivity": 398,
       "thickness": 1e-05
-    },
-    "include_current_collectors": false,
-    "use_thermal": false
+    }
   },
   "PositiveElectrode": {
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"},
     "Coating": {
       "ActiveMaterial": {
         "Interface": {
           "activationEnergyOfReaction": 5000,
           "chargeTransferCoefficient": 0.5,
-          "density": 4650,
-          "guestStoichiometry0": 0.99174,
-          "guestStoichiometry100": 0.4955,
+          "description": "Data from  @article{Pron_2019, title={Electrochemical Characterization and Solid Electrolyte Interface Modeling of LiNi0.5Mn1.5O4-Graphite Cells}, volume={166}, ISSN={1945-7111}, url={http://dx.doi.org/10.1149/2.0941910jes}, DOI={10.1149/2.0941910jes}, number={10}, journal={Journal of The Electrochemical Society}, publisher={The Electrochemical Society}, author={Pron, Vittorio Giai and Versaci, Daniele and Amici, Julia and Francia, Carlotta and Santarelli, Massimo and Bodoardo, Silvia}, year={2019}, pages={A2255–A2263} }",
+          "guestStoichiometry0": 0.9811,
+          "guestStoichiometry100": 1.4001e-04,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
             "argumentlist": [
               "concentration",
               "temperature",
-              "cmax"
+              "maximum concentration"
             ],
-            "functionname": "computeOCP_nmc111",
+            "functionname": "updateOCPFunc_LNMO_Pron",
             "type": "function"
           },
           "reactionRateConstant": 2.33e-11,
-          "saturationConcentration": 55554,
+          "saturationConcentration": 24358,
           "volumetricSurfaceArea": 885000
         },
         "SolidDiffusion": {
           "N": 10,
-          "activationEnergyOfDiffusion": 5000,
-          "particleRadius": 1e-06,
-          "referenceDiffusionCoefficient": 1e-14
+          "activationEnergyOfDiffusion": 0,
+          "comment": "originally 4e-15",
+          "particleRadius": 5e-06,
+          "referenceDiffusionCoefficient": 2.29e-13,
+          "useDFunc": false,
+          "volumeFraction": 0.5839916667744982,
+          "volumetricSurfaceArea": 885000
         },
-        "density": 4650,
+        "comment": "originally 0.18",
+        "density": 4450,
         "diffusionModelType": "full",
-        "electronicConductivity": 100,
-        "massFraction": 0.95,
-        "specificHeatCapacity": 700,
-        "thermalConductivity": 2.1
+        "electronicConductivity": 0.719,
+        "massFraction": 0.95
       },
       "Binder": {
-        "density": {
-          "unit": "gram/((centi*meter)^3)",
-          "value": 1.75
-        },
+        "comment": " data",
+        "density": 1770,
         "electronicConductivity": 100,
-        "massFraction": 0.025,
-        "specificHeatCapacity": 700,
-        "thermalConductivity": 2.1
+        "massFraction": 0.025
       },
       "ConductingAdditive": {
-        "density": {
-          "unit": "gram/((centi*meter)^3)",
-          "value": 1.83
-        },
+        "comment": " data",
+        "density": 1830,
         "electronicConductivity": 100,
-        "massFraction": 0.025,
-        "specificHeatCapacity": 700,
-        "thermalConductivity": 2.1
+        "massFraction": 0.025
       },
-      "N": 10,
+      "N": 300,
       "bruggemanCoefficient": 1.5,
-      "effectiveDensity": 3500,
-      "thickness": 5.7e-05
-    },
-    "CurrentCollector": {
-      "N": 5,
-      "density": 2700,
-      "electronicConductivity": 35500000.0,
-      "specificHeatCapacity": 875,
-      "thermalConductivity": 170,
-      "thickness": 1e-05
+      "effectiveDensity": 2735.5399127858072,
+      "effectiveElectronicConductivity": 6.260344855082977,
+      "electronicConductivity": 11.675684579650884,
+      "thickness": 125e-06,
+      "use_thermal": false,
+      "volumeFraction": 0.6599999999999999,
+      "volumeFractions": [
+        0.8848358587492398,
+        0.058541771802469784,
+        0.05662236944829044
+      ]
     }
   },
   "SOC": 0.99,

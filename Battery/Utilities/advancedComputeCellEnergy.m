@@ -73,7 +73,7 @@ function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend, varar
         
         U = linspace(Ustart, Uend, N)';
 
-        [state, failure, model] = ecs.computeConcentrations(U, 'verbose', true);
+        [state, failure, ecs] = ecs.computeConcentrations(U, 'verbose', true);
 
         if failure
             error('could not find solution');

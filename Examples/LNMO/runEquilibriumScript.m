@@ -39,8 +39,8 @@ model = setupModelFromJson(jsonstruct);
 
 % state = ecs.evalVarName(state, {ne, 'amount'});
 
-Ustart = 4;
-Uend   = 3;
+Ustart = 4.72;
+Uend   = 2.8;
 
 [E, output] = advancedComputeCellEnergy(model, Ustart, Uend);
 m = computeCellMass(model);
