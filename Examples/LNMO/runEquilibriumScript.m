@@ -32,25 +32,18 @@ jsonstruct.(pe).(co).(am).(itf).guestStoichiometry0 = 1;
 
 model = setupModelFromJson(jsonstruct);
 
-% ecs = EquilibriumConcentrationSolver(model);
-% ecs.verbose = true;
-% voltage = 3.5;
-% [state, failure, ecs] = ecs.computeConcentrations(voltage);
+ecs = EquilibriumConcentrationSolver(model);
 
-% state = ecs.evalVarName(state, {ne, 'amount'});
-
-Ustart = 4.72;
-Uend   = 2.8;
-
-[E, output] = advancedComputeCellEnergy(model, Ustart, Uend);
+[E, extras] = advancedComputeCellEnergy(model);
 m = computeCellMass(model);
 
 fprintf('Specific Energy %g\n', (E/m)/hour);
 
-dsfunc = output.dischargeFunction;
+dsfunc = extras.dischargeFunction;
 soc = linspace(0, 1, 100);
 
 figure
 plot(soc, dsfunc(soc));
 xlabel('SOC / -');
 ylabel('Voltage / V');
+

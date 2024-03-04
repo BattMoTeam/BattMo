@@ -36,8 +36,104 @@ classdef EquilibriumConcentrationSolver < BaseModel
             
         end
 
-        function model = setupFromBatteryModel(model, batterymodel)
+        function model = registerVarAndPropfuncNames(model)
+
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+
+            eldes = {ne, pe};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                nam = model.(elde).numberOfActiveMaterial;
                 
+                varnames = {};
+
+                varnames{end + 1} = VarName({elde}, 'stoichiometries', nam);
+                varnames{end + 1} = VarName({elde}, 'concentrations', nam);
+                varnames{end + 1} = VarName({elde}, 'ocps', nam);
+                if nam > 1
+                    varnames{end + 1} = VarName({elde}, 'potentialEquations', nam - 1);
+                end
+
+                for ivarname = 1 : numel(varnames)
+                    varnames{ivarname}.useCell = true;
+                end
+                
+                model = model.registerVarNames(varnames);
+
+                model = model.registerVarName({elde, 'amount'});
+                model = model.setAsExtraVarName({elde, 'amount'});
+                
+            end
+
+            varnames = {};
+
+            varnames{end + 1} = 'massConsEq';
+            varnames{end + 1} = 'totalAmount';
+            varnames{end + 1} = 'voltage';
+            varnames{end + 1} = 'voltageEquation';
+
+            model = model.registerVarNames(varnames);
+            
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                nam = model.(elde).numberOfActiveMaterial;
+
+                fn = @EquilibriumConcentrationSolver.updateConcentrations;
+                inputvarnames  = {VarName({elde}, 'stoichiometries', nam)};
+                outputvarnames = VarName({elde}, 'concentrations', nam);
+                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+
+                fn = @EquilibriumConcentrationSolver.updateOCPs;
+                inputvarnames  = {VarName({elde}, 'concentrations', nam)};
+                outputvarnames = VarName({elde}, 'ocps', nam);
+                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+
+                if nam > 1
+                    fn = @EquilibriumConcentrationSolver.updatePotentialEquation;
+                    inputvarnames  = {VarName({elde}, 'ocps', nam)};
+                    outputvarnames = VarName({elde}, 'potentialEquations', nam - 1);
+                    model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+                end
+
+                fn = @EquilibriumConcentrationSolver.updateAmount;
+                inputvarnames  = {VarName({elde}, 'concentrations', nam)};
+                outputvarnames = {elde, 'amount'};
+                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+                
+                
+            end
+
+            nam_ne = model.(ne).numberOfActiveMaterial;
+            nam_pe = model.(pe).numberOfActiveMaterial;
+            
+            fn = @ConcentrationSolve.updateVoltage;
+            inputnames = {VarName({ne}, 'ocps', nam_ne), ...
+                          VarName({pe}, 'ocps', nam_pe)};
+            model = model.registerPropFunction({'voltage', fn, inputnames});
+            
+            fn = @ConcentrationSolve.updateVoltageEquation;
+            inputnames = {'voltage'};
+            model = model.registerPropFunction({'voltageEquation', fn, inputnames});
+
+            fn = @ConcentrationSolve.updateTotalAmount;
+            inputnames = {VarName({ne}, 'concentrations', nam_ne), ...
+                          VarName({pe}, 'concentrations', nam_pe)};
+            model = model.registerPropFunction({'totalAmount', fn, inputnames});
+
+            fn = @ConcentrationSolve.updateMassConsEq;
+            inputnames = {'totalAmount'};
+            model = model.registerPropFunction({'massConsEq', fn, inputnames});
+
+        end
+
+        function model = setupFromBatteryModel(model, batterymodel)
+            
             model.T = batterymodel.initT;
             
             ne  = 'NegativeElectrode';
@@ -61,7 +157,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                   otherwise
                     error('Electrode not recognised');
                 end
-                  
+                
                 % For the moment we support only 2 active materials
                 if ~isempty(batterymodel.(elde).(co).ActiveMaterial1)
                     
@@ -141,7 +237,11 @@ classdef EquilibriumConcentrationSolver < BaseModel
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
 
-            nc = numel(model.voltage);
+            if ~isempty(model.voltage)
+                nc = numel(model.voltage);
+            else
+                nc = 1;
+            end
             
             nam = model.(ne).numberOfActiveMaterial;
             for iam = 1 : nam
@@ -160,96 +260,6 @@ classdef EquilibriumConcentrationSolver < BaseModel
         end
         
         
-        function model = registerVarAndPropfuncNames(model)
-
-            ne = 'NegativeElectrode';
-            pe = 'PositiveElectrode';
-
-            eldes = {ne, pe};
-
-            for ielde = 1 : numel(eldes)
-
-                elde = eldes{ielde};
-
-                nam = model.(elde).numberOfActiveMaterial;
-                
-                varnames = {};
-
-                varnames{end + 1} = VarName({elde}, 'stoichiometries', nam);
-                varnames{end + 1} = VarName({elde}, 'concentrations', nam);
-                varnames{end + 1} = VarName({elde}, 'ocps', nam);
-                if nam > 1
-                    varnames{end + 1} = VarName({elde}, 'potentialEquations', nam - 1);
-                end
-
-                for ivarname = 1 : numel(varnames)
-                    varnames{ivarname}.useCell = true;
-                end
-                
-                model = model.registerVarNames(varnames);
-
-                model = model.registerVarName({elde, 'amount'});
-                model = model.setAsExtraVarName({elde, 'amount'});
-                
-            end
-
-            varnames = {};
-
-            varnames{end + 1} = 'massConsEq';
-            varnames{end + 1} = 'totalAmount';
-            varnames{end + 1} = 'voltageEquation';
-
-            model = model.registerVarNames(varnames);
-            
-            for ielde = 1 : numel(eldes)
-
-                elde = eldes{ielde};
-
-                nam = model.(elde).numberOfActiveMaterial;
-
-                fn = @EquilibriumConcentrationSolver.updateConcentrations;
-                inputvarnames  = {VarName({elde}, 'stoichiometries', nam)};
-                outputvarnames = VarName({elde}, 'concentrations', nam);
-                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
-
-                fn = @EquilibriumConcentrationSolver.updateOCPs;
-                inputvarnames  = {VarName({elde}, 'concentrations', nam)};
-                outputvarnames = VarName({elde}, 'ocps', nam);
-                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
-
-                if nam > 1
-                    fn = @EquilibriumConcentrationSolver.updatePotentialEquation;
-                    inputvarnames  = {VarName({elde}, 'ocps', nam)};
-                    outputvarnames = VarName({elde}, 'potentialEquations', nam - 1);
-                    model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
-                end
-
-                fn = @EquilibriumConcentrationSolver.updateAmount;
-                inputvarnames  = {VarName({elde}, 'concentrations', nam)};
-                outputvarnames = {elde, 'amount'};
-                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
-                
-                
-            end
-
-            nam_ne = model.(ne).numberOfActiveMaterial;
-            nam_pe = model.(pe).numberOfActiveMaterial;
-            
-            fn = @ConcentrationSolve.updateVoltageEquation;
-            inputnames = {VarName({ne}, 'ocps', nam_ne), ...
-                          VarName({pe}, 'ocps', nam_pe)};
-            model = model.registerPropFunction({'voltageEquation', fn, inputnames});
-            
-            fn = @ConcentrationSolve.updateTotalAmount;
-            inputnames = {VarName({ne}, 'concentrations', nam_ne), ...
-                          VarName({pe}, 'concentrations', nam_pe)};
-            model = model.registerPropFunction({'totalAmount', fn, inputnames});
-
-            fn = @ConcentrationSolve.updateMassConsEq;
-            inputnames = {'totalAmount'};
-            model = model.registerPropFunction({'massConsEq', fn, inputnames});
-
-        end
         
 
         function state = updateConcentrations(model, state)
@@ -360,12 +370,18 @@ classdef EquilibriumConcentrationSolver < BaseModel
             
         end
 
-        function state = updateVoltageEquation(model, state)
+        function state = updateVoltage(model, state)
             
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
 
-            state.voltageEquation = state.(pe).ocps{1} - state.(ne).ocps{1} - model.voltage;
+            state.voltage = state.(pe).ocps{1} - state.(ne).ocps{1};
+            
+        end
+
+        function state = updateVoltageEquation(model, state)
+
+            state.voltageEquation = state.voltage - model.voltage;
 
         end
         
@@ -506,9 +522,168 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
         end
 
+        function [funcs, options, extras] = setupIpOpt(model, optimcase)
+
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+
+            eldes = {ne, pe};
+
+            function x = convertFromState(state)
+                nam1 = 1;
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    nam2 = nam1 + model.(elde).numberOfActiveMaterial - 1;
+                    for iam = nam1 : nam2
+                        x(iam) = state.(elde).stoichiometries{iam - nam1 + 1};
+                    end
+                    nam1 = nam2 + 1;
+                end
+            end
+
+            function state = convertToState(x)
+                nam1 = 1;
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    nam2 = nam1 + model.(elde).numberOfActiveMaterial - 1;
+                    for iam = nam1 : nam2
+                        state.(elde).stoichiometries{iam - nam1 + 1}= x(iam);
+                    end
+                    nam1 = nam2 + 1;
+                end
+            end
+
+            extras.convertToState   = @(x) convertToState(x);
+            extras.convertFromState = @(state) convertFromState(state);
+
+            switch optimcase
+              case 'max'
+                coef = -1;
+              case 'min'
+                coef = 1;
+              otherwise
+                error('optimcase not recognized');
+            end
+            
+            function v = computeVoltage(x)
+
+                state = convertToState(x);
+                state = model.evalVarName(state, 'voltage');
+                % We change sign as ipopt computes the minimum
+                v = coef*state.voltage;
+                
+            end
+
+
+            function derv = computeDerVoltage(x)
+
+                x = initVariablesADI(x);
+                v = computeVoltage(x);
+                derv = full(v.jac{1});
+                
+            end
+
+            % Define the call list to update the constraint equations
+            
+            cgt = model.cgt;
+            
+            funcCallList = {};
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if model.(elde).numberOfActiveMaterial > 1
+                    funcCallList = horzcat(funcCallList, ...
+                                           cgt.getPropFunctionCallList({elde, 'potentialEquations'}));
+                end
+            end
+            
+            funcCallList = horzcat(funcCallList, ...
+                                   cgt.getPropFunctionCallList({'massConsEq'}));
+
+            funcCallList = unique(funcCallList, 'stable');
+
+            function v = computeConstraints(x)
+
+                state = convertToState(x);
+                for ifunc = 1 : numel(funcCallList)
+                    eval(funcCallList{ifunc});
+                end
+
+                v = state.massConsEq;
+                
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).numberOfActiveMaterial > 1
+                        v = vertcat(v, ...
+                                    vertcat(state.(elde).potentialEquations{:}));
+                    end
+                end
+                
+            end
+
+            function derv = computeDerConstraints(x)
+
+                x = initVariablesADI(x);
+                v = computeConstraints(x);
+                derv = v.jac{1};
+
+            end
+
+            nam = 0;
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                nam = nam + model.(elde).numberOfActiveMaterial;
+            end
+
+            function v = getConstraintJacobianStructure()
+                v = sparse(ones(nam - 1, nam));
+            end                
+            
+            output.convertFromState  = @(state) convertFromState(state);
+            output.convertToState    = @(x) convertToState(x);
+
+            funcs.objective = @(x) computeVoltage(x);
+            funcs.gradient  = @(x) computeDerVoltage(x);
+            
+            funcs.constraints       = @(x) computeConstraints(x);
+            funcs.jacobian          = @(x) computeDerConstraints(x);
+            funcs.jacobianstructure = @() getConstraintJacobianStructure;
+
+            lb = [];
+            ub = [];
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                lb = vertcat(lb, ...
+                             model.(elde).thetaMins);
+                ub = vertcat(ub, ...
+                             model.(elde).thetaMaxs);
+            end
+
+            cl = zeros(nam - 1, 1);
+            cu = cl;
+
+            options = struct('lb', lb, ...
+                             'ub', ub, ...
+                             'cl', cl, ...
+                             'cu', cu);
+
+        end
+
+        function [stateStart, stateEnd] = computeExtremalStates(ecs, stateInit)
+            
+            [funcs, options, extras] = ecs.setupIpOpt('max');
+            options.ipopt.hessian_approximation = 'limited-memory';
+            x0 = extras.convertFromState(stateInit);
+            [x, info] = ipopt(x0, funcs, options);
+            stateStart = extras.convertToState(x);
+            
+            [funcs, options, extras] = ecs.setupIpOpt('min');
+            options.ipopt.hessian_approximation = 'limited-memory';
+            x0 = extras.convertFromState(stateInit);
+            [x, info] = ipopt(x0, funcs, options);
+            stateEnd = extras.convertToState(x);
+
+        end
         
     end
 
-
 end
-

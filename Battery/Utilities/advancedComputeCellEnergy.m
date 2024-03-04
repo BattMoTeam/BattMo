@@ -1,17 +1,17 @@
-function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend, varargin)
+function [energy, extras] = advancedComputeCellEnergy(model, varargin)
 
-    opt = struct('includeDischargeFunction', true);
-    opt = merge_options(opt, varargin{:});
-    
     if isstruct(model)
         model = setupModelFromJson(model);
     end
 
     ecs = EquilibriumConcentrationSolver(model);
 
-    stateStart = ecs.computeConcentrations(Ustart);
-    stateEnd   = ecs.computeConcentrations(Uend);
+    [~, ecs] = ecs.setupInitialState();
 
+    stateInit = ecs.computeConcentrations(3, 'verbose', true);
+
+    [stateStart, stateEnd] = ecs.computeExtremalStates(stateInit);
+    
     N = 100;
 
     theta = linspace(0, 1, N);
@@ -66,15 +66,21 @@ function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend, varar
 
     energy = E;
 
+    if nargout > 1
 
-    if opt.includeDischargeFunction
+        stateStart = ecs.evalVarName(stateStart, 'voltage');
+        Ustart = stateStart.voltage;
+        
+        stateEnd = ecs.evalVarName(stateEnd, 'voltage');
+        Uend = stateEnd.voltage;
 
-        N = 100;
+        N = 50;
         
         U = linspace(Ustart, Uend, N)';
 
         [state, failure, ecs] = ecs.computeConcentrations(U, 'verbose', true);
-
+        
+        
         if failure
             error('could not find solution');
         end
@@ -86,7 +92,7 @@ function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend, varar
 
         dischargeFunction = @(s) interp1(soc, U, s, 'linear');
 
-        output.dischargeFunction = dischargeFunction;
+        extras.dischargeFunction = dischargeFunction;
         
     end
     
