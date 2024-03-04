@@ -141,14 +141,16 @@ classdef EquilibriumConcentrationSolver < BaseModel
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
 
+            nc = numel(model.voltage);
+            
             nam = model.(ne).numberOfActiveMaterial;
             for iam = 1 : nam
-                inistate.(ne).stoichiometries{iam} = model.(ne).thetaMins(iam);
+                inistate.(ne).stoichiometries{iam} = model.(ne).thetaMins(iam)*ones(nc, 1);
             end
 
             nam = model.(pe).numberOfActiveMaterial;
             for iam = 1 : nam
-                inistate.(pe).stoichiometries{iam} = model.(pe).thetaMaxs(iam);
+                inistate.(pe).stoichiometries{iam} = model.(pe).thetaMaxs(iam)*ones(nc, 1);
             end
 
             initstate = model.evalVarName(inistate, {'totalAmount'});
@@ -185,6 +187,9 @@ classdef EquilibriumConcentrationSolver < BaseModel
                 end
                 
                 model = model.registerVarNames(varnames);
+
+                model = model.registerVarName({elde, 'amount'});
+                model = model.setAsExtraVarName({elde, 'amount'});
                 
             end
 
@@ -219,6 +224,12 @@ classdef EquilibriumConcentrationSolver < BaseModel
                     model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
                 end
 
+                fn = @EquilibriumConcentrationSolver.updateAmount;
+                inputvarnames  = {VarName({elde}, 'concentrations', nam)};
+                outputvarnames = {elde, 'amount'};
+                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+                
+                
             end
 
             nam_ne = model.(ne).numberOfActiveMaterial;
@@ -262,6 +273,36 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
         end
 
+        function state = updateAmount(model, state)
+
+            ne = 'NegativeElectrode';
+            pe = 'PositiveElectrode';
+
+            eldes = {ne, pe};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                amount = 0*state.(elde).concentrations{1}; % dummy AD initialization
+                
+                elde = eldes{ielde};
+
+                nam = model.(elde).numberOfActiveMaterial;
+
+                concs = state.(elde).concentrations;
+                
+                nam = model.(elde).numberOfActiveMaterial;
+
+                for iam = 1 : nam
+                    amount = concs{iam}.*model.(elde).volumes(iam);
+                end
+
+                state.(elde).amount = amount;
+
+            end        
+
+        end            
         
         function state = updateOCPs(model, state)
 
@@ -344,7 +385,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                 nam = model.(elde).numberOfActiveMaterial;
 
                 for iam = 1 : nam
-                    totalAmount = totalAmount + sum(state.(elde).concentrations{iam}*model.(elde).volumes(iam));
+                    totalAmount = totalAmount + state.(elde).concentrations{iam}*model.(elde).volumes(iam);
                 end
                 
             end
@@ -444,12 +485,22 @@ classdef EquilibriumConcentrationSolver < BaseModel
             
         end
         
-        function [state, failure, model] = computeConcentrations(model, voltage)
+        function [state, failure, model] = computeConcentrations(model, voltage, varargin)
+
+            opt = struct('verbose', false);
+            opt = merge_options(opt, varargin{:});
+
 
             model.voltage = voltage;
             [initstate, model] = setupInitialState(model);
 
             nls = NonLinearSolver();
+
+            if opt.verbose
+                model.verbose = true;
+                nls.continueOnFailure = false;
+                nls.verbose = true;
+            end
             
             [state, failure, report] = nls.solveMinistep(model, initstate, initstate, [], []);
 

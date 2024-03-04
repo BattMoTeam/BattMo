@@ -1,5 +1,8 @@
-function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend)
+function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend, varargin)
 
+    opt = struct('includeDischargeFunction', true);
+    opt = merge_options(opt, varargin{:});
+    
     if isstruct(model)
         model = setupModelFromJson(model);
     end
@@ -62,5 +65,30 @@ function [energy, output] = advancedComputeCellEnergy(model, Ustart, Uend)
     end
 
     energy = E;
+
+
+    if opt.includeDischargeFunction
+
+        N = 100;
+        
+        U = linspace(Ustart, Uend, N)';
+
+        [state, failure, model] = ecs.computeConcentrations(U, 'verbose', true);
+
+        if failure
+            error('could not find solution');
+        end
+        
+        state = ecs.evalVarName(state, {pe, 'amount'});
+
+        a = state.(pe).amount;
+        soc = (a - a(1))./(a(end) - a(1));
+
+        dischargeFunction = @(s) interp1(soc, U, s, 'linear');
+
+        output.dischargeFunction = dischargeFunction;
+        
+    end
+    
     
 end
