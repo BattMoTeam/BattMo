@@ -142,21 +142,13 @@ classdef EquilibriumConcentrationSolver < BaseModel
             pe = 'PositiveElectrode';
 
             nam = model.(ne).numberOfActiveMaterial;
-            if nam > 1
-                for iam = 1 : nam
-                    inistate.(ne).stoichiometries{iam} = model.(ne).thetaMins(iam);
-                end
-            else
-                inistate.(ne).stoichiometries = model.(ne).thetaMins;
+            for iam = 1 : nam
+                inistate.(ne).stoichiometries{iam} = model.(ne).thetaMins(iam);
             end
 
             nam = model.(pe).numberOfActiveMaterial;
-            if nam > 1
-                for iam = 1 : nam
-                    inistate.(pe).stoichiometries{iam} = model.(pe).thetaMaxs(iam);
-                end
-            else
-                inistate.(pe).stoichiometries = model.(pe).thetaMaxs;
+            for iam = 1 : nam
+                inistate.(pe).stoichiometries{iam} = model.(pe).thetaMaxs(iam);
             end
 
             initstate = model.evalVarName(inistate, {'totalAmount'});
@@ -188,6 +180,10 @@ classdef EquilibriumConcentrationSolver < BaseModel
                     varnames{end + 1} = VarName({elde}, 'potentialEquations', nam - 1);
                 end
 
+                for ivarname = 1 : numel(varnames)
+                    varnames{ivarname}.useCell = true;
+                end
+                
                 model = model.registerVarNames(varnames);
                 
             end
@@ -258,13 +254,10 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
                 nam = model.(elde).numberOfActiveMaterial;
 
-                if nam > 1
-                    for iam = 1 : nam
-                        state.(elde).concentrations{iam} = model.(elde).saturationConcentrations(iam)*state.(elde).stoichiometries{iam};
-                    end
-                else
-                    state.(elde).concentrations = model.(elde).saturationConcentrations*state.(elde).stoichiometries;
+                for iam = 1 : nam
+                    state.(elde).concentrations{iam} = model.(elde).saturationConcentrations(iam).*state.(elde).stoichiometries{iam};
                 end
+                
             end
 
         end
@@ -287,15 +280,11 @@ classdef EquilibriumConcentrationSolver < BaseModel
                 
                 nam = model.(elde).numberOfActiveMaterial;
 
-                if nam > 1
-                    for iam = 1 : nam
-
+                for iam = 1 : nam
+                    
                     ocpfunc = model.(elde).computeOCPs{iam};
                     ocps{iam} = ocpfunc(concs{iam});
-                    end
-                else
-                    ocpfunc = model.(elde).computeOCPs{1};
-                    ocps = ocpfunc(concs);
+                    
                 end
 
                 state.(elde).ocps = ocps;
@@ -334,31 +323,8 @@ classdef EquilibriumConcentrationSolver < BaseModel
             
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
-            
-            eldes = {ne, pe};            
 
-            veq = 0*state.(ne).concentrations{1}; % dummy AD initialisation
-
-            nam = model.(pe).numberOfActiveMaterial;
-
-            if nam > 1
-                veq = veq + state.(pe).ocps{1};
-            else
-                veq = veq + state.(pe).ocps;
-            end
-            
-            nam = model.(ne).numberOfActiveMaterial;
-
-            if nam > 1
-                veq = veq - state.(ne).ocps{1};
-            else
-                veq = veq - state.(ne).ocps;
-            end
-            
-            
-            veq = veq - model.voltage;
-
-            state.voltageEquation = veq;
+            state.voltageEquation = state.(pe).ocps{1} - state.(ne).ocps{1} - model.voltage;
 
         end
         
@@ -369,9 +335,6 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
             totalAmount = 0*state.(ne).concentrations{1}; % dummy AD initialization
 
-            ne = 'NegativeElectrode';
-            pe = 'PositiveElectrode';
-
             eldes = {ne, pe};
             
             for ielde = 1 : numel(eldes)
@@ -380,12 +343,8 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
                 nam = model.(elde).numberOfActiveMaterial;
 
-                if nam > 1
-                    for iam = 1 : nam
-                        totalAmount = totalAmount + sum(state.(elde).concentrations{iam}*model.(elde).volumes(iam));
-                    end
-                else
-                    totalAmount = totalAmount + sum(state.(elde).concentrations*model.(elde).volumes);
+                for iam = 1 : nam
+                    totalAmount = totalAmount + sum(state.(elde).concentrations{iam}*model.(elde).volumes(iam));
                 end
                 
             end
@@ -439,35 +398,44 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
             eldes = {ne, pe};
 
+            N = 100;
+
+            theta = linspace(0, 1, N);
 
             for ielde = 1 : numel(eldes)
 
-                s1 = linspace(0, 1, 100);
-
                 elde = eldes{ielde};
-                nam = model.(elde).numberOfActiveMaterial;
                 
-                state1.(elde).stoichiometries = s1
+                nam = model.(elde).numberOfActiveMaterial;
 
+                theta_elde = {};
+                
+                for iam = 1 : nam
+
+                    theta_elde{iam} = linspace(model.(elde).thetaMins(iam), model.(elde).thetaMaxs(iam), N);
+                    
+                    state1.(elde).stoichiometries{iam} = theta;
+                    state2.(elde).stoichiometries{iam} = theta_elde{iam};
+                    
+                end
+
+                thetas.(elde) = theta_elde;
+                
             end
+
+            state1 = model.evalVarName(state1, 'ocps');
+            state2 = model.evalVarName(state2, 'ocps');
+            
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-
                 nam = model.(elde).numberOfActiveMaterial;
                 
                 for iam = 1 : nam
-                    ocpfunc = model.(elde).computeOCPs{iam};
 
-                    c = linspace(0, model.(elde).satConcs(iam));
-                    v = ocpfunc(c);
-
-                    plot(c, v);
-
-                    c = linspace(model.(elde).thetaMins(iam), model.(elde).thetaMaxs(iam));
-                    v = ocpfunc(c);
-
-                    plot(c, v);
+                    plot(theta, state1.(elde).ocps{iam});
+                    plot(thetas.(elde){iam}, state2.(elde).ocps{iam}, 'linewidth', 3);
                     
                 end
 
@@ -490,4 +458,6 @@ classdef EquilibriumConcentrationSolver < BaseModel
         
     end
 
+
 end
+
