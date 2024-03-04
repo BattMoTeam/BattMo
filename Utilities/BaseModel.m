@@ -683,6 +683,12 @@ classdef BaseModel < PhysicalModel
             end
             
         end
+
+        function model = validateModel(model, varargin)
+
+        % By default, discard validateModel from MRST
+            
+        end
         
     end
 
