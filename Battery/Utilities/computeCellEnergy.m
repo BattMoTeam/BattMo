@@ -1,10 +1,10 @@
-function [energy, output] = computeCellEnergy(model, varargin)
+function [energy, extras] = computeCellEnergy(model, varargin)
 %% Compute the cell energy.
 %
 % If no DRate is given, it corresponds to the maximum theoritical cell energy, at infinitly small DRate. Otherwise,
 % simulate the discharge and gives the corresponding energy.
 %
-% The output structure provides more detailed information with the fields
+% The extras structure provides more detailed information with the fields
 % - energy
 % - dischargeFunction % function handler giving the voltage as a function of the state of charge
 % - E                 % Voltage output (raw computation data in case DRate is given)
@@ -24,6 +24,13 @@ function [energy, output] = computeCellEnergy(model, varargin)
     sd  = 'SolidDiffusion';
 
     if isempty(opt.DRate)
+
+        if strcmp(model.(ne).(co).active_material_type, 'composite') || strcmp(model.(pe).(co).active_material_type, 'composite')
+
+            [energy, extras] = advancedComputeCellEnergy(model);
+            return
+            
+        end
         
         if isempty(opt.capacities)
             [~, capacities] = computeCellCapacity(model);
