@@ -156,7 +156,7 @@
   },
   "Control": {
     "controlPolicy": "CCDischarge",
-    "CRate": 1,
+    "DRate": 1,
     "lowerCutoffVoltage": 2.4,
     "upperCutoffVoltage": 4.1,
     "dIdtLimit": 0.01,

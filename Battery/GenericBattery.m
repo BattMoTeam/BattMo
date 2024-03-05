@@ -331,7 +331,7 @@ classdef GenericBattery < BaseModel
             elyte   = 'Electrolyte';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
@@ -408,21 +408,23 @@ classdef GenericBattery < BaseModel
               case "CCDischarge"
 
                 control = CCDischargeControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                rate = control.DRate;
+                control.Imax = (C/hour)*rate;
 
               case 'CCCharge'
 
                 control = CCChargeControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                rate = control.CRate;
+                control.Imax = (C/hour)*rate;
 
               case "CCCV"
 
                 control = CcCvControlModel(inputparams);
                 CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
-
+                DRate = control.DRate;
+                control.ImaxCharge    = (C/hour)*CRate;
+                control.ImaxDischarge = (C/hour)*DRate;
+                
               case "powerControl"
 
                 control = PowerControlModel(inputparams);
@@ -732,11 +734,11 @@ classdef GenericBattery < BaseModel
                   case 'discharging'
                     initstate.(ctrl).ctrlType     = 'CC_discharge1';
                     initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I            = model.(ctrl).Imax;
+                    initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
                   case 'charging'
                     initstate.(ctrl).ctrlType     = 'CC_charge1';
                     initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I            = - model.(ctrl).Imax;
+                    initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
                   otherwise
                     error('initialControl not recognized');
                 end
@@ -807,7 +809,7 @@ classdef GenericBattery < BaseModel
             am1     = 'ActiveMaterial1';
             am2     = 'ActiveMaterial2';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
@@ -854,6 +856,23 @@ classdef GenericBattery < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+            
+            fdnames = {'SOC'        , ...
+                       'initT'      , ...
+                       'use_thermal', ...
+                       'include_current_collectors'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+
+        
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -953,17 +972,19 @@ classdef GenericBattery < BaseModel
 
               case {'CCDischarge', 'CCCharge'}
 
+                Imax = model.(ctrl).Imax;
+
                 E    = state.(ctrl).E;
                 I    = state.(ctrl).I;
                 time = state.time;
 
                 if model.(ctrl).useCVswitch
 
-                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E));
+                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E), Imax);
                     state.(ctrl).ctrlType = ctrltype;
 
                 else
-                    ctrlVal = drivingForces.src(time);
+                    ctrlVal = drivingForces.src(time, Imax);
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;

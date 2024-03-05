@@ -39,7 +39,7 @@ classdef Coating < ElectronicComponent
         compInds  % index of the sub models in the massFractions structure
         compnames % names of the components
 
-        
+        specificVolumes % One value per component (ActiveMaterial, Binder, ConductingAdditive) giving the specific volume (volume of 1kg of the component)
     end
 
     methods
@@ -101,9 +101,10 @@ classdef Coating < ElectronicComponent
                 end
             end
 
-            model.compInds = compInds;
-
-            % We treat special cases
+            model.compInds        = compInds;
+            model.specificVolumes = specificVolumes;
+            
+            % We treat special cases for the specific volumes
 
             switch model.active_material_type
               case {'default', 'sei'}
@@ -422,6 +423,27 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@ElectronicComponent(model);
+            
+            fdnames = {'effectiveDensity'            , ...     
+                       'bruggemanCoefficient'        , ... 
+                       'volumeFractions'             , ...                 
+                       'volumeFraction'              , ...
+                       'thermalConductivity'         , ...             
+                       'specificHeatCapacity'        , ...            
+                       'effectiveThermalConductivity', ...    
+                       'effectiveVolumetricHeatCapacity' };
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
+        
         function model = updateEffectiveDensity(model)
 
             compnames = model.compnames;

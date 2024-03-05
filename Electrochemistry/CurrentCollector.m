@@ -78,6 +78,24 @@ classdef CurrentCollector < ElectronicComponent
 
         end
 
+
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@ElectronicComponent(model);
+
+            fdnames = {'thermalConductivity'            , ...  
+                       'specificHeatCapacity'           , ... 
+                       'density'                        , ...              
+                       'effectiveVolumetricHeatCapacity', ... 
+                       'effectiveThermalConductivity'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
         function state = updatejBcSource(model, state)
 
             state.jBcSource = state.jCoupling + state.jExternal;

@@ -61,8 +61,8 @@ plotBatteryGrid(model, 'setstyle', false);
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
 C      = computeCellCapacity(model);
-CRate  = 1;
-inputI = (C/hour)*CRate; % current
+DRate  = 1;
+inputI = (C/hour)*DRate; % current
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its

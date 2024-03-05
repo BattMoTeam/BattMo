@@ -1,0 +1,115 @@
+{
+  "G": null,
+  "SOC": 0.99,
+  "initT": 298.15,
+  "use_thermal": true,
+  "include_current_collectors": false,
+  "NegativeElectrode": {
+    "Coating": {
+      "effectiveDensity": 1900,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.94,
+        "density": 2240,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04,
+        "electronicConductivity": 100,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 3.9e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": {
+          "value": 1.1,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      },
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.95,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      }
+    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Copper/copper.json"
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "effectiveDensity": 3500,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.95,
+        "density": 4650,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1,
+        "electronicConductivity": 100,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/LNMO/LNMO_Pron.json"
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": {
+          "value": 1.75,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1
+      },
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.83,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.025,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1
+      }
+    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"
+    }
+  },
+  "Electrolyte": {
+    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
+    "isFile": true
+  },
+  "Separator": {
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "isFile": true
+  },
+  "ThermalModel": {
+    "externalHeatTransferCoefficient": 1000.0,
+    "externalTemperature": 298.15
+  }
+}

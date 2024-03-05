@@ -104,10 +104,22 @@ classdef FlatJsonViewer
             ind = find(ind);
             assert(numel(ind) == 1);
 
+            function res = strmatch(str)
+                if regexp(str, r)
+                    res = true;
+                else
+                    res = false;
+                end
+            end
+            
             rowvals = flatjson(:, ind);
-            r = regexprep(filterval, ' +', '.*');
-            ind = regexp(rowvals, r);
-            ind = cellfun(@(res) ~isempty(res), ind);
+            
+            if ischar(filterval)
+                r = regexprep(filterval, ' +', '.*');
+                filterval = @(str) strmatch(str);
+            end
+            
+            ind = cellfun(@(res) filterval(res), rowvals);
             ind = find(ind);
 
             flatjson = flatjson(ind, :);

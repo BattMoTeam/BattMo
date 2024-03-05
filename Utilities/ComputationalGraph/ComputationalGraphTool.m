@@ -212,6 +212,8 @@ classdef ComputationalGraphTool
             if ~isempty(staticinds)
                 propfuncinds = [staticpropinds; propfuncinds];
                 varnameinds  = [staticinds; propvarnameinds];
+            else
+                varnameinds = propvarnameinds;
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
