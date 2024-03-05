@@ -8,8 +8,8 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
 % (number of combination)x(number of cells in params) such as, for each combination given by a row i, cartind(i, j) gives the
 % index in params{j} that corresponds to this combination.
 %
-% If the vargout inputs is given, the function also sets a cell-array inputs where inputs{i} is a structure field names
-% given by the varargin name (we use function inputname). For a combination given by the index i, inputs{i} gives the
+% If the vargout cartvalues is given, the function also sets a cell-array cartvalues where cartvalues{i} is a structure field names
+% given by the varargin name (we use function inputname). For a combination given by the index i, cartvalues{i} gives the
 % *values* of the (cell-)array sent in vararing
 %     
 % The following example should help to understand the explanations above. Run and inspect the output
@@ -18,7 +18,7 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
 %    b = [1; 2; 3];
 %    c = {'a', 'b'};
 %    
-%    [cartind, inputs] = cartesianProduct(a, b, c);
+%    [cartind, cartvalues] = cartesianProduct(a, b, c);
     
 
     genInputs = (nargout > 1);
@@ -35,8 +35,6 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
     for iinds = 1 : numel(inds)
         
         cartinds(:, iinds) = reshape(inds{iinds}, [], 1);
-
-
 
     end
 
