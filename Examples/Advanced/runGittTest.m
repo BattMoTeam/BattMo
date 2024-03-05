@@ -136,8 +136,8 @@ Ipoints = inputI*Ipoints; % scales with Iinput
 % voltage cutoff limit.
 
 tup = 1*milli*second; % rampup time
-srcfunc_init = @(time, I, E) rampupSwitchControl(time, tup, I, E, inputI, inputE);
-srcfunc_gitt = @(time, I, E) tabulatedIControl(time, tpoints, Ipoints);
+srcfunc_init = @(time, I, E, inputI) rampupSwitchControl(time, tup, I, E, inputI, inputE);
+srcfunc_gitt = @(time, I, E, dummy) tabulatedIControl(time, tpoints, Ipoints);
 
 control = model.Control.setupScheduleControl();
 
