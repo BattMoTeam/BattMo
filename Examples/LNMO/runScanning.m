@@ -1,3 +1,5 @@
+clear all
+
 sc = Scanning();
 
 thickness = linspace(50*micro*meter, 100*micro*meter, 5);
@@ -5,11 +7,9 @@ SiContent  = linspace(0.01, 0.1, 5);
 
 [inds, inputs] = cartesianProduct(thickness, SiContent);
 
-clear output
-
 for iinput = 1 : numel(inputs)
 
-    input = inputs{iinput};
+    input = inputs{iinput}
     sc.computeSpecificEnergy(input.thickness, input.SiContent);
 
     E(iinput) = sc.specificEnergyHour;
