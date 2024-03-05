@@ -1,16 +1,20 @@
 function [energy, extras] = advancedComputeCellEnergy(model, varargin)
 
+    opt = struct('verbose', false);
+    opt = merge_options(opt, varargin{:});
+    
     if isstruct(model)
         model = setupModelFromJson(model);
     end
 
     ecs = EquilibriumConcentrationSolver(model);
 
-    [~, ecs] = ecs.setupInitialState();
+    % compute initial guess
+    [stateInit, ecs] = ecs.setupInitialState();
+    stateInit = ecs.evalVarName(stateInit, 'voltage');
+    stateInit = ecs.computeConcentrations(stateInit.voltage, 'verbose', opt.verbose);;
 
-    stateInit = ecs.computeConcentrations(3, 'verbose', true);
-
-    [stateStart, stateEnd] = ecs.computeExtremalStates(stateInit);
+    [stateStart, stateEnd] = ecs.computeExtremalStates(stateInit, 'verbose', opt.verbose);
     
     N = 100;
 
@@ -78,8 +82,7 @@ function [energy, extras] = advancedComputeCellEnergy(model, varargin)
         
         U = linspace(Ustart, Uend, N)';
 
-        [state, failure, ecs] = ecs.computeConcentrations(U, 'verbose', true);
-        
+        [state, failure, ecs] = ecs.computeConcentrations(U, 'verbose', opt.verbose);
         
         if failure
             error('could not find solution');

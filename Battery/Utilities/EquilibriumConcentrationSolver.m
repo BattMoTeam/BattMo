@@ -668,16 +668,25 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
         end
 
-        function [stateStart, stateEnd] = computeExtremalStates(ecs, stateInit)
+        function [stateStart, stateEnd] = computeExtremalStates(ecs, stateInit, varargin)
+
+            opt = struct('verbose', false);
+            opt = merge_options(opt, varargin{:});
             
             [funcs, options, extras] = ecs.setupIpOpt('max');
             options.ipopt.hessian_approximation = 'limited-memory';
+            if ~opt.verbose
+                options.ipopt.print_level = 0;
+            end
             x0 = extras.convertFromState(stateInit);
             [x, info] = ipopt(x0, funcs, options);
             stateStart = extras.convertToState(x);
             
             [funcs, options, extras] = ecs.setupIpOpt('min');
             options.ipopt.hessian_approximation = 'limited-memory';
+            if ~opt.verbose
+                options.ipopt.print_level = 0;
+            end
             x0 = extras.convertFromState(stateInit);
             [x, info] = ipopt(x0, funcs, options);
             stateEnd = extras.convertToState(x);
