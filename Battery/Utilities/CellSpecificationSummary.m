@@ -277,9 +277,9 @@ classdef CellSpecificationSummary
             lines = addLine(lines, 'Negative Electrode Capacity', 'Ah'   , css.capacities.(ne)/hour);
             lines = addLine(lines, 'Positive Electrode Capacity', 'Ah'   , css.capacities.(pe)/hour);
             lines = addLine(lines, 'N/P ratio'                  , '-'    , css.NPratio);
-            lines = addLine(lines, 'Energy'                     , 'Wh'   , css.energy/hour);
-            lines = addLine(lines, 'Specific Energy'            , 'Wh/kg', css.specificEnergy/hour);
-            lines = addLine(lines, 'Energy Density'             , 'Wh/L' , (css.energyDensity/hour)*litre);
+            lines = addLine(lines, 'Nominal Energy'             , 'Wh'   , css.energy/hour);
+            lines = addLine(lines, 'Nominal Specific Energy'    , 'Wh/kg', css.specificEnergy/hour);
+            lines = addLine(lines, 'Nominal Energy Density'     , 'Wh/L' , (css.energyDensity/hour)*litre);
 
             function str = appendDrate(str, crate)
 
