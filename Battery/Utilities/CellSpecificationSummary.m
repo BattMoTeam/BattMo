@@ -40,8 +40,6 @@ classdef CellSpecificationSummary
         capacity
         capacities % structure with capacity of negative and positive electrode
         
-        initialVoltage
-
         dischargeFunction % Maximum energy discharge function (voltage versus state of charge)
 
         temperature
@@ -231,20 +229,6 @@ classdef CellSpecificationSummary
             
             NPratio = capacities.(ne)/capacities.(pe);
 
-            % Compute initial voltage
-            
-            itfmodel = model.(ne).(co).(am).(itf);
-            cmax  = itfmodel.saturationConcentration;
-            cinit = itfmodel.guestStoichiometry100*cmax;
-            
-            U = -itfmodel.computeOCPFunc(cinit, temperature, cmax);
-            
-            itfmodel = model.(pe).(co).(am).(itf);
-            cmax  = itfmodel.saturationConcentration;
-            cinit = itfmodel.guestStoichiometry100*cmax;
-            
-            U = U + itfmodel.computeOCPFunc(cinit, temperature, cmax);
-
             %  Assign values
             
             css.mass              = mass;
@@ -258,7 +242,6 @@ classdef CellSpecificationSummary
             css.NPratio           = NPratio;
             css.capacity          = capacity;
             css.capacities        = capacities;
-            css.initialVoltage    = U;
             css.dischargeFunction = output.dischargeFunction;
         
         end
