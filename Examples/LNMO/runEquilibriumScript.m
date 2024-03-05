@@ -30,6 +30,13 @@ jsonstruct.(ne).(co).(am2).(itf).guestStoichiometry0   = 0.01;
 
 jsonstruct.(pe).(co).(am).(itf).guestStoichiometry0 = 1;
 
+css = CellSpecificationSummary(jsonstruct);
+
+css.printSpecifications();
+
+return
+
+
 model = setupModelFromJson(jsonstruct);
 
 ecs = EquilibriumConcentrationSolver(model);
