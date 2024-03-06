@@ -595,12 +595,15 @@ classdef Coating < ElectronicComponent
             theta0   = model.(am).(itf).guestStoichiometry0;
 
             c = state.(am).(sd).cAverage;
-
+            
+            %% We do not use the gueststochiometry value to compute the State of Charge
+            
             theta = c/cmax;
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
+            % m     = (1 ./ (theta100 - theta0));
+            % b     = -m .* theta0;
+            % SOC   = theta*m + b;
+            SOC = thetha;
+            vol = am_frac*vf.*vols;
 
             SOC = sum(SOC.*vol)/sum(vol);
 
@@ -633,10 +636,15 @@ classdef Coating < ElectronicComponent
 
                 vol = am_frac*vf.*vols;
 
+                %% We do not use the gueststochiometry value to compute the State of Charge
+                
                 molvals(iam)    = sum(c.*vol);
-                molval0s(iam)   = theta0*cmax*sum(vol);
-                molval100s(iam) = theta100*cmax*sum(vol);
+                % molval0s(iam)   = theta0*cmax*sum(vol);
+                % molval100s(iam) = theta100*cmax*sum(vol);
 
+                molval0s(iam)   = 0;
+                molval100s(iam) = cmax*sum(vol);
+                
                 state.(amc).SOC = (molvals(iam) - molval0s(iam))/(molval100s(iam) - molval0s(iam));
 
             end
