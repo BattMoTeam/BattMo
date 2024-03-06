@@ -602,7 +602,7 @@ classdef Coating < ElectronicComponent
             % m     = (1 ./ (theta100 - theta0));
             % b     = -m .* theta0;
             % SOC   = theta*m + b;
-            SOC = thetha;
+            SOC = theta;
             vol = am_frac*vf.*vols;
 
             SOC = sum(SOC.*vol)/sum(vol);
