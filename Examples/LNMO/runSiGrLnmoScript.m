@@ -41,6 +41,11 @@ schedule.step = step;
 
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule);
 
+%% plot
+
+
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultaxesfontsize', 15);
 
 t = cellfun(@(state) state.time, states);
 E = cellfun(@(state) state.Control.E, states);
