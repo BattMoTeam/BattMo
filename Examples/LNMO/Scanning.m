@@ -21,11 +21,11 @@ classdef Scanning < handle
 
         function sc = Scanning()
 
-            sc.packingMass = 15*gram;
+            sc.packingMass = 25*gram;
             
             jsonstruct = parseBattmoJson('Examples/LNMO/SiGrLnmo.json');
             jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
-            jsonstruct_geometry.Geometry.nLayers = 15;
+            jsonstruct_geometry.Geometry.nLayers = 50;
             
             jsonstruct = mergeJsonStructs({jsonstruct_geometry, ...
                                            jsonstruct});

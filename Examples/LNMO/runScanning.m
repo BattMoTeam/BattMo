@@ -28,15 +28,15 @@ X = repmat(thickness', 1, numel(SiContent))/(micro*meter);
 Y = repmat(SiContent, numel(thickness), 1);
 Z = reshape(E, numel(thickness), numel(SiContent));
 
-figure
-surf(X, Y, Z);
-xlabel('Negative Electrode Length / μm');
-ylabel('Silicon Ratio (mass fraction)');
-zlabel('Specific Energy / Wh/kg');
+% figure
+% surf(X, Y, Z);
+% xlabel('Negative Electrode Length / μm');
+% ylabel('Silicon Ratio (mass fraction)');
+% zlabel('Specific Energy / Wh \cdot kg^{-1}');
 
 figure
 
 contourf(X, Y, Z);
 xlabel('Negative Electrode Length / μm');
 ylabel('Silicon Ratio (mass fraction)');
-zlabel('Specific Energy / Wh/kg');
+zlabel('Specific Energy / Wh \cdot kg^{-1}');
