@@ -856,7 +856,10 @@ classdef GenericBattery < BaseModel
 
         end
 
-        function jsonstruct = exportParams(model)
+        function jsonstruct = exportParams(model, varargin)
+
+            opt = struct('removeEmpty', false);
+            opt = merge_options(opt, varargin{:});
 
             jsonstruct = exportParams@BaseModel(model);
             
@@ -869,6 +872,8 @@ classdef GenericBattery < BaseModel
                 fdname = fdnames{ifd};
                 jsonstruct.(fdname) = model.(fdname);
             end
+
+            jsonstruct = removeJsonStructEmptyField(jsonstruct);
 
         end
 
