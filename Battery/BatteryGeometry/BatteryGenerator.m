@@ -34,11 +34,11 @@ classdef BatteryGenerator
 
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            params = pickField(params, 'Electrolyte');
-            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
+            params_electrolyte = pickField(params, 'Electrolyte');
+            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params_electrolyte);
 
-            params = pickField(params, 'Separator');
-            inputparams.Separator = gen.setupSeparator(inputparams.Separator, params);
+            params_separator = pickField(params, 'Separator');
+            inputparams.Separator = gen.setupSeparator(inputparams.Separator, params_separator);
 
             inputparams = gen.setupElectrodes(inputparams, params);
 
