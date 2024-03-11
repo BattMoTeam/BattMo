@@ -106,13 +106,11 @@ classdef Coating < ElectronicComponent
             
             % We treat special cases for the specific volumes
 
+            use_am_only = false;
             switch model.active_material_type
               case {'default', 'sei'}
                 if all(specificVolumes == 0)
-                    % No data has been given, we assume that there is no binder and conducting additive
-                    model.volumeFractions = zeros(numel(compnames), 1);
-                    model.volumeFractions(compInds.(am)) = 1;
-                    model.(am).massFraction = 1;
+                    use_am_only = true;
                 else
                     if specificVolumes(compInds.(am)) == 0
                         error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
@@ -133,13 +131,20 @@ classdef Coating < ElectronicComponent
 
                 updateMassFractions = false;
 
-                volumeFractions = zeros(numel(compnames), 1);
-                sumSpecificVolumes = sum(specificVolumes);
-                for icomp = 1 : numel(compnames)
-                    volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
-                end
+                if use_am_only
+                    % No data has been given, we assume that there is no binder and conducting additive
+                    model.volumeFractions = zeros(numel(compnames), 1);
+                    model.volumeFractions(compInds.(am)) = 1;
+                    model.(am).massFraction = 1;
+                else                    
+                    volumeFractions = zeros(numel(compnames), 1);
+                    sumSpecificVolumes = sum(specificVolumes);
+                    for icomp = 1 : numel(compnames)
+                        volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
+                    end
 
-                model.volumeFractions = volumeFractions;
+                    model.volumeFractions = volumeFractions;
+                end
 
             else
 
