@@ -1,5 +1,11 @@
 function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct)
 % We setup a model from a json structure
+
+    if isstring(jsonstruct)
+        jsonstruct = parseBattmoJson(jsonstruct);
+        [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
+        return
+    end
     
     % We convert all the numerical value to SI unit.
     jsonstruct = resolveUnitInputJson(jsonstruct);
