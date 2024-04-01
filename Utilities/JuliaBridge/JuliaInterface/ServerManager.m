@@ -94,9 +94,20 @@ classdef ServerManager < handle
         end
 
         function load(manager, varargin)
-        % Load data onto server (requires shared=true to make sense)
+        % Load data onto server (requires shared = true to make sense)
         % Add warning if shared is false
-
+        %
+        %  In varargin:
+        %
+        % 'inputType' : String, either 'Matlab' (default) or 'JSON'
+        % 'kwargs'    : Struct, which is passed to the solver
+        %
+        % If 'inputType' is 'Matlab'
+        %   - 'data' : Structure with fields 'model', 'schedule', 'initState'
+        %
+        % If 'inputType' is 'JSON'
+        %   - 'inputFileName' : String, path to json file
+        
             opts = struct('data'         , []      , ...
                           'kwargs'       , []      , ...
                           'inputType'    , 'Matlab', ...

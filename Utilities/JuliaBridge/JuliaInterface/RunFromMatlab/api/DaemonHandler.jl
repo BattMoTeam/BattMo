@@ -38,7 +38,7 @@ else
         inputFileName = dat["inputFileName"]
 
         if inputType == "Matlab"
-            inputobj = BattMo.MatlabFile(inputFileName, dat["data"], use_state_ref=dat["use_state_ref"])
+            inputobj = BattMo.MatlabFile(inputFileName, dat["data"], use_state_ref = dat["use_state_ref"])
         elseif inputType == "JSON"
             inputobj = BattMo.JSONFile(inputFileName)
         else
