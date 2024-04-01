@@ -18,7 +18,7 @@ function data = class2data(obj)
             end
         end
     else
-        if(isnumeric(obj) || ischar(obj) )
+        if (isnumeric(obj) || ischar(obj) || islogical(obj))
             data = obj;
         elseif (iscell(obj))
             vals = obj;
