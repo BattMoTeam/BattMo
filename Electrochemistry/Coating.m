@@ -135,7 +135,9 @@ classdef Coating < ElectronicComponent
                     % No data has been given, we assume that there is no binder and conducting additive
                     model.volumeFractions = zeros(numel(compnames), 1);
                     model.volumeFractions(compInds.(am)) = 1;
-                    model.(am).massFraction = 1;
+                    inputparams.(am).massFraction = 1;
+                    inputparams.(bd).massFraction = 0;
+                    inputparams.(ad).massFraction = 0;
                 else                    
                     volumeFractions = zeros(numel(compnames), 1);
                     sumSpecificVolumes = sum(specificVolumes);
@@ -234,13 +236,13 @@ classdef Coating < ElectronicComponent
 
             if updateMassFractions
 
-                model = model.updateMassFractions();
+                inputparams = model.updateMassFractions(inputparams);
 
             end
 
             if updateEffectiveDensity
 
-                model = model.updateEffectiveDensity();
+                model = model.updateEffectiveDensity(inputparams);
 
             end
 
@@ -257,7 +259,7 @@ classdef Coating < ElectronicComponent
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
                         if ~isempty(model.(compname).thermalConductivity)
-                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*model.(compname).thermalConductivity;
+                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
                         end
                     end
                     model.thermalConductivity = thermalConductivity;
@@ -274,8 +276,8 @@ classdef Coating < ElectronicComponent
                     specificHeatCapacity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
-                        if ~isempty(model.(compname).specificHeatCapacity)
-                            specificHeatCapacity = specificHeatCapacity + model.(compname).massFraction*model.(compname).specificHeatCapacity;
+                        if ~isempty(inputparams.(compname).specificHeatCapacity)
+                            specificHeatCapacity = specificHeatCapacity + inputparams.(compname).massFraction*inputparams.(compname).specificHeatCapacity;
                         end
                     end
                     model.specificHeatCapacity = specificHeatCapacity;
@@ -406,14 +408,14 @@ classdef Coating < ElectronicComponent
 
         end
 
-        function model = updateMassFractions(model)
+        function inputparams = updateMassFractions(model, inputparams)
 
             compnames = model.compnames;
 
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
-                if ~isempty(model.(compname).density)
-                    massfractions(icomp) = model.(compname).density*model.volumeFractions(icomp);
+                if ~isempty(inputparams.(compname).density)
+                    massfractions(icomp) = inputparams.(compname).density*model.volumeFractions(icomp);
                 else
                     massfractions(icomp) = 0;
                 end
@@ -423,7 +425,7 @@ classdef Coating < ElectronicComponent
 
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
-                model.(compname).massFraction = massfractions(icomp);
+                inputparams.(compname).massFraction = massfractions(icomp);
             end
 
         end
@@ -449,7 +451,7 @@ classdef Coating < ElectronicComponent
         end
         
         
-        function model = updateEffectiveDensity(model)
+        function model = updateEffectiveDensity(model, inputparams)
 
             compnames = model.compnames;
             vf = model.volumeFraction;
@@ -457,7 +459,7 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 if ~isempty(model.(compname).density)
-                    massfractions(icomp) = model.(compname).density*model.volumeFractions(icomp);
+                    massfractions(icomp) = inputparams.(compname).density*model.volumeFractions(icomp);
                 else
                     massfractions(icomp) = 0;
                 end
