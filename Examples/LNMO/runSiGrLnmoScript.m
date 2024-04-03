@@ -13,14 +13,19 @@ jsonstruct = removeJsonStructFields(jsonstruct, ...
 
 jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_cccv});
 
-jsonstruct.TimeStepping.numberOfTimeSteps = 200;
+jsonstruct.TimeStepping.numberOfTimeSteps = 100;
 
 jsonstruct.Control.DRate = 1;
 jsonstruct.Control.CRate = 1;
+jsonstruct.Control.lowerCutoffVoltage = 3.8;
+jsonstruct.Control.upperCutoffVoltage = 4.8;
 
 jsonstruct.Control.initialControl = 'charging';
 
 jsonstruct.SOC = 0;
+jsonstruct.NegativeElectrode.Coating.ActiveMaterial2.massFraction = 0.04;
+jsonstruct.NegativeElectrode.Coating.ActiveMaterial1.massFraction = 0.96;
+jsonstruct.Control.numberOfCycles = 1;
 
 output = runBatteryJson(jsonstruct, 'runSimulation', false);
 
@@ -36,6 +41,11 @@ schedule.step = step;
 
 [~, states, ~] = simulateScheduleAD(initstate, model, schedule);
 
+%% plot
+
+
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultaxesfontsize', 15);
 
 t = cellfun(@(state) state.time, states);
 E = cellfun(@(state) state.Control.E, states);

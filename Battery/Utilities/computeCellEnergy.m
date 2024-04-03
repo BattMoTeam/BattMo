@@ -79,17 +79,17 @@ function [energy, extras] = computeCellEnergy(model, varargin)
 
         dischargeFunction = @(s) (fs{2}(s) - fs{1}(s));
 
-        output = struct('energy'           , energy, ...
+        extras = struct('energy'           , energy, ...
                         'dischargeFunction', dischargeFunction);
         
     else
 
-        DRate = opt.DRate;
-        output = computeCellEnergyGivenDrate(model, DRate, extra{:});
+        DRate  = opt.DRate;
+        extras = computeCellEnergyGivenDrate(model, DRate, extra{:});
         
     end
 
-    energy = output.energy;
+    energy = extras.energy;
     
 end
 

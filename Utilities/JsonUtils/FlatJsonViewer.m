@@ -128,7 +128,28 @@ classdef FlatJsonViewer
             filteredfjv = fjv;
 
         end
-        
+
+        function fjv = reorderColumns(fjv, frontColumNames)
+
+            columnnames = fjv.columnnames;
+
+            if iscell(frontColumNames)
+                [isok, find] = ismember(frontColumNames, columnnames);
+                assert(all(isok), 'some column names are not recognized.');
+            else
+                find = frontColumNames;
+            end
+
+            nind = true(numel(columnnames), 1);
+            nind(find) = false;
+
+            fjv.columnnames = horzcat(columnnames(find), ...
+                                      columnnames(nind));
+
+            fjv.flatjson = horzcat(fjv.flatjson(:, find), ...
+                                   fjv.flatjson(:, nind));
+
+        end
     end
     
 end

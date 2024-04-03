@@ -35,7 +35,7 @@ Source code for runSiliconGraphiteBattery
   % We load the property of a composite silicon graphite electrode, see :ref:`compositeElectrode`
   %
   
-  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
+  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
   
   %%
   % For the remaining properties, we consider a standard data set 
