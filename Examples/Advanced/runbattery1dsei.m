@@ -62,8 +62,6 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-return
-
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
