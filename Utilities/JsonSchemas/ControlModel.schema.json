@@ -12,8 +12,7 @@
                    "CCCHarge",
                    "CC",
                    "CCCV",
-                   "powerControl"]}},
-      "CRate" : {"type": "number"}
+                   "powerControl"]}}
     }},
     "allOf": [
       {"if": {
@@ -36,19 +35,25 @@
 
   "$defs" : {
     "CCDischarge" : {
-      "properties" :
-      {"rampupTime" : {
-        "type" : "number",
-        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
-       "lowerCutoffVoltage" : {
-        "type" : "number"},
-       "useCVswitch" : {
-         "type" : "boolean",
-         "description" : "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
-       }}},
+      "properties" : {
+        "DRate" : {
+          "type" : "number",
+          "description" : "discharge rate"},
+        "rampupTime" : {
+          "type" : "number",
+          "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
+        "lowerCutoffVoltage" : {
+          "type" : "number"},
+        "useCVswitch" : {
+          "type" : "boolean",
+          "description" : "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
+        }}},
     "CCCharge" : {
-      "properties" :
-      {"rampupTime" : {
+      "properties" : {
+        "CRate" : {
+          "type" : "number",
+          "description" : "charge rate"},
+        "rampupTime" : {
         "type" : "number",
         "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
        "upperCutoffVoltage" : {
@@ -61,6 +66,12 @@
     },
     "CCCV": {
       "properties" : {
+        "CRate" : {
+          "type" : "number",
+          "description" : "charge rate"},
+        "DRate" : {
+          "type" : "number",
+          "description" : "discharge rate"},
         "lowerCutoffVoltage" : {
           "type" : "number"},
         "upperCutoffVoltage" : {

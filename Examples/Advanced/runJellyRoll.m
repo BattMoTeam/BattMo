@@ -125,10 +125,10 @@ inputparams = BatteryInputParams(jsonstruct);
 % inputparams.(ne).(am).(sd).N = 5;
 % inputparams.(pe).(am).(sd).N = 5;
 
-CRate = 0.1;
+DRate = 0.1;
 inputparams.(ctrl).lowerCutoffVoltage = 3;
-inputparams.(ctrl).CRate              = CRate;
-inputparams.(ctrl).rampupTime         = 0.1/CRate;
+inputparams.(ctrl).DRate              = DRate;
+inputparams.(ctrl).rampupTime         = 0.1/DRate;
 
 % th = 'ThermalModel';
 % inputparams.(th).externalHeatTransferCoefficientSideFaces = 100*watt/meter^2;
@@ -142,16 +142,16 @@ model = Battery(inputparams);
 
 %% Setup schedule
 
-CRate = model.(ctrl).CRate;
+DRate = model.(ctrl).DRate;
 fac   = 2;
-total = 1.1*hour/CRate;
+total = 1.1*hour/DRate;
 n     = 10;
 dt0   = total*1e-6;
 times = getTimeSteps(dt0, n, total, fac);
 
 % times = times(times < 4200);
 
-%% We compute the cell capacity, which used to compute schedule from CRate
+%% We compute the cell capacity, which used to compute schedule from DRate
 
 step = struct('val', diff(times), 'control', ones(numel(times) - 1, 1));
 

@@ -27,7 +27,8 @@ paramobj = BatteryInputParams(jsonstruct);
 use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                         'CRate'             , 1         , ...
+                         'DRate'             , 1         , ...
+                         'CRate'             , 1.5       , ...
                          'lowerCutoffVoltage', 2.4       , ...
                          'upperCutoffVoltage', 4.1       , ...
                          'dIdtLimit'         , 0.01      , ...
@@ -61,8 +62,6 @@ paramobj = gen.updateBatteryInputParams(paramobj);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = Battery(paramobj);
 
-return
-
 model.AutoDiffBackend= AutoDiffBackend();
 
 %% Compute the nominal cell capacity and choose a C-Rate
@@ -70,7 +69,7 @@ model.AutoDiffBackend= AutoDiffBackend();
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current. 
 
-CRate = model.Control.CRate;
+DRate = model.Control.DRate;
 
 %% Setup the time step schedule 
 % Smaller time steps are used to ramp up the current from zero to its
@@ -78,9 +77,10 @@ CRate = model.Control.CRate;
 % operation.
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    total = 3.5*hour/CRate;
-  case 'IEswitch'
-    total = 1.4*hour/CRate;
+    CRate = model.Control.DRate;
+    total = 1.5*hour/(DRate + CRate);
+  case 'CCDischarge'
+    total = 1.4*hour/DRate;
   otherwise
     error('control policy not recognized');
 end
@@ -94,13 +94,13 @@ step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 %  !!! Change this to an entry in the JSON with better variable names !!!
 
 switch model.Control.controlPolicy
-  case 'IEswitch'
+  case 'CCDischarge'
     tup = 0.1; % rampup value for the current function, see rampupSwitchControl
     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                                 model.Control.Imax, ...
                                                 model.Control.lowerCutoffVoltage);
     % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'IEswitch', true);
+    control = struct('src', srcfunc, 'CCDischarge', true);
   case 'CCCV'
     control = struct('CCCV', true);
   otherwise

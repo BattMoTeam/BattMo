@@ -7,7 +7,7 @@
   "include_current_collectors": true,
   "Control" : {
     "controlPolicy" : "CCDischarge",
-    "CRate" : 1,
+    "DRate" : 1,
     "lowerCutoffVoltage" : 2,
     "upperCutoffVoltage" : 4.1,
     "dIdtLimit" : 0.01,

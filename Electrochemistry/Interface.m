@@ -149,6 +149,29 @@ classdef Interface < BaseModel
             
             
         end
+
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'saturationConcentration'     , ...      
+                       'numberOfElectronsTransferred', ... 
+                       'volumetricSurfaceArea'       , ...        
+                       'activationEnergyOfReaction'  , ...   
+                       'reactionRateConstant'        , ...         
+                       'exchangeCurrentDensity'      , ...
+                       'guestStoichiometry100'       , ... 
+                       'guestStoichiometry0'         , ...   
+                       'openCircuitPotential'        , ...
+                       'chargeTransferCoefficient'};
+
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+                
+
+        end
         
         function state = dipatchTemperature(model, state)
 
@@ -175,9 +198,9 @@ classdef Interface < BaseModel
             if model.useJ0Func
 
                 computeJ0 = model.computeJ0Func;
-                cmax      = model.cmax;
-                theta0    = model.theta0;
-                theta100  = model.theta100;
+                cmax      = model.saturationConcentration;
+                theta0    = model.guestStoichiometry0;
+                theta100  = model.guestStoichiometry100;
                 
                 c = state.cElectrodeSurface;
 

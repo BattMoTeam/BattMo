@@ -24,21 +24,22 @@ classdef ServerManager < handle
             serverFolder = fileparts(mfilename('fullpath'));
 
             p = inputParser;
-            addParameter(p, 'julia'        , try_find_julia_runtime(), @ischar);
-            addParameter(p, 'project'      , fullfile(serverFolder, 'RunFromMatlab') , @ischar);
-            addParameter(p, 'script_source', fullfile(serverFolder, 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
-            addParameter(p, 'startup_file' , 'no', @ischar);
-            addParameter(p, 'threads'      , 'auto', @isnumeric);
-            %addParameter(p, 'procs'        , 8, @isnumeric);
-            addParameter(p, 'cwd'          , serverFolder, @ischar);
-            addParameter(p, 'port'         , 3000, @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
-            addParameter(p, 'shared'       , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'print_stack'  , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'async'        , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'gc'           , true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'debug'        , false, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            addParameter(p, 'reset'        , false, @(x) validateattributes(x, {'logical'}, {'scalar'}));
-
+            addParameter(p , 'julia'              , try_find_julia_runtime(), @ischar);
+            addParameter(p , 'project'            , fullfile(serverFolder, 'RunFromMatlab')         , @ischar);
+            addParameter(p , 'script_source'      , fullfile(serverFolder, 'RunFromMatlab','api','DaemonHandler.jl'), @ischar);
+            addParameter(p , 'startup_file'       , 'no'        , @ischar);
+            addParameter(p , 'threads'            , 'auto'      , @isnumeric);
+            %addParameter(p, 'procs'              , 8           , @isnumeric);
+            addParameter(p , 'cwd'                , serverFolder, @ischar);
+            addParameter(p , 'port'               , 3000        , @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
+            addParameter(p , 'shared'             , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'print_stack'        , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'async'              , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'gc'                 , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'debug'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'reset'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'updateJuliaPackages', false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            
             parse(p, varargin{:});
             manager.options = p.Results;
 
@@ -65,15 +66,32 @@ classdef ServerManager < handle
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
                                  '--threads='         , num2str(manager.options.threads)];
-            %'--procs='         , num2str(manager.options.procs)];
 
             if isunix
+                
                 manager.base_call = ['env -u LD_LIBRARY_PATH ', manager.base_call];
+                
             end
 
-            % Ensure that project is instantiated
-            instantiate_call = '"using Pkg; Pkg.update();"';
-            manager.DaemonCall(instantiate_call);
+            if ~isfile(fullfile(serverFolder, 'RunFromMatlab', 'Manifest.toml'))
+
+                fprintf('Setting up Battmo Julia server (may take 1 minute) ... ');
+                setup_battmojl_call = [''''                                      , ...
+                                       'using Pkg;'                              , ...
+                                       'Pkg.add(name = "BattMo", rev = "dev");'  , ...
+                                       'Pkg.add(name = "Jutul", rev = "battmo");', ...
+                                       'Pkg.update();'                           , ...
+                                       ''''];
+                manager.DaemonCall(setup_battmojl_call);
+                fprintf('done\n');
+                
+            end
+            
+            if manager.options.updateJuliaPackages
+
+                manager.updateJuliaPackages()
+                
+            end
 
             % Start server
             manager.startup();
@@ -93,10 +111,30 @@ classdef ServerManager < handle
 
         end
 
-        function load(manager, varargin)
-        % Load data onto server (requires shared=true to make sense)
-        % Add warning if shared is false
+        function updateJuliaPackages(manager)
 
+            fprintf('Updating packages on Julia server (may take few seconds) ... ');
+            instantiate_call = '"using Pkg; Pkg.update();"';
+            manager.DaemonCall(instantiate_call);
+            fprintf('done\n');
+            
+        end
+
+        function load(manager, varargin)
+        % Load data onto server (requires shared = true to make sense)
+        % Add warning if shared is false
+        %
+        %  In varargin:
+        %
+        % 'inputType' : String, either 'Matlab' (default) or 'JSON'
+        % 'kwargs'    : Struct, which is passed to the solver
+        %
+        % If 'inputType' is 'Matlab'
+        %   - 'data' : Structure with fields 'model', 'schedule', 'initState'
+        %
+        % If 'inputType' is 'JSON'
+        %   - 'inputFileName' : String, path to json file
+        
             opts = struct('data'         , []      , ...
                           'kwargs'       , []      , ...
                           'inputType'    , 'Matlab', ...
@@ -178,6 +216,40 @@ classdef ServerManager < handle
                 result = [];
             end
 
+        end
+
+        function result = runBatteryJson(manager, jsonstruct, varargin)
+
+            opt = struct('useDirectJsonInput', false);
+            opt = merge_options(opt, varargin{:});
+
+            if opt.useDirectJsonInput
+                
+                assert(strcmp(jsonstruct.Geometry.case, '1D'), 'Direct Json input for battmo.jl is only available for 1D geometry');
+                inputType = 'JSON';
+
+                jsonstruct = jsonencode(jsonstruct);
+                inputFileName  = [tempname, '.json'];
+                fileID = fopen(inputFileName,'w');
+                fprintf(fileID,'%s', jsonstruct);
+                fclose(fileID);
+
+                data = [];
+                
+            else
+                
+                inputType     = 'Matlab';
+                data          = setupSimulationForJuliaBridge(jsonstruct);
+                inputFileName = [];
+                
+            end
+
+            manager.load('inputType'    , inputType, ...
+                         'data'         , data     , ...
+                         'inputFileName', inputFileName);
+
+            result = manager.run();
+            
         end
 
         function startup(manager)

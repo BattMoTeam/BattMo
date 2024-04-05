@@ -2,12 +2,19 @@ classdef CCChargeControlModel < CCcontrolModel
 
     properties
 
-        % For the CCChargeControlModel, the value of Imax is positive, even if the sign convention in the simulation
-        % gives us a negative current. This sign conversion is done in the setupControlFunction below.
-        Imax
+        %
+        % Charge rate
+        CRate
+        
         rampupTime
         useCVswitch
         upperCutoffVoltage
+
+        % This value is initiated depending on DRate and battery model.
+        % For the CCChargeControlModel, the value of Imax is positive, even if the sign convention in the simulation
+        % gives us a negative current. This sign conversion is done in the setupControlFunction below.
+        Imax
+
         
     end
     
@@ -17,7 +24,8 @@ classdef CCChargeControlModel < CCcontrolModel
             
             model = model@CCcontrolModel(inputparams);
 
-            fdnames = {'rampupTime', ...
+            fdnames = {'CRate'      , ...
+                       'rampupTime' , ...
                        'useCVswitch', ...
                        'upperCutoffVoltage'};
 
@@ -42,22 +50,21 @@ classdef CCChargeControlModel < CCcontrolModel
         function  func = setupControlFunction(model)
 
             tup  = model.rampupTime;
-            Imax = model.Imax;
             Umax = model.upperCutoffVoltage;
 
             if model.useCVswitch
                 
-               func = @(time, I, E) rampupSwitchControl(time  , ...
-                                                         tup  , ...
-                                                         I    , ...
-                                                         E    , ...
-                                                         -Imax, ...
-                                                         Umax);
+                func = @(time, I, E, Imax) rampupSwitchControl(time  , ...
+                                                               tup  , ...
+                                                               I    , ...
+                                                               E    , ...
+                                                               -Imax, ...
+                                                               Umax);
             else
                 
-                func = @(time) rampupControl(time, ...
-                                             tup , ...
-                                             -Imax);
+                func = @(time, Imax) rampupControl(time, ...
+                                                   tup , ...
+                                                   -Imax);
             end
                 
         end

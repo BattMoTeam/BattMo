@@ -34,11 +34,11 @@ classdef BatteryGenerator
 
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            params = pickField(params, 'Electrolyte');
-            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params);
+            params_electrolyte = pickField(params, 'Electrolyte');
+            inputparams.Electrolyte = gen.setupElectrolyte(inputparams.Electrolyte, params_electrolyte);
 
-            params = pickField(params, 'Separator');
-            inputparams.Separator = gen.setupSeparator(inputparams.Separator, params);
+            params_separator = pickField(params, 'Separator');
+            inputparams.Separator = gen.setupSeparator(inputparams.Separator, params_separator);
 
             inputparams = gen.setupElectrodes(inputparams, params);
 
@@ -274,8 +274,8 @@ classdef BatteryGenerator
             cc_coupfaces = tbl.get('faces1');
             am_coupfaces = tbl.get('faces2');
 
-            cc_coupcells = sum(G_cc.parentGrid.topology.faces.neighbors(cc_coupfaces, :), 2);
-            am_coupcells = sum(G_am.parentGrid.topology.faces.neighbors(am_coupfaces, :), 2);
+            cc_coupcells = sum(G_cc.topology.faces.neighbors(cc_coupfaces, :), 2);
+            am_coupcells = sum(G_am.topology.faces.neighbors(am_coupfaces, :), 2);
 
             coupTerm.couplingfaces = [cc_coupfaces, am_coupfaces];
             coupTerm.couplingcells = [cc_coupcells, am_coupcells];

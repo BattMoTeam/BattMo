@@ -1,8 +1,15 @@
 function [bp, simlist] = setupSimList(directory)
 
-    mrstModule add   mpfa
+    mrstModule add mpfa
 
-    dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+    if exist(directory, 'dir')
+        dataDirectory = directory;
+    else
+        dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+    end
+
+    assert(exist(dataDirectory, 'dir'), sprintf('Directory %s not found', dataDirectory));
+    
     dataFolderObjs = dir(dataDirectory);
     dataFolderObjs = dataFolderObjs(3 : end);
     dataFolders = {};

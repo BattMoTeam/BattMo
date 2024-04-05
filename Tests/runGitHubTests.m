@@ -67,8 +67,7 @@ for itestcase = 1 : numel(testCases)
 
     if strcmp(testCase, 'TestRunExamples')
 
-
-        % Tests that are not supported on githb
+        % Tests that are not supported on github
         filenames = {'runJellyRoll'            , ...
                      'runBatteryLinearSolve'   , ...
                      'runBatteryPrecondTestP2D', ...

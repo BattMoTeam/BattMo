@@ -1,23 +1,22 @@
 
-
-function convert_state_Matlab(states::AbstractVector,model,timesteps)
-    ret = Array{Dict{String,Any}}(undef,length(states),1)
+function convert_state_Matlab(states::AbstractVector, model, timesteps)
+    ret = Array{Dict{String,Any}}(undef, length(states), 1)
     time = cumsum(timesteps)
     for (i,s) in enumerate(states)
-        ret[i]=convert_state_Matlab(s,model)
-        ret[i]["time"]=time[i];
+        ret[i] = convert_state_Matlab(s, model)
+        ret[i]["time"] = time[i];
     end
     return ret
 end
 
-#Modified of the setup_state function in BattMo
-function convert_state_Matlab(julia_state,model)
+# Modified of the setup_state function in BattMo
+function convert_state_Matlab(julia_state, model)
 
     jsonNames = Dict(
-        :CC  => "NegativeElectrode",
-        :NAM => "NegativeElectrode",
-        :PAM => "PositiveElectrode",        
-        :PP  => "PositiveElectrode",
+        :NeCc => "NegativeElectrode",
+        :NeAm => "NegativeElectrode",
+        :PeAm => "PositiveElectrode",        
+        :PeCc => "PositiveElectrode",
     )
 
     function convert_current_collector!(matlab_state, name::Symbol)
@@ -30,7 +29,7 @@ function convert_state_Matlab(julia_state,model)
         end
         
         if use_cc
-            init =Dict("CurrentCollector" => Dict("phi" => julia_state[name][:Phi]))
+            init = Dict("CurrentCollector" => Dict("phi" => julia_state[name][:Phi]))
             matlab_state[jsonNames[name]]= init
         end
         
@@ -42,8 +41,8 @@ function convert_state_Matlab(julia_state,model)
         jsonName = jsonNames[name]
         
         ccnames = Dict(
-            :NAM => :CC,
-            :PAM => :PP,
+            :NeAm => :NeCc,
+            :PeAm => :PeCc
         )
 
         if haskey(model.models, ccnames[name])
@@ -58,8 +57,7 @@ function convert_state_Matlab(julia_state,model)
 
         init = Dict()
         init2 = Dict("c" => collect(Iterators.flatten(julia_state[name][:Cp])), "cSurface" => julia_state[name][:Cs])
-        init["ActiveMaterial"]=Dict("phi" => julia_state[name][:Phi], "SolidDiffusion" => init2)
-
+        init["ActiveMaterial"] = Dict("phi" => julia_state[name][:Phi], "SolidDiffusion" => init2)
 
         matlab_state[jsonName] = init
         
@@ -67,26 +65,27 @@ function convert_state_Matlab(julia_state,model)
 
     function convert_electrolyte!(matlab_state)
 
-        init = Dict("phi" => julia_state[:ELYTE][:Phi], "c" => julia_state[:ELYTE][:C])
+        init = Dict("phi" => julia_state[:Elyte][:Phi], "c" => julia_state[:Elyte][:C])
         
         matlab_state["Electrolyte"] = init
 
     end
 
     function convert_bpp!(matlab_state)
-        init = Dict("E" => julia_state[:BPP][:Phi], "I" => julia_state[:BPP][:Current])
+        init = Dict("E" => julia_state[:Control][:Phi], "I" => julia_state[:Control][:Current])
     
         matlab_state["Control"] = init
         
     end
 
     matlab_state= Dict()
-    convert_current_collector!(matlab_state, :CC)
-    convert_active_material!(matlab_state, :NAM)
+    convert_current_collector!(matlab_state, :NeCc)
+    convert_active_material!(matlab_state, :NeAm)
     convert_electrolyte!(matlab_state)
-    convert_active_material!(matlab_state, :PAM)
-    convert_current_collector!(matlab_state, :PP)
+    convert_active_material!(matlab_state, :PeAm)
+    convert_current_collector!(matlab_state, :PeCc)
     convert_bpp!(matlab_state)
 
     return matlab_state
+    
 end

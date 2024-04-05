@@ -6,11 +6,6 @@ classdef ControlModelInputParams < InputParams
     properties
 
         %
-        % C Rate
-        %
-        CRate
-
-        %
         % Control policy (sring). It can take following values
         %
         % - 'CCDischarge'

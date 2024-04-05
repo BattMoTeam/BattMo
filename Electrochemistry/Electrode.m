@@ -111,6 +111,21 @@ classdef Electrode < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'include_current_collectors', ...
+                       'use_thermal'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+
+                
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component
 

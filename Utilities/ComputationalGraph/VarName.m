@@ -12,7 +12,7 @@ classdef VarName
         name
         index
         dim
-        
+        useCell % Flag used in getPropName method. If true, even if the dim=1, a cell is used when setting up the state variable
     end
     
     methods
@@ -32,6 +32,8 @@ classdef VarName
             else
                 varname.index = ':';
             end
+
+            varname.useCell = false;
             
         end
         
@@ -59,7 +61,9 @@ classdef VarName
             isok = (isnumeric(index) && numel(index) == 1);
             isok = isok | (ischar(index) && dim == 1);
             assert(isok, 'The variable has multiple index and cannot be processed by getProp');
-            if dim > 1
+            if dim > 1 
+                cellname{end + 1} = index;
+            elseif dim == 1 && varname.useCell
                 cellname{end + 1} = index;
             end
         end
