@@ -497,11 +497,13 @@ classdef ProtonicMembraneGasSupply < BaseModel
             p   = state.pressure;
             mfs = state.massfractions;
             rho = state.density;
+
+            v = assembleFlux(model, p, rho.*K/mu);
             
             for igas = 1 : nGas
 
                 rhoigas = state.densities{igas};
-                state.massFluxes{igas} = assembleFlux(model, p, mfs{igas}.*rho.*K/mu) + assembleHomogeneousFlux(model, rhoigas, D(igas));
+                state.massFluxes{igas} = assembleUpwindFlux(model, v, mfs{igas}) + assembleHomogeneousFlux(model, rhoigas, D(igas));
                 
             end
             
