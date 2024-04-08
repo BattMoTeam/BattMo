@@ -6,7 +6,7 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gas_supply.json
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-jsonstruct.diffusionCoefficients = 1e1*jsonstruct.diffusionCoefficients;
+jsonstruct.diffusionCoefficients = 1*jsonstruct.diffusionCoefficients;
 
 inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 gen = GasSupplyGridGenerator2D();
@@ -36,7 +36,7 @@ gasInd = model.gasInd;
 
 pH2O         = initstate.pressure(1);
 rho          = initstate.density(1);
-scalFlux     = 1/gen.nx*rho*model.permeability/model.viscosity*pH2O/gen.ly;
+scalFlux     = 1/gen.nx*(rho*model.permeability/model.viscosity*pH2O + rho*model.diffusionCoefficients(1))/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{'massConses', 1}, scalFlux}, ...
@@ -47,12 +47,11 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'boundaryEquations', 2}, scalFlux}};
 
 
-T = 1*second;
+T = 10*hour;
 N = 10;
+dt = rampupTimesteps(T, T/N, 12);
 
-dt = T/N;
-
-step.val = dt*ones(N, 1);
+step.val = dt
 step.control = ones(numel(step.val), 1);
 
 control.src = [];
@@ -75,7 +74,7 @@ model.nonlinearTolerance = 1e-8;
 figure
 plotToolbar(model.grid, states);
 caxis([0.2, 0.4])
-uit = findobj(gcf, '-regexp', 'Tooltip', 'Freeze caxis');
+uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
 uit.State = 'on';
 
 
