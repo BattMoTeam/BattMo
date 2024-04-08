@@ -172,6 +172,45 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
         end
 
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+            
+            newstate = addVariablesAfterConvergence@BaseModel(model, newstate, state);
+
+            % we add those values to be able to run addVariables method
+            newstate.Cell.Electrolyte.alpha = state.Cell.Electrolyte.alpha;
+            newstate.beta                   = state.beta;
+            newstate.Cell.Control.I         = state.Cell.Control.I;
+            
+        end
+            
+        function state = addVariables(model, state)
+
+        % Given a state where only the primary variables are defined, this
+        % functions add all the additional variables that are computed in the assembly process and have some physical
+        % interpretation.
+        %
+        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces
+
+        % Values that need to be set to get the function getEquations running
+
+            dt = 1;
+            state0 = state;
+
+            function [I, alpha, beta] = src(time)
+            % we need only beta value
+                I     = state.Cell.Control.I;
+                alpha = state.Cell.Electrolyte.alpha;
+                beta  = state.beta;
+            end
+            
+            drivingForces.src = @(time) src(time);
+            
+            % We call getEquations to update state
+
+            [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+
+        end
+        
         function model = setupInterface(model)
 
             coupterms = model.Cell.couplingTerms;

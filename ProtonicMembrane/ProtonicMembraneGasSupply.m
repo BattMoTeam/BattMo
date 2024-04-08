@@ -587,7 +587,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
         end
 
         function newstate = addVariablesAfterConvergence(model, newstate, state)
-            
+
+            newstate = addVariablesAfterConvergence@BaseModel(model, newstate, state);
 
             newstate.massfractions{2} = state.massfractions{2};
             newstate.density          = state.density;
