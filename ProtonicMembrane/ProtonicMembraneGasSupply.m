@@ -608,6 +608,25 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function model = validateModel(model, varargin)
         % do nothing
         end
+
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+
+            varnames = {{'GasSupplyBc', 'pressure'}, ...
+                        {'pressure'}};
+
+            for ivar = 1 : numel(varnames)
+
+                varname = varnames{ivar};
+                state = model.capProperty(state, varname, 0);
+
+            end
+
+            state = model.capProperty(state, {'massfractions', 1}, 0, 1);
+            
+        end
+
         
     end
 
