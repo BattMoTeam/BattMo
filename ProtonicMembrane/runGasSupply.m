@@ -47,11 +47,11 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
 
-T = 10*hour;
+T = 2*second;
 N = 10;
-dt = rampupTimesteps(T, T/N, 12);
+dt = rampupTimesteps(T, T/N, 1, 'threshold_error', 1e-15);
 
-step.val = dt
+step.val = dt;
 step.control = ones(numel(step.val), 1);
 
 control.src = [];
