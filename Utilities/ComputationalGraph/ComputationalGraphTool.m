@@ -205,13 +205,13 @@ classdef ComputationalGraphTool
 
             varnameind = cgt.getVarNameIndex(varname);
 
-            [~, propfuncinds, propvarnameinds, ~, staticinds, ~] = getDependencyVarNameInds(varnameind, A);
+            [~, propfuncinds, propvarnameinds, ~, rootinds, ~] = getDependencyVarNameInds(varnameind, A);
 
-            [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
+            [rootinds, rootpropinds] = cgt.findStaticVarNameInds(rootinds);
 
-            if ~isempty(staticinds)
-                propfuncinds = [staticpropinds; propfuncinds];
-                varnameinds  = [staticinds; propvarnameinds];
+            if ~isempty(rootinds)
+                propfuncinds = [rootpropinds; propfuncinds];
+                varnameinds  = [rootinds; propvarnameinds];
             else
                 varnameinds = propvarnameinds;
             end
@@ -227,14 +227,14 @@ classdef ComputationalGraphTool
 
             staticprops = cgt.staticprops;
 
-            allstaticinds     = cellfun(@(staticprop) staticprop.varnameind, staticprops);
-            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops);
+            allstaticinds     = cellfun(@(staticprop) staticprop.varnameind, staticprops)';
+            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops)';
 
             [isok, ia] = ismember(varnameinds, allstaticinds);
 
             if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok))';
-                staticinds = allstaticinds(ia(isok))'; %
+                staticpropinds = allstaticpropinds(ia(isok), 1);
+                staticinds     = allstaticinds(ia(isok), 1);
             else
                 staticpropinds = {};
                 staticinds = {};
