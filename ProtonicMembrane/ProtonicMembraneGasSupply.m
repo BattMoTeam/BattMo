@@ -53,17 +53,16 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         end
 
-
         function model = setupForSimulation(model)
             
             model.isRootSimulationModel = true;
 
-            shortNames = {'1', 'H2O';
-                          '2', 'O2';
-                          'massConses', 'massCons';
-                          'GasSupplyBc', 'bc';
-                          'controlEquations', 'ctrleqs';
-                          'boundaryEquations', 'bceqs'};
+            shortNames = {'1'                , 'H2O'      ;
+                          '2'                , 'O2'       ;
+                          'massConses'       , 'massCons' ;
+                          'GasSupplyBc'      , 'bc'       ;
+                          'controlEquations' , 'ctrleqs'  ;
+                          'boundaryEquations', 'bceqs'} ;
             
             model = model.equipModelForComputation('shortNames', shortNames);
             
@@ -100,6 +99,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             varnames{end + 1} = {'Control', 'rate'};
             % total pressure at the control
             varnames{end + 1} = {'Control', 'pressure'};
+            % total pressure at the control
+            varnames{end + 1} = {'Control', 'H2Omassfraction'};
             % Pressure equation for the control pressure
             varnames{end + 1} = {'Control', 'pressureEq'};
             % Rate equation for the control equation
@@ -109,6 +110,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             model = model.registerVarNames(varnames);
 
+            model = model.setAsStaticVarName({'Control', 'H2Omassfraction'});
+            
             fn = @ProtonicMembraneGasSupply.updateMassFraction;
             inputvarnames = {VarName({}, 'massfractions', nGas, 1)};
             outputvarname = VarName({}, 'massfractions', nGas, 2);
@@ -142,11 +145,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
                              {'Control', 'rate'}};
             model = model.registerPropFunction({{'Control', 'setupEq'}, fn, inputvarnames});
 
-
             fn = @ProtonicMembraneGasSupply.updateBcMassFraction;
-            inputvarnames = {'pressure', ...
-                             {'GasSupplyBc', 'pressure'}, ...
-                             VarName({}, 'massfractions', nGas, 1)};
+            inputvarnames = {{'Control', 'H2Omassfraction'}};
             outputvarname = VarName({'GasSupplyBc'}, 'massfractions', nGas, 1);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
@@ -193,63 +193,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
-        function state = updateBcMassFraction(model, state)
 
-            h = model.helpers;
-            
-            map1    = h.coupToBcMap;
-            map2    = h.massfractionMap;
-            bccells = h.bccells;
-            
-            mfBc = map1*map2*(h.massfractionValues);
-
-            p    = state.pressure(bccells);
-            mf   = state.massfractions{1}(bccells);
-            pBc  = state.GasSupplyBc.pressure;
-
-            v = (p - pBc);
-
-            mf(v < 0) = mfBc(v < 0);
-
-            state.GasSupplyBc.massfractions{1} = mf;
-            
-        end
-        
-        function state = updateControlSetup(model, state)
-
-            helpers = model.helpers;
-
-            eqs = {};
-
-            map = helpers.rateMap;
-            val = helpers.rateValues;
-
-            eqs{end + 1} = 1./val.*(map*state.Control.rate) - 1; % equations are scaled to one
-
-            map = helpers.pressureMap;
-            val = helpers.pressureValues;
-
-            eqs{end + 1} = 1./val.*(map*state.Control.pressure) - 1; % equations are scaled to one
-
-            state.Control.setupEq = vertcat(eqs{:});
-
-        end
-
-        function state = updateMassSources(model, state)
-
-            nGas = model.nGas;
-            bccells = model.helpers.bccells;
-            
-            for igas = 1 : nGas
-                src = 0.*state.pressure; % hacky initialization to get AD
-                src(bccells) = state.GasSupplyBc.massFluxes{igas};
-                srcs{igas} = - src;
-            end
-
-            state.massSources = srcs;
-            
-        end
-        
         function model = setupControl(model)
 
             % Two crontol type indexed 'pressure-composition' : 1, 'flux-composition' : 2
@@ -398,7 +342,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             %%  setup massfractionMap
             
             clear comptbl2
-            comptbl2.comp = 2; % first index gives rate value
+            comptbl2.comp = 2; % first index gives rate or pressure value
             comptbl2 = IndexArray(comptbl2);
             comptypecouptbl2 = crossIndexArray(comptbl2, comptypecouptbl, {'comp'});
             
@@ -428,7 +372,51 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.helpers = helpers;
             
         end
+        function state = updateControlSetup(model, state)
 
+            helpers = model.helpers;
+
+            eqs = {};
+
+            map = helpers.rateMap;
+            val = helpers.rateValues;
+
+            eqs{end + 1} = 1./val.*(map*state.Control.rate) - 1; % equations are scaled to one
+
+            map = helpers.pressureMap;
+            val = helpers.pressureValues;
+
+            eqs{end + 1} = 1./val.*(map*state.Control.pressure) - 1; % equations are scaled to one
+
+            state.Control.setupEq = vertcat(eqs{:});
+
+        end
+
+        function state = updateBcMassFraction(model, state)
+
+            helpers = model.helpers;
+            
+            map = helpers.coupToBcMap;
+
+            state.GasSupplyBc.massfractions{1} = map*state.Control.H2Omassfraction;
+            
+        end
+        
+        function state = updateMassSources(model, state)
+
+            nGas = model.nGas;
+            bccells = model.helpers.bccells;
+            
+            for igas = 1 : nGas
+                src = 0.*state.pressure; % hacky initialization to get AD
+                src(bccells) = state.GasSupplyBc.massFluxes{igas};
+                srcs{igas} = - src;
+            end
+
+            state.massSources = srcs;
+            
+        end
+        
 
         function state = updateMassFraction(model, state)
 
@@ -436,6 +424,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
+        
         function state = updateControlPressureEquation(model, state)
 
             map = model.helpers.coupToBcMap;
@@ -514,7 +503,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             for igas = 1 : nGas
 
                 rhoigas = state.densities{igas};
-                state.massFluxes{igas} = assembleUpwindFlux(model, v, mfs{igas}) + assembleHomogeneousFlux(model, rhoigas, D(igas));
+                state.massFluxes{igas} = assembleFlux(model, v, mfs{igas}) + assembleHomogeneousFlux(model, rhoigas, D(igas));
                 
             end
             
@@ -592,8 +581,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function newstate = addVariablesAfterConvergence(model, newstate, state)
             
 
-            newstate.massfractions{2} = state.massfractions{2};
-            newstate.density          = state.density;
+            cleanState.massfractions{2} = state.massfractions{2};
+            cleanState.density          = state.density;
 
             nGas = model.nGas;
             
