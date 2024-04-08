@@ -50,7 +50,7 @@ classdef ProtonicMembraneGasSupplyBc < BaseModel
             % Mass Flux terms at boundary (outward)
             varnames{end + 1} = VarName({}, 'massFluxes', nGas);
             % Boundary Equation relating boundary massFluxes and boundary pressure values
-            varnames{end + 1} = VarName({}, 'boundaryEquations', nGas);
+            varnames{end + 1} = VarName({}, 'bcFluxEquations', nGas);
             
             model = model.registerVarNames(varnames);
 

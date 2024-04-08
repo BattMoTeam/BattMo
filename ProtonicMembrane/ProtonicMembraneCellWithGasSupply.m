@@ -82,7 +82,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
                              VarName({'GasSupply'}, 'densities', nGas)    , ...
                              VarName({'GasSupply'}, 'pressure')           , ...
                              VarName({'GasSupply'}, 'density')};
-            outputvarname = VarName({'Interface'}, 'boundaryEquations', nGas);
+            outputvarname = VarName({'Interface'}, 'bcFluxEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn =  @ProtonicMembraneCellWithGasSupply.updateAnodePressures;
@@ -296,7 +296,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
 
             end
 
-            state.Interface.boundaryEquations = bceqs;
+            state.Interface.bcFluxEquations = bceqs;
 
         end
 
@@ -365,7 +365,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
                           'GasSupplyBc'          , 'gsBc';
                           'massCouplingEquations', 'massCoupEqs';
                           'controlEquations'     , 'ctrlEqs';
-                          'boundaryEquations'    , 'bcEqs';
+                          'bcFluxEquations'    , 'bcEqs';
                           'Electrolyte'          , 'elyte';
                           'Anode'                , 'an';
                           'Cathode'              , 'ct';

@@ -62,7 +62,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                           'massConses'       , 'massCons' ;
                           'GasSupplyBc'      , 'bc'       ;
                           'controlEquations' , 'ctrleqs'  ;
-                          'boundaryEquations', 'bceqs'} ;
+                          'bcFluxEquations'  , 'bceqs'} ;
             
             model = model.equipModelForComputation('shortNames', shortNames);
             
@@ -133,7 +133,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                              VarName({}, 'pressure')                        , ...
                              VarName({}, 'density')                         , ...
                              };
-            outputvarname = VarName({'GasSupplyBc'}, 'boundaryEquations', nGas);
+            outputvarname = VarName({'GasSupplyBc'}, 'bcFluxEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn = @ProtonicMembraneGasSupply.updateControlPressureEquation;
@@ -482,7 +482,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             end
 
-            state.GasSupplyBc.boundaryEquations = bceqs;
+            state.GasSupplyBc.bcFluxEquations = bceqs;
             
         end
         
