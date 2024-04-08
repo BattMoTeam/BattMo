@@ -6,6 +6,8 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gas_supply.json
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
+jsonstruct.diffusionCoefficients = 1e1*jsonstruct.diffusionCoefficients;
+
 inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 gen = GasSupplyGridGenerator2D();
 
@@ -71,5 +73,10 @@ model.nonlinearTolerance = 1e-8;
 %%
 
 figure
-
 plotToolbar(model.grid, states);
+caxis([0.2, 0.4])
+uit = findobj(gcf, '-regexp', 'Tooltip', 'Freeze caxis');
+uit.State = 'on';
+
+
+
