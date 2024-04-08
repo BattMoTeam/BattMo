@@ -99,8 +99,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             varnames{end + 1} = {'Control', 'rate'};
             % total pressure at the control
             varnames{end + 1} = {'Control', 'pressure'};
-            % total pressure at the control
-            varnames{end + 1} = {'Control', 'H2Omassfraction'};
             % Pressure equation for the control pressure
             varnames{end + 1} = {'Control', 'pressureEq'};
             % Rate equation for the control equation
@@ -110,8 +108,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             model = model.registerVarNames(varnames);
 
-            model = model.setAsStaticVarName({'Control', 'H2Omassfraction'});
-            
             fn = @ProtonicMembraneGasSupply.updateMassFraction;
             inputvarnames = {VarName({}, 'massfractions', nGas, 1)};
             outputvarname = VarName({}, 'massfractions', nGas, 2);
@@ -146,7 +142,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model = model.registerPropFunction({{'Control', 'setupEq'}, fn, inputvarnames});
 
             fn = @ProtonicMembraneGasSupply.updateBcMassFraction;
-            inputvarnames = {{'Control', 'H2Omassfraction'}};
+            inputvarnames = {VarName({}, 'massfractions', nGas, 1)};
             outputvarname = VarName({'GasSupplyBc'}, 'massfractions', nGas, 1);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
@@ -396,10 +392,22 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             helpers = model.helpers;
             
-            map = helpers.coupToBcMap;
+            % Assign internal value
+            bccells = model.helpers.bccells;
+            bcmassfrac = state.massfractions{1}(bccells);
 
-            state.GasSupplyBc.massfractions{1} = map*state.Control.H2Omassfraction;
+            % Compute upwind direction
+            pIn   = state.pressure(bccells);
+            pBc   = state.GasSupplyBc.pressure;
+            inward = find((value(pBc - pIn)) >= 0);
+
+            % Assign external values for inward pressure gradient
+            map = helpers.coupToBcMap;
+            extBcmassfrac = map*helpers.massfractionValues;
+            bcmassfrac(inward)= extBcmassfrac(inward);
             
+            state.GasSupplyBc.massfractions{1} = bcmassfrac;
+                        
         end
         
         function state = updateMassSources(model, state)
@@ -569,9 +577,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             initstate.GasSupplyBc.massfractions{1}       = mf*ones(nbc, 1);
             
             nctrl = numel(model.control);
-            initstate.Control.rate     = zeros(nctrl, 1);
-            initstate.Control.pressure = p*ones(nctrl, 1);
-            initstate.Control.H2Omassfraction = model.helpers.massfractionValues;
+            initstate.Control.rate             = zeros(nctrl, 1);
+            initstate.Control.pressure         = p*ones(nctrl, 1);
             
             initstate = model.evalVarName(initstate, VarName({}, 'massfractions', nGas, 2));
             initstate = model.evalVarName(initstate, VarName({}, 'density'));
@@ -592,14 +599,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
             
         end
-
-        function cleanState = addStaticVariables(model, cleanState, state)
-
-            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
-            cleanState.Control.H2Omassfraction = state.Control.H2Omassfraction;
-            
-        end
-
         
         function forces = getValidDrivingForces(model)
 
