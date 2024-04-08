@@ -660,7 +660,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             for igas = 1 : nGas
 
-                coef = mfs{igas}/Mws(igas);
+                coef = coef + mfs{igas}/Mws(igas);
                 
             end
 
