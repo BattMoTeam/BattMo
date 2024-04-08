@@ -451,22 +451,21 @@ classdef ComputationalGraphTool
                 propfunc = propfunc{iprop};
             end
 
-            fn = propfunc.fn;
+            % Initialise variable state with empty structure. In this way calling the property function will raise an error that
+            % we will catch (see call passed in eval below)
             mn = propfunc.modelnamespace;
-            mn = strjoin(mn, '.');
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = sprintf('%s([])', fnname);
-            if ~isempty(mn)
-                fnname = strjoin({mn, fnname}, '.');
-            end
-            fnname = sprintf('cgt.model.%s', fnname);
+            state = ComputationalGraphTool.setupState([], mn);
+
+            model = cgt.model; % needed in function call passed in eval
+            
+            fncallstr = propfunc.functionCallSetupFn(propfunc);
 
             try
-                eval(fnname)
+                % fn = @(model,state)ProtonicMembraneGasSupply.updateDensity(model,state);
+                % state.GasSupplyBc = fn(model.GasSupplyBc, state.GasSupplyBc);
+                eval(fncallstr);
             catch ME
-                fprintf('%s\n', fnname);
+                fprintf('%s\n', fncallstr);
                 stack = ME.stack;
                 file = stack.file;
                 lineNum = stack.line;
@@ -822,7 +821,16 @@ classdef ComputationalGraphTool
 
     methods (Static)
 
+        function state = setupState(state, modelspace)
 
+            if isempty(modelspace)
+                state = [];
+            else
+                state.(modelspace{1}) = ComputationalGraphTool.setupState(state, modelspace(2 : end));
+            end
+            
+        end
+            
         function nodenames = getNodeName(varname)
         % convert variable names to graph node names
         % TODO : we should enforce that the same function is used in setupGraph (important!)
