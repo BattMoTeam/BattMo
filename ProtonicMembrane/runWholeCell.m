@@ -18,6 +18,10 @@ jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
+r = 1e-6;
+jsonstruct.(gs).control(1).values(1) = r;
+fprintf('Use rate control = %g\n', r);
+
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
@@ -70,7 +74,9 @@ gasInd = model.(gs).gasInd;
 
 pH2O         = initstate.(gs).pressure(1);
 rho          = initstate.(gs).density(1);
-scalFlux     = 1/gen.nxGasSupply*(rho*model.(gs).permeability/model.(gs).viscosity*pH2O + rho*model.(gs).diffusionCoefficients(1))/gen.ly;
+dpRef        = 1e-5*barsa;
+fprintf('use dpRef = %g\n', dpRef);
+scalFlux     = 1/gen.nxGasSupply*(rho*model.(gs).permeability/model.(gs).viscosity*dpRef + rho*model.(gs).diffusionCoefficients(1))/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
@@ -110,16 +116,18 @@ model.scalings =  horzcat(model.scalings, ...
 tswitch   = 0.5;
 totaltime = 1e1*hour;
 
-N1  = 20;
+N1  = 2;
 timeswitch = tswitch*totaltime;
 dt1 = timeswitch/N1;
-N2  = 20;
+N2  = 0;
+fprintf('use N2 = %g\n', N2);
 dt2 = (totaltime - timeswitch)/N2;
 
 step.val = [rampupTimesteps(timeswitch, dt1, 5); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);
 
-Imax = 1;
+Imax = 1e3;
+fprintf('use Imax = %g\n', Imax);
 
 control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
 
@@ -237,6 +245,17 @@ Z = reshape(val, N, []);
 surf(X, Y, Z/barsa, 'edgecolor', 'none');
 colorbar
 title('Pressure / bar');
+xlabel('x [mm]')
+view([50, 51]);
+
+figure('position', [1290, 755, 1275, 559])
+
+val = state.(gs).density;
+Z = reshape(val, N, []);
+
+surf(X, Y, Z, 'edgecolor', 'none');
+colorbar
+title('Density kg/m^3');
 xlabel('x [mm]')
 view([50, 51]);
 
