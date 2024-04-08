@@ -498,12 +498,10 @@ classdef ProtonicMembraneGasSupply < BaseModel
             mfs = state.massfractions;
             rho = state.density;
             
-            v = assembleFlux(model, p, rho.*K/mu);
-            
             for igas = 1 : nGas
 
                 rhoigas = state.densities{igas};
-                state.massFluxes{igas} = assembleFlux(model, v, mfs{igas}) + assembleHomogeneousFlux(model, rhoigas, D(igas));
+                state.massFluxes{igas} = assembleFlux(model, p, mfs{igas}.*rho.*K/mu) + assembleHomogeneousFlux(model, rhoigas, D(igas));
                 
             end
             
@@ -571,7 +569,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             nctrl = numel(model.control);
             initstate.Control.rate     = zeros(nctrl, 1);
             initstate.Control.pressure = p*ones(nctrl, 1);
-
+            initstate.Control.H2Omassfraction = model.helpers.massfractionValues;
+            
             initstate = model.evalVarName(initstate, VarName({}, 'massfractions', nGas, 2));
             initstate = model.evalVarName(initstate, VarName({}, 'density'));
             initstate = model.evalVarName(initstate, 'densities');
@@ -581,8 +580,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function newstate = addVariablesAfterConvergence(model, newstate, state)
             
 
-            cleanState.massfractions{2} = state.massfractions{2};
-            cleanState.density          = state.density;
+            newstate.massfractions{2} = state.massfractions{2};
+            newstate.density          = state.density;
 
             nGas = model.nGas;
             
@@ -592,6 +591,13 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
+        function cleanState = addStaticVariables(model, cleanState, state)
+            
+            cleanState.Control.H2Omassfraction = state.Control.H2Omassfraction;
+            
+        end
+
+        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
