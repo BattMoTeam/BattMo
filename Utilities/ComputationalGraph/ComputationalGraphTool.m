@@ -119,15 +119,15 @@ classdef ComputationalGraphTool
 
             switch direction
               case 'upwards'
-                [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A);
+                [depvarnameinds, propfuncinds, propvarnameinds, propdeplevels, rootinds, rootdeplevels] = getDependencyVarNameInds(varnameind, A);
               case 'downwards'
-                [~, propfuncinds, propvarnameinds, propdeplevels] = getDependencyVarNameInds(varnameind, A');
+                [depvarnameinds, propfuncinds, propvarnameinds, propdeplevels, rootinds, rootdeplevels] = getDependencyVarNameInds(varnameind, A');
               otherwise
                 error('direction not recognized')
             end
             
-            varnameinds = propvarnameinds;
-            levels      = propdeplevels;
+            varnameinds = depvarnameinds;
+            levels      = [rootdeplevels; propdeplevels];
             varnames    = cgt.varNameList(varnameinds);
 
         end
