@@ -592,7 +592,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
         end
 
         function cleanState = addStaticVariables(model, cleanState, state)
-            
+
+            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
             cleanState.Control.H2Omassfraction = state.Control.H2Omassfraction;
             
         end
