@@ -70,7 +70,7 @@ gasInd = model.(gs).gasInd;
 
 pH2O         = initstate.(gs).pressure(1);
 rho          = initstate.(gs).density(1);
-scalFlux     = 1/gen.nxGasSupply*rho*model.(gs).permeability/model.(gs).viscosity*pH2O/gen.ly;
+scalFlux     = 1/gen.nxGasSupply*(rho*model.(gs).permeability/model.(gs).viscosity*pH2O + rho*model.(gs).diffusionCoefficients(1))/gen.ly;
 scalPressure = pH2O;
 
 model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
