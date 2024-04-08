@@ -577,12 +577,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
             initstate.GasSupplyBc.pressure               = p*ones(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
-            initstate.GasSupplyBc.massfractions{1}     = mf*ones(nbc, 1);
+            initstate.GasSupplyBc.massfractions{1}       = mf*ones(nbc, 1);
             
             nctrl = numel(model.control);
-            initstate.Control.rate               = zeros(nctrl, 1);
-            initstate.Control.pressure           = p*ones(nctrl, 1);
-            initstate.Control.massfractions{1} = mf*ones(nctrl, 1);
+            initstate.Control.rate     = zeros(nctrl, 1);
+            initstate.Control.pressure = p*ones(nctrl, 1);
 
             initstate = model.evalVarName(initstate, VarName({}, 'massfractions', nGas, 2));
             initstate = model.evalVarName(initstate, VarName({}, 'density'));
@@ -590,17 +589,16 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
-        function cleanState = addStaticVariables(model, cleanState, state, state0)
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
             
-            cleanState = addStaticVariables@BaseModel(model, cleanState, state);
 
-            cleanState.massfractions{2} = state.massfractions{2};
-            cleanState.density            = state.density;
+            newstate.massfractions{2} = state.massfractions{2};
+            newstate.density          = state.density;
 
             nGas = model.nGas;
             
             for igas = 1 : nGas
-                cleanState.densities{igas} = state.densities{igas};
+                newstate.densities{igas} = state.densities{igas};
             end
             
         end
