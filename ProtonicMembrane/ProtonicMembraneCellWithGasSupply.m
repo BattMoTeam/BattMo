@@ -14,9 +14,9 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
         couplingTerm
 
         helpers
-        pmin  = 1e-3*barsa % cutoff value used in updateState method
-        mfmin = 1e-6       % cutoff value used in updateState method
-        mfmax = 1 - 1e-6   % cutoff value used in updateState method
+        pmin  = 1e-7*barsa % cutoff value used in updateState method
+        mfmin = 0          % cutoff value used in updateState method
+        mfmax = 1          % cutoff value used in updateState method
         
     end
     
@@ -322,7 +322,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             pIn = map*state.GasSupply.pressure;
             pBc = state.Interface.pressure;
 
-            rhoBc = state.Interface.density ;      
+            rhoBc = state.Interface.density;
 
             for igas = 1 : nGas
 
@@ -374,7 +374,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             beta    = state.beta;
             
             % Chemical equation : 1/2*H2O <-> H^+ + e^- + 1/4*O2
-            % Flux in the boundary conditions are oritented outwards from GasSupply domain.
+            % Flux in the boundary conditions are oriented outwards from GasSupply domain.
             igas = gasInd.H2O;
             coupeqs{igas} = mfluxes{igas} - beta*1/2*mws(igas)*iHp/F;
 
@@ -436,24 +436,30 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             ce    = 'Cell';
             an    = 'Anode';
             ct    = 'Cathode';
+            itf   = 'Interface';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
-
-            nGas = model.(gs).nGas;
 
             pmin  = model.pmin;
             mfmin = model.mfmin;
             mfmax = model.mfmax;
+
+
+            pressurevars = {{gs, 'pressure'}, ...
+                            {gs, 'GasSupplyBc', 'pressure'}, ...
+                            {itf, 'pressures', 1}, ...
+                            {itf, 'pressures', 2} 
+                           };
+
+            for ip = 1 : numel(pressurevars)
+
+                state = model.capProperty(state, pressurevars{ip}, pmin);
+                
+            end
             
-            state.(gs).pressure             = max(pmin, state.(gs).pressure);
-            state.(gs).GasSupplyBc.pressure = max(pmin, state.(gs).GasSupplyBc.pressure);
-            
-            state.(gs).massfractions{1}             = max(mfmin, state.(gs).massfractions{1});
-            state.(gs).GasSupplyBc.massfractions{1} = max(mfmin, state.(gs).GasSupplyBc.massfractions{1});
-            
-            state.(gs).massfractions{1}             = min(mfmax, state.(gs).massfractions{1});
-            state.(gs).GasSupplyBc.massfractions{1} = min(mfmax, state.(gs).GasSupplyBc.massfractions{1});
-            
+            state = model.capProperty(state, {gs, 'massfractions', 1}, mfmin, mfmax);
+            state = model.capProperty(state, {gs, 'GasSupplyBc', 'massfractions', 1}, mfmin, mfmax);
+
         end
         
     end
