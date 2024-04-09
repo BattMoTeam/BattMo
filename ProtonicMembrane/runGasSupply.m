@@ -47,9 +47,9 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
 
-T = 2*second;
+T = 1*hour;
 N = 10;
-dt = rampupTimesteps(T, T/N, 1, 'threshold_error', 1e-15);
+dt = rampupTimesteps(T, T/N, 5, 'threshold_error', 1e-15);
 
 step.val = dt;
 step.control = ones(numel(step.val), 1);
@@ -74,8 +74,8 @@ model.nonlinearTolerance = 1e-8;
 figure
 plotToolbar(model.grid, states);
 caxis([0.2, 0.4])
-uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
-uit.State = 'on';
+% uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
+% uit.State = 'on';
 
 
 
