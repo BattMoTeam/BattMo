@@ -13,8 +13,8 @@
  "diffusionCoefficients" : [1e-4, 1e-4],
  "T" : 298,
  "control" : [{"name" : "External input",
-               "type" : "rate-composition",
-               "values" : [1e-4, 0.8085]},
+               "type" : "pressure-composition",
+               "values" : [5.875e5, 0.8085]},
               {"name" : "External output",
                "type" : "pressure-composition",
                "values" : [5.875e5, 0.8085]}
