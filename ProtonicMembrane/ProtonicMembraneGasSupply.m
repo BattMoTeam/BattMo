@@ -374,12 +374,16 @@ classdef ProtonicMembraneGasSupply < BaseModel
             map = helpers.rateMap;
             val = helpers.rateValues;
 
-            eqs{end + 1} = 1./val.*(map*state.Control.rate) - 1; % equations are scaled to one
-
+            if ~isempty(val)
+                eqs{end + 1} = 1./val.*(map*state.Control.rate) - 1; % equations are scaled to one
+            end
+            
             map = helpers.pressureMap;
             val = helpers.pressureValues;
-
-            eqs{end + 1} = 1./val.*(map*state.Control.pressure) - 1; % equations are scaled to one
+            
+            if ~isempty(val)
+                eqs{end + 1} = 1./val.*(map*state.Control.pressure) - 1; % equations are scaled to one
+            end
 
             state.Control.setupEq = vertcat(eqs{:});
 
