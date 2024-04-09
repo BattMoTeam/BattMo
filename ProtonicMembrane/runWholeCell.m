@@ -1,6 +1,6 @@
 clear all
 
-% mrstDebug(20);
+mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -17,10 +17,6 @@ filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
 jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
-
-r = 1e-6;
-jsonstruct.(gs).control(1).values(1) = r;
-fprintf('Use rate control = %g\n', r);
 
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
@@ -114,9 +110,9 @@ model.scalings =  horzcat(model.scalings, ...
 %% Setup schedule
 
 tswitch   = 0.5;
-totaltime = 1e1*hour;
+totaltime = 1*hour;
 
-N1  = 2;
+N1  = 10;
 timeswitch = tswitch*totaltime;
 dt1 = timeswitch/N1;
 N2  = 0;
@@ -126,7 +122,7 @@ dt2 = (totaltime - timeswitch)/N2;
 step.val = [rampupTimesteps(timeswitch, dt1, 5); dt2*ones(N2, 1)];
 step.control = ones(numel(step.val), 1);
 
-Imax = 1e3;
+Imax = 0;
 fprintf('use Imax = %g\n', Imax);
 
 control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
@@ -179,6 +175,8 @@ N = gen.nxCell;
 xc = model.(ce).(elyte).grid.cells.centroids(1 : N, 1);
 
 state = states{end};
+
+state = model.addVariables(state);
 
 X = reshape(model.(ce).(elyte).grid.cells.centroids(:, 1), N, [])/(milli*meter);
 Y = reshape(model.(ce).(elyte).grid.cells.centroids(:, 2), N, [])/(milli*meter);
@@ -275,6 +273,22 @@ plot(yc/(milli*meter), i);
 title('Current in Anode / A/cm')
 xlabel('height / mm')
 
+
+% Current in anode
+
+iHp = state.Cell.Anode.iHp;
+
+ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
+yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
+areas = model.Cell.Electrolyte.grid.faces.areas(ind);
+
+iHp = (iHp./areas)/(1/(centi*meter));
+
+figure
+plot(yc/(milli*meter), iHp);
+title('iHp in Anode / A/cm')
+xlabel('height / mm')
+
 % Faradic effect in Anode
 
 drivingForces.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
@@ -292,3 +306,7 @@ title('Faradic effect')
 xlabel('height / mm')
 
 
+%%
+
+figure
+plotToolbar(model.GasSupply.grid, states);
