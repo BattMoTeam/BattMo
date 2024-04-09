@@ -397,7 +397,7 @@ classdef ComputationalGraphTool
                 varnameinds = cgt.getVarNameIndex(varname);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
-                propfuncs = cgt.findPropFunction(varname);
+                [propfuncs, propfuncinds] = cgt.findPropFunction(varname);
                 return
             elseif isa(varname, 'char')
                 selectednodenames = varname;
@@ -416,6 +416,8 @@ classdef ComputationalGraphTool
                 propfuncinds = [staticpropinds, propfuncinds];
             end
 
+            propfuncinds = unique(propfuncinds);
+            
             propfuncs = model.propertyFunctionList(propfuncinds);
 
             if numel(propfuncs) == 1
