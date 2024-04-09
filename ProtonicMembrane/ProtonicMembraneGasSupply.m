@@ -391,24 +391,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         function state = updateBcMassFraction(model, state)
 
-            helpers = model.helpers;
+            state.GasSupplyBc.massfractions{1} = model.helpers.bcMassfractions{1};
             
-            % Assign internal value
-            bccells = model.helpers.bccells;
-            bcmassfrac = state.massfractions{1}(bccells);
-
-            % Compute upwind direction
-            pIn   = state.pressure(bccells);
-            pBc   = state.GasSupplyBc.pressure;
-            inward = find((value(pBc - pIn)) >= 0);
-
-            % Assign external values for inward pressure gradient
-            map = helpers.coupToBcMap;
-            extBcmassfrac = map*helpers.massfractionValues;
-            bcmassfrac(inward)= extBcmassfrac(inward);
-            
-            state.GasSupplyBc.massfractions{1} = bcmassfrac;
-                        
         end
         
         function state = updateMassSources(model, state)
@@ -477,17 +461,24 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             pIn   = state.pressure(bccells);
             pBc   = state.GasSupplyBc.pressure;
-            rhoBc = state.GasSupplyBc.density ;      % note that this has been already "upwinded" (see specific update of massfractions)
-            mfsBc = state.GasSupplyBc.massfractions; % note that those has been already "upwinded" (see specific update)
+            rhoBc = state.GasSupplyBc.density ;
+            mfsBc = state.GasSupplyBc.massfractions;
 
+            % Compute upwind direction
+            inward = find((value(pBc - pIn)) >= 0);
+            
             for igas = 1 : nGas
 
                 mfBc   = mfsBc{igas};
-                bcFlux = state.GasSupplyBc.massFluxes{igas};
+                
+                bcFlux    = state.GasSupplyBc.massFluxes{igas};
                 rhoInigas = state.densities{igas}(bccells);
                 rhoBcigas = state.GasSupplyBc.densities{igas};
 
-                bceqs{igas} = rhoBc.*mfBc*K/mu.*Tbc.*(pIn - pBc) + D(igas).*Tbc.*(rhoInigas - rhoBcigas) - bcFlux;
+                mfBcUpwind = state.massfractions{igas}(bccells);
+                mfBcUpwind(inward)= mfBc(inward);
+                
+                bceqs{igas} = rhoBc.*mfBcUpwind*K/mu.*Tbc.*(pIn - pBc) + D(igas).*Tbc.*(rhoInigas - rhoBcigas) - bcFlux;
 
             end
 
