@@ -335,32 +335,29 @@ classdef ProtonicMembraneGasSupply < BaseModel
             helpers.rateValues = map.eval(ctrlvals);
 
 
-            %%  setup massfractionMap
+            %%  setup massfractionMap and massfractionValues
             
             clear comptbl2
-            comptbl2.comp = 2; % first index gives rate or pressure value
+            comptbl2.comp = 2; % second index gives mass fraction, for both type
             comptbl2 = IndexArray(comptbl2);
             comptypecouptbl2 = crossIndexArray(comptbl2, comptypecouptbl, {'comp'});
+            comptypecouptbl2 = sortIndexArray(comptypecouptbl2, {'coup', 'comp', 'type'});
+
+            assert(comptypecouptbl2.num == couptbl.num, 'we expect one value per coupling');
             
-            map          = TensorMap();
-            map.fromTbl  = couptbl;
-            map.toTbl    = comptypecouptbl2;
-            map.mergefds = {'coup'};
-
-            M = SparseTensor();
-            M = M.setFromTensorMap(map);
-            M = M.getMatrix();
-
-            helpers.massfractionMap = M;
-
             map = TensorMap();
             map.fromTbl = comptypecouptbl;
             map.toTbl = comptypecouptbl2;
             map.mergefds = {'coup', 'comp', 'type'};
             map = map.setup();
 
-            helpers.massfractionValues = map.eval(ctrlvals);
+            mfvalues= map.eval(ctrlvals);
+            
+            bcMassfractions{1} = (helpers.coupToBcMap)*mfvalues;
+            bcMassfractions{2} = 1 - bcMassfractions{1};
 
+            helpers.bcMassfractions = bcMassfractions;
+            
             helpers.bccells           = bccellfacecouptbl.get('cells');
             helpers.bcfaces           = bccellfacecouptbl.get('faces');
             helpers.bccellfacecouptbl = bccellfacecouptbl;
