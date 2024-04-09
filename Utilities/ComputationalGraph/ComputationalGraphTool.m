@@ -144,6 +144,34 @@ classdef ComputationalGraphTool
 
         end
 
+        function varnameind = findVarName(cgt, varname)
+
+            nodenames = cgt.nodenames;
+
+            if isa(varname, 'VarName')
+                nodename = ComputationalGraphTool.getNodeName(varname);
+                varnameind = findVarName(nodename);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                varnameind = findVarName(varname);
+            elseif isa(varname, 'char')
+                varnameinds = regexpSelect(cgt.nodenames, varname);
+                if numel(varnameinds) > 1
+                    fprintf('Several variables found:\n\n')
+                    for ivar = 1 : numel(varnameinds)
+                        fprintf('%d : %s\n', ivar, nodenames{varnameinds(ivar)});
+                    end
+                    ivar = input('Pick one:');
+                    varnameind = varnameinds(ivar);
+                else
+                    varnameind = varnameinds;
+                end
+            else
+                error('input varname not recognized');
+            end
+
+        end
+        
         function printDependencyList(cgt, varname, direction)
         % input varname is either
         %  - a VarName instance
@@ -156,32 +184,15 @@ classdef ComputationalGraphTool
         %
         % Prints the dependency list of the variable given by varname
             
-            nodenames = cgt.nodenames;
 
-            if isa(varname, 'VarName')
-                % ok
-            elseif isa(varname, 'cell')
-                varname = VarName(varname(1 : end - 1), varname{end});
-            elseif isa(varname, 'char')
-                varnameind = regexpSelect(cgt.nodenames, varname);
-                if numel(varnameind) > 1
-                    fprintf('Several variables found:\n\n')
-                    for ivar = 1 : numel(varnameind)
-                        fprintf('%s\n', nodenames{varnameind(ivar)});
-                    end
-                    fprintf('\npick a single one\n')
-                    return
-                end
-                varname = cgt.varNameList{varnameind};
-            else
-                error('input varname not recognized');
-            end
-
+            varnameind = cgt.findVarName(varname);
+            varname = cgt.varNameList{varnameind};
+            
             [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname, direction);
 
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
-                fprintf('%s (%d)\n', nodenames{varnameind}, distance(ivar));
+                fprintf('%s (%d)\n', cgt.nodenames{varnameind}, distance(ivar));
             end
 
         end
@@ -418,7 +429,7 @@ classdef ComputationalGraphTool
         % Open in editor the place where the variable that matches the regexp nodename is updated. The regexp nodename
         % should return a unique match
 
-            propfunc = cgt.findPropFunction(nodename);
+            [propfunc, propfuncinds] = cgt.findPropFunction(nodename);
 
             if isempty(propfunc)
                 fprintf('No property matching regexp has been found\n');
@@ -427,8 +438,15 @@ classdef ComputationalGraphTool
 
             if numel(propfunc) > 1
                 fprintf('Several property functions are matching\n\n');
-                cgt.printPropFunction(nodename);
-                return
+                for iprop = 1 : numel(propfunc)
+                    varname = propfunc{iprop}.varname;
+                    nodenames = ComputationalGraphTool.getNodeName(varname);
+                    for inode = 1 : numel(nodenames)
+                        fprintf('%d : %s\n', iprop, nodenames{inode});
+                    end
+                end
+                iprop = input('Pick one:');
+                propfunc = propfunc{iprop};
             end
 
             fn = propfunc.fn;
