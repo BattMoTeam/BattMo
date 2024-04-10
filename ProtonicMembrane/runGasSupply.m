@@ -6,15 +6,29 @@ filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gas_supply.json
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-jsonstruct.diffusionCoefficients = 1*jsonstruct.diffusionCoefficients;
+%%
+Dmult = 1e-3;
+fprintf('Diffusion coefficient multiplier = %g\n', Dmult);
+jsonstruct.diffusionCoefficients = Dmult*jsonstruct.diffusionCoefficients;
+
+%%
+rate = 1e-12;
+fprintf('Use rate = %g\n', rate);
+jsonstruct.control(1).values(1) = rate;
+
+%%
+perm = 0;
+fprintf('Use perm = %g\n', perm);
+jsonstruct.permeability = perm;
 
 inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct);
+
 gen = GasSupplyGridGenerator2D();
 
 gen.nx = 100;
 gen.ny = 70;
-gen.lx = 10;
-gen.ly = 10;
+gen.lx = 0.5*milli*meter;
+gen.ly = 1.5*milli*meter;
 
 inputparams = gen.updateInputParams(inputparams);
 
@@ -25,6 +39,7 @@ model = model.setupForSimulation();
 
 cgt = model.cgt;
 cgp = model.cgp;
+
 
 %% Setup initial state
 
@@ -47,9 +62,9 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
 
-T = 1*hour;
-N = 10;
-dt = rampupTimesteps(T, T/N, 5, 'threshold_error', 1e-15);
+T = 1*second;
+N = 1;
+dt = rampupTimesteps(T, T/N, 10, 'threshold_error', 1e-15);
 
 step.val = dt;
 step.control = ones(numel(step.val), 1);

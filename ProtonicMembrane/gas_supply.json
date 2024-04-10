@@ -14,7 +14,7 @@
  "T" : 298,
  "control" : [{"name" : "External input",
                "type" : "rate-composition",
-               "values" : [1e1, 0.4]},
+               "values" : [1e-3, 0.4]},
               {"name" : "External output",
                "type" : "pressure-composition",
                "values" : [1.7e5, 0.2]}

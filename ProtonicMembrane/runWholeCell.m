@@ -1,6 +1,6 @@
-clear all
+% clear all
 
-mrstDebug(20);
+% mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
@@ -17,6 +17,15 @@ filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
 jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
+
+%% Adjust diffusion
+
+Dmult = 1e-4;
+fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
+jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
+
+return
+%%
 
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
 
@@ -53,6 +62,81 @@ if doplot
     
 end
 
+%% Adjust Imax
+
+Imax = 0;
+fprintf('use Imax = %g\n', Imax);
+
+%%
+
+doinitialisation = false;
+
+if doinitialisation
+    % We run the protonic membrane alone to get an order of magnitude of iHp to scale the full cell model (with gas
+    % layer)
+
+    filename = 'ProtonicMembrane/protonicMembrane.json';
+    jsonstructpem = parseBattmoJson(filename);
+
+    inputparamspem = ProtonicMembraneCellInputParams(jsonstructpem);
+
+    genpem = PEMgridGenerator2D();
+    genpem.xlength = gen.lxCell;
+    genpem.ylength = gen.ly;
+    genpem.Nx      = gen.nxCell;
+    genpem.Ny      = gen.ny;
+
+    inputparamspem = genpem.updateInputParams(inputparamspem);
+
+    model = ProtonicMembraneCell(inputparamspem);
+    
+    model = model.setupForSimulation();
+    
+    state0 = model.setupInitialState();
+
+    tswitch = 1;
+    T       = 2; % This is not a real time scale, as all the model deals with equilibrium
+
+    N1  = 20;
+    dt1 = tswitch/N1;
+    N2  = 20;
+    dt2 = (T - tswitch)/N2;
+
+    step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+    step.control = ones(numel(step.val), 1);
+
+    % Imax = 1e-2*ampere/((centi*meter)^2);
+    % Imax = 0.3*ampere/((centi*meter)^2);
+    % Imax = 0.01*ampere/((centi*meter)^2);
+    control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+
+    schedule = struct('control', control, 'step', step); 
+    nls = NonLinearSolver();
+    nls.maxIterations = 20;
+    nls.errorOnFailure = false;
+    nls.verbose = true;
+
+    model.nonlinearTolerance = 1e-8;
+
+    [~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+    state = states{end};
+    state = model.addVariables(state, drivingforces);
+
+    molfluxref = abs(sum(state.Anode.iHp)/PhysicalConstants.F); % in mol/second
+
+    fprinft('Reference molar flux: %g mol/second', molfluxref);
+    
+    return
+    
+else
+    
+    molfluxref = 1.7236e-06; % value for Imax = 0
+    
+end
+
+%%
+
 model = ProtonicMembraneCellWithGasSupply(inputparams);
 
 model = model.setupForSimulation();
@@ -64,15 +148,13 @@ cgp = model.cgp;
 
 initstate = model.setupInitialState();
 
-%% setup scalings
+%% Setup scalings
 
 gasInd = model.(gs).gasInd;
 
 pH2O         = initstate.(gs).pressure(1);
 rho          = initstate.(gs).density(1);
-dpRef        = 1e-5*barsa;
-fprintf('use dpRef = %g\n', dpRef);
-scalFlux     = 1/gen.nxGasSupply*(rho*model.(gs).permeability/model.(gs).viscosity*dpRef + rho*model.(gs).diffusionCoefficients(1))/gen.ly;
+scalFlux     = molfluxref/model.(gs).molecularWeights(1)/gen.ny; % in kg/s
 scalPressure = pH2O;
 
 model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
@@ -109,21 +191,26 @@ model.scalings =  horzcat(model.scalings, ...
 
 %% Setup schedule
 
-tswitch   = 0.5;
-totaltime = 1*hour;
+tswitch   = 5e-6/Dmult;
+totaltime = 1*second;
 
-N1  = 10;
+%% adjust N2
+N1  = 1;
+fprintf('use N1 = %g\n', N1);
+%%
+
 timeswitch = tswitch*totaltime;
 dt1 = timeswitch/N1;
-N2  = 0;
-fprintf('use N2 = %g\n', N2);
-dt2 = (totaltime - timeswitch)/N2;
 
-step.val = [rampupTimesteps(timeswitch, dt1, 5); dt2*ones(N2, 1)];
+%% adjust N2
+N2  = 20;
+fprintf('use N2 = %g\n', N2);
+%%
+
+dt2 = (totaltime - timeswitch)/N2;
+step.val = [rampupTimesteps(timeswitch, dt1, 5); rampupTimesteps(totaltime - timeswitch, dt2, 5)];
 step.control = ones(numel(step.val), 1);
 
-Imax = 0;
-fprintf('use Imax = %g\n', Imax);
 
 control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
 
@@ -310,3 +397,5 @@ xlabel('height / mm')
 
 figure
 plotToolbar(model.GasSupply.grid, states);
+
+%%
