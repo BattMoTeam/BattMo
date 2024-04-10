@@ -81,7 +81,11 @@ classdef ComputationalGraphPlot < handle
             for ifilter = 1 : numel(filters)
                 filter = filters{ifilter};
                 if iscell(filter)
-                    str = sprintf('%s: ''%s''', filter{1}, filter{2});
+                    if isnumeric(filter{2})
+                        str = sprintf('%s: (not printed)', filter{1});
+                    else
+                        str = sprintf('%s: ''%s''', filter{1}, filter{2});
+                    end
                 else
                     str = filter;
                 end
@@ -169,7 +173,7 @@ classdef ComputationalGraphPlot < handle
 
             if iscell(filter)
                 action = filter{1};
-                regstr = filter{2};
+                arg = filter{2};
             else
                 action = filter;
             end
@@ -178,17 +182,22 @@ classdef ComputationalGraphPlot < handle
 
               case 'select'
                 
-                inds = regexpSelect(nodenames(cgp.nodeinds), regstr);
+                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
                 cgp.nodeinds = cgp.nodeinds(inds);
+
+              case 'add nodes'
+                
+                nodeinds = vertcat(arg, cgp.nodeinds);
+                cgp.nodeinds = unique(nodeinds);
 
               case 'strict-select'
                 
-                inds = strcmp(nodenames(cgp.nodeinds), regstr);
+                inds = strcmp(nodenames(cgp.nodeinds), arg);
                 cgp.nodeinds = cgp.nodeinds(inds);
                 
               case 'remove'
                 
-                inds = regexpSelect(nodenames(cgp.nodeinds), regstr);
+                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
                 cgp.nodeinds(inds) = [];
                 
               case 'addParents'
@@ -252,11 +261,16 @@ classdef ComputationalGraphPlot < handle
             
             cgp.resetFilters();
             varnameind = cgt.findVarName(varname);
+            if isempty(varnameind)
+                fprintf('no node found matching expression\n');
+                return
+            end
             nodename = cgt.nodenames{varnameind};
 
-            cgp.addFilter({'strict-select', nodename}, 'printFilters', false);
-
             filteropts = {'printFilters', false, 'doplot', false};
+
+            cgp.addFilter({'strict-select', nodename}, filteropts{:});
+
             
             switch relative
               case 'children'
@@ -264,14 +278,22 @@ classdef ComputationalGraphPlot < handle
               case 'parents'
                 cgp.addFilter('addParents', filteropts{:});
               case 'both'
-                cgp.addFilter('addChildren', filteropts{:});
-                cgp.addFilter('addParents', filteropts{:});
+                A = cgp.A;
+                nodeinds = getDependencyVarNameInds(varnameind, A);
+                nodeinds = vertcat(nodeinds, getDependencyVarNameInds(varnameind, A'));
+                cgp.addFilter({'add nodes', unique(nodeinds)}, filteropts{:});
               otherwise
                 error('relative option not recognized');
             end
 
             cgp.applyFilters();
                 
+        end
+
+        function plotBoth(cgp, varname)
+
+            cgp.plotRelatives(varname, 'both');
+            
         end
         
         function plotChildren(cgp, varname)
