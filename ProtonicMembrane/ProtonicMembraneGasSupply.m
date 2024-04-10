@@ -559,7 +559,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             p  = values(1);
             mf = values(2);
             
-            initstate.pressure           = p*ones(nc, 1);
+            initstate.pressure         = p*ones(nc, 1);
             initstate.massfractions{1} = mf *ones(nc, 1);
             initstate.massfractions{2} = (1 - mf) *ones(nc, 1);
             
