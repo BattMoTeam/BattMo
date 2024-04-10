@@ -42,8 +42,7 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinx.ext.autosectionlabel',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
-              'sphinx_design',
-              'sphinx.ext.imgmath']
+              'sphinx_design']
 
 bibtex_bibfiles = ['refs.bib']
 

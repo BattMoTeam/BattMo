@@ -15,7 +15,6 @@
    advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
-   gui
    seealso
    References <bibliography>
 
