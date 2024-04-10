@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BattMo App &mdash; BattMo  documentation</title>
+  <title>BattMo GUI &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css" />
@@ -26,9 +26,7 @@
         <script src="_static/design-tabs.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Features" href="gui_features.html" />
-    <link rel="prev" title="Alkaline Membrane Electrolyser" href="publishedExamples/runElectrolyser.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,7 +49,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basicusage.html">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
@@ -163,22 +161,6 @@
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">BattMo App</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html">Features</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#use-default-materials">Use default materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#define-your-own-materials">Define your own materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#visualize-your-geometry">Visualize your geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#download-your-input-data">Download your input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#visualize-and-download-your-results">Visualize and download your results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gui_calculations.html">Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_troubleshooting.html">Troubleshooting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gui_troubleshooting.html#unnatural-artifacts-in-your-results">Unnatural artifacts in your results</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="seealso.html">See Also</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="seealso.html#mrst">MRST</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="seealso.html#visualization">Visualization Tutorial</a></li>
@@ -205,7 +187,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">BattMo App</li>
+      <li class="breadcrumb-item active">BattMo GUI</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/gui.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -215,44 +197,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="battmo-app">
-<h1>BattMo App<a class="headerlink" href="#battmo-app" title="Permalink to this heading"></a></h1>
-<p>A web-based graphical user-interface of BattMo is under development. At the moment, this application
-utilizes the Julia version of BattMo and has the possibility to do simulations using the P2D model.
-The application is very easy to use, intuitive and can be easily accessed at <a class="reference external" href="http://app.batterymodel.com/">http://app.batterymodel.com/</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This section is still under development.</p>
-</div>
-<p>This section provides a description on some of its features.
-It gives details on some of the calculation that are done within the application, like for example the calculation of the cell mass and specific capacities.
-Furthermore, it provides some troubleshooting for when simulations aren’t successful or when the results contain unexpected artifacts.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="gui_features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html#use-default-materials">Use default materials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html#define-your-own-materials">Define your own materials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html#visualize-your-geometry">Visualize your geometry</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html#download-your-input-data">Download your input data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html#visualize-and-download-your-results">Visualize and download your results</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui_calculations.html">Calculations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gui_troubleshooting.html">Troubleshooting</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui_troubleshooting.html#unnatural-artifacts-in-your-results">Unnatural artifacts in your results</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <section id="battmo-gui">
+<h1>BattMo GUI<a class="headerlink" href="#battmo-gui" title="Permalink to this heading"></a></h1>
+<p><span class="todo">fill in page</span></p>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="publishedExamples/runElectrolyser.html" class="btn btn-neutral float-left" title="Alkaline Membrane Electrolyser" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="gui_features.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

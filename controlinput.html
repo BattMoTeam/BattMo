@@ -24,6 +24,7 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
         <script src="_static/design-tabs.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -163,22 +164,6 @@
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo App</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui_features.html">Features</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#use-default-materials">Use default materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#define-your-own-materials">Define your own materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#visualize-your-geometry">Visualize your geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#download-your-input-data">Download your input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gui_features.html#visualize-and-download-your-results">Visualize and download your results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gui_calculations.html">Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_troubleshooting.html">Troubleshooting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gui_troubleshooting.html#unnatural-artifacts-in-your-results">Unnatural artifacts in your results</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="seealso.html">See Also</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="seealso.html#mrst">MRST</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="seealso.html#visualization">Visualization Tutorial</a></li>
@@ -300,10 +285,10 @@ following result.</p>
 <li><p>We use a constant discharge current computed from the capacity and the given CRate. We keep this value until the
 lower cutoff voltage value is reached. Then, we switch to step 2.</p></li>
 <li><p>The control is set to zero. At each time step we compute the time derivative of the voltage
-<span class="math">\frac{dE}{dt}</span>. When this value reach the limit given by <code class="code docutils literal notranslate"><span class="pre">dEdtLimit</span></code>. We start the charge step 3.</p></li>
+<span class="math notranslate nohighlight">\(\frac{dE}{dt}\)</span>. When this value reach the limit given by <code class="code docutils literal notranslate"><span class="pre">dEdtLimit</span></code>. We start the charge step 3.</p></li>
 <li><p>We use a constant charge current. The value is the same as in step 1, with opposite sign. We keep this current until
 the lower cutoff voltage limit is reached. Then we switch to constant voltage control step 4.</p></li>
-<li><p>We use a constant voltage given by the cutoff value and monitor the current derivative <span class="math">\frac{dI}{dt}</span>. When
+<li><p>We use a constant voltage given by the cutoff value and monitor the current derivative <span class="math notranslate nohighlight">\(\frac{dI}{dt}\)</span>. When
 this value is lower than <code class="code docutils literal notranslate"><span class="pre">dIdtLimit</span></code>, we start again the discharge by going to step 1.</p></li>
 </ol>
 <p>We iterate this process for the given number of cycles. For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
