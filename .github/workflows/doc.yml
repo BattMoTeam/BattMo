@@ -21,8 +21,9 @@ jobs:
         tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local/texlive
         echo "selected_scheme scheme-full" >> texlive.profile
         echo "TEXDIR $HOME/.local/texlive" >> texlive.profile
-        $HOME/.local/texlive/install-tl --profile=texlive.profile
+        $HOME/.local/texlive/install-tl --profile=texlive.profile --directory=$HOME/.local/texlive
         export PATH="$HOME/.local/texlive/bin/x86_64-linux:$PATH"
+        tlmgr install collection-latexrecommended --directory=$HOME/.local/texlive
        
 
     - name: Verify LaTeX installation
