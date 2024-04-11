@@ -28,6 +28,8 @@ jobs:
           spawn ./install-tl
           expect "Choose the directory for installation"
           send "D\n"
+          expect "Enter the value for TEXDIR"
+          send "/home/runner/.local/texlive"
           expect "Enter command:"
           send "I\n"
           expect eof
