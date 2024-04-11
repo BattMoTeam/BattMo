@@ -16,12 +16,13 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install LaTeX
       run: |
-        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local
+        mkdir -p $HOME/.local/texlive
+        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local/texlive
         echo "selected_scheme scheme-full" >> texlive.profile
         echo "TEXDIR $HOME/.local/texlive" >> texlive.profile
         $HOME/.local/texlive/install-tl --profile=texlive.profile
         export PATH="$HOME/.local/texlive/bin/x86_64-linux:$PATH"
-        tlmgr install collection-latexrecommended
+       
 
     - name: Verify LaTeX installation
       run: |
