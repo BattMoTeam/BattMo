@@ -20,11 +20,10 @@ jsonstruct.Cell = parseBattmoJson(filename);
 
 %% Adjust diffusion
 
-Dmult = 1e-4;
+Dmult = 1e-3;
 fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
 jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
 
-return
 %%
 
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
@@ -64,8 +63,90 @@ end
 
 %% Adjust Imax
 
-Imax = 0;
+Imax = 0.5/((centi*meter)^2) * gen.ly;
 fprintf('use Imax = %g\n', Imax);
+
+%%
+
+rungaslayer = false;
+
+if rungaslayer
+
+    filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
+    gsjsonstruct = parseBattmoJson(filename);
+
+    %% adjust N2
+    h2omassfracoutput = 0.4
+    fprintf('use H2O mass fraction at output  = %g\n', h2omassfracoutput);
+    gsjsonstruct.control(2).values(2) = h2omassfracoutput;
+    %%
+    
+    gsinputparams = ProtonicMembraneGasSupplyInputParams(gsjsonstruct);
+
+    gsgen = GasSupplyGridGenerator2D();
+
+    gsgen.nx = gen.nxGasSupply;
+    gsgen.ny = gen.ny;
+    gsgen.lx = gen.lxGasSupply;
+    gsgen.ly = gen.ly;
+    
+    gsinputparams = gsgen.updateInputParams(gsinputparams);
+
+    gsmodel = ProtonicMembraneGasSupply(gsinputparams);
+    gsmodel = gsmodel.setupForSimulation();
+
+    initstate = gsmodel.setupInitialState();
+
+    %% setup scalings
+
+    gasInd = gsmodel.gasInd;
+
+    pH2O         = initstate.pressure(1);
+    rho          = initstate.density(1);
+    scalFlux     = 1/gsgen.nx*(rho*gsmodel.permeability/gsmodel.viscosity*pH2O + rho*gsmodel.diffusionCoefficients(1))/gsgen.ly;
+    scalPressure = pH2O;
+    
+    gsmodel.scalings = {{{'massConses', 1}, scalFlux}, ...
+                      {{'massConses', 2}, scalFlux}, ...
+                      {{'Control', 'pressureEq'}, scalPressure}, ...
+                      {{'Control', 'rateEq'}, gsgen.nx*scalFlux}, ...
+                      {{'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
+                      {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
+
+
+    T = 1*second;
+    N = 1;
+    dt = rampupTimesteps(T, T/N, 10, 'threshold_error', 1e-15);
+
+    step.val = dt;
+    step.control = ones(numel(step.val), 1);
+
+    control.src = [];
+
+    schedule = struct('control', control, 'step', step);
+
+    nls = NonLinearSolver();
+    nls.maxIterations = 20;
+    nls.errorOnFailure = false;
+    nls.verbose = true;
+
+    gsmodel.verbose = true;
+
+    gsmodel.nonlinearTolerance = 1e-8;
+
+    [~, gsstates, report] = simulateScheduleAD(initstate, gsmodel, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+    %%
+
+    figure
+    plotToolbar(gsmodel.grid, gsstates);
+    % caxis([0.2, 0.4])
+    % uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
+    % uit.State = 'on';
+
+    return
+    
+end
 
 %%
 
@@ -192,7 +273,7 @@ model.scalings =  horzcat(model.scalings, ...
 %% Setup schedule
 
 tswitch   = 5e-6/Dmult;
-totaltime = 1*second;
+totaltime = 10*second;
 
 %% adjust N2
 N1  = 1;
@@ -202,15 +283,24 @@ fprintf('use N1 = %g\n', N1);
 timeswitch = tswitch*totaltime;
 dt1 = timeswitch/N1;
 
+steps1 = rampupTimesteps(timeswitch, dt1, 5);
 %% adjust N2
-N2  = 20;
+N2  = 30;
 fprintf('use N2 = %g\n', N2);
+
 %%
 
-dt2 = (totaltime - timeswitch)/N2;
-step.val = [rampupTimesteps(timeswitch, dt1, 5); rampupTimesteps(totaltime - timeswitch, dt2, 5)];
-step.control = ones(numel(step.val), 1);
+dt2 = (totaltime - timeswitch);
+t2  = linspace(0, dt2, N2 + 1)';
+alpha = 40;
+t2 = log(alpha*t2 + 1)./log(alpha*dt2 + 1)*dt2;
 
+steps2 = diff(t2);
+
+%%
+
+step.val = [steps1; steps2];
+step.control = ones(numel(step.val), 1);
 
 control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
 
