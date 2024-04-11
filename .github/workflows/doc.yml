@@ -14,17 +14,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install LaTeX and dvipng
+    - name: Install TeX Live and LaTeX packages
       run: |
-        mkdir -p $HOME/texlive
-        wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
-        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/texlive
-        echo "selected_scheme scheme-full" >> texlive.profile
-        $HOME/texlive/install-tl --profile=texlive.profile
-        export PATH="$HOME/texlive/bin/x86_64-linux:$PATH"
-        tlmgr install collection-latexrecommended
         sudo apt-get update
-        sudo apt-get install -y dvipng
+        sudo apt-get install -y texlive texlive-latex-extra dvipng
 
     - name: Check LaTeX and dvipng versions
       run: |
@@ -34,6 +27,9 @@ jobs:
       run: |
         ls -l $(which latex)
         ls -ld $(dirname $(which latex))
+    - name: Add LaTeX and dvipng directories to PATH
+      run: |
+        echo "PATH=$PATH:/usr/local/texlive/" >> $GITHUB_ENV
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
