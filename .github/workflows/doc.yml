@@ -28,11 +28,13 @@ jobs:
       run: |
         echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
     - name: Print PATH
-      run: echo $PATH   
+      run: echo $PATH  
     - name: Build HTML
-      uses: ammaraskar/sphinx-action@master
-      with:
-        docs-folder: "Documentation/"
+      run: sphinx-build -M html -D imgmath_latex=$HOME/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex Documentation/ _build 
+    # - name: Build HTML
+    #   uses: ammaraskar/sphinx-action@master
+    #   with:
+    #     docs-folder: "Documentation/"
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
