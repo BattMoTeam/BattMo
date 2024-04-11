@@ -16,18 +16,24 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install LaTeX and dvipng
       run: |
+        mkdir -p $HOME/texlive
+        wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/texlive
+        echo "selected_scheme scheme-full" >> texlive.profile
+        $HOME/texlive/install-tl --profile=texlive.profile
+        export PATH="$HOME/texlive/bin/x86_64-linux:$PATH"
+        tlmgr install collection-latexrecommended
         sudo apt-get update
-        sudo apt-get install -y texlive texlive-latex-extra dvipng
-    - name: Check LaTeX permissions
+        sudo apt-get install -y dvipng
+
+    - name: Check LaTeX and dvipng versions
+      run: |
+        latex --version
+        dvipng --version
+    - name: Check LaTeX and dvipng permissions
       run: |
         ls -l $(which latex)
         ls -ld $(dirname $(which latex))
-    - name: Add LaTeX and dvipng directories to PATH
-      run: |
-        echo "export PATH=/usr/bin:$PATH" >> $GITHUB_ENV
-        echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV  
-    - name: Print PATH
-      run: echo $PATH
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
