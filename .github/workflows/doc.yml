@@ -19,12 +19,15 @@ jobs:
       with:
         packages: scheme-basic  # Or choose the appropriate package scheme
         cache: false
+
     - name: Check LaTeX permissions
       run: |
         ls -l $(which latex)
         ls -ld $(dirname $(which latex))
-    - name: Check tlmgr version
-      run: tlmgr --version
+    - name: Add LaTeX and dvipng directories to PATH
+      run: |
+        echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+
 
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
