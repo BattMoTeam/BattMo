@@ -11,6 +11,9 @@ jobs:
 
     permissions:
       contents: write
+    
+    env:
+      imgmath_latex: "/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex"
 
     steps:
     - uses: actions/checkout@v4
@@ -29,12 +32,12 @@ jobs:
         echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
     - name: Print PATH
       run: echo $PATH  
+    - name: Replace placeholder with actual path in conf.py
+      run: sed -i "s|latex|/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex|g" Documentation/conf.py
     - name: Build HTML
-      run: sphinx-build -M html -D imgmath_latex=$HOME/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex Documentation/ _build 
-    # - name: Build HTML
-    #   uses: ammaraskar/sphinx-action@master
-    #   with:
-    #     docs-folder: "Documentation/"
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "Documentation/"
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
