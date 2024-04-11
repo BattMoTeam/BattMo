@@ -27,7 +27,9 @@ jobs:
     - name: Add LaTeX and dvipng directories to PATH
       run: |
         echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
-
+    - name: Create symbolic link for latex
+      run: |
+        ln -s $HOME/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/pdftex $HOME/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex
 
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
