@@ -76,6 +76,8 @@ classdef BatteryInputParams < InputParams
             inputparams.(thermal) = ThermalComponentInputParams(pick(thermal));
             
             switch jsonstruct.(ctrl).controlPolicy
+              case 'Impedance'
+                inputparams.(ctrl) = ImpedanceControlModelInputParams(pick(ctrl));
               case 'CCDischarge'
                 inputparams.(ctrl) = CCDischargeControlModelInputParams(pick(ctrl));
               case 'CCCharge'

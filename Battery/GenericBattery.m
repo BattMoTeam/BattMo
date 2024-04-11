@@ -194,7 +194,6 @@ classdef GenericBattery < BaseModel
             model = model.registerPropFunction({{elyte, 'massSource'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'eSource'}, fn, inputnames});
 
-
             % Function that assemble the control equation
             fn = @GenericBattery.setupEIEquation;
             inputnames = {{ctrl, 'E'}, ...
@@ -213,7 +212,7 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case {'CCDischarge', 'CCCharge', 'CC'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
-              case {'CCCV'}
+              case {'CCCV', 'Impedance'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
@@ -490,6 +489,10 @@ classdef GenericBattery < BaseModel
 
             switch inputparams.controlPolicy
 
+              case "Impedance"
+
+                control = ImpedanceControlModel(inputparams);
+                
               case "CCDischarge"
 
                 control = CCDischargeControlModel(inputparams);
@@ -1610,9 +1613,6 @@ classdef GenericBattery < BaseModel
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-
-            cgt = model.computationalGraph;
-
 
         end
 
