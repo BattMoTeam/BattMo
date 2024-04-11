@@ -29,7 +29,11 @@ jobs:
           expect "Choose the directory for installation"
           send "D\n"
           expect "Enter the value for TEXDIR"
-          send "/home/runner/.local/texlive"
+          send "/home/runner/.local/texlive\n"  # Replace this with the desired directory path
+          expect "Enter command:"
+          send "I\n"
+          expect "Install TeX Live to the following directory:"
+          send "/home/runner/.local/texlive\n"
           expect "Enter command:"
           send "I\n"
           expect eof
