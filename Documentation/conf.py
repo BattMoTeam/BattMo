@@ -221,7 +221,7 @@ html_css_files = ['css/custom.css']
 
 # -- Options for LaTeX output ---------------------------------------------
 
-#latex_elements = {
+latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
 
@@ -230,15 +230,15 @@ html_css_files = ['css/custom.css']
 
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
-#}
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-# latex_documents = [
-#   ('index', 'MATLABSphinxDocumentationTest.tex', 'MATLAB Sphinx Documentation Test Documentation',
-#    'Mark Mikofski', 'manual'),
-# ]
+latex_documents = [
+  ('index', 'MATLABSphinxDocumentationTest.tex', 'MATLAB Sphinx Documentation Test Documentation',
+   'Mark Mikofski', 'manual'),
+]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
