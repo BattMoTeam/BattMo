@@ -18,6 +18,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y texlive texlive-latex-extra dvipng
+    - name: Check LaTeX permissions
+      run: |
+        ls -l $(which latex)
+        ls -ld $(dirname $(which latex))
     - name: Add LaTeX and dvipng directories to PATH
       run: |
         echo "export PATH=/usr/bin:$PATH" >> $GITHUB_ENV
