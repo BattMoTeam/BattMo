@@ -20,7 +20,8 @@ jobs:
         sudo apt-get install -y texlive texlive-latex-extra dvipng
     - name: Add LaTeX and dvipng directories to PATH
       run: |
-        echo "export PATH=/usr/bin:$PATH" >> $GITHUB_ENV  
+        echo "export PATH=/usr/bin:$PATH" >> $GITHUB_ENV
+        echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV  
     - name: Print PATH
       run: echo $PATH
     - name: Build HTML
