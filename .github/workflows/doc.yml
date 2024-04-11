@@ -14,45 +14,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install expect
-      run: sudo apt-get update && sudo apt-get install -y expect
-    - name: Install LaTeX
-      run: |
-        mkdir -p $HOME/.local/texlive
-        echo "export TEXLIVE_INSTALL_PREFIX=$HOME/.local/texlive" >> $GITHUB_ENV
-        echo "export TEXLIVE_INSTALL_TEXDIR=$HOME/.local/texlive/2014" >> $GITHUB_ENV
-        wget https://ftp.snt.utwente.nl/pub/software/tex/systems/texlive/tlnet/install-tl-unx.tar.gz
-        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local/texlive
-        cd $HOME/.local/texlive
-        expect -c '
-          spawn ./install-tl
-          expect "Choose the directory for installation"
-          send "D\n"
-          expect "Enter the value for TEXDIR"
-          send "/home/runner/.local/texlive\n"  # Replace this with the desired directory path
-          expect "Enter command:"
-          send "I\n"
-          expect "Install TeX Live to the following directory:"
-          send "/home/runner/.local/texlive\n"
-          expect "Enter command:"
-          send "I\n"
-          expect eof
-        '
-        export PATH="$HOME/.local/texlive/bin/x86_64-linux:$PATH"
-        tlmgr install collection-latexrecommended 
-       
+    - name: Setup TeX Live
+      uses: teatimeguest/setup-texlive-action@v3
+      with:
+        packages: scheme-full  # Or choose the appropriate package scheme
 
-    - name: Verify LaTeX installation
-      run: |
-        latex --version
-        kpsewhich -var-value=TEXMFROOT
-    - name: Check LaTeX and dvipng permissions
-      run: |
-        ls -l $(which latex)
-        ls -ld $(dirname $(which latex))
-    - name: Add LaTeX and dvipng directories to PATH
-      run: |
-        echo "PATH=$PATH:/usr/local/texlive/" >> $GITHUB_ENV
+    - name: Check tlmgr version
+      run: tlmgr --version
+      
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
