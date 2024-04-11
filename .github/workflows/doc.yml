@@ -14,15 +14,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install TeX Live and LaTeX packages
+    - name: Install LaTeX
       run: |
-        sudo apt-get update
-        sudo apt-get install -y texlive texlive-latex-extra dvipng
+        mkdir -p $HOME/.local/texlive
+        wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+        tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local/texlive
+        echo "selected_scheme scheme-full" >> texlive.profile
+        echo "TEXDIR $HOME/.local/texlive" >> texlive.profile
+        $HOME/.local/texlive/install-tl --profile=texlive.profile
+        export PATH="$HOME/.local/texlive/bin/x86_64-linux:$PATH"
+        tlmgr install collection-latexrecommended
 
-    - name: Check LaTeX and dvipng versions
+    - name: Verify LaTeX installation
       run: |
         latex --version
-        dvipng --version
+        kpsewhich -var-value=TEXMFROOT
     - name: Check LaTeX and dvipng permissions
       run: |
         ls -l $(which latex)
