@@ -22,7 +22,14 @@ jobs:
         wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
         tar -xzf install-tl-unx.tar.gz --strip-components=1 -C $HOME/.local/texlive
         cd $HOME/.local/texlive
-        ./install-tl --profile=texlive.profile
+        expect -c '
+          spawn ./install-tl
+          expect "Choose the directory for installation"
+          send "D\n"
+          expect "Enter command:"
+          send "I\n"
+          expect eof
+        '
         export PATH="$HOME/.local/texlive/bin/x86_64-linux:$PATH"
         tlmgr install collection-latexrecommended 
        
