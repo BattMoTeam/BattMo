@@ -18,9 +18,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y texlive texlive-latex-extra dvipng
-    - name: Verify LaTeX Installation
-      run: latex --version
-      
+    - name: Print LaTeX and dvipng paths
+      run: |
+        which latex
+        which dvipng  
     - name: Print PATH
       run: echo $PATH
     - name: Build HTML
