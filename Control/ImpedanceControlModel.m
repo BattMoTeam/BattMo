@@ -20,22 +20,13 @@ classdef ImpedanceControlModel < ControlModel
 
             model = model.setAsStaticVarNames({'omega'});
 
-            fn = @ImpedanceControlModel.setupI;
-            inputvarnames = {'I'};
-            outputvarname = 'controlEquation';
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            
-        end
-
-        function state = setupI(model, state)
-
-            state.controlEquation = state.I - 1;
+            model = model.removeVarName('controlEquation');
             
         end
 
         function cleanState = addStaticVariables(model, cleanState, state)
 
-            cleanState = model@ControlModel(model, cleanState, state);
+            cleanState = addStaticVariables@ControlModel(model, cleanState, state);
 
             cleanState.omega = state.omega;
 

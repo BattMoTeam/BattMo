@@ -815,6 +815,10 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
+              case {'Impedance'}
+                
+                initstate.(ctrl).I = 0;
+
               case {'CCDischarge', 'CCCharge'}
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
@@ -868,6 +872,7 @@ classdef GenericBattery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
+                
               otherwise
                 error('control policy not recognized');
             end
@@ -1676,7 +1681,6 @@ classdef GenericBattery < BaseModel
         % Variables that are no AD initiated (but should be "carried over")
 
             cleanState = addStaticVariables@BaseModel(model, cleanState, state);
-
 
             cleanState.time = state.time;
 
