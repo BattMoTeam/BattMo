@@ -41,7 +41,7 @@ gen = BatteryGeneratorP2D();
 
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-impsolv = ImpedanceSolver(inputparams);
+impsolv = ImpedanceSolver(inputparams, 1);
 
 omegas = linspace(-2, 4, 50);
 omegas = 10.^omegas;

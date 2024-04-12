@@ -100,21 +100,19 @@ classdef ImpedanceSolver
             
         end
         
-        function state = setupSteadyState(impsolv, state)
+        function impsolv = setupSteadyState(impsolv, soc)
 
             ctrl = 'Control';
 
             inputparams = impsolv.inputparams;
-            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
+            
+            inputparams.(ctrl)                    = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
+            inputparams.SOC                       = soc;
+            
             model = Battery(inputparams);
 
-            if isempty(state)
-                state = model.setupInitialState();
-            else
-                state.(ctrl).ctrlType = 'constantCurrent';
-                state.(ctrl).I = 0;
-            end
+            state = model.setupInitialState();
             
             N = 10;
             totalTime = 10*hour;
@@ -130,7 +128,7 @@ classdef ImpedanceSolver
             
             [~, states, report] = simulateScheduleAD(state, model, schedule);
 
-            state = states{end};
+            impsolv.state = states{end};
 
         end
         
