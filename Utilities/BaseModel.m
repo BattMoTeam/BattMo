@@ -719,7 +719,35 @@ classdef BaseModel < PhysicalModel
         % By default, discard validateModel from MRST
             
         end
+
+        function inds = getRangePrimaryVariable(model, adsample, varname)
+
+            ivar = model.getIndexPrimaryVariable(varname);
+
+            ss = cellfun(@(jac) size(jac, 2), adsample.jac);
+            ss = cumsum(ss);
+            ss = [1, ss(1 : end - 1) + 1; ...
+                  ss];
+            inds = ss(:, ivar);
+
+        end
         
+        function ind = getIndexPrimaryVariable(model, varname)
+
+            primvarnames = model.getPrimaryVariableNames();
+
+            for ivar = 1 : numel(primvarnames)
+                isequal = ImpedanceBattery.compareVarName(varname, primvarnames{ivar});
+                if isequal
+                    ind = ivar;
+                    return
+                end
+            end
+
+            error('primary variable not found');
+            
+        end
+                
     end
 
     methods(Static)
