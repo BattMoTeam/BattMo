@@ -36,65 +36,24 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
-control = struct('controlPolicy', 'Impedance');
-jsonstruct.Control = control;
-
 inputparams = BatteryInputParams(jsonstruct);
 gen = BatteryGeneratorP2D();
 
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-model = ImpedanceBattery(inputparams);
-cgt = model.cgt;
-
-dopreparestate = true;
-
-if dopreparestate
-    state = prepareState(inputparams);
-    return
-end
+impsolv = ImpedanceSolver(inputparams);
 
 omegas = linspace(-2, 4, 50);
 omegas = 10.^omegas;
 
-clear Z
-for iomega = 1 : numel(omegas)
-    omega = omegas(iomega);
-    Z(iomega) = model.computeImpedance(state, omega);
-end
+Z = impsolv.computeImpedance(omegas);
+
+%%
+omegas = linspace(-3, 6, 500);
+omegas = 10.^omegas;
+Z = impsolv.computeImpedance(omegas);
 
 figure
 Z = (Z*gen.faceArea)/((centi*meter)^2);
 plot(real(Z), -imag(Z));
 
-
-function state = prepareState(inputparams, gen)
-    
-    control = struct('controlPolicy'     , 'CCDischarge', ...
-                     'rampupTime'        , 0.1          , ...
-                     'DRate'             , 1            , ...
-                     'lowerCutoffVoltage', 2.4          , ...
-                     'upperCutoffVoltage', 4.1);
-    inputparams.Control = CCDischargeControlModelInputParams(control);
-    model = Battery(inputparams);
-    model.Control.Imax = 0;
-
-    N = 10;
-    totalTime = 10*hour;
-    dt = rampupTimesteps(totalTime, totalTime/N, 3);
-
-    step.val = dt;
-    step.control = ones(numel(dt), 1);
-
-    control = model.Control.setupScheduleControl();
-
-    schedule = struct('step'   , step, ...
-                       'control', control);
-    
-    initstate = model.setupInitialState();
-    
-    [~, states, report] = simulateScheduleAD(initstate, model, schedule);
-
-    state = states{end};
-    
-end

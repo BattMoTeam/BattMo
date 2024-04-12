@@ -3,7 +3,9 @@ classdef ImpedanceSolver
     properties (SetAccess = private)
 
         model
+        inputparams
         state
+        soc
 
         %% helpers quantity (see compute Impedance to see how they are used)
         %
@@ -16,24 +18,18 @@ classdef ImpedanceSolver
 
     methods
 
-        function impsolv = ImpedanceSolver(model, state, varargin)
+        function impsolv = ImpedanceSolver(inputparams, soc)
 
-            opt = struct('setupSteadyState', false)
-            opt = merge_options(opt, varargin{:});
+            ctrl = 'Control';
 
-            impsolv.model = model;
+            impsolv.soc         = soc;
+            impsolv.inputparams = inputparams;
 
-            if nargin < 2
-                state = model.setupInitialState();
-                fprintf('We adjust state to equilibrim\n');
-                opt.setupSteadyState = true;
-            end
+            inputparams.(ctrl) = ImpedanceControlModelInputParams([]);
+            impsolv.model = ImpedanceBattery(inputparams);
 
-            if opt.setupSteadyState
-                impsolv.state = impsolv.setupSteadyState(impsolv, state);
-            end
-
-            impsolv = setupHelpers();
+            impsolv = impsolv.setupSteadyState(soc);
+            impsolv = impsolv.setupHelpers();
             
         end
 
@@ -51,13 +47,13 @@ classdef ImpedanceSolver
                 A = (i*omega*DM + DA);
                 x = A\b;
 
-                Z = x(indUs(1) : indUs(2));
+                Z(iomega) = x(indUs(1) : indUs(2));
                 
             end
             
         end
         
-        function impsolv = setupHelpers()
+        function impsolv = setupHelpers(impsolv)
 
             state = impsolv.state;
             model = impsolv.model;
@@ -106,15 +102,20 @@ classdef ImpedanceSolver
         
         function state = setupSteadyState(impsolv, state)
 
-            model = moldel.impsolv;
-            
-            ctrlinputparams = CCDischargeControlModelInputParams();
-            model.Control = CCDischargeControlModel(ctrlinputparams);
-            
-            % This is "fragile" operation. In general it is not wise to change submodel directly, as we may miss some
-            % consistency (this change is not supported).
-            model.Control.Imax = 0;
+            ctrl = 'Control';
 
+            inputparams = impsolv.inputparams;
+            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
+            inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
+            model = Battery(inputparams);
+
+            if isempty(state)
+                state = model.setupInitialState();
+            else
+                state.(ctrl).ctrlType = 'constantCurrent';
+                state.(ctrl).I = 0;
+            end
+            
             N = 10;
             totalTime = 10*hour;
             dt = rampupTimesteps(totalTime, totalTime/N, 3);
@@ -130,7 +131,7 @@ classdef ImpedanceSolver
             [~, states, report] = simulateScheduleAD(state, model, schedule);
 
             state = states{end};
-            
+
         end
         
     end
