@@ -55,49 +55,6 @@ classdef ImpedanceBattery < GenericBattery
             
         end
 
-        function Z = computeImpedance(model, state, omega)
-
-            ctrl = 'Control';
-
-            state.(ctrl).omega = omega;
-            state.(ctrl).I = 0;
-            
-            state = model.initStateAD(state);
-
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            state = model.applyScaling(state);
-            
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            eqs = vertcat(eqs{:});
-            
-            indI = model.getIndexPrimaryVariable({ctrl, 'I'});
-
-            inds = true(numel(model.getPrimaryVariableNames), 1);
-            inds(indI) = false;
-            inds = find(inds);
-
-            b = eqs.jac{indI};
-
-            eqs.jac = eqs.jac(inds); 
-            eqs = combineEquations(eqs);
-
-            inds = model.getRangePrimaryVariable(state.(ctrl).E, {ctrl, 'E'});
-            
-            A = eqs.jac{1};
-            
-            x = A\b;
-            
-            Z = x(inds(1) : inds(2));
-            
-        end
-
 
         function state = updateNegativeElectrodeMassAccum(model, state)
             

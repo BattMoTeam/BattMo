@@ -1,23 +1,7 @@
-%% Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
-% This example demonstrates how to setup a P2D model of a Li-ion battery
-% and run a simple simulation.
-
-% Clear the workspace and close open figures
+clear all
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-
-%% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the inputparams object.
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
@@ -41,19 +25,29 @@ gen = BatteryGeneratorP2D();
 
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-impsolv = ImpedanceSolver(inputparams, 1);
-
-omegas = linspace(-2, 4, 50);
-omegas = 10.^omegas;
-
-Z = impsolv.computeImpedance(omegas);
-
-%%
-omegas = linspace(-3, 6, 500);
-omegas = 10.^omegas;
-Z = impsolv.computeImpedance(omegas);
-
 figure
-Z = (Z*gen.faceArea)/((centi*meter)^2);
-plot(real(Z), -imag(Z));
+hold on
 
+socs = linspace(0.1, 1, 5);
+
+for isoc = 1 : numel(socs)
+
+    soc = socs(isoc);
+    
+    impsolv = ImpedanceSolver(inputparams, soc);
+
+    omegas = linspace(-3, 6, 500);
+    omegas = 10.^omegas;
+    Z = impsolv.computeImpedance(omegas);
+    
+    Z = (Z*gen.faceArea)/((centi*meter)^2);
+
+    legtxt = sprintf('SOC=%g', soc);
+    plot(real(Z), -imag(Z), 'displayname', legtxt);
+    xlabel('real(Z) / Ωcm^2')
+    ylabel('-imag(Z) / Ωcm^2')
+
+end
+
+legend show
+title('Impedance')
