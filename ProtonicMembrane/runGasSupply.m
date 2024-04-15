@@ -7,12 +7,12 @@ jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
 %%
-Dmult = 1e-3;
+Dmult = 1;
 fprintf('Diffusion coefficient multiplier = %g\n', Dmult);
 jsonstruct.diffusionCoefficients = Dmult*jsonstruct.diffusionCoefficients;
 
 %%
-rate = 1e-12;
+rate = 1e-4;
 fprintf('Use rate = %g\n', rate);
 jsonstruct.control(1).values(1) = rate;
 

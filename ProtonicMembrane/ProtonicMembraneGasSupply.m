@@ -11,8 +11,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
         permeability
         viscosity
         diffusionCoefficients % vector of diffusion coefficients, one per component
-        T % Temperature
-        control % Control structure
+        T                     % Temperature
+        control               % Control structure
         
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
@@ -20,18 +20,21 @@ classdef ProtonicMembraneGasSupply < BaseModel
         couplingTerms
 
         helpers
-        % - bcToCoupMap        : map from the bc values vector to the control vector (bc values corresponding to same control are summed up)
-        % - coupToBcMap        : map from the control vector to the bc values vector  (each control value are dispached over the bc values where it apply)
-        % - pressureMap        : map pressure values in state.Control.rate to those ones (only) that are given by a pressure control
-        %                        (see use in method updateControlSetup)
-        % - pressureValues     : pressure values given by the control 
-        % - rateMap            : map rate values in state.Control.rate to thoes ones (only) that are  given by a rate control (see use in method updateControlSetup)
-        % - rateValues         : rate values given by the control 
-        % - massfractionMap    : See method updateBcMassFraction. pick-up the massfraction values from GasSupplyBc bc that are imposed by some control 
-        % - massfractionValues : See method updateBcMassFraction. use to assign the massfraction values
-        % - bccells            : 
-        % - bcfaces            : 
-        % - bccellfacecouptbl  : 
+        % - bcToCoupMap          : map from the bc values vector to the control vector (bc values corresponding to same control are summed up)
+        % - coupToBcMap          : map from the control vector to the bc values vector  (each control value are dispached over the bc values where it apply)
+        % - pressureMap          : map pressure values in state.Control.rate to those ones (only) that are given by a pressure control
+        %                          (see use in method updateControlSetup)
+        % - pressureValues       : pressure values given by the control 
+        % - rateMap              : map rate values in state.Control.rate to thoes ones (only) that are  given by a rate control (see use in method updateControlSetup)
+        % - rateValues           : rate values given by the control 
+        % - massfractionMap      : See method updateBcMassFraction. pick-up the massfraction values from GasSupplyBc bc that are imposed by some control 
+        % - massfractionValues   : See method updateBcMassFraction. use to assign the massfraction values
+        % - zeroFluxMassfracMaps : See method updateZeroFluxBcMassFractionEq. 
+        % - bccells              : 
+        % - bcfaces              : 
+        % - bccellfacecouptbl    : 
+        % - comptypecouptbl      :
+        % - ctrlvals             :
         
     end
     
@@ -86,6 +89,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             nGas = model.nGas;
             nCoup = numel(model.couplingTerms);
+
+            includeZeroFluxMassfraction = ~isempty(model.helpers.zeroFluxMassfracMaps);
             
             varnames = {};
 
@@ -118,9 +123,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
             % Mass fraction equation for the control mass fraction
             varnames{end + 1} = {'GasSupplyBc', 'massfractionEq'};
 
-            % Mass fraction equation for the control equation
-            % varnames{end + 1} = {'Control', 'constMassFracEq'};
-
+            if includeZeroFluxMassfraction
+                % Mass fraction equation for the control equation
+                varnames{end + 1} = {'GasSupplyBc', 'zeroFluxMassfractionEq'};
+            end
+            
             % control equation 
             varnames{end + 1} = {'Control', 'setupEq'};
             
@@ -159,13 +166,16 @@ classdef ProtonicMembraneGasSupply < BaseModel
                              {'Control', 'rate'}};
             model = model.registerPropFunction({{'Control', 'setupEq'}, fn, inputvarnames});
 
-            % fn = @ProtonicMembraneGasSupply.updateConstMassFracEq;
-            % inputvarnames = {VarName({'GasSupplyBc'}, 'massfractions', nGas, 1),
-            %                  VarName({}, 'massfractions', nGas, 1),
-            %                 };
-            % outputvarname = {'Control', 'constMassFracEq'};
-            % model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            
+
+            if includeZeroFluxMassfraction
+                fn = @ProtonicMembraneGasSupply.updateZeroFluxBcMassFractionEq;
+                inputvarnames = {VarName({'GasSupplyBc'}, 'massfractions', nGas, 1),
+                                 VarName({}, 'massfractions', nGas, 1),
+                                };
+                outputvarname = {'GasSupplyBc', 'zeroFluxMassfractionEq'};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            end
+
             fn = @ProtonicMembraneGasSupply.updateBcMassfracEq;
             inputvarnames = {VarName({'GasSupplyBc'}, 'massfractions', nGas, 1)};
             model = model.registerPropFunction({{'GasSupplyBc', 'massfractionEq'}, fn, inputvarnames});
@@ -217,9 +227,9 @@ classdef ProtonicMembraneGasSupply < BaseModel
         function model = setupControl(model)
 
             % Three crontol type indexed by
-            % - 'pressure-composition'            : 1
-            % - 'flux-composition'                : 2
-            % - 'pressure-constant mass fraction' : 3
+            % - 'pressure-composition'             : 1
+            % - 'flux-composition'                 : 2
+            % - 'pressure-zero mass fraction flux' : 3
             
             typetbl.type = (1 : 3)';
             typetbl = IndexArray(typetbl);
@@ -266,7 +276,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                     typetbl2.type = 2;
                     comptbl2.comp = [1; 2];
                     comptbl2 = IndexArray(comptbl2);
-                  case 'pressure-constant mass fraction'
+                  case 'pressure-zero mass fraction flux'
                     typetbl2.type = 3;
                     comptbl2.comp = 1;
                     comptbl2 = IndexArray(comptbl2);
@@ -420,10 +430,56 @@ classdef ProtonicMembraneGasSupply < BaseModel
             M = M.getMatrix();
 
             helpers.massfractionMap = M;
+
+            %%  setup zeroFluxMassfracMaps
+
+            clear typetbl2
+            typetbl2.type = 3;
+            typetbl2 = IndexArray(typetbl2);
+            comptypecouptbl2 = crossIndexArray(typetbl2, comptypecouptbl, {'type'});
+
+            couptbl2 = projIndexArray(comptypecouptbl2, {'coup'});
+
+            if isempty(couptbl2.inds)
+                zeroFluxMassfracMaps = {};
+            else
+                tbls = setupTables(model.grid);
+                celltbl = tbls.celltbl;
+
+                bccellfacecouptbl2 = crossIndexArray(bccellfacecouptbl, couptbl2, {'coup'});
+                
+                map = TensorMap;
+                map.fromTbl = celltbl;
+                map.toTbl = bccellfacecouptbl2;
+                map.mergefds = {'cells'};
+                map = map.setup();
+                
+                M = SparseTensor();
+                M = M.setFromTensorMap(map);
+                M = M.getMatrix();
+                
+                zeroFluxMassfracMaps{1} = M;
+
+                map = TensorMap;
+                map.fromTbl = bccellfacecouptbl;
+                map.toTbl = bccellfacecouptbl2;
+                map.mergefds = {'cells', 'faces', 'coup'};
+                map = map.setup();
+                
+                M = SparseTensor();
+                M = M.setFromTensorMap(map);
+                M = M.getMatrix();
+                
+                zeroFluxMassfracMaps{2} = M;
+            end
+
+            helpers.zeroFluxMassfracMaps = zeroFluxMassfracMaps;
             
             helpers.bccells           = bccellfacecouptbl.get('cells');
             helpers.bcfaces           = bccellfacecouptbl.get('faces');
             helpers.bccellfacecouptbl = bccellfacecouptbl;
+            helpers.comptypecouptbl   = comptypecouptbl;
+            helpers.ctrlvals          = ctrlvals;
             
             model.helpers = helpers;
             
@@ -453,6 +509,15 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         end
 
+        function state = updateZeroFluxBcMassFractionEq(model, state)
+
+            maps = model.helpers.zeroFluxMassfracMaps;
+
+            state.GasSupplyBc.zeroFluxMassfractionEq = maps{1}*state.massfractions{1} - maps{2}*state.GasSupplyBc.massfractions{1};
+            
+        end
+
+        
         function state = updateBcMassfracEq(model, state)
 
             h = model.helpers;
@@ -613,31 +678,58 @@ classdef ProtonicMembraneGasSupply < BaseModel
             gasInd  = model.gasInd;
             control = model.control;
 
+            comptypecouptbl = model.helpers.comptypecouptbl;
+            ctrlvals        = model.helpers.ctrlvals;
 
-            names = arrayfun(@(ctrl) ctrl.name, control, 'uniformoutput', false);
-            [lia, locb] = ismember('External output', names);
-            assert(lia, 'External output control not found');
-            control = control(locb);
 
-            assert(strcmp(control.type, 'pressure-composition'), 'Here we expect pressure controled output');
+            %% we find the lowest pressure value in the control and use it for initialization
             
-            values = control.values;
+            clear comptypetbl2;
+            comptypetbl2.type = [2; 3];
+            comptypetbl2.comp = [1; 1];
+            comptypetbl2 = IndexArray(comptypetbl2);
+            comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'comp', 'type'});
 
-            p  = values(1);
-            mf = values(2);
+            map = TensorMap();
+            map.fromTbl = comptypecouptbl;
+            map.toTbl = comptypecouptbl2;
+            map.mergefds = {'comp', 'type', 'coup'};
+            map = map.setup();
+
+            pInit = map.eval(ctrlvals);
+            pInit = min(pInit);
+
+            %% we find the highest mass fraction value in the control and use it for initialization
+
+            clear comptypetbl2;
+            comptypetbl2.type = [1; 2];
+            comptypetbl2.comp = [2; 2];
+            comptypetbl2 = IndexArray(comptypetbl2);
+            comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'comp', 'type'});
+
+            map = TensorMap();
+            map.fromTbl = comptypecouptbl;
+            map.toTbl = comptypecouptbl2;
+            map.mergefds = {'comp', 'type', 'coup'};
+            map = map.setup();
+
+            mfInit = map.eval(ctrlvals);
+            mfInit = min(mfInit);
             
-            initstate.pressure         = p*ones(nc, 1);
-            initstate.massfractions{1} = mf *ones(nc, 1);
-            initstate.massfractions{2} = (1 - mf) *ones(nc, 1);
+            %% Initialization
             
-            initstate.GasSupplyBc.pressure               = p*ones(nbc, 1);
+            initstate.pressure         = pInit*ones(nc, 1);
+            initstate.massfractions{1} = mfInit *ones(nc, 1);
+            initstate.massfractions{2} = (1 - mfInit) *ones(nc, 1);
+            
+            initstate.GasSupplyBc.pressure               = pInit*ones(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.H2O} = zeros(nbc, 1);
             initstate.GasSupplyBc.massFluxes{gasInd.O2}  = zeros(nbc, 1);
-            initstate.GasSupplyBc.massfractions{1}       = mf*ones(nbc, 1);
+            initstate.GasSupplyBc.massfractions{1}       = mfInit*ones(nbc, 1);
             
             nctrl = numel(model.control);
             initstate.Control.rate             = zeros(nctrl, 1);
-            initstate.Control.pressure         = p*ones(nctrl, 1);
+            initstate.Control.pressure         = pInit*ones(nctrl, 1);
             
             initstate = model.evalVarName(initstate, VarName({}, 'massfractions', nGas, 2));
             initstate = model.evalVarName(initstate, VarName({}, 'density'));
@@ -686,6 +778,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             end
 
             state = model.capProperty(state, {'massfractions', 1}, 0, 1);
+            state = model.capProperty(state, {'GasSupplyBc', 'massfractions', 1}, 0, 1);
             
         end
 
