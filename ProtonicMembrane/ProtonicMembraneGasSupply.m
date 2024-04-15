@@ -20,6 +20,18 @@ classdef ProtonicMembraneGasSupply < BaseModel
         couplingTerms
 
         helpers
+        % - bcToCoupMap        : map from the bc values vector to the control vector (bc values corresponding to same control are summed up)
+        % - coupToBcMap        : map from the control vector to the bc values vector  (each control value are dispached over the bc values where it apply)
+        % - pressureMap        : map pressure values in state.Control.rate to those ones (only) that are given by a pressure control
+        %                        (see use in method updateControlSetup)
+        % - pressureValues     : pressure values given by the control 
+        % - rateMap            : map rate values in state.Control.rate to thoes ones (only) that are  given by a rate control (see use in method updateControlSetup)
+        % - rateValues         : rate values given by the control 
+        % - massfractionMap    : See method updateBcMassFraction. pick-up the massfraction values from GasSupplyBc bc that are imposed by some control 
+        % - massfractionValues : See method updateBcMassFraction. use to assign the massfraction values
+        % - bccells            : 
+        % - bcfaces            : 
+        % - bccellfacecouptbl  : 
         
     end
     
