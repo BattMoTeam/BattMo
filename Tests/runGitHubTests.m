@@ -46,7 +46,7 @@ import matlab.unittest.TestRunner
 % Setup
 mrstVerbose 'off';
 stopOnError        = false;
-runTestsInParallel = true;
+runTestsInParallel = false;
 doAssertSuccess    = true;
 
 % Define which test cases to run
