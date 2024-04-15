@@ -50,8 +50,8 @@ classdef BaseModel < PhysicalModel
         % - registerVarName 
         % - registerVarNames
         % - registerPropFunction
-        % - registerStaticVarName
-        % - registerStaticVarNames
+        % - setAsStaticVarName
+        % - setAsStaticVarNames
         % - setAsExtraVarName
         % - setAsExtraVarNames
         %
