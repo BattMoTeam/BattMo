@@ -113,8 +113,14 @@ classdef ProtonicMembraneGasSupply < BaseModel
             varnames{end + 1} = {'Control', 'pressure'};
             % Pressure equation for the control pressure
             varnames{end + 1} = {'Control', 'pressureEq'};
-            % Rate equation for the control equation
+            % Rate equation for the control rate
             varnames{end + 1} = {'Control', 'rateEq'};
+            % Mass fraction equation for the control mass fraction
+            varnames{end + 1} = {'GasSupplyBc', 'massfractionEq'};
+
+            % Mass fraction equation for the control equation
+            % varnames{end + 1} = {'Control', 'constMassFracEq'};
+
             % control equation 
             varnames{end + 1} = {'Control', 'setupEq'};
             
@@ -153,17 +159,23 @@ classdef ProtonicMembraneGasSupply < BaseModel
                              {'Control', 'rate'}};
             model = model.registerPropFunction({{'Control', 'setupEq'}, fn, inputvarnames});
 
-            fn = @ProtonicMembraneGasSupply.updateBcMassFraction;
-            inputvarnames = {VarName({}, 'massfractions', nGas, 1)};
-            outputvarname = VarName({'GasSupplyBc'}, 'massfractions', nGas, 1);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            % fn = @ProtonicMembraneGasSupply.updateConstMassFracEq;
+            % inputvarnames = {VarName({'GasSupplyBc'}, 'massfractions', nGas, 1),
+            %                  VarName({}, 'massfractions', nGas, 1),
+            %                 };
+            % outputvarname = {'Control', 'constMassFracEq'};
+            % model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            
+            fn = @ProtonicMembraneGasSupply.updateBcMassfracEq;
+            inputvarnames = {VarName({'GasSupplyBc'}, 'massfractions', nGas, 1)};
+            model = model.registerPropFunction({{'GasSupplyBc', 'massfractionEq'}, fn, inputvarnames});
+
+            fn = @ProtonicMembraneGasSupply.updateControlRateEq;
+            inputvarnames = {VarName({'GasSupplyBc'}, 'massFluxes', nGas), ...
+                             VarName({'Control'}, 'rate')};
+            model = model.registerPropFunction({{'Control', 'rateEq'}, fn, inputvarnames});
             
             for igas = 1 : nGas
-
-                fn = @ProtonicMembraneGasSupply.updateRateEq;
-                inputvarnames = {VarName({'GasSupplyBc'}, 'massFluxes', nGas, igas), ...
-                                 VarName({'Control'}, 'rate')};
-                model = model.registerPropFunction({{'Control', 'rateEq'}, fn, inputvarnames});
 
                 fn = @(model, state) ProtonicMembraneGasSupply.updateDensities(model, state);
                 fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
@@ -204,14 +216,19 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
         function model = setupControl(model)
 
-            % Two crontol type indexed 'pressure-composition' : 1, 'flux-composition' : 2
-            typetbl.type = [1; 2];
+            % Three crontol type indexed by
+            % - 'pressure-composition'            : 1
+            % - 'flux-composition'                : 2
+            % - 'pressure-constant mass fraction' : 3
+            
+            typetbl.type = (1 : 3)';
             typetbl = IndexArray(typetbl);
 
-            % Two values are given for each control. They are indexed by comp
-            % 'pressure-composition' : 1) pressure 2) H2O volume fraction
-            % 'flux-composition' : 1) rate 2) H2O volume fraction
-            %
+            % Two values are given for the first control, one for the last . They are indexed by comp
+            % - 'pressure-composition'            : 1) pressure  2) H2O volume fraction
+            % - 'flux-composition'                : 1) rate      2) H2O volume fraction
+            % - 'pressure-constant mass fraction' : 1) pressure
+            
             comptbl.comp = [1; 2];
             comptbl = IndexArray(comptbl);
 
@@ -239,16 +256,25 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 ctrlinput = ctrl(ictrl);
                 
                 clear typetbl2
+                clear comptbl2
                 switch ctrlinput.type
                   case 'pressure-composition'
                     typetbl2.type = 1;
+                    comptbl2.comp = [1; 2];
+                    comptbl2 = IndexArray(comptbl2);
                   case 'rate-composition'
                     typetbl2.type = 2;
+                    comptbl2.comp = [1; 2];
+                    comptbl2 = IndexArray(comptbl2);
+                  case 'pressure-constant mass fraction'
+                    typetbl2.type = 3;
+                    comptbl2.comp = 1;
+                    comptbl2 = IndexArray(comptbl2);
                   otherwise
                     error('ctrlinput type not recognized');
                 end
                 typetbl2 = IndexArray(typetbl2);
-                comptypecouptbl2 = crossIndexArray(comptbl, typetbl2, {});
+                comptypecouptbl2 = crossIndexArray(comptbl2, typetbl2, {});
 
                 icoupterm = findCouplingTerm(ictrl);
                 
@@ -292,11 +318,11 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             bccellfacecomptypecouptbl = crossIndexArray(bccellfacecouptbl, comptypecouptbl, {'coup'});
 
-            %%  setup pressureMap
+            %%  setup pressureMap and pressureValues
             
             clear comptypetbl2
-            comptypetbl2.type = 1; % pressure index is 1
-            comptypetbl2.comp = 1; % first index gives pressure value
+            comptypetbl2.type = [1; 3]; % pressure index is 1
+            comptypetbl2.comp = [1; 1]; % first index gives pressure value
             comptypetbl2 = IndexArray(comptypetbl2);
             comptypecouptbl2  = crossIndexArray(comptypetbl2, comptypecouptbl, {'type', 'comp'});
             
@@ -319,7 +345,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             helpers.pressureValues = map.eval(ctrlvals);
 
-            %%  setup rateMap
+            %%  setup rateMap and rateValues
             
             clear comptypetbl2
             comptypetbl2.type = 2; % rate index is 2
@@ -348,27 +374,52 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
 
             %%  setup massfractionMap and massfractionValues
-            
-            clear comptbl2
-            comptbl2.comp = 2; % second index gives mass fraction, for both type
-            comptbl2 = IndexArray(comptbl2);
-            comptypecouptbl2 = crossIndexArray(comptbl2, comptypecouptbl, {'comp'});
-            comptypecouptbl2 = sortIndexArray(comptypecouptbl2, {'coup', 'comp', 'type'});
 
-            assert(comptypecouptbl2.num == couptbl.num, 'we expect one value per coupling');
-            
+            clear comptypetbl2
+            comptypetbl2.type = [1; 2]; % type indices for which we have mass fraction as control
+            comptypetbl2.comp = [2; 2]; % The component is always the second one
+            comptypetbl2 = IndexArray(comptypetbl2);
+            comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'type', 'comp'});
+
             map = TensorMap();
             map.fromTbl = comptypecouptbl;
             map.toTbl = comptypecouptbl2;
             map.mergefds = {'coup', 'comp', 'type'};
             map = map.setup();
 
-            mfvalues= map.eval(ctrlvals);
-            
-            bcMassfractions{1} = (helpers.coupToBcMap)*mfvalues;
-            bcMassfractions{2} = 1 - bcMassfractions{1};
+            massfractionValues = map.eval(ctrlvals);
 
-            helpers.bcMassfractions = bcMassfractions;
+            couptbl2 = projIndexArray(comptypecouptbl2, {'coup'});
+            
+            map = TensorMap();
+            map.fromTbl = comptypecouptbl2;
+            map.toTbl = couptbl2;
+            map.mergefds = {'coup'};
+            map = map.setup();
+            
+            massfractionValues = map.eval(massfractionValues);
+
+            bccellfacecouptbl2 = crossIndexArray(bccellfacecouptbl, couptbl2, {'coup'});
+
+            map = TensorMap();
+            map.fromTbl = couptbl2;
+            map.toTbl = bccellfacecouptbl2;
+            map.mergefds = {'coup'};
+            map = map.setup();
+
+            helpers.massfractionValues = map.eval(massfractionValues);
+
+            map = TensorMap();
+            map.fromTbl = bccellfacecouptbl;
+            map.toTbl = bccellfacecouptbl2;
+            map.mergefds = {'coup', 'cells', 'faces'};
+            map = map.setup();
+
+            M = SparseTensor();
+            M = M.setFromTensorMap(map);
+            M = M.getMatrix();
+
+            helpers.massfractionMap = M;
             
             helpers.bccells           = bccellfacecouptbl.get('cells');
             helpers.bcfaces           = bccellfacecouptbl.get('faces');
@@ -377,6 +428,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.helpers = helpers;
             
         end
+        
         function state = updateControlSetup(model, state)
 
             helpers = model.helpers;
@@ -396,14 +448,18 @@ classdef ProtonicMembraneGasSupply < BaseModel
             if ~isempty(val)
                 eqs{end + 1} = 1./val.*(map*state.Control.pressure) - 1; % equations are scaled to one
             end
-
+            
             state.Control.setupEq = vertcat(eqs{:});
 
         end
 
-        function state = updateBcMassFraction(model, state)
+        function state = updateBcMassfracEq(model, state)
 
-            state.GasSupplyBc.massfractions{1} = model.helpers.bcMassfractions{1};
+            h = model.helpers;
+
+            eq = h.massfractionMap*state.GasSupplyBc.massfractions{1} - h.massfractionValues;
+
+            state.GasSupplyBc.massfractionEq = eq;
             
         end
         
@@ -441,8 +497,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
-
-        function state = updateRateEq(model, state)
+        function state = updateControlRateEq(model, state)
 
             map = model.helpers.bcToCoupMap;
             nGas = model.nGas;
