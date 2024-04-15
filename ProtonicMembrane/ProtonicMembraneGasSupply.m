@@ -685,7 +685,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             %% we find the lowest pressure value in the control and use it for initialization
             
             clear comptypetbl2;
-            comptypetbl2.type = [2; 3];
+            comptypetbl2.type = [1; 3];
             comptypetbl2.comp = [1; 1];
             comptypetbl2 = IndexArray(comptypetbl2);
             comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'comp', 'type'});
