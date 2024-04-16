@@ -81,7 +81,11 @@ classdef ComputationalGraphPlot < handle
             for ifilter = 1 : numel(filters)
                 filter = filters{ifilter};
                 if iscell(filter)
-                    str = sprintf('%s: ''%s''', filter{1}, filter{2});
+                    if isnumeric(filter{2})
+                        str = sprintf('%s: (not printed)', filter{1});
+                    else
+                        str = sprintf('%s: ''%s''', filter{1}, filter{2});
+                    end
                 else
                     str = filter;
                 end
@@ -169,7 +173,7 @@ classdef ComputationalGraphPlot < handle
 
             if iscell(filter)
                 action = filter{1};
-                regstr = filter{2};
+                arg = filter{2};
             else
                 action = filter;
             end
@@ -178,12 +182,22 @@ classdef ComputationalGraphPlot < handle
 
               case 'select'
                 
-                inds = regexpSelect(nodenames(cgp.nodeinds), regstr);
+                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
+                cgp.nodeinds = cgp.nodeinds(inds);
+
+              case 'add nodes'
+                
+                nodeinds = vertcat(arg, cgp.nodeinds);
+                cgp.nodeinds = unique(nodeinds);
+
+              case 'strict-select'
+                
+                inds = strcmp(nodenames(cgp.nodeinds), arg);
                 cgp.nodeinds = cgp.nodeinds(inds);
                 
               case 'remove'
                 
-                inds = regexpSelect(nodenames(cgp.nodeinds), regstr);
+                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
                 cgp.nodeinds(inds) = [];
                 
               case 'addParents'
@@ -211,6 +225,89 @@ classdef ComputationalGraphPlot < handle
             
         end
 
+        function help(cgp)
+        % Print help for interactive use
+
+            str = {};
+            str{end + 1} = '';
+            str{end + 1} = 'Commands available for ComputationalGraphPlot object given by cgp';
+            str{end + 1} = '';
+            str{end + 1} = 'cgp.plot()                       : Plot graph';
+            str{end + 1} = 'cgp.addFilter(regstr)            : Select the nodes that match the regular expression regstr';
+            str{end + 1} = '                                   This action is added in the filter list';
+            str{end + 1} = 'cgp.removeLast()                 : Remove last filter in list';
+            str{end + 1} = 'cgp.resetFilters()               : Clear filter list';
+            str{end + 1} = 'cgp.addFilter(''addParents'')      : Add parents of the visible nodes';
+            str{end + 1} = '                                   This action is added to the filter list';
+            str{end + 1} = 'cgp.addFilter(''addChildren'')     : Add children of the visible nodes';
+            str{end + 1} = '                                   This action is added to the filter list';
+            str{end + 1} = 'cgp.remove({''remove'', regstr})   : Remove from the visible nodes the nodes that match the regular expression';
+            str{end + 1} = '                                   This action is added to the filter list';            
+            str = strjoin(str, newline);
+
+            fprintf('%s\n', str);
+            
+        end
+
+        function cgt = cgt(cgp)
+        % Convenience function
+            cgt = cgp.computationalgraphplot;
+            
+        end
+
+        function plotRelatives(cgp, varname, relative)
+            
+            cgt = cgp.computationalGraphTool;
+            
+            cgp.resetFilters();
+            varnameind = cgt.findVarName(varname);
+            if isempty(varnameind)
+                fprintf('no node found matching expression\n');
+                return
+            end
+            nodename = cgt.nodenames{varnameind};
+
+            filteropts = {'printFilters', false, 'doplot', false};
+
+            cgp.addFilter({'strict-select', nodename}, filteropts{:});
+
+            
+            switch relative
+              case 'children'
+                cgp.addFilter('addChildren', filteropts{:});
+              case 'parents'
+                cgp.addFilter('addParents', filteropts{:});
+              case 'both'
+                A = cgp.A;
+                nodeinds = getDependencyVarNameInds(varnameind, A);
+                nodeinds = vertcat(nodeinds, getDependencyVarNameInds(varnameind, A'));
+                cgp.addFilter({'add nodes', unique(nodeinds)}, filteropts{:});
+              otherwise
+                error('relative option not recognized');
+            end
+
+            cgp.applyFilters();
+                
+        end
+
+        function plotBoth(cgp, varname)
+
+            cgp.plotRelatives(varname, 'both');
+            
+        end
+        
+        function plotChildren(cgp, varname)
+
+            cgp.plotRelatives(varname, 'children');
+
+        end
+
+        function plotParents(cgp, varname)
+
+            cgp.plotRelatives(varname, 'parents');
+                
+        end
+        
         function h = plot(cgp)
 
             nodeinds = cgp.nodeinds;
