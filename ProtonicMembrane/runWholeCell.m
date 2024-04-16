@@ -19,13 +19,13 @@ filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
 %% Adjust diffusion
-Dmult = 1e-1;
+Dmult = 1e-2;
 fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
 jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
 %%
 
 %% Adjust rate
-rateMult = 1e-1;
+rateMult = 1e-2;
 fprintf('Rate coefficient multiplier : %g\n', rateMult);
 jsonstruct.(gs).control(1).values(1) = rateMult*jsonstruct.(gs).control(1).values(1);
 %%
@@ -130,9 +130,9 @@ if rungaslayer
     schedule = struct('control', control, 'step', step);
 
     nls = NonLinearSolver();
-    nls.maxIterations = 20;
+    nls.maxIterations  = 20;
     nls.errorOnFailure = false;
-    nls.verbose = true;
+    nls.verbose        = true;
 
     gsmodel.verbose = true;
 
@@ -197,9 +197,9 @@ if doinitialisation
 
     schedule = struct('control', control, 'step', step); 
     nls = NonLinearSolver();
-    nls.maxIterations = 20;
+    nls.maxIterations  = 20;
     nls.errorOnFailure = false;
-    nls.verbose = true;
+    nls.verbose        = true;
 
     model.nonlinearTolerance = 1e-8;
 
@@ -291,46 +291,50 @@ model.scalings =  horzcat(model.scalings, ...
 
 %% Setup schedule
 
-tswitch   = 5e-6/Dmult;
-totaltime = 10*second;
+tswitch   = 0.1;
+totaltime = 10*minute;
+
+timeswitch = tswitch*totaltime;
 
 %% adjust N2
-N1  = 1;
+N1  = 10;
 fprintf('use N1 = %g\n', N1);
 %%
 
-timeswitch = tswitch*totaltime;
 dt1 = timeswitch/N1;
+t1  = linspace(0, dt1, N1 + 1)';
+alpha = 40;
+t1 = log(alpha*t1 + 1)./log(alpha*dt1 + 1)*dt1;
 
-steps1 = rampupTimesteps(timeswitch, dt1, 5);
+steps1 = diff(t1);
+
 %% adjust N2
-N2  = 30;
+N2  = 20;
 fprintf('use N2 = %g\n', N2);
-
 %%
 
-dt2 = (totaltime - timeswitch);
-t2  = linspace(0, dt2, N2 + 1)';
-alpha = 40;
-t2 = log(alpha*t2 + 1)./log(alpha*dt2 + 1)*dt2;
-
-steps2 = diff(t2);
+dt2 = (totaltime - timeswitch)/N2;
+steps2 = rampupTimesteps(totaltime -timeswitch, dt2, 5);
 
 %%
 
 step.val = [steps1; steps2];
 step.control = ones(numel(step.val), 1);
 
-control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
+control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'alpha-equal-beta');
 
 schedule = struct('control', control, 'step', step); 
 
 %% Setup nonlinear solver
 
-nls                = NonLinearSolver();
-nls.maxIterations  = 20;
-nls.errorOnFailure = false;
-nls.verbose        = true;
+ts = IterationCountTimeStepSelector('targetIterationCount', 5, ...
+                                    'verbose', true);
+
+nls = NonLinearSolver();
+nls.timeStepSelector = ts;
+nls.maxIterations    = 15;
+nls.errorOnFailure   = false;
+nls.verbose          = true;
 
 model.nonlinearTolerance = 1e-5;
 model.verbose = true;
