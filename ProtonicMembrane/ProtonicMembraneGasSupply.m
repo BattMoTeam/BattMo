@@ -484,6 +484,15 @@ classdef ProtonicMembraneGasSupply < BaseModel
             model.helpers = helpers;
             
         end
+
+        function state = addVariables(model, state, drivingForces)
+
+            state0 = state; % dummy values
+            dt = 1;         % dummy values
+            
+            [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+
+        end
         
         function state = updateControlSetup(model, state)
 
