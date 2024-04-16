@@ -41,7 +41,7 @@ switch dimcase
     gen = GasSupplyGridGenerator1D();
 
     gen.nx = 1000;
-    gen.lx = 1.5*milli*meter;
+    gen.lx = 1.5*meter;
     gen.faceArea = 0.5*milli*meter;
     
   otherwise
@@ -105,8 +105,8 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
-T = 1e-3*second;
-N = 1;
+T = 1*second;
+N = 10;
 dt = rampupTimesteps(T, T/N, 1, 'threshold_error', 1e-15);
 
 step.val = dt;
