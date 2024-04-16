@@ -7,28 +7,47 @@ jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
 %%
-Dmult = 1;
+Dmult = 1e-7;
 fprintf('Diffusion coefficient multiplier = %g\n', Dmult);
 jsonstruct.diffusionCoefficients = Dmult*jsonstruct.diffusionCoefficients;
 
 %%
-rate = 1e-4;
+rate = 1e-3;
 fprintf('Use rate = %g\n', rate);
 jsonstruct.control(1).values(1) = rate;
 
 %%
-perm = 0;
-fprintf('Use perm = %g\n', perm);
-jsonstruct.permeability = perm;
+permMult = 1e-3;
+fprintf('Use permMult = %g\n', permMult);
+jsonstruct.permeability = permMult*jsonstruct.permeability;
 
 inputparams = ProtonicMembraneGasSupplyInputParams(jsonstruct);
 
-gen = GasSupplyGridGenerator2D();
+dimcase = '1D';
 
-gen.nx = 100;
-gen.ny = 70;
-gen.lx = 0.5*milli*meter;
-gen.ly = 1.5*milli*meter;
+switch dimcase
+
+  case '2D'
+
+    gen = GasSupplyGridGenerator2D();
+
+    gen.nx = 10;
+    gen.ny = 1000;
+    gen.lx = 0.5*milli*meter;
+    gen.ly = 1.5*milli*meter;
+    
+  case '1D'
+    
+    gen = GasSupplyGridGenerator1D();
+
+    gen.nx = 1000;
+    gen.lx = 1.5*milli*meter;
+    gen.faceArea = 0.5*milli*meter;
+    
+  otherwise
+
+    error('dimcase not recognized')
+end
 
 inputparams = gen.updateInputParams(inputparams);
 
@@ -45,13 +64,38 @@ cgp = model.cgp;
 
 initstate = model.setupInitialState();
 
+%%
+mfInit = 0.2;
+fprintf('Use mfInit = %g\n', mfInit);
+initstate.massfractions{1}             = mfInit + 0*initstate.massfractions{1};
+initstate.GasSupplyBc.massfractions{1} = mfInit + 0*initstate.GasSupplyBc.massfractions{1};
+
 %% Setup scalings
 
 gasInd = model.gasInd;
 
-pH2O         = initstate.pressure(1);
-rho          = initstate.density(1);
-scalFlux     = 1/gen.nx*(rho*model.permeability/model.viscosity*pH2O + rho*model.diffusionCoefficients(1))/gen.ly;
+pH2O = initstate.pressure(1);
+rho  = initstate.density(1);
+
+%% pick-up rate value in control
+%
+comptypecouptbl = model.helpers.comptypecouptbl;
+ctrlvals        = model.helpers.ctrlvals;
+
+clear comptypetbl2
+comptypetbl2.type = [2]; % type=2 for rate control
+comptypetbl2.comp = [1]; % component index = 1 for rate value
+comptypetbl2 = IndexArray(comptypetbl2);
+
+map = TensorMap();
+map.fromTbl = comptypecouptbl;
+map.toTbl = comptypetbl2;
+map.mergefds = {'comp', 'type'};
+map = map.setup();
+
+rate = max(map.eval(ctrlvals));
+
+scalFlux     = rate/gen.nx;
 scalPressure = pH2O;
 
 model.scalings = {{{'massConses', 1}, scalFlux}, ...
@@ -61,10 +105,9 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
                   {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
-
-T = 1*second;
+T = 1e-3*second;
 N = 1;
-dt = rampupTimesteps(T, T/N, 10, 'threshold_error', 1e-15);
+dt = rampupTimesteps(T, T/N, 1, 'threshold_error', 1e-15);
 
 step.val = dt;
 step.control = ones(numel(step.val), 1);
@@ -80,7 +123,7 @@ nls.verbose = true;
 
 model.verbose = true;
 
-model.nonlinearTolerance = 1e-8;
+model.nonlinearTolerance = 1e-5;
 
 [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
@@ -88,7 +131,7 @@ model.nonlinearTolerance = 1e-8;
 
 figure
 plotToolbar(model.grid, states);
-caxis([0.2, 0.4])
+% caxis([0.2, 0.4])
 % uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
 % uit.State = 'on';
 
