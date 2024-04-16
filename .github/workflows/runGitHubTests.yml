@@ -17,9 +17,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-        release: R2023b
         with:
           lfs: true
+          release: R2023b
 
       # Python dependencies
       - name: Install Python dependencies
