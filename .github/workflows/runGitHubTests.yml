@@ -19,7 +19,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
-          release: R2023b
 
       # Python dependencies
       - name: Install Python dependencies
@@ -32,6 +31,8 @@ jobs:
       # Set up MATLAB on the GitHub Actions runner
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2023b
 
       # Execute the tests
       - name: Running some tests
