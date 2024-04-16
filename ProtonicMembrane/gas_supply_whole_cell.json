@@ -16,8 +16,8 @@
                "type" : "rate-composition",
                "values" : [1e-3, 0.8085]},
               {"name" : "External output",
-               "type" : "pressure-composition",
-               "values" : [5.875e5, 0.8085]}
+               "type" : "pressure-zero mass fraction flux",
+               "values" : [1.7e5]}
              ]
 }
   
