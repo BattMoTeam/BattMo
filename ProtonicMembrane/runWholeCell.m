@@ -1,4 +1,4 @@
-% clear all
+clear all
 
 % mrstDebug(20);
 
@@ -19,11 +19,15 @@ filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
 %% Adjust diffusion
-
-Dmult = 1e-3;
+Dmult = 1e-1;
 fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
 jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
+%%
 
+%% Adjust rate
+rateMult = 1e-1;
+fprintf('Rate coefficient multiplier : %g\n', rateMult);
+jsonstruct.(gs).control(1).values(1) = rateMult*jsonstruct.(gs).control(1).values(1);
 %%
 
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
@@ -202,17 +206,24 @@ if doinitialisation
     [~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
     state = states{end};
-    state = model.addVariables(state, drivingforces);
+    state = model.addVariables(state, control);
 
     molfluxref = abs(sum(state.Anode.iHp)/PhysicalConstants.F); % in mol/second
 
-    fprinft('Reference molar flux: %g mol/second', molfluxref);
+    fprintf('Reference molar flux: %g mol/second\n', molfluxref);
     
     return
     
 else
-    
-    molfluxref = 1.7236e-06; % value for Imax = 0
+
+    switch Imax
+      case 0
+        molfluxref = 1.7236e-06; % value for Imax = 0
+      case 7.5
+        molfluxref = 7.35713e-05; % mol/second, for Imax = 7.5
+      otherwise
+        error('value of molflux ref did not appear to have been computed precedently');
+    end
     
 end
 
@@ -224,6 +235,14 @@ model = model.setupForSimulation();
 
 cgt = model.cgt;
 cgp = model.cgp;
+
+%% Print cutoff values
+%
+
+fprintf('Cutoff min pressure : %g\n'     , model.pmin);
+fprintf('Cutoff min mass fraction : %g\n', model.mfmin);
+fprintf('Cutoff max mass fraction : %g\n', model.mfmax);
+fprintf('Cutoff abs potentials : %g\n'   , model.phimax);
 
 %% Setup initial state
 
