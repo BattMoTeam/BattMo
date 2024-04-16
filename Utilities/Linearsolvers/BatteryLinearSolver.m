@@ -563,7 +563,7 @@ classdef BatteryLinearSolver < handle
 
               otherwise
 
-                error('Wrong solver type for cpr voltage preconditioner')
+                error('Wrong solver type preconditioner')
 
             end
 

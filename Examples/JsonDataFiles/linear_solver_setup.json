@@ -1,4 +1,10 @@
-{"library" : "matlab",
+{"NonLinearSolver" : {
+  "maxIterations" : 20,
+  "verbose": true,
+  "nonlinearTolerance" : 1e-5,
+  "LinearSolver" : {
+    "linearSolverSetup" : {
+      "library" : "matlab",
  "method" : "separate-variable-gmres",
  "verbose" : 2,
  "options" : {
@@ -14,8 +20,8 @@
  },
  
  "preconditioners" : [{"name" : "concentration in negative electrode particles",
-                       "variables" : [["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["NegativeElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                            "variables" : [["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
+                                           ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl",
                                    "verbose" : 2,
                                    "solver" : {"tol" : 1e-6,
@@ -23,8 +29,8 @@
                       },
                       
                       {"name" : "concentration in positive electrode particles",
-                       "variables" : [["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "c"],
-                                      ["PositiveElectrode", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+                            "variables" : [["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
+                                           ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
                        "solver" : {"library" : "amgcl",
                                    "verbose" : 2,
                                    "solver" : {"tol" : 1e-6,
@@ -39,8 +45,8 @@
                       },
                       {"name" : "potential",
                        "variables" : [["Electrolyte", "phi"],
-                                      ["NegativeElectrode", "ActiveMaterial", "phi"],
-                                      ["PositiveElectrode", "ActiveMaterial", "phi"],
+                                      ["NegativeElectrode", "Coating", "phi"],
+                                      ["PositiveElectrode", "Coating", "phi"],
                                       ["NegativeElectrode", "CurrentCollector", "phi"],
                                       ["PositiveElectrode", "CurrentCollector", "phi"],
                                       ["Control", "E"]
@@ -59,4 +65,4 @@
                                                "verbose" : true}}}
                      ]
 
-}
+    }}}}
