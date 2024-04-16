@@ -184,107 +184,62 @@ nls = NonLinearSolver();
 
 clear setup
 
-casenumber = 3;
-% casenumber = 3;
+casenumber = 2;
+beVerbose = false;
 
 switch casenumber
 
   case 1
 
-    setup.library = 'matlab';
+    jsonstruct_solver = parseBattmoJson('Utilities/Linearsolvers/JsonDataFiles/default_direct_linear_solver.json');
 
   case 2
 
-    setup.method = 'gmres';
-    setup.options.method = 'grouped';
-    setup.options.solverspec.name = 'agmg'; % not used for now
+    switch model.(ne).(co).(am).diffusionModelType
 
-  case 3
+      case  'full'
+        
+        jsonstruct_solver = parseBattmoJson('Utilities/Linearsolvers/JsonDataFiles/default_linear_solver_setup.json');
+        
+        if ~beVerbose
+            
+            jsonstruct_solver.NonLinearSolver.verbose = false;
+            jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.verbose = 0;
+            prcs = jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.preconditioners
+            for iprc = 1 : numel(prcs)
+                prcs(iprc).solver.verbose = 0;
+                prcs(iprc).solver.solver.verbose = false;
+            end
+            jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.preconditioners = prcs;
 
-    switch diffusionModelType
+        end
+            
       case 'simple'
-        % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
-      case 'full'
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
+        
+        % jsonstruct_solver = parseBattmoJson('Utilities/Linearsolvers/JsonDataFiles/default_linear_solver_setup_simple_diffusion.json');
+        jsonstruct_solver = parseBattmoJson('Utilities/Linearsolvers/JsonDataFiles/temp.json');
+        
       otherwise
-        error('diffusionModelType not covered')
+
+        error('diffusionModelType not recognized');
+        
     end
-    jsonsrc = fileread(jsonfilename);
-    setup = battMojsondecode(jsonsrc);
-
-
-  case 4
-
-    switch diffusionModelType
-      case 'simple'
-        % jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver3.json');
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver5.json');
-      case 'full'
-        jsonfilename = fullfile(battmoDir, 'Utilities/JsonSchemas/Tests/linearsolver4.json');
-      otherwise
-        error('diffusionModelType not covered')
-    end
-    jsonsrc = fileread(jsonfilename);
-    setup = battMojsondecode(jsonsrc);
-
-    clear solver
-    solver.library = 'matlab';
-    solver.method  = 'direct';
-    for iprec = 1 : numel(setup.preconditioners)
-        setup.preconditioners(iprec).solver =  solver;
-    end
-
-    setup.verbose = 0;
-
+    
   otherwise
 
     error('case number not recognized');
 
 end
 
-if isfield(setup, 'reduction')
-    model = model.setupSelectedModel('reduction', setup.reduction);
-end
 
-if testing & (casenumber == 3)
-    % We remove verbosity in case of small model
-    setup.verbose = 0;
-    if isfield(setup, 'preconditioners')
-        pcs = setup.preconditioners;
-        for ipc = 1 : numel(pcs)
-            pc = pcs(ipc);
-            pc.solver.verbose = 0;
-            pc.solver.solver.verbose = false;
-            pcs(ipc) = pc;
-        end
-        setup.preconditioners = pcs;
-    end
-end
+[model, nls] = setupNonLinearSolverFromJson(model, jsonstruct_solver);
 
-%%
-nls.LinearSolver = BatteryLinearSolver('verbose'          , 0    , ...
-                                       'reuse_setup'      , false, ...
-                                       'linearSolverSetup', setup);
-
-if isfield(nls.LinearSolver.linearSolverSetup, 'gmres_options')
-    nls.LinearSolver.linearSolverSetup.gmres_options.tol = 1e-3*model.Control.Imax;
-end
-
-
-% Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 20;
-% Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false;
-% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
-% Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
-% Set verbosity
 model.verbose = true;
 
 dopacked = true;
 
 if dopacked
+    
     % Run simulation
     dataFolder = 'BattMo';
     problem = packSimulationProblem(initstate, model, schedule, dataFolder, ...
@@ -314,8 +269,6 @@ end
 
 %% Process output and recover the output voltage and current from the output states.
 
-ind = cellfun(@(x) not(isempty(x)), states);
-states = states(ind);
 E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states);
@@ -325,8 +278,6 @@ plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time')
-
-
 
 
 %{
