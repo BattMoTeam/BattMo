@@ -17,7 +17,7 @@
                "values" : [1e-3, 0.8085]},
               {"name" : "External output",
                "type" : "pressure-zero mass fraction flux",
-               "values" : [1.7e5]}
+               "values" : [5.875e5]}
              ]
 }
   
