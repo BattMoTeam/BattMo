@@ -291,38 +291,52 @@ classdef BatchProcessor
                 T = T(:, paramnames)
             end
         end        
-    
+        
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{1};
             rest = varargin(2 : end);
-            if ischar(paramname) && strcmp(paramname, 'inverseOrder')
-                sortedsimlist = simlist(end : -1 : 1);
-            else
-                usefunc = false;
-                if iscell(paramname)
-                    usefunc = true;
-                    func = paramname{2};
-                    paramname = paramname{1};
-                else
 
+            direction = 'ascend';
+            usefunc   = false;
+            
+            if iscell(paramname)
+                func      = paramname{2};
+                paramname = paramname{1};
+                if isa(func, 'function_handle')
+                    usefunc = true;
+                elseif ischar(func) && ismember(func, {'ascend', 'descend'})
+                    direction = func;
+                else
+                    error('filter format not recognized');
                 end
-                [vals, type] = getParameterValue(bp, simlist, paramname);
-                eind = cellfun(@(val) isempty(val), vals);
-                simlist = horzcat(simlist(~eind), simlist(eind));
-                vals = vals(~eind);
-                if ismember(type, {'scalar', 'boolean'})
-                    vals = vertcat(vals{:});
-                elseif strcmp(type, 'vector')
-                    error('vectors cannot be ordered');
-                end
-                if usefunc
-                    vals = func(vals);
-                end
-                [~, ind] = sort(vals);
-                ne = nnz(~eind);
-                sortedsimlist = simlist;
-                sortedsimlist(1 : ne) = simlist(ind);
+                
             end
+            [vals, type] = getParameterValue(bp, simlist, paramname);
+            eind = cellfun(@(val) isempty(val), vals);
+            simlist = horzcat(simlist(~eind), simlist(eind));
+            vals = vals(~eind);
+            if ismember(type, {'scalar', 'boolean'})
+                vals = vertcat(vals{:});
+            elseif strcmp(type, 'vector')
+                error('vectors cannot be ordered');
+            end
+            
+            if usefunc
+                vals = func(vals);
+            end
+            
+            [~, ind] = sort(vals);
+            switch direction
+              case 'ascend'
+                % do nothing
+              case 'descend'
+                ind = ind(end : -1 : 1);
+              otherwise
+                error('direction not recognized');
+            end
+            ne = nnz(~eind);
+            sortedsimlist = simlist;
+            sortedsimlist(1 : ne) = simlist(ind);
             if ~isempty(rest)
                 sortedsimlist = sortSimList(bp, sortedsimlist, rest{:});
             end
@@ -348,7 +362,7 @@ classdef BatchProcessor
                 if isfield(s, paramname)
                     paramval = s.(paramname);
                     take = false;
-                    if isempty(filter)
+                    if (isempty(filter) | strcmp(filter, 'undefined'))
                         if isempty(paramval)
                             take = true;
                         end
