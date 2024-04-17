@@ -348,7 +348,7 @@ classdef BatchProcessor
                 if isfield(s, paramname)
                     paramval = s.(paramname);
                     take = false;
-                    if isempty(filter)
+                    if (isempty(filter) | strcmp(filter, 'undefined'))
                         if isempty(paramval)
                             take = true;
                         end
