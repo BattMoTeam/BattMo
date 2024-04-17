@@ -50,8 +50,8 @@ classdef BaseModel < PhysicalModel
         % - registerVarName 
         % - registerVarNames
         % - registerPropFunction
-        % - registerStaticVarName
-        % - registerStaticVarNames
+        % - setAsStaticVarName
+        % - setAsStaticVarNames
         % - setAsExtraVarName
         % - setAsExtraVarNames
         %
@@ -444,9 +444,33 @@ classdef BaseModel < PhysicalModel
             end
 
             cleanState = model.addStaticVariables(cleanState, state);
+            cleanState = model.addVariablesAfterConvergence(cleanState, state);
             
             state = cleanState;
             report = [];
+            
+        end
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+        % Function called in updateAfterConvergence
+            
+            submodelnames = model.getSubModelNames();
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+
+                if isfield(state, submodelname)
+                    
+                    if ~isfield(newstate, submodelname)
+                        newstate.(submodelname) = [];
+                    end
+                    
+                    newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+                    
+                end
+
+            end
             
         end
         
