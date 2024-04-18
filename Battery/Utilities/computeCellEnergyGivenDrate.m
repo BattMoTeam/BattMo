@@ -1,5 +1,5 @@
-function output = computeCellEnergyGivenCrate(model, CRate, varargin)
-% Given a model and a CRate, compute the produced energy
+function output = computeCellEnergyGivenDrate(model, DRate, varargin)
+% Given a model and a DRate, compute the produced energy
 % The output consists of the fields
 % - energy
 % - dischargeFunction
@@ -9,6 +9,7 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
 
     opt = struct('computationType'   , 'sharp', ...
                  'lowerCutoffVoltage', []     , ...
+                 'verbose'           , true   , ...
                  'cutoffparams'      , []);
     opt = merge_options(opt, varargin{:});
 
@@ -30,9 +31,9 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
     assert(strcmp(model.Control.controlPolicy, "CCDischarge"), 'The model should be setup with CCDischarge control');
 
     capacity = computeCellCapacity(model);
-    Imax = (capacity/hour)*CRate;
+    Imax = (capacity/hour)*DRate;
 
-    model.Control.CRate       = CRate;
+    model.Control.DRate       = DRate;
     model.Control.Imax        = Imax;
     model.Control.useCVswitch = true;
 
@@ -72,8 +73,10 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
             cutoffparams = opt.cutoffparams;
         end
 
-        cutoff = @(E) cutoffGeneric(E, cutoffparams);
+        dt = diff(time);
+        dt = [time(1); dt];
 
+        cutoff = @(E) cutoffGeneric(E, cutoffparams);
         energy = sum(I.*E.*cutoff(E).*dt);
 
         E = E.*cutoff(E);
@@ -82,7 +85,15 @@ function output = computeCellEnergyGivenCrate(model, CRate, varargin)
         % We detect the lowercutoffvoltage point
 
         ind = find(E <= lowerCutoffVoltage, 1, 'first');
-        ind = (1 : ind)';
+
+        if isempty(ind)
+            if opt.verbose
+                warning('The lower cutoff voltage has not been reached, probably due to convergence issue. We use the last value of the simulation')
+            end
+            ind = (1 : numel(E))';
+        else
+            ind = (1 : ind)';
+        end
 
         I  = I(ind);
         E  = E(ind);

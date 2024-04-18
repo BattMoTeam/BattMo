@@ -3,11 +3,15 @@ classdef CCDischargeControlModel < CCcontrolModel
 
     properties
 
-        Imax
+        DRate
+        
         rampupTime
         useCVswitch
         lowerCutoffVoltage
-        
+
+        % This value is initiated depending on DRate and battery model
+        Imax
+
     end
     
     methods
@@ -16,7 +20,8 @@ classdef CCDischargeControlModel < CCcontrolModel
             
             model = model@CCcontrolModel(inputparams);
             
-            fdnames = {'rampupTime', ...
+            fdnames = {'DRate'      , ...
+                       'rampupTime' , ...
                        'useCVswitch', ...
                        'lowerCutoffVoltage'};
 
@@ -41,22 +46,21 @@ classdef CCDischargeControlModel < CCcontrolModel
         function  func = setupControlFunction(model)
 
             tup  = model.rampupTime;
-            Imax = model.Imax;
             Umin = model.lowerCutoffVoltage;
 
             if model.useCVswitch
                 
-                func = @(time, I, E) rampupSwitchControl(time, ...
-                                                         tup , ...
-                                                         I   , ...
-                                                         E   , ...
-                                                         Imax, ...
-                                                         Umin);
+                func = @(time, I, E, Imax) rampupSwitchControl(time, ...
+                                                               tup , ...
+                                                               I   , ...
+                                                               E   , ...
+                                                               Imax, ...
+                                                               Umin);
             else
                 
-                func = @(time) rampupControl(time, ...
-                                             tup , ...
-                                             Imax);
+                func = @(time, Imax) rampupControl(time, ...
+                                                   tup , ...
+                                                   Imax);
             end
                 
         end

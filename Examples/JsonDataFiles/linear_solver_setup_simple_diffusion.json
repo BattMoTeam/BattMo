@@ -1,0 +1,33 @@
+{"library" : "matlab",
+ "method" : "separate-variable-gmres",
+ "gmres_options" : {"restart" : "default",
+                    "tol" : "default",
+                    "maxit" : 10},
+ "reduction" : {"doReduction" : true,
+                "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                               {"name" : ["Control", "E"], "order" : 2, "special" : true},
+                               {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" :  3},
+                               {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" :  4},
+                               {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 5},
+                               {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order": 6}
+                              ]
+               },
+ "preconditioners" : [
+   {
+     "name" : "potential",
+     "variables" : [["Electrolyte", "phi"],
+                    ["NegativeElectrode", "Coating", "phi"],
+                    ["PositiveElectrode", "Coating", "phi"],
+                    ["NegativeElectrode", "CurrentCollector", "phi"],
+                    ["PositiveElectrode", "CurrentCollector", "phi"],
+                    ["Control", "E"]
+                   ],
+     "solver" : {"library" : "agmg"}
+   },
+   {
+     "name": "Temperature",
+     "variables" : [["ThermalModel", "T"]],
+     "solver" : {"library" : "amgcl"}
+   }
+ ]
+}

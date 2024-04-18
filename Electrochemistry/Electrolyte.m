@@ -190,6 +190,28 @@ classdef Electrolyte < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'density'                        , ...
+                       'ionicConductivity'              , ...
+                       'diffusionCoefficient'           , ...
+                       'bruggemanCoefficient'           , ...
+                       'thermalConductivity'            , ...
+                       'specificHeatCapacity'           , ...
+                       'effectiveThermalConductivity'   , ...
+                       'effectiveVolumetricHeatCapacity', ...
+                       'use_thermal'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+
+
         function state = updateMassConservation(model, state)
 
             accum    = state.massAccum;

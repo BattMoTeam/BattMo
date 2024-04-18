@@ -287,7 +287,7 @@ classdef EquilibriumCalibrationSetup
             co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
-            sd      = "SolidDiffusion";
+            sd      = 'SolidDiffusion';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
             

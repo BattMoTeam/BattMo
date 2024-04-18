@@ -35,10 +35,18 @@ function [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct)
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
+    if isprop(model.Control, 'Imax')
+        ImaxRef = model.Control.Imax;
+    elseif isprop(model.Control, 'ImaxDischarge')
+        ImaxRef = model.Control.ImaxDischarge;
+    else
+        ImaxRef = [];
+    end
+        
     if isfield(jsonstruct.NonLinearSolver, 'nonlinearTolerance') && ~isempty(jsonstruct.NonLinearSolver.nonlinearTolerance)
         model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
-    elseif ~isempty(model.Control.Imax)
-        model.nonlinearTolerance = 1e-3*model.Control.Imax;
+    elseif ~isempty(ImaxRef)
+        model.nonlinearTolerance = 1e-3*ImaxRef;
     else
         % some default value
         model.nonlinearTolerance = 1e-5;

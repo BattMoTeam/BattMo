@@ -101,6 +101,21 @@ classdef ElectronicComponent < BaseModel
             model.G.parentGrid.tPFVgeometry = tPFVgeometry;
 
         end
+        
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'electronicConductivity'         , ...          
+                       'effectiveElectronicConductivity', ... 
+                       'use_thermal'};
+        
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
 
         function state = updateConductivity(model, state)
             % default function to update conductivity

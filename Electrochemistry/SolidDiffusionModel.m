@@ -15,7 +15,8 @@ classdef SolidDiffusionModel < BaseModel
         volumetricSurfaceArea         % surface area of the active material - electrolyte interface per volume of electrode
 
         % Advanced input parameters
-        volumeFraction % the ratio of the volume of the active material to the total volume
+        volumeFraction % the ratio of the volume of the active material to the total volume (coating + electrolyte)
+                       % This value is typically setup in the coating model.
 
     end
 
@@ -68,6 +69,23 @@ classdef SolidDiffusionModel < BaseModel
             model = model.registerPropFunction({'D', fn, inputnames});
 
         end
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'particleRadius'               , ...
+                       'activationEnergyOfDiffusion'  , ...
+                       'referenceDiffusionCoefficient', ...
+                       'volumetricSurfaceArea'        , ...
+                       'volumeFraction'};
+
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
 
         function state = updateDiffusionCoefficient(model, state)
 

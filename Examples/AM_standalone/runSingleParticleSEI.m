@@ -31,7 +31,6 @@ switch controlPolicy
   case 'CV'
     inputparams_control = CvControlModelInputParams([]);
     inputparams_control.inputVoltage = 4.5;
-    inputparams_control.CRate = 0.5; % not used in this case
     inputparams.Control = inputparams_control;
   otherwise
     error('control policy not recognized')
@@ -53,9 +52,10 @@ inputparams.(ct).G = Grid(G);
 model = SingleParticleSEI(inputparams);
 model = model.equipModelForComputation();
 
-% Normally in CCCV control, the current value is computed from CRate but, here, we set it up directly
+% Normally in CCCV control, the current value is computed from DRate but, here, we set it up directly
 if strcmp(model.(ctrl).controlPolicy, 'CCCV')
-    model.(ctrl).Imax = 1.8;
+    model.(ctrl).ImaxCharge    = 1.1;
+    model.(ctrl).ImaxDischarge = 1.8;
 end
 
 dograph = false;

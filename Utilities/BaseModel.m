@@ -50,10 +50,10 @@ classdef BaseModel < PhysicalModel
         % - registerVarName 
         % - registerVarNames
         % - registerPropFunction
-        % - registerStaticVarName
-        % - registerStaticVarNames
-        % - registerExtraVarName
-        % - registerExtraVarNames
+        % - setAsStaticVarName
+        % - setAsStaticVarNames
+        % - setAsExtraVarName
+        % - setAsExtraVarNames
         %
         % This function can be used to modify the same list but for the submodels.
         %
@@ -190,7 +190,13 @@ classdef BaseModel < PhysicalModel
                 error('varname not recognized');
             end
             
-            
+        end
+
+        
+        function model = unsetAsExtraVarName(model, varname)
+
+            model.extraVarNameList = BaseModel.removeVarNameFromList(varname, model.extraVarNameList);
+
         end
 
         function model = registerPropFunction(model, propfunc)
@@ -444,9 +450,33 @@ classdef BaseModel < PhysicalModel
             end
 
             cleanState = model.addStaticVariables(cleanState, state);
+            cleanState = model.addVariablesAfterConvergence(cleanState, state);
             
             state = cleanState;
             report = [];
+            
+        end
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+        % Function called in updateAfterConvergence
+            
+            submodelnames = model.getSubModelNames();
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+
+                if isfield(state, submodelname)
+                    
+                    if ~isfield(newstate, submodelname)
+                        newstate.(submodelname) = [];
+                    end
+                    
+                    newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+                    
+                end
+
+            end
             
         end
         
@@ -497,36 +527,6 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-
-        
-        function scale = getScales()
-            scale = [];
-            error();
-        end
-        
-        function [state, report] = updateStateNew(model, state, problem, dx, drivingForces)
-            
-            scales = model.getScales();
-            for i = 1:numel(problem.primaryVariables)
-                p = problem.primaryVariables{i};
-                % Update the state
-                scale=model.getProp(scales,p);
-                if(isempty(scale))
-                     state = model.updateStateFromIncrement(state, dx{i}, ...
-                                                            problem, p);
-                else
-                    state = model.updateStateFromIncrement(state, dx{i}, ...
-                                                           problem, p, ...
-                                                           scale.relchangemax, ...
-                                                           scale.abschangemax);
-                    val = model.getProp(state, p);
-                    val = max(val,scale.min);
-                    val = min(val,scale.max);
-                    state = model.setProp(state, p, val);
-                end               
-            end
-            report = []
-        end
         
         function state = reduceState(model, state, removeContainers)
             state = value(state, false);
@@ -575,11 +575,6 @@ classdef BaseModel < PhysicalModel
             opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
             opt = merge_options(opt, varargin{:});
             
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            time = state0.time + dt;
-
             if ~opt.ResOnly
                 state = model.initStateAD(state);
             end
@@ -676,6 +671,23 @@ classdef BaseModel < PhysicalModel
             
         end
 
+        function jsonstruct = exportParams(model)
+
+            submodelnames = model.getSubModelNames();
+
+            if numel(submodelnames) > 0
+                for isubmodel = 1 : numel(submodelnames)
+
+                    submodelname = submodelnames{isubmodel};
+
+                    jsonstruct.(submodelname) = model.(submodelname).exportParams();
+                    
+                end
+            else
+                jsonstruct = [];
+            end
+        end
+        
         function cgt = cgt(model)
         % Shortcut to retrieve the computational graph
             if isempty(model.computationalGraph)
@@ -685,8 +697,9 @@ classdef BaseModel < PhysicalModel
         end
 
         function cgp = cgp(model)
-        % Shortcut to setup and retrieve the computational graph plot 
-            cgp = ComputationalGraphPlot(model.computationalGraph);
+        % Shortcut to setup and retrieve the computational graph plot
+            cgt = model.cgt;
+            cgp = ComputationalGraphPlot(cgt);
         end
 
 
@@ -698,6 +711,12 @@ classdef BaseModel < PhysicalModel
             else
                 G = model.G;
             end
+            
+        end
+
+        function model = validateModel(model, varargin)
+
+        % By default, discard validateModel from MRST
             
         end
         
@@ -732,6 +751,31 @@ classdef BaseModel < PhysicalModel
         end
         
 
+        function varnames = removeVarNameFromList(varname, varnames)
+
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'VarName')
+                % remove from varnames
+                nvars = numel(varnames);
+                keep = true(nvars, 1);
+                for ivar = 1 : nvars
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.extractVarName(varname, varnames{ivar});
+                    if found
+                        break;
+                    end
+                end
+                varnames = varnames(keep);
+            else
+                error('varname not recognized');
+            end
+            
+        end
+        
     end
     
 end

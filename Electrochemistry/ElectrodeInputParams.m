@@ -40,11 +40,11 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         function inputparams = validateInputParams(inputparams)
 
-            am = 'Coating';
+            co = 'Coating';
             cc = 'CurrentCollector';
 
-            inputparams = mergeParameters(inputparams, {{'use_thermal'}, {am, 'use_thermal'}});
-            inputparams.(am) = inputparams.(am).validateInputParams();
+            inputparams = mergeParameters(inputparams, {{'use_thermal'}, {co, 'use_thermal'}});
+            inputparams.(co) = inputparams.(co).validateInputParams();
 
             if ~isempty(inputparams.include_current_collectors)
                 inputparams = mergeParameters(inputparams, {{'use_thermal'}, {cc, 'use_thermal'}});

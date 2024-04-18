@@ -51,10 +51,10 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
 
 
 %%
-% We adjust the total time with respect to the given CRate.
+% We adjust the total time with respect to the given DRate.
 
-CRate = jsonstruct.Control.CRate;
-jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
+DRate = jsonstruct.Control.DRate;
+jsonstruct.TimeStepping.totalTime = 1.4*hour/DRate;
 jsonstruct.TimeStepping.numberOfTimeSteps = 40;
 
 %% We start the simulation

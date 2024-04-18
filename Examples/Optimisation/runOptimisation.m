@@ -74,7 +74,7 @@ end
 simulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
 NPratio = 1.1;
-paramsetter = NPlengthSetter1D(model, gridgen, NPratio);
+paramsetter = NPlengthPorositySetter1D(model, gridgen, NPratio);
 
 getValues = @(model, notused) paramsetter.getValues(model);
 setValues = @(model, notused, v) paramsetter.setValues(model, v);

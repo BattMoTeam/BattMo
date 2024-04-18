@@ -7,7 +7,7 @@
   "Control": {
     "controlPolicy": "CCDischarge",
     "rampupTime": 1,
-    "CRate": 1,
+    "DRate": 1,
     "lowerCutoffVoltage": 2.5,
     "upperCutoffVoltage": 4.1
   },

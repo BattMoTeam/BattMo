@@ -54,10 +54,11 @@ inputparams = BatteryInputParams(jsonstruct);
 use_cccv = false;
 if use_cccv
     cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                         'CRate'             , 1         , ...
-                         'lowerCutoffVoltage', 2.4       , ...
-                         'upperCutoffVoltage', 4.1       , ...
-                         'dIdtLimit'         , 0.01      , ...
+                         'CRate'             , 1.5 , ...
+                         'DRate'             , 1   , ...
+                         'lowerCutoffVoltage', 2.4 , ...
+                         'upperCutoffVoltage', 4.1 , ...
+                         'dIdtLimit'         , 0.01, ...
                          'dEdtLimit'         , 0.01);
     cccvinputparams = CcCvControlModelInputParams(cccvstruct);
     inputparams.Control = cccvinputparams;
@@ -95,7 +96,7 @@ end
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
 
-CRate = model.Control.CRate;
+DRate = model.Control.DRate;
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its
@@ -103,9 +104,10 @@ CRate = model.Control.CRate;
 % operation.
 switch model.(ctrl).controlPolicy
   case 'CCCV'
-    total = 3.5*hour/CRate;
+    CRate = model.Control.CRate;
+    total = 1.5*hour/(DRate + CRate);
   case 'CCDischarge'
-    total = 1.4*hour/CRate;
+    total = 1.4*hour/DRate;
   otherwise
     error('control policy not recognized');
 end

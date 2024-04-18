@@ -29,6 +29,23 @@ classdef ConductingAdditive < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
         end
+
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'electronicConductivity', ... 
+                       'density'               , ...                
+                       'massFraction'          , ...           
+                       'thermalConductivity'   , ...    
+                       'specificHeatCapacity'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
         
     end
 end

@@ -94,17 +94,17 @@ inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 model = Battery(inputparams);
 
 %% Setup schedule
-CRate = 1;
+DRate = 1;
 
 fac   = 2;
-total = 0.4*hour/CRate;
+total = 0.4*hour/DRate;
 n     = 10/2;
 dt0   = total*1e-6;
 times = getTimeSteps(dt0, n, total, fac);
 
-%% We compute the cell capacity, which used to compute schedule from CRate
+%% We compute the cell capacity, which used to compute schedule from DRate
 C = computeCellCapacity(model);
-inputI = (C/hour)*CRate;
+inputI = (C/hour)*DRate;
 inputE = 3;
 
 tt = times(2 : end);
@@ -113,7 +113,7 @@ step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
 keyboard;
 
-tup = 0.1/CRate;
+tup = 0.1/DRate;
 
 simcase = 'discharge';
 

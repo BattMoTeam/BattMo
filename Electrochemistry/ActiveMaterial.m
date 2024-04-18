@@ -151,6 +151,24 @@ classdef ActiveMaterial < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'electronicConductivity', ... 
+                       'density'               , ...                
+                       'massFraction'          , ...           
+                       'thermalConductivity'   , ...    
+                       'specificHeatCapacity'  , ...   
+                       'diffusionModelType'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);

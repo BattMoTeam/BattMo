@@ -52,12 +52,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             D = inputparams.diffusionCoefficient;
             if ~isempty(D)
-                switch inputparams.D.type
+                switch D.type
                   case 'constant'
                     model.useDFunc = false;
                   case 'function'
                     model.useDFunc = true;
-                    model.computeDFunc = str2func(inputparams.D.functionname);
+                    model.computeDFunc = str2func(D.functionname);
                   otherwise
                     errror('type of D not recognized.')
                 end
@@ -274,6 +274,25 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@SolidDiffusionModel(model);
+
+            fdnames = {'diffusionCoefficient'   , ...
+                       'saturationConcentration', ...
+                       'guestStoichiometry100'  , ...
+                       'guestStoichiometry0'    , ...
+                       'useDFunc'               , ...
+                       'computeDFunc'};
+
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+
+
         function state = updateMassSource(model, state)
 
             op  = model.operators;
@@ -293,9 +312,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             if model.useDFunc
 
                 computeD = model.computeDFunc;
-                cmax     = model.cmax;
-                theta0   = model.theta0;
-                theta100 = model.theta100;
+                cmax     = model.saturationConcentration;
+                theta0   = model.guestStoichiometry0;
+                theta100 = model.guestStoichiometry100;
 
                 c = state.c;
 

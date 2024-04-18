@@ -39,7 +39,7 @@ classdef Coating < ElectronicComponent
         compInds  % index of the sub models in the massFractions structure
         compnames % names of the components
 
-        
+        specificVolumes % One value per component (ActiveMaterial, Binder, ConductingAdditive) giving the specific volume (volume of 1kg of the component)
     end
 
     methods
@@ -101,17 +101,16 @@ classdef Coating < ElectronicComponent
                 end
             end
 
-            model.compInds = compInds;
+            model.compInds        = compInds;
+            model.specificVolumes = specificVolumes;
+            
+            % We treat special cases for the specific volumes
 
-            % We treat special cases
-
+            use_am_only = false;
             switch model.active_material_type
               case {'default', 'sei'}
                 if all(specificVolumes == 0)
-                    % No data has been given, we assume that there is no binder and conducting additive
-                    model.volumeFractions = zeros(numel(compnames), 1);
-                    model.volumeFractions(compInds.(am)) = 1;
-                    model.(am).massFraction = 1;
+                    use_am_only = true;
                 else
                     if specificVolumes(compInds.(am)) == 0
                         error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
@@ -132,13 +131,22 @@ classdef Coating < ElectronicComponent
 
                 updateMassFractions = false;
 
-                volumeFractions = zeros(numel(compnames), 1);
-                sumSpecificVolumes = sum(specificVolumes);
-                for icomp = 1 : numel(compnames)
-                    volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
-                end
+                if use_am_only
+                    % No data has been given, we assume that there is no binder and conducting additive
+                    model.volumeFractions = zeros(numel(compnames), 1);
+                    model.volumeFractions(compInds.(am)) = 1;
+                    inputparams.(am).massFraction = 1;
+                    inputparams.(bd).massFraction = 0;
+                    inputparams.(ad).massFraction = 0;
+                else                    
+                    volumeFractions = zeros(numel(compnames), 1);
+                    sumSpecificVolumes = sum(specificVolumes);
+                    for icomp = 1 : numel(compnames)
+                        volumeFractions(icomp) = specificVolumes(icomp)/sumSpecificVolumes;
+                    end
 
-                model.volumeFractions = volumeFractions;
+                    model.volumeFractions = volumeFractions;
+                end
 
             else
 
@@ -188,43 +196,6 @@ classdef Coating < ElectronicComponent
 
             end
 
-            %% We setup the thermal parameters
-
-            if model.use_thermal
-
-                %% We setup the thermal conductivities
-
-                if isempty(model.thermalConductivity)
-                    bg = model.bruggemanCoefficient;
-                    thermalConductivity = 0;
-                    for icomp = 1 : numel(compnames)
-                        compname = compnames{icomp};
-                        thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
-                    end
-                    model.thermalConductivity = thermalConductivity;
-                end
-
-                if isempty(model.effectiveThermalConductivity)
-                    bg = model.bruggemanCoefficient;
-                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
-                end
-
-                %% We setup the thermal capacities
-
-                if isempty(model.specificHeatCapacity)
-                    specificHeatCapacity = 0;
-                    for icomp = 1 : numel(compnames)
-                        compname = compnames{icomp};
-                        specificHeatCapacity = specificHeatCapacity + inputparams.(compname).massFraction*inputparams.(compname).specificHeatCapacity;
-                    end
-                    model.specificHeatCapacity = specificHeatCapacity;
-                end
-
-                if isempty(model.effectiveVolumetricHeatCapacity)
-                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.effectiveDensity*model.specificHeatCapacity;
-                end
-
-            end
 
             %% Setup the submodels
 
@@ -265,17 +236,58 @@ classdef Coating < ElectronicComponent
 
             if updateMassFractions
 
-                model = model.updateMassFractions();
+                inputparams = model.updateMassFractions(inputparams);
 
             end
 
             if updateEffectiveDensity
 
-                model = model.updateEffectiveDensity();
+                model = model.updateEffectiveDensity(inputparams);
 
             end
 
 
+            %% We setup the thermal parameters
+
+            if model.use_thermal
+
+                %% We setup the thermal conductivities
+
+                if isempty(model.thermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    thermalConductivity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        if ~isempty(model.(compname).thermalConductivity)
+                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
+                        end
+                    end
+                    model.thermalConductivity = thermalConductivity;
+                end
+
+                if isempty(model.effectiveThermalConductivity)
+                    bg = model.bruggemanCoefficient;
+                    model.effectiveThermalConductivity = (model.volumeFraction).^bg.*model.thermalConductivity;
+                end
+
+                %% We setup the thermal capacities
+
+                if isempty(model.specificHeatCapacity)
+                    specificHeatCapacity = 0;
+                    for icomp = 1 : numel(compnames)
+                        compname = compnames{icomp};
+                        if ~isempty(inputparams.(compname).specificHeatCapacity)
+                            specificHeatCapacity = specificHeatCapacity + inputparams.(compname).massFraction*inputparams.(compname).specificHeatCapacity;
+                        end
+                    end
+                    model.specificHeatCapacity = specificHeatCapacity;
+                end
+
+                if isempty(model.effectiveVolumetricHeatCapacity)
+                    model.effectiveVolumetricHeatCapacity = model.volumeFraction*model.effectiveDensity*model.specificHeatCapacity;
+                end
+
+            end
 
         end
 
@@ -403,14 +415,14 @@ classdef Coating < ElectronicComponent
 
         end
 
-        function model = updateMassFractions(model)
+        function inputparams = updateMassFractions(model, inputparams)
 
             compnames = model.compnames;
 
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
-                if ~isempty(model.(compname).density)
-                    massfractions(icomp) = model.(compname).density*model.volumeFractions(icomp);
+                if ~isempty(inputparams.(compname).density)
+                    massfractions(icomp) = inputparams.(compname).density*model.volumeFractions(icomp);
                 else
                     massfractions(icomp) = 0;
                 end
@@ -420,12 +432,33 @@ classdef Coating < ElectronicComponent
 
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
-                model.(compname).massFraction = massfractions(icomp);
+                inputparams.(compname).massFraction = massfractions(icomp);
             end
 
         end
 
-        function model = updateEffectiveDensity(model)
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@ElectronicComponent(model);
+            
+            fdnames = {'effectiveDensity'            , ...     
+                       'bruggemanCoefficient'        , ... 
+                       'volumeFractions'             , ...                 
+                       'volumeFraction'              , ...
+                       'thermalConductivity'         , ...             
+                       'specificHeatCapacity'        , ...            
+                       'effectiveThermalConductivity', ...    
+                       'effectiveVolumetricHeatCapacity' };
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
+        
+        function model = updateEffectiveDensity(model, inputparams)
 
             compnames = model.compnames;
             vf = model.volumeFraction;
@@ -433,7 +466,7 @@ classdef Coating < ElectronicComponent
             for icomp = 1 : numel(compnames)
                 compname = compnames{icomp};
                 if ~isempty(model.(compname).density)
-                    massfractions(icomp) = model.(compname).density*model.volumeFractions(icomp);
+                    massfractions(icomp) = inputparams.(compname).density*model.volumeFractions(icomp);
                 else
                     massfractions(icomp) = 0;
                 end
@@ -585,12 +618,15 @@ classdef Coating < ElectronicComponent
             theta0   = model.(am).(itf).guestStoichiometry0;
 
             c = state.(am).(sd).cAverage;
-
+            
+            %% We do not use the gueststochiometry value to compute the State of Charge
+            
             theta = c/cmax;
-            m     = (1 ./ (theta100 - theta0));
-            b     = -m .* theta0;
-            SOC   = theta*m + b;
-            vol   = am_frac*vf.*vols;
+            % m     = (1 ./ (theta100 - theta0));
+            % b     = -m .* theta0;
+            % SOC   = theta*m + b;
+            SOC = theta;
+            vol = am_frac*vf.*vols;
 
             SOC = sum(SOC.*vol)/sum(vol);
 
@@ -623,10 +659,15 @@ classdef Coating < ElectronicComponent
 
                 vol = am_frac*vf.*vols;
 
+                %% We do not use the gueststochiometry value to compute the State of Charge
+                
                 molvals(iam)    = sum(c.*vol);
-                molval0s(iam)   = theta0*cmax*sum(vol);
-                molval100s(iam) = theta100*cmax*sum(vol);
+                % molval0s(iam)   = theta0*cmax*sum(vol);
+                % molval100s(iam) = theta100*cmax*sum(vol);
 
+                molval0s(iam)   = 0;
+                molval100s(iam) = cmax*sum(vol);
+                
                 state.(amc).SOC = (molvals(iam) - molval0s(iam))/(molval100s(iam) - molval0s(iam));
 
             end
