@@ -23,20 +23,22 @@ jobs:
         packages: scheme-basic  # Or choose the appropriate package scheme
         cache: false
     
-    - name: Update symbolic link for LaTeX
-      run: ln -sf /home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex $(which latex)
+    # - name: Update symbolic link for LaTeX
+    #   run: ln -sf /home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex $(which latex)
     - name: Check LaTeX permissions
       run: |
         ls -l $(which latex)
-        LS -L $(which dvipng)
+        ls -l $(which dvipng)
         ls -ld $(dirname $(which latex))
     - name: Add LaTeX and dvipng directories to PATH
       run: |
         echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
+        echo "PATH=$PATH:/home/runner/local/texlive/2024/bin/x86_64-linux" >> $GITHUB_ENV
+
     - name: Print PATH
       run: echo $PATH  
     - name: Replace placeholder with actual path in conf.py
-      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex'|g" Documentation/conf.py
+      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/local/texlive/2024/bin/x86_64-linux'|g" Documentation/conf.py
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
