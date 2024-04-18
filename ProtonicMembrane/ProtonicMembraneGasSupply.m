@@ -806,6 +806,23 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
+        function state = updatePressures(model, state)
+
+            mws  = model.molecularWeights;
+            nGas = model.nGas;
+
+            mfs = state.massfractions;
+
+            tot = mfs{1}/mws(1) + mfs{2}/mws(2);
+            
+            for igas = 1 : nGas
+                cf = (mfs{igas}/mws(igas))./tot;
+                state.pressures{igas} = cf.*state.pressure;
+            end
+            
+        end
+
+        
         
         function state = updateDensity(model, state)
 

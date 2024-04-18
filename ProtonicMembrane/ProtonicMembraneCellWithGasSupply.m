@@ -57,7 +57,8 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             ct    = 'Cathode';
             elyte = 'Electrolyte';
             ctrl  = 'Control';
-
+            itf   = 'Interface';
+            
             nGas = model.GasSupply.nGas;
 
             varnames = {};
@@ -68,21 +69,25 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             varnames{end + 1} = 'time';
             % Coupling damping variable
             varnames{end + 1} = 'beta';
-            % pressure variable at the interface
-            varnames{end + 1} = {'Interface', 'pressure'};
-            varnames{end + 1} = VarName({'Interface'}, 'massfractions', nGas);
             varnames{end + 1} = VarName({'Interface'}, 'pressures', nGas);
+            varnames{end + 1} = VarName({'GasSupply', 'GasSupplyBc'}, 'pressures', nGas);
             
             model = model.registerVarNames(varnames);
 
-            fn = @ProtonicMembraneCellWithGasSupply.updateInterface;
-            inputvarnames = {{'Interface', 'pressure'},
-                             VarName({'Interface'}, 'massfractions', nGas, 1);
-                            };
-            outputvarname = VarName({'Interface'}, 'pressures', nGas);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            outputvarname = VarName({'Interface'}, 'massfractions', nGas, 2);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            % The partial pressures are not used directly in assembly but we want to compute them in post-processing
+            model = model.setAsExtraVarName(VarName({'GasSupply', 'GasSupplyBc'}, 'pressures', nGas));
+
+            submodels = {{itf}, {'GasSupply', 'GasSupplyBc'}};
+            for isub = 1 : numel(submodels)
+                submodel = submodels{isub};
+                fn            = @(model, state) ProtonicMembraneGasSupply.updatePressures(model, state);
+                inputvarnames = {VarName(submodel, 'massfractions', nGas), ...
+                                 VarName(submodel, 'pressure')};
+                outputvarname = VarName(submodel, 'pressures', nGas);
+                fncallsetup   = @(prop) PropFunction.literalFunctionCallSetupFn(prop);
+                propfunc = PropFunction(outputvarname, fn, inputvarnames, submodel, fncallsetup);
+                model = model.registerPropFunction(propfunc);
+            end
             
             fn =  @ProtonicMembraneCellWithGasSupply.updateInterfaceEquation;
             inputvarnames = {VarName({'Interface'}, 'massFluxes', nGas)   , ...
@@ -286,27 +291,6 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
         end
 
-        function state = updateInterface(model, state)
-
-            itf = 'Interface';
-            
-            mws  = model.GasSupply.molecularWeights;
-            nGas = model.GasSupply.nGas;
-
-            mfs{1} = state.(itf).massfractions{1};
-            mfs{2} = 1 - mfs{1};
-
-            tot = mfs{1}/mws(1) + mfs{2}/mws(2);
-            
-            for igas = 1 : nGas
-                cf = (mfs{igas}/mws(igas))./tot;
-                state.(itf).pressures{igas} = cf.*state.(itf).pressure;
-            end
-            
-            state.(itf).massfractions{2} = mfs{2};
-            
-        end
-        
         function state = updateInterfaceEquation(model, state)
             
         % Implementation is basically the same as updateBCequations method in ProtonicMembraneGasSupply, except for the
