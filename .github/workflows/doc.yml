@@ -28,6 +28,7 @@ jobs:
     - name: Check LaTeX permissions
       run: |
         ls -l $(which latex)
+        LS -L $(which dvipng)
         ls -ld $(dirname $(which latex))
     - name: Add LaTeX and dvipng directories to PATH
       run: |
