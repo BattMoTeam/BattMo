@@ -30,15 +30,16 @@ jobs:
         ls -l $(which latex)
         ls -l $(which dvipng)
         ls -ld $(dirname $(which latex))
+        ls -l /usr/local/texlive/2020/bin/x86_64-linux
     - name: Add LaTeX and dvipng directories to PATH
       run: |
         echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
-        echo "PATH=$PATH:/home/runner/local/texlive/2024/bin/x86_64-linux" >> $GITHUB_ENV
+        echo "PATH=$PATH:/usr/local/texlive/2020/bin/x86_64-linux" >> $GITHUB_ENV
 
     - name: Print PATH
       run: echo $PATH  
     - name: Replace placeholder with actual path in conf.py
-      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/local/texlive/2024/bin/x86_64-linux'|g" Documentation/conf.py
+      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/usr/local/texlive/2020/bin/x86_64-linux'|g" Documentation/conf.py
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
