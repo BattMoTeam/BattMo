@@ -94,7 +94,11 @@ classdef ComputationalGraphTool
             extraVarNames = cgt.model.extraVarNameList;
             extraVarNameInds = [];
             for ivar = 1 : numel(extraVarNames);
-                extraVarNameInds(end + 1) = cgt.getVarNameIndex(extraVarNames{ivar});
+                extraVarName = extraVarNames{ivar};
+                extraVarName_s = extraVarName.resolveIndex();
+                for iivar = 1 : numel(extraVarName_s)
+                    extraVarNameInds(end + 1) = cgt.getVarNameIndex(extraVarName_s{iivar});
+                end
             end
             cgt.extraVarNameInds = extraVarNameInds;
 
