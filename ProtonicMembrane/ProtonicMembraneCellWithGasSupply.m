@@ -69,26 +69,12 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             varnames{end + 1} = 'time';
             % Coupling damping variable
             varnames{end + 1} = 'beta';
-            varnames{end + 1} = VarName({'Interface'}, 'pressures', nGas);
-            varnames{end + 1} = VarName({'GasSupply', 'GasSupplyBc'}, 'pressures', nGas);
             
             model = model.registerVarNames(varnames);
 
             % The partial pressures are not used directly in assembly but we want to compute them in post-processing
-            model = model.setAsExtraVarName(VarName({'GasSupply', 'GasSupplyBc'}, 'pressures', nGas));
+            model = model.unsetAsExtraVarName(VarName({'Interface'}, 'pressures', nGas));
 
-            submodels = {{itf}, {'GasSupply', 'GasSupplyBc'}};
-            for isub = 1 : numel(submodels)
-                submodel = submodels{isub};
-                fn            = @(model, state) ProtonicMembraneGasSupply.updatePressures(model, state);
-                inputvarnames = {VarName(submodel, 'massfractions', nGas), ...
-                                 VarName(submodel, 'pressure')};
-                outputvarname = VarName(submodel, 'pressures', nGas);
-                fncallsetup   = @(prop) PropFunction.literalFunctionCallSetupFn(prop);
-                propfunc = PropFunction(outputvarname, fn, inputvarnames, submodel, fncallsetup);
-                model = model.registerPropFunction(propfunc);
-            end
-            
             fn =  @ProtonicMembraneCellWithGasSupply.updateInterfaceEquation;
             inputvarnames = {VarName({'Interface'}, 'massFluxes', nGas)   , ...
                              VarName({'Interface'}, 'massfractions', nGas), ...
