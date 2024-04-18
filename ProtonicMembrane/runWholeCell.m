@@ -25,9 +25,9 @@ jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficie
 %%
 
 %% Adjust rate
-rateMult = 1e-2;
-fprintf('Rate coefficient multiplier : %g\n', rateMult);
-jsonstruct.(gs).control(1).values(1) = rateMult*jsonstruct.(gs).control(1).values(1);
+rate = 2e-6;
+fprintf('Rate value : %g\n', rate);
+jsonstruct.(gs).control(1).values(1) = rate;
 %%
 
 inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
