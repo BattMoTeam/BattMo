@@ -22,7 +22,9 @@ jobs:
       with:
         packages: scheme-basic  # Or choose the appropriate package scheme
         cache: false
-
+    
+    - name: Update symbolic link for LaTeX
+      run: ln -sf /home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex $(which latex)
     - name: Check LaTeX permissions
       run: |
         ls -l $(which latex)
