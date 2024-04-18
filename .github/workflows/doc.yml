@@ -38,7 +38,7 @@ jobs:
     - name: Print PATH
       run: echo $PATH  
     - name: Replace placeholder with actual path in conf.py
-      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex'|g" Documentation/conf.py
+      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/pdftex'|g" Documentation/conf.py
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
