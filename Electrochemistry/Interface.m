@@ -216,7 +216,7 @@ classdef Interface < BaseModel
                 Tref = 298.15;  % [K]
 
                 cmax = model.saturationConcentration;
-keyboard;                k0   = model.reactionRateConstant;
+                k0   = model.reactionRateConstant;
                 Eak  = model.activationEnergyOfReaction;
                 n    = model.numberOfElectronsTransferred;
                 F    = model.constants.F;
