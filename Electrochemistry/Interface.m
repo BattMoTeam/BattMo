@@ -9,7 +9,7 @@ classdef Interface < BaseModel
         %% Input parameters
 
         % Standard parameters
-        
+
         saturationConcentration      % the saturation concentration of the guest molecule in the host material
         numberOfElectronsTransferred % stoichiometric number of electrons transferred in the electrochemical reaction
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
@@ -23,7 +23,7 @@ classdef Interface < BaseModel
         %   - functionname :  matlab function name (should be available in path)
         %   - argumentlist = ["cElectrodeSurface", "cmax"]
         exchangeCurrentDensity
-        
+
         guestStoichiometry100 % the ratio of the concentration of the guest molecule to the saturation concentration
                               % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC
         guestStoichiometry0   % the ratio of the concentration of the guest molecule to the saturation concentration
@@ -35,16 +35,16 @@ classdef Interface < BaseModel
         %   - functionname :  matlab function name (should be available in path)
         %   - argumentlist : ["cElectrode", "T", "cmax"]
         openCircuitPotential
-        
+
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
-        
+
         %% Computed parameters at model setup
-        
+
         computeOCPFunc % Function handler to compute OCP
         useJ0Func      % true if we use a function to compute the function computeJ0Func to compute the exchange current density
         computeJ0Func  % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
-        
+
     end
 
     methods
@@ -65,13 +65,13 @@ classdef Interface < BaseModel
                        'density'                     , ...
                        'openCircuitPotential'        , ...
                        'chargeTransferCoefficient'};
-            
+
             model = dispatchParams(model, inputparams, fdnames);
 
             model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionname);
 
             j0 = inputparams.exchangeCurrentDensity;
-            
+
             if ~isempty(j0)
                 switch j0.type
                   case 'function'
@@ -80,7 +80,7 @@ classdef Interface < BaseModel
                   case 'constant'
                     model.useJ0Func = false;
                   otherwise
-                    errror('type of j0 not recognized.')
+                    error('type of j0 not recognized.')
                 end
             else
                 model.useJ0Func = false;
@@ -89,12 +89,12 @@ classdef Interface < BaseModel
         end
 
         function model = registerVarAndPropfuncNames(model)
-            
+
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
 
             model = registerVarAndPropfuncNames@BaseModel(model);
-            
+
             varnames = {};
             % Temperature
             varnames{end + 1} = 'T';
@@ -112,15 +112,15 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer in case of SEI see :class:`Electrochemistry.SEIActiveMaterial`
             % varnames{end + 1} = 'externalPotentialDrop';
-            % 
+            %
             varnames{end + 1} = 'dUdT';
             % OCP [V]
             varnames{end + 1} = 'OCP';
             % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
-            
+
             model = model.registerVarNames(varnames);
-            
+
             fn = @Interface.updateReactionRateCoefficient;
             if model.useJ0Func
                 inputnames = {'cElectrodeSurface'};
@@ -133,35 +133,35 @@ classdef Interface < BaseModel
             inputnames = {'cElectrodeSurface', 'T'};
             model = model.registerPropFunction({'OCP', fn, inputnames});
             model = model.registerPropFunction({'dUdT', fn, inputnames});
-            
+
             fn = @Interface.updateEta;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};            
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};
             model = model.registerPropFunction({'eta', fn, inputnames});
-            
+
             % This function is used when SEI layer
             % fn = @Interface.updateEtaWithEx;
             % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
-            % model = model.registerPropFunction({'eta', fn, inputnames});            
-            
+            % model = model.registerPropFunction({'eta', fn, inputnames});
+
             fn = @Interface.updateReactionRate;
             inputnames = {'T', 'eta', 'j0'};
             model = model.registerPropFunction({'R', fn, inputnames});
-            
-            
+
+
         end
 
         function jsonstruct = exportParams(model)
 
             jsonstruct = exportParams@BaseModel(model);
 
-            fdnames = {'saturationConcentration'     , ...      
-                       'numberOfElectronsTransferred', ... 
-                       'volumetricSurfaceArea'       , ...        
-                       'activationEnergyOfReaction'  , ...   
-                       'reactionRateConstant'        , ...         
+            fdnames = {'saturationConcentration'     , ...
+                       'numberOfElectronsTransferred', ...
+                       'volumetricSurfaceArea'       , ...
+                       'activationEnergyOfReaction'  , ...
+                       'reactionRateConstant'        , ...
                        'exchangeCurrentDensity'      , ...
-                       'guestStoichiometry100'       , ... 
-                       'guestStoichiometry0'         , ...   
+                       'guestStoichiometry100'       , ...
+                       'guestStoichiometry0'         , ...
                        'openCircuitPotential'        , ...
                        'chargeTransferCoefficient'};
 
@@ -169,17 +169,17 @@ classdef Interface < BaseModel
                 fdname = fdnames{ifd};
                 jsonstruct.(fdname) = model.(fdname);
             end
-                
+
 
         end
-        
+
         function state = dipatchTemperature(model, state)
 
             sd = 'SolidDiffusion';
             state.(sd).T = state.T;
-            
+
         end
-        
+
         function state = updateOCP(model, state)
 
             computeOCP = model.computeOCPFunc;
@@ -189,7 +189,7 @@ classdef Interface < BaseModel
             T = state.T;
 
             [state.OCP, state.dUdT] = computeOCP(c, T, cmax);
-            
+
         end
 
         function state = updateReactionRateCoefficient(model, state)
@@ -201,22 +201,22 @@ classdef Interface < BaseModel
                 cmax      = model.saturationConcentration;
                 theta0    = model.guestStoichiometry0;
                 theta100  = model.guestStoichiometry100;
-                
+
                 c = state.cElectrodeSurface;
 
                 cmin = theta0*cmax;
                 cmax = theta100*cmax;
 
                 soc = (c - cmin)./(cmax - cmin);
-                
+
                 j0 = computeJ0(soc);
 
             else
-                
+
                 Tref = 298.15;  % [K]
 
                 cmax = model.saturationConcentration;
-                k0   = model.reactionRateConstant;
+keyboard;                k0   = model.reactionRateConstant;
                 Eak  = model.activationEnergyOfReaction;
                 n    = model.numberOfElectronsTransferred;
                 F    = model.constants.F;
@@ -225,7 +225,7 @@ classdef Interface < BaseModel
                 T      = state.T;
                 cElyte = state.cElectrolyte;
                 c      = state.cElectrodeSurface;
-                
+
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
@@ -234,9 +234,9 @@ classdef Interface < BaseModel
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
                 j0 = k.*regularizedSqrt(coef, th)*n*F;
-                
+
             end
-            
+
             state.j0 = j0;
 
         end
@@ -250,7 +250,7 @@ classdef Interface < BaseModel
             state.eta = (phiElde - phiElyte - OCP);
 
         end
-        
+
         function state = updateEtaWithEx(model, state)
 
             phiElyte = state.phiElectrolyte;
@@ -261,11 +261,11 @@ classdef Interface < BaseModel
             state.eta = (phiElde - phiElyte - OCP - dphi);
 
         end
-        
-            
+
+
         function state = updateReactionRate(model, state)
         % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
-            
+
             n     = model.numberOfElectronsTransferred;
             F     = model.constants.F;
             alpha = model.chargeTransferCoefficient;
@@ -273,13 +273,13 @@ classdef Interface < BaseModel
             T   = state.T;
             j0  = state.j0;
             eta = state.eta;
-            
+
             R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 
             state.R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
-        
+
     end
 end
 
