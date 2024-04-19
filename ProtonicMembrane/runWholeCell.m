@@ -19,13 +19,13 @@ filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
 
 %% Adjust diffusion
-Dmult = 1e-2;
+Dmult = 1e-3;
 fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
 jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
 %%
 
 %% Adjust rate
-rate = 2e-6;
+rate = 1e-6;
 fprintf('Rate value : %g\n', rate);
 jsonstruct.(gs).control(1).values(1) = rate;
 %%
@@ -103,11 +103,27 @@ if rungaslayer
 
     %% setup scalings
 
+    comptypecouptbl = model.(gs).helpers.comptypecouptbl;
+    ctrlvals        = model.(gs).helpers.ctrlvals;
+
+    clear comptypetbl2
+    comptypetbl2.type = [2]; % type=2 for rate control
+    comptypetbl2.comp = [1]; % component index = 1 for rate value
+    comptypetbl2 = IndexArray(comptypetbl2);
+
+    map = TensorMap();
+    map.fromTbl = comptypecouptbl;
+    map.toTbl = comptypetbl2;
+    map.mergefds = {'comp', 'type'};
+    map = map.setup();
+
+    rate = max(map.eval(ctrlvals));
+
     gasInd = gsmodel.gasInd;
 
     pH2O         = initstate.pressure(1);
     rho          = initstate.density(1);
-    scalFlux     = 1/gsgen.nx*(rho*gsmodel.permeability/gsmodel.viscosity*pH2O + rho*gsmodel.diffusionCoefficients(1))/gsgen.ly;
+    scalFlux     = rate/gen.nxGasSupply;
     scalPressure = pH2O;
     
     gsmodel.scalings = {{{'massConses', 1}, scalFlux}, ...
