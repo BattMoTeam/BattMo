@@ -50,8 +50,8 @@ classdef BaseModel < PhysicalModel
         % - registerVarName 
         % - registerVarNames
         % - registerPropFunction
-        % - registerStaticVarName
-        % - registerStaticVarNames
+        % - setAsStaticVarName
+        % - setAsStaticVarNames
         % - setAsExtraVarName
         % - setAsExtraVarNames
         %
@@ -190,7 +190,13 @@ classdef BaseModel < PhysicalModel
                 error('varname not recognized');
             end
             
-            
+        end
+
+        
+        function model = unsetAsExtraVarName(model, varname)
+
+            model.extraVarNameList = BaseModel.removeVarNameFromList(varname, model.extraVarNameList);
+
         end
 
         function model = registerPropFunction(model, propfunc)
@@ -444,9 +450,33 @@ classdef BaseModel < PhysicalModel
             end
 
             cleanState = model.addStaticVariables(cleanState, state);
+            cleanState = model.addVariablesAfterConvergence(cleanState, state);
             
             state = cleanState;
             report = [];
+            
+        end
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+        % Function called in updateAfterConvergence
+            
+            submodelnames = model.getSubModelNames();
+            
+            for isub = 1 : numel(submodelnames)
+
+                submodelname = submodelnames{isub};
+
+                if isfield(state, submodelname)
+                    
+                    if ~isfield(newstate, submodelname)
+                        newstate.(submodelname) = [];
+                    end
+                    
+                    newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+                    
+                end
+
+            end
             
         end
         
@@ -721,6 +751,31 @@ classdef BaseModel < PhysicalModel
         end
         
 
+        function varnames = removeVarNameFromList(varname, varnames)
+
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'VarName')
+                % remove from varnames
+                nvars = numel(varnames);
+                keep = true(nvars, 1);
+                for ivar = 1 : nvars
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.extractVarName(varname, varnames{ivar});
+                    if found
+                        break;
+                    end
+                end
+                varnames = varnames(keep);
+            else
+                error('varname not recognized');
+            end
+            
+        end
+        
     end
     
 end

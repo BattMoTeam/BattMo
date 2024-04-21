@@ -6,6 +6,10 @@
     "value": 1,
     "unit": "mol/litre"
   },
+  "nominalEthyleneCarbonateConcentration": {
+    "value": 1,
+    "unit": "mol/litre"
+  },
   "ionicConductivity": {
     "type": "function",
     "functionname": "computeElectrolyteConductivity_default",

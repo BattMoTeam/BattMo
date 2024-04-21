@@ -16,6 +16,8 @@ classdef ElectrolyteInputParams < ComponentInputParams
         thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity % Specific Heat capacity of the electrolyte
 
+        nominalEthyleneCarbonateConcentration % only used if a SEI layer is included in the model
+        
         %% Advanced parameters
 
         volumeFraction

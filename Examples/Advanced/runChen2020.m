@@ -19,6 +19,11 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 thermal = 'ThermalModel';
 
+%%
+% We use 5 ampere discharge current
+
+Imax = 5;
+
 % We create an instance of BatteryInputParams. This class is used to initiate the battery simulator and it propagates
 % all the parameters through out the submodels.
 
@@ -41,7 +46,7 @@ model = Battery(inputparams);
 
 %% We fix the input current to 5A
 
-model.Control.Imax = 5*ampere;
+model.Control.Imax = Imax;
 
 %% We setup the schedule
 
@@ -113,6 +118,8 @@ inputparams = BatteryInputParams(jsonstruct);
 inputparams = gen.updateBatteryInputParams(inputparams);
 
 model2 = Battery(inputparams);
+
+model2.Control.Imax = Imax;
 
 % setup initial state (the variables are different for the simplified model and therfore the initialization is not the same)
 

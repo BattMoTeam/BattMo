@@ -195,17 +195,6 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
         end
 
-
-        function G = adjustGridToFaceArea(gen, G)
-
-            fa = gen.faceArea;
-
-            G.faces.areas   = fa*G.faces.areas;
-            G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.getVolumes();
-
-        end
-
     end
 
 

@@ -1,0 +1,58 @@
+{"NonLinearSolver" : {
+  "maxIterations" : 20,
+  "verbose": true,
+  "nonlinearTolerance" : 1e-5,
+  "LinearSolver" : {
+    "linearSolverSetup" : {
+      "library" : "matlab",
+      "method" : "separate-variable-gmres",
+      "verbose" : 2,
+      "options" : {
+        "type" : "jacobi"},
+      "gmres_options" : {
+        "restart" : "default",
+        "tol" : "default",
+        "maxit" : 40},
+      "reduction" : {
+        "doReduction" : true,
+        "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                       {"name" : ["Control", "E"], "order" : 2, "special" : true},
+                       {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" : 3},
+                       {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cAverage"], "order" : 4},
+                       {"name" : ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order" : 5},
+                       {"name" : ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"], "order" : 6}
+                      ]
+      },
+      "preconditioners" : [
+        {
+          "name" : "potential",
+          "variables" : [["Electrolyte", "phi"],
+                         ["NegativeElectrode", "Coating", "phi"],
+                         ["PositiveElectrode", "Coating", "phi"],
+                         ["NegativeElectrode", "CurrentCollector", "phi"],
+                         ["PositiveElectrode", "CurrentCollector", "phi"],
+                         ["Control", "E"]
+                        ],
+          "solver" : {"library" : "amgcl",
+                      "verbose" : 2,
+                      "solver" : {"tol" : 1e-6,
+                                  "verbose" : true}}
+        },
+        {"name" : "concentration in electrolyte",
+         "variables" : [["Electrolyte", "c"]],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}
+        },
+        {
+          "name": "Temperature",
+          "variables" : [["ThermalModel", "T"]],
+          "solver" : {"library" : "amgcl",
+                      "verbose" : 2,
+                      "solver" : {"tol" : 1e-6,
+                                  "verbose" : true}}
+        }
+      ]
+
+    }}}}
