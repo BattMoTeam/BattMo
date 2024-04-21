@@ -190,7 +190,13 @@ classdef BaseModel < PhysicalModel
                 error('varname not recognized');
             end
             
-            
+        end
+
+        
+        function model = unsetAsExtraVarName(model, varname)
+
+            model.extraVarNameList = BaseModel.removeVarNameFromList(varname, model.extraVarNameList);
+
         end
 
         function model = registerPropFunction(model, propfunc)
@@ -745,6 +751,31 @@ classdef BaseModel < PhysicalModel
         end
         
 
+        function varnames = removeVarNameFromList(varname, varnames)
+
+            if isa(varname, 'char')
+                varname = VarName({}, varname);
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'cell')
+                varname = VarName(varname(1 : end - 1), varname{end});
+                varnames = BaseModel.removeVarNameFromList(varname, varnames);
+            elseif isa(varname, 'VarName')
+                % remove from varnames
+                nvars = numel(varnames);
+                keep = true(nvars, 1);
+                for ivar = 1 : nvars
+                    [found, keep(ivar), varnames{ivar}] = BaseModel.extractVarName(varname, varnames{ivar});
+                    if found
+                        break;
+                    end
+                end
+                varnames = varnames(keep);
+            else
+                error('varname not recognized');
+            end
+            
+        end
+        
     end
     
 end
