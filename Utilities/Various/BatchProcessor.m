@@ -324,13 +324,15 @@ classdef BatchProcessor
             if usefunc
                 vals = func(vals);
             end
+
+            [~, ~, ic] = unique(vals, 'sorted');
+            inds = [ic, (1 : numel(vals))'];
             
-            [~, ind] = sort(vals);
             switch direction
               case 'ascend'
-                % do nothing
+                [~, ind] = sortrows(inds);
               case 'descend'
-                ind = ind(end : -1 : 1);
+                [~, ind] = sortrows(inds, [-1, 2]);
               otherwise
                 error('direction not recognized');
             end
