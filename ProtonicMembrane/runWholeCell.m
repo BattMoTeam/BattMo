@@ -380,7 +380,7 @@ else
 
 end
 
-%%
+%% plotting
 
 close all
 
@@ -402,7 +402,7 @@ val = state.(ce).(elyte).pi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('pi')
-xlabel('x [mm]')
+xlabel('x / mm')
 view(45, 31)
 colorbar
 
@@ -411,7 +411,7 @@ val = state.(ce).(elyte).pi - state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('E')
-xlabel('x [mm]')
+xlabel('x / mm')
 view(45, 31)
 colorbar
 
@@ -420,7 +420,7 @@ val = state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('phi')
-xlabel('x [mm]')
+xlabel('x / mm')
 view(73, 12)
 colorbar
 
@@ -437,7 +437,7 @@ Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Mass Fraction H2O');
-xlabel('x [mm]')
+xlabel('x / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -448,7 +448,7 @@ Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Mass Fraction O2');
-xlabel('x [mm]')
+xlabel('x / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -459,7 +459,7 @@ Z = reshape(val, N, []);
 surf(X, Y, Z/barsa, 'edgecolor', 'none');
 colorbar
 title('Pressure / bar');
-xlabel('x [mm]')
+xlabel('x / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -470,7 +470,7 @@ Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Density kg/m^3');
-xlabel('x [mm]')
+xlabel('x / mm')
 view([50, 51]);
 
 
@@ -482,11 +482,12 @@ ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
 yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
 areas = model.Cell.Electrolyte.grid.faces.areas(ind);
 
-i = (i./areas)/(1/(centi*meter));
+u = ampere/((centi*meter)^2);
+i = (i./areas)/u;
 
 figure
 plot(yc/(milli*meter), i);
-title('Current in Anode / A/cm')
+title('Current in Anode / A/cm^2')
 xlabel('height / mm')
 
 
@@ -498,11 +499,12 @@ ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
 yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
 areas = model.Cell.Electrolyte.grid.faces.areas(ind);
 
-iHp = (iHp./areas)/(1/(centi*meter));
+u = ampere/((centi*meter)^2);
+iHp = (iHp./areas)/u;
 
 figure
 plot(yc/(milli*meter), iHp);
-title('iHp in Anode / A/cm')
+title('iHp in Anode / A/cm^2')
 xlabel('height / mm')
 
 % Faradic effect in Anode
