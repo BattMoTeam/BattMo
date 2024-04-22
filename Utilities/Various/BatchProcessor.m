@@ -293,8 +293,8 @@ classdef BatchProcessor
         end        
         
         function sortedsimlist = sortSimList(bp, simlist, varargin)
-            paramname = varargin{1};
-            rest = varargin(2 : end);
+            paramname = varargin{end};
+            rest = varargin(1 : end - 1);
 
             direction = 'ascend';
             usefunc   = false;
