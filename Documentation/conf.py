@@ -43,7 +43,7 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
               'sphinx_design',
-              'sphinx.ext.imgmath']
+              'sphinx.ext.jsmath']
 
 bibtex_bibfiles = ['refs.bib']
 
@@ -60,9 +60,6 @@ source_suffix = '.rst'
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
-
-# Add the latex path when build is done in CI pipeline
-imgmath_latex = 'latex'
 
 # The master toctree document.
 master_doc = 'index'

@@ -11,9 +11,6 @@ jobs:
 
     permissions:
       contents: write
-    
-    env:
-      imgmath_latex: "/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex"
 
     steps:
     - uses: actions/checkout@v4
@@ -22,23 +19,6 @@ jobs:
       with:
         packages: scheme-basic  # Or choose the appropriate package scheme
         cache: false
-    
-    # - name: Update symbolic link for LaTeX
-    #   run: ln -sf /home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/latex $(which latex)
-    - name: Check LaTeX permissions
-      run: |
-        ls -l $(which latex)
-        ls -l $(which dvipng)
-        ls -ld $(dirname $(which latex))
-        ls -l /home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux
-    - name: Add LaTeX and dvipng directories to PATH
-      run: |
-        echo "PATH=$PATH:/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux" >> $GITHUB_ENV
-
-    - name: Print PATH
-      run: echo $PATH  
-    - name: Replace placeholder with actual path in conf.py
-      run: sed -i "s|imgmath_latex = 'latex'|imgmath_latex = '/home/runner/work/_temp/setup-texlive-action/2024/bin/x86_64-linux/pdftex'|g" Documentation/conf.py
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
       with:
