@@ -43,7 +43,7 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
               'sphinx_design',
-              'sphinxcontrib-jsmath']
+              'sphinxcontrib.jsmath']
 
 bibtex_bibfiles = ['refs.bib']
 
