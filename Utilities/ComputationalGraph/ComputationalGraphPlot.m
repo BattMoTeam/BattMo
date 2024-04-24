@@ -3,7 +3,7 @@ classdef ComputationalGraphPlot < handle
     properties (SetAccess = private)
 
         computationalGraphTool
-        nodenames % local copy from computationalGraphTool
+        nodenames % names of the nodes, copy from computationalGraphTool, with added comment for the static variable
         A         % local copy from computationalGraphTool
         
     end
@@ -14,26 +14,38 @@ classdef ComputationalGraphPlot < handle
 
         nodeinds % current index
         
-        markStaticVariables % default = true
         plotOptions
         
     end
     
     methods
         
-        function cgp = ComputationalGraphPlot(computationalGraphTool)
+        function cgp = ComputationalGraphPlot(computationalGraphTool, varargin)
+
+            opt = struct('markStatic', true);
+            opt = merge_options(opt, varargin{:});
 
             cgt = computationalGraphTool;
             
             cgp.computationalGraphTool = cgt;
 
-            cgp.A         = cgt.adjencyMatrix;
-            cgp.nodenames = cgt.nodenames;
+            cgp.A = cgt.adjencyMatrix;
 
+            nodenames = cgt.nodenames;
+
+            if opt.markStatic
+                staticprops = cgt.staticprops;
+                for istat = 1 : numel(staticprops)
+                    ind = staticprops{istat}.varnameind;
+                    nodenames{ind} = sprintf('%s (static)', nodenames{ind});
+                end
+            end
+            
+            cgp.nodenames = nodenames;
+            
             cgp.nodeinds = (1 : numel(cgp.nodenames))';
             
-            cgp.markStaticVariables = true;
-            cgp.plotOptions         = {};
+            cgp.plotOptions = {};
             
         end
 
@@ -167,7 +179,7 @@ classdef ComputationalGraphPlot < handle
             opt = struct('doPlot', true);
             opt = merge_options(opt, varargin{:});            
 
-            nodenames = cgp.nodenames;
+            nodenames = cgp.computationalGraphTool.nodenames;
             A         = cgp.A;
 
 
