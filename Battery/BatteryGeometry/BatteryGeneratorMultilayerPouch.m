@@ -1,5 +1,20 @@
 classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
-% Setup 3D grid with tab
+% Setup 3D multilayer pouch cell grid with tabs in the y directions
+%{
+      ____
+  ___|    |__
+  |          |
+  |          |
+  |___    ___|
+      |  |
+      |__|
+
+y (height)
+^
+|
+|---> x (width)
+
+%}
 
     properties
 
@@ -123,7 +138,7 @@ classdef BatteryGeneratorMultilayerPouch < BatteryGenerator
 
             % Setup widths
             x0 = 0.5*(gen.pouch_width - gen.tab_width);
-            dxlength = [x0; gen.pouch_width-gen.tab_width; x0];
+            dxlength = [x0; gen.tab_width; x0];
             nxs = [gen.elyte_nx; gen.tab_nx; gen.elyte_nx];
             x = dxlength./nxs;
             x = rldecode(x, nxs);
