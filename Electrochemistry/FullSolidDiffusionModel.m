@@ -52,12 +52,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             D = inputparams.diffusionCoefficient;
             if ~isempty(D)
-                switch inputparams.D.type
+                switch D.type
                   case 'constant'
                     model.useDFunc = false;
                   case 'function'
                     model.useDFunc = true;
-                    model.computeDFunc = str2func(inputparams.D.functionname);
+                    model.computeDFunc = str2func(D.functionname);
                   otherwise
                     errror('type of D not recognized.')
                 end
