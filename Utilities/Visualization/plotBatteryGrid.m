@@ -1,8 +1,11 @@
-function plotBatteryGrid(model, varargin)
+function fig = plotBatteryGrid(model, varargin)
 %% Plot battery components
 
     opt = struct('setstyle', true, ...
-                 'fig', []);
+                 'fig', [], ...
+                 'shortLegendText', false, ...
+                 'legendLocation', 'sw', ...
+                 'axisLabels', false);
     opt = merge_options(opt, varargin{:});
 
     ne    = 'NegativeElectrode';
@@ -13,9 +16,9 @@ function plotBatteryGrid(model, varargin)
 
     colors = crameri('vik', 5);
     if isempty(opt.fig)
-        figure
+        fig = figure;
     else
-        figure(opt.fig);
+        fig = figure(opt.fig);
     end
     hold on
     legtext = {};
@@ -49,7 +52,22 @@ function plotBatteryGrid(model, varargin)
         view(3)
     end
 
-    legend(legtext, 'location', 'southwest');
+    if opt.axisLabels
+        xlabel 'x';
+        if G.griddim > 1
+            ylabel 'y';
+            if G.griddim > 2
+                zlabel 'z';
+            end
+        end
+    end
+
+    if opt.shortLegendText
+        legtext = cellfun(@(s) strrep(s, 'positive electrode', 'PE'), legtext, 'un', false);
+        legtext = cellfun(@(s) strrep(s, 'negative electrode', 'NE'), legtext, 'un', false);
+    end
+
+    legend(legtext, 'location', opt.legendLocation);
     axis tight;
 
     if opt.setstyle
