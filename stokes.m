@@ -1,6 +1,6 @@
 dim = 2;
 
-G = cartGrid([1, 1], [1, 3]);
+G = cartGrid([2, 1], [1, 3]);
 G = computeGeometry(G);
 
 tbls = setupTables(G, 'includetbls', {'cellnodetbl', 'vectbl'});
@@ -19,6 +19,19 @@ faceNodeTbl    = tbls.facenodetbl;
 
 cellNodeVecTbl = crossIndexArray(cellNodeTbl, vecTbl, {});
 cellNodeVecTbl = sortIndexArray(cellNodeVecTbl, {'cells', 'vec', 'nodes'});
+
+nodeVecGindTbl     = nodeVecTbl.addInd('gind', (1 : nodeVecTbl.num)');
+nodeVecGtypeGindTbl = nodeVecGindTbl.addInd('gtype', ones(nodeVecGindTbl.num, 1));
+
+faceGindTbl     = faceTbl.addInd('gind', (1 : faceTbl.num)');
+faceGtypeGindTbl = faceGindTbl.addInd('gtype', 2*ones(faceGindTbl.num, 1));
+
+gtypeGindTbl1 = projIndexArray(nodeVecGtypeGindTbl, {'gtype', 'gind'});
+gtypeGindTbl2 = projIndexArray(faceGtypeGindTbl, {'gtype', 'gind'});
+
+gtypeGindTbl = concatIndexArray(gtypeGindTbl1, gtypeGindTbl2, {'gtype', 'gind'});
+
+return
 
 clear polTbl
 polTbl.pol = (1 : dim + 1)';
