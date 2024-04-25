@@ -20,18 +20,24 @@ faceNodeTbl    = tbls.facenodetbl;
 cellNodeVecTbl = crossIndexArray(cellNodeTbl, vecTbl, {});
 cellNodeVecTbl = sortIndexArray(cellNodeVecTbl, {'cells', 'vec', 'nodes'});
 
-nodeVecGindTbl     = nodeVecTbl.addInd('gind', (1 : nodeVecTbl.num)');
-nodeVecGtypeGindTbl = nodeVecGindTbl.addInd('gtype', ones(nodeVecGindTbl.num, 1));
+nodeVecGindTbl          = nodeVecTbl.addInd('gind', (1 : nodeVecTbl.num)');
+nodeVecGtypeGindTbl     = nodeVecGindTbl.addInd('gtype', ones(nodeVecGindTbl.num, 1));
+cellNodeVecGtypeGindTbl = crossIndexArray(cellNodeTbl, nodeVecGtypeGindTbl, {'nodes'});
 
-faceGindTbl     = faceTbl.addInd('gind', (1 : faceTbl.num)');
-faceGtypeGindTbl = faceGindTbl.addInd('gtype', 2*ones(faceGindTbl.num, 1));
+faceGindTbl          = faceTbl.addInd('gind', (1 : faceTbl.num)');
+faceGtypeGindTbl     = faceGindTbl.addInd('gtype', 2*ones(faceGindTbl.num, 1));
+cellFaceGtypeGindTbl = crossIndexArray(cellFaceTbl, faceGtypeGindTbl, {'faces'});
 
+% table for our degrees of freedom
 gtypeGindTbl1 = projIndexArray(nodeVecGtypeGindTbl, {'gtype', 'gind'});
 gtypeGindTbl2 = projIndexArray(faceGtypeGindTbl, {'gtype', 'gind'});
+gtypeGindTbl = concatIndexArray(gtypeGindTbl1, gtypeGindTbl2, {});
 
-gtypeGindTbl = concatIndexArray(gtypeGindTbl1, gtypeGindTbl2, {'gtype', 'gind'});
-
-return
+% cell decompositions
+cellGtypeGindTbl1 = projIndexArray(cellNodeVecGtypeGindTbl, {'cells', 'gtype', 'gind'});
+cellGtypeGindTbl2 = projIndexArray(cellFaceGtypeGindTbl, {'cells', 'gtype', 'gind'});
+cellGtypeGindTbl = concatIndexArray(cellGtypeGindTbl1, cellGtypeGindTbl2, {});
+cellGtypeGindTbl = sortIndexArray(cellGtypeGindTbl, {'cells', 'gtype', 'gind'});
 
 clear polTbl
 polTbl.pol = (1 : dim + 1)';
@@ -59,6 +65,13 @@ cellNodeVec = map1.eval(nodeVec) - map2.eval(cellVec);
 clear linTbl
 linTbl.lin = (1 : dim*(dim + 1))';
 linTbl = IndexArray(linTbl);
+
+clear inv_linTbl
+inv_linTbl.lin = (dim*(dim + 1)/2 + 1 : linTbl.num)';
+inv_linTbl = IndexArray(inv_linTbl);
+
+cellLinTbl     = crossIndexArray(cellTbl, linTbl, {});
+inv_cellLinTbl = crossIndexArray(cellTbl, inv_linTbl, {});
 
 A = [[1 1 1  1; ...
       2 2 1  1; ...
@@ -139,19 +152,46 @@ cellNodeVecLin2 = map.eval(constLinVec);
 
 cellNodeVecLin = cellNodeVecLin1 + cellNodeVecLin2;
 
+[cellNodeVecLinGtypeGindTbl, indstruct] = crossIndexArray(cellNodeVecLinTbl, nodeVecGtypeGindTbl, {'nodes', 'vec'});
+
+direct = true;
+if direct
+    cellNodeVecLinGtypeGind = cellNodeVecLin(indstruct{1}.inds);
+else
+    map = TensorMap();
+    map.fromTbl = cellNodeVecLinTbl;
+    map.toTbl = cellNodeVecLinGtypeGindTbl;
+    map.mergefds = {'cells', 'nodes', 'vec', 'lin'};
+    map = map.setup();
+
+    cellNodeVecLinGtypeGind = map.eval(cellNodeVecLin);
+end
+
 prod = TensorProd();
-prod.tbl1 = cellNodeVecLinTbl;
-prod.tbl2 = linTbl;
-prod.tbl3 = cellNodeVecTbl;
+prod.tbl1 = cellNodeVecLinGtypeGindTbl;
+prod.tbl2 = cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
+prod.mergefds  = {'cells'};
 prod = prod.setup();
 
 tens = SparseTensor();
-tens = tens.setFromTensorProd(cellNodeVecLin, prod);
+tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
 
-M = tens.getMatrix();
+N = tens.getMatrix();
 
-% full(M)
+prod = TensorProd();
+prod.tbl1 = cellNodeVecLinGtypeGindTbl;
+prod.tbl2 = inv_cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
+prod.reducefds = {'lin'};
+prod.mergefds  = {'cells'};
+prod = prod.setup();
+
+tens = SparseTensor();
+tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
+
+inv_N = tens.getMatrix();
 
 %% Setup of R
 
@@ -205,17 +245,35 @@ prod = prod.setup();
 cellNodeVecLinTbl1 = prod.tbl3;
 cellNodeVecLin1    = prod.eval(0.5*linVec12, cellNodeVec1);
 
+[cellNodeVecLinGtypeGindTbl1, indstruct] = crossIndexArray(cellNodeVecLinTbl1, nodeVecGtypeGindTbl, {'nodes', 'vec'});
+cellNodeVecLinGtypeGind1 = cellNodeVecLin1(indstruct{1}.inds);
+
 prod = TensorProd();
-prod.tbl1 = cellNodeVecLinTbl1;
-prod.tbl2 = linTbl;
-prod.tbl3 = cellNodeVecTbl;
+prod.tbl1 = cellNodeVecLinGtypeGindTbl1;
+prod.tbl2 = cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
+prod.mergefds = {'cells'};
 prod = prod.setup();
 
 tens = SparseTensor();
-tens = tens.setFromTensorProd(cellNodeVecLin1, prod);
+tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
 
-M1 = tens.getMatrix();
+R1 = tens.getMatrix();
+
+
+prod = TensorProd();
+prod.tbl1 = cellNodeVecLinGtypeGindTbl1;
+prod.tbl2 = inv_cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
+prod.reducefds = {'lin'};
+prod.mergefds = {'cells'};
+prod = prod.setup();
+
+tens = SparseTensor();
+tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
+
+inv_R1 = tens.getMatrix();
 
 prod = TensorProd();
 prod.tbl1 = linVec12Tbl;
@@ -247,21 +305,40 @@ prod = prod.setup();
 
 cellFaceLin1 = prod.eval(1./G.faces.areas, cellFaceLin1);
 
+[cellFaceLinGtypeGindTbl1, indstruct] = crossIndexArray(cellFaceLinTbl1, faceGtypeGindTbl, {'faces'});
+cellFaceLinGtypeGind1 = cellFaceLin1(indstruct{1}.inds);
+
 prod = TensorProd();
-prod.tbl1 = cellFaceLinTbl1;
-prod.tbl2 = linTbl;
-prod.tbl3 = cellFaceTbl;
+prod.tbl1 = cellFaceLinGtypeGindTbl1;
+prod.tbl2 = cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
+prod.mergefds = {'cells'};
 prod = prod.setup();
 
 tens = SparseTensor();
-tens = tens.setFromTensorProd(cellFaceLin1, prod);
+tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
-M2 = tens.getMatrix();
+R2 = tens.getMatrix();
 
-M = [M1; M2];
+prod = TensorProd();
+prod.tbl1 = cellFaceLinGtypeGindTbl1;
+prod.tbl2 = inv_cellLinTbl;
+prod.tbl3 = cellGtypeGindTbl;
+prod.reducefds = {'lin'};
+prod.mergefds = {'cells'};
+prod = prod.setup();
 
-full(M)
+tens = SparseTensor();
+tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
+
+inv_R2 = tens.getMatrix();
+
+R = R1 + R2;
+
+inv_R = inv_R1 + inv_R2;
+
+full(inv_N'*inv_R)
 
 
 
