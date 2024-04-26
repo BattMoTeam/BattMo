@@ -368,12 +368,14 @@ R = R1 + R2;
 
 nk_R = nk_R1 + nk_R2;
 
-%% Concludes assembly of M (see eq. 8.36 and 8.37 in reference)
+%% finishes assembly of M (see eq. 8.36 and 8.37 in reference)
+
+% NOTE : We should use block inversion
 
 invNtR = inv(nk_N'*nk_R);
 invNNt = inv(N'*N);
 
-M1    = (nk_R)*invNtR*(nk_R');
+M1 = (nk_R)*invNtR*(nk_R');
 
 % add regularisation
 gamma = 1; % NOTE : this should be replaced by proper expression (see eq. 8.37 in reference)
@@ -381,11 +383,9 @@ M2    = gamma*(diag(ones(size(N, 1), 1)) - N*invNNt*(N'));
 
 M = M1 + M2;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Setup of divergence operator %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 prod = TensorProd();
 prod.tbl1 = faceNodeTbl;
