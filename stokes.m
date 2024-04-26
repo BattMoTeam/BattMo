@@ -1,7 +1,17 @@
 dim = 2;
 
-G = cartGrid([2, 1], [1, 3]);
-G = computeGeometry(G);
+gridtype = 'debugging';
+
+switch gridtype
+  case 'debugging'
+    G = cartGrid([2, 1], [1, 3]);
+    G = computeGeometry(G);
+  case 'complex'
+    load('G.mat');
+  otherwise
+    error('case not recognized');
+end
+    
 
 tbls = setupTables(G, 'includetbls', {'cellnodetbl', 'vectbl'});
 
@@ -66,12 +76,12 @@ clear linTbl
 linTbl.lin = (1 : dim*(dim + 1))';
 linTbl = IndexArray(linTbl);
 
-clear inv_linTbl
-inv_linTbl.lin = (dim*(dim + 1)/2 + 1 : linTbl.num)';
-inv_linTbl = IndexArray(inv_linTbl);
+clear nk_linTbl
+nk_linTbl.lin = (dim*(dim + 1)/2 + 1 : linTbl.num)';
+nk_linTbl = IndexArray(nk_linTbl);
 
 cellLinTbl     = crossIndexArray(cellTbl, linTbl, {});
-inv_cellLinTbl = crossIndexArray(cellTbl, inv_linTbl, {});
+nk_cellLinTbl = crossIndexArray(cellTbl, nk_linTbl, {});
 
 A = [[1 1 1  1; ...
       2 2 1  1; ...
@@ -182,7 +192,7 @@ N = tens.getMatrix();
 
 prod = TensorProd();
 prod.tbl1 = cellNodeVecLinGtypeGindTbl;
-prod.tbl2 = inv_cellLinTbl;
+prod.tbl2 = nk_cellLinTbl;
 prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
 prod.mergefds  = {'cells'};
@@ -191,7 +201,7 @@ prod = prod.setup();
 tens = SparseTensor();
 tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
 
-inv_N = tens.getMatrix();
+nk_N = tens.getMatrix();
 
 %% Setup of R
 
@@ -264,7 +274,7 @@ R1 = tens.getMatrix();
 
 prod = TensorProd();
 prod.tbl1 = cellNodeVecLinGtypeGindTbl1;
-prod.tbl2 = inv_cellLinTbl;
+prod.tbl2 = nk_cellLinTbl;
 prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
 prod.mergefds = {'cells'};
@@ -273,7 +283,7 @@ prod = prod.setup();
 tens = SparseTensor();
 tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
 
-inv_R1 = tens.getMatrix();
+nk_R1 = tens.getMatrix();
 
 prod = TensorProd();
 prod.tbl1 = linVec12Tbl;
@@ -323,7 +333,7 @@ R2 = tens.getMatrix();
 
 prod = TensorProd();
 prod.tbl1 = cellFaceLinGtypeGindTbl1;
-prod.tbl2 = inv_cellLinTbl;
+prod.tbl2 = nk_cellLinTbl;
 prod.tbl3 = cellGtypeGindTbl;
 prod.reducefds = {'lin'};
 prod.mergefds = {'cells'};
@@ -332,13 +342,14 @@ prod = prod.setup();
 tens = SparseTensor();
 tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
-inv_R2 = tens.getMatrix();
+nk_R2 = tens.getMatrix();
 
 R = R1 + R2;
 
-inv_R = inv_R1 + inv_R2;
+nk_R = nk_R1 + nk_R2;
 
-full(inv_N'*inv_R)
+M = (nk_R)*inv(nk_N'*nk_R)*(nk_R');
+% full(nk_N'*nk_R)
 
 
 
