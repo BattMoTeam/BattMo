@@ -1,10 +1,10 @@
 dim = 2;
-
+close all
 gridtype = 'debugging';
 
 switch gridtype
   case 'debugging'
-    G = cartGrid([2, 1], [1, 3]);
+    G = cartGrid([1, 1], [1, 3]);
     G = computeGeometry(G);
   case 'complex'
     load('G.mat');
@@ -25,6 +25,7 @@ cellVecTbl     = tbls.cellvectbl;
 faceVecTbl     = tbls.facevectbl;
 cellFaceTbl    = tbls.cellfacetbl;
 cellFaceVecTbl = tbls.cellfacevectbl;
+faceNodeVecTbl = tbls.facenodevectbl;
 faceNodeTbl    = tbls.facenodetbl;
 
 cellNodeVecTbl = crossIndexArray(cellNodeTbl, vecTbl, {});
@@ -344,11 +345,66 @@ tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
 nk_R2 = tens.getMatrix();
 
+%% Setup of divergence operator
+
+prod = TensorProd();
+prod.tbl1 = faceNodeTbl;
+prod.tbl2 = faceVecTbl;
+prod.tbl3 = faceNodeVecTbl;
+prod.mergefds = {'faces'};
+prod = prod.setup();
+
+delta = ones(faceNodeTbl.num, 1);
+fluxFaceNodeVec = 0.5*prod.eval(delta, faceVec); % faceVec corresponds to the normals
+
+[faceNodeVecGindGtypeTbl, indstruct] = crossIndexArray(faceNodeVecTbl, nodeVecGtypeGindTbl, {'nodes', 'vec'});
+
+fluxFaceNodeVecGindGtype = fluxFaceNodeVec(indstruct{1}.inds);
+
+prod = TensorProd();
+prod.tbl1 = faceNodeVecGindGtypeTbl;
+prod.tbl2 = gtypeGindTbl;
+prod.tbl3 = faceTbl;
+prod.reducefds = {'gind', 'gtype'};
+prod = prod.setup();
+
+F1 = SparseTensor();
+F1 = F1.setFromTensorProd(fluxFaceNodeVecGindGtype, prod);
+F1 = F1.getMatrix();
+
+% note that faceGtypeGindTbl by construction has the same indexing as faceTbl
+prod = TensorProd();
+prod.tbl1 = faceGtypeGindTbl;
+prod.tbl2 = gtypeGindTbl;
+prod.tbl3 = faceTbl;
+prod.reducefds = {'gind', 'gtype'};
+prod = prod.setup();
+
+F2 = SparseTensor();
+F2 = F2.setFromTensorProd(G.faces.areas, prod);
+F2 = F2.getMatrix();
+
+% spy(F1 + F2)
+
+%% complete assembly
+
+return
+
 R = R1 + R2;
 
 nk_R = nk_R1 + nk_R2;
 
-M = (nk_R)*inv(nk_N'*nk_R)*(nk_R');
+invNtR = inv(nk_N'*nk_R);
+invNNt = inv(N'*N);
+
+M1    = (nk_R)*invNtR*(nk_R');
+gamma = 1;
+M2    = gamma*(diag(ones(size(N, 1), 1)) - N*invNNt*(N'));
+
+M = M1 + M2;
+
+
+
 % full(nk_N'*nk_R)
 
 
