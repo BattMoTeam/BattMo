@@ -1,3 +1,18 @@
+%% Reference
+% @inbook{da_Veiga_2014,
+%         title={Foundations of mimetic finite difference method},
+%         ISBN={9783319026633},
+%         url={http://dx.doi.org/10.1007/978-3-319-02663-3_2},
+%         DOI={10.1007/978-3-319-02663-3_2},
+%         booktitle={The Mimetic Finite Difference Method for Elliptic Problems},
+%         publisher={Springer International Publishing},
+%         author={da Veiga,
+%         Lourenço Beirão and Lipnikov,
+%         Konstantin and Manzini,
+%         Gianmarco},
+%         year={2014},
+%         pages={41–65} }
+
 dim = 2;
 close all
 gridtype = 'debugging';
@@ -11,9 +26,8 @@ switch gridtype
   otherwise
     error('case not recognized');
 end
-    
 
-tbls = setupTables(G, 'includetbls', {'cellnodetbl', 'vectbl'});
+tbls = setupTables(G, 'includetbls', {'cellnodetbl', 'vectbl', 'extfacetbl'});
 
 cellNodeTbl    = tbls.cellnodetbl;
 vecTbl         = tbls.vectbl;
@@ -27,6 +41,7 @@ cellFaceTbl    = tbls.cellfacetbl;
 cellFaceVecTbl = tbls.cellfacevectbl;
 faceNodeVecTbl = tbls.facenodevectbl;
 faceNodeTbl    = tbls.facenodetbl;
+extFaceTbl     = tbls.extfacetbl;
 
 cellNodeVecTbl = crossIndexArray(cellNodeTbl, vecTbl, {});
 cellNodeVecTbl = sortIndexArray(cellNodeVecTbl, {'cells', 'vec', 'nodes'});
@@ -49,6 +64,12 @@ cellGtypeGindTbl1 = projIndexArray(cellNodeVecGtypeGindTbl, {'cells', 'gtype', '
 cellGtypeGindTbl2 = projIndexArray(cellFaceGtypeGindTbl, {'cells', 'gtype', 'gind'});
 cellGtypeGindTbl = concatIndexArray(cellGtypeGindTbl1, cellGtypeGindTbl2, {});
 cellGtypeGindTbl = sortIndexArray(cellGtypeGindTbl, {'cells', 'gtype', 'gind'});
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%% Assembly of the stiffness matrix M %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Assembly of matrix N (see after eq 8.33 in ref)
 
 clear polTbl
 polTbl.pol = (1 : dim + 1)';
@@ -118,8 +139,7 @@ prod.reducefds = {'pol'};
 prod = prod.setup();
 
 delta = ones(vecPolTbl.num, 1);
-firstLinVec12 = prod.eval(delta, linVecPol);
-
+firstLinVec12    = prod.eval(delta, linVecPol);
 firstLinVec12Tbl = prod.tbl3;
 
 cellNodeVecLinTbl = crossIndexArray(cellNodeVecTbl, linTbl, {});
@@ -204,7 +224,7 @@ tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
 
 nk_N = tens.getMatrix();
 
-%% Setup of R
+%% Setup of matrix R (see eq 8.35 in reference)
 
 faceVec = reshape(G.faces.normals', [], 1);
 
@@ -271,7 +291,6 @@ tens = SparseTensor();
 tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
 
 R1 = tens.getMatrix();
-
 
 prod = TensorProd();
 prod.tbl1 = cellNodeVecLinGtypeGindTbl1;
@@ -345,7 +364,28 @@ tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
 nk_R2 = tens.getMatrix();
 
-%% Setup of divergence operator
+R = R1 + R2;
+
+nk_R = nk_R1 + nk_R2;
+
+%% Concludes assembly of M (see eq. 8.36 and 8.37 in reference)
+
+invNtR = inv(nk_N'*nk_R);
+invNNt = inv(N'*N);
+
+M1    = (nk_R)*invNtR*(nk_R');
+
+% add regularisation
+gamma = 1; % NOTE : this should be replaced by proper expression (see eq. 8.37 in reference)
+M2    = gamma*(diag(ones(size(N, 1), 1)) - N*invNNt*(N'));
+
+M = M1 + M2;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup of divergence operator %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 prod = TensorProd();
 prod.tbl1 = faceNodeTbl;
@@ -384,28 +424,110 @@ F2 = SparseTensor();
 F2 = F2.setFromTensorProd(G.faces.areas, prod);
 F2 = F2.getMatrix();
 
-% spy(F1 + F2)
+flux = F1 + F2;
 
-%% complete assembly
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Setup boundary operators %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-return
+%% Boundary operators for Dirichlet
 
-R = R1 + R2;
+clear dirichletFaceTbl;
+dirichletFaceTbl.faces = extFaceTbl.inds(1 : floor(numel(extFaceTbl.inds)/2));
+dirichletFaceTbl = IndexArray(dirichletFaceTbl);
 
-nk_R = nk_R1 + nk_R2;
+dirichletFaceGindGtypeTbl = crossIndexArray(dirichletFaceTbl, faceGtypeGindTbl, {'faces'});
 
-invNtR = inv(nk_N'*nk_R);
-invNNt = inv(N'*N);
+dirichletNodeFaceTbl = crossIndexArray(dirichletFaceTbl, faceNodeTbl, {'faces'});
+dirichletNodeTbl = projIndexArray(dirichletNodeFaceTbl, {'nodes'});
 
-M1    = (nk_R)*invNtR*(nk_R');
-gamma = 1;
-M2    = gamma*(diag(ones(size(N, 1), 1)) - N*invNNt*(N'));
+dirichletNodeVecTbl = crossIndexArray(dirichletNodeTbl, vecTbl, {});
 
-M = M1 + M2;
+dirichletNodeVecGindGtypeTbl = crossIndexArray(dirichletNodeVecTbl, nodeVecGtypeGindTbl, {'nodes', 'vec'});
 
+dirichletGindGypeTbl1 = projIndexArray(dirichletFaceGindGtypeTbl, {'gtype', 'gind'});
+dirichletGindGypeTbl2 = projIndexArray(dirichletNodeVecGindGtypeTbl, {'gtype', 'gind'});
 
+% index for dirichlet degrees of freedom
+dirichletGindGypeTbl = concatIndexArray(dirichletGindGypeTbl1, dirichletGindGypeTbl2, {});
 
-% full(nk_N'*nk_R)
+map = TensorMap();
+map.fromTbl  = gtypeGindTbl;
+map.toTbl    = dirichletNodeVecGindGtypeTbl;
+map.mergefds = {'gind', 'gtype'};
+map = map.setup();
+
+gPn = SparseTensor();
+gPn = gPn.setFromTensorMap(map);
+gPn = gPn.getMatrix();
+
+map = TensorMap();
+map.fromTbl  = faceTbl;
+map.toTbl    = dirichletFaceTbl;
+map.mergefds = {'faces'};
+map = map.setup();
+
+gPf = SparseTensor();
+gPf = gPf.setFromTensorMap(map);
+gPf = gPf.getMatrix();
+
+gPf = gPf*F;
+
+map = TensorMap();
+map.fromTbl  = dirichletGindGypeTbl;
+map.toTbl    = dirichletNodeVecGindGtypeTbl;
+map.mergefds = {'gind', 'gtype'};
+map = map.setup();
+
+dPn = SparseTensor();
+dPn = dPn.setFromTensorMap(map);
+dPn = dPn.getMatrix();
+
+map = TensorMap();
+map.fromTbl  = dirichletGindGypeTbl;
+map.toTbl    = dirichletFaceGindGtypeTbl;
+map.mergefds = {'gind', 'gtype'};
+map = map.setup();
+
+dPf = SparseTensor();
+dPf = dPf.setFromTensorMap(map);
+dPf = dPf.getMatrix();
+
+dirP = dPn'*gPn + dPf'*gPf;
+
+%% Boundary operators for Neumann
+
+map = TensorMap();
+map.fromTbl  = extFaceTbl;
+map.toTbl    = dirichletFaceTbl;
+map.mergefds = {'faces'};
+
+dirInds = map.getDispatchInd();
+
+neumannInds = true(extFaceTbl.num, 1);
+neumannInds(dirInds) = false;
+
+clear neumannFaceTbl;
+neumannFaceTbl.faces = extFaceTbl.inds(neumannInds);
+neumannFaceTbl = IndexArray(neumannFaceTbl);
+
+% dof space for neumann bc
+neumannFaceVecTbl = crossIndexArray(neumannFaceTbl, vecTbl, {});
+
+neumannNodeFaceVecTbl = crossIndexArray(neumannFaceVecTbl, faceNodeTbl, {'faces'});
+neumannNodeFaceVecGtypeGindTbl = crossIndexArray(neumannNodeFaceVecTbl, nodeVecGtypeGindTbl, {'nodes', 'vec'});
+
+prod = TensorProd();
+prod.tbl1 = neumannNodeFaceVecGtypeGindTbl;
+prod.tbl2 = neumannFaceVecTbl;
+prod.tbl3 = gtypeGindTbl;
+prod.reducefds = {'faces', 'vec'};
+prod = prod.setup();
+
+neumF = SparseTensor();
+neumF = neumF.setFromTensorProd(0.5*ones(neumannNodeFaceVecGtypeGindTbl.num, 1), prod);
+neumF = neumF.getMatrix();
+
 
 
 
