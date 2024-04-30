@@ -467,7 +467,7 @@ classdef StokesSolver
 
             % add regularisation
             gamma = 1; % NOTE : this should be replaced by proper expression (see eq. 8.37 in reference)
-            M2    = gamma*(diag(ones(size(N, 1), 1)) - N*invNNt*(N'));
+            M2    = gamma*(speye(size(N,1)) - N*invNNt*(N'));
 
             M = M1 + M2;
 
@@ -563,7 +563,8 @@ classdef StokesSolver
 
             % index for dirichlet degrees of freedom
             dirichletGindGypeTbl = concatIndexArray(dirichletGindGypeTbl1, dirichletGindGypeTbl2, {});
-
+            dirichletGindGypeTbl = sortIndexArray(dirichletGindGypeTbl, {'gtype', 'gind'});
+            
             map = TensorMap();
             map.fromTbl  = gtypeGindTbl;
             map.toTbl    = dirichletNodeVecGindGtypeTbl;
@@ -575,16 +576,14 @@ classdef StokesSolver
             gPn = gPn.getMatrix();
 
             map = TensorMap();
-            map.fromTbl  = faceTbl;
-            map.toTbl    = dirichletFaceTbl;
-            map.mergefds = {'faces'};
+            map.fromTbl  = gtypeGindTbl;
+            map.toTbl    = dirichletFaceGindGtypeTbl;
+            map.mergefds = {'gind', 'gtype'};
             map = map.setup();
 
             gPf = SparseTensor();
             gPf = gPf.setFromTensorMap(map);
             gPf = gPf.getMatrix();
-
-            gPf = gPf*Flux;
 
             map = TensorMap();
             map.fromTbl  = dirichletGindGypeTbl;
@@ -608,10 +607,10 @@ classdef StokesSolver
 
             Diri = dPn'*gPn + dPf'*gPf;
 
-            dirOp = struct('gPn',gPn, ...
-                           'gPf',gPf, ...
-                           'dPn',dPn, ...
-                           'dPf',dPf);
+            dirOp = struct('gPn', gPn, ...
+                           'gPf', gPf, ...
+                           'dPn', dPn, ...
+                           'dPf', dPf);
 
             helpers.dirOp = dirOp;
 
