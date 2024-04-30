@@ -3,7 +3,9 @@ dim = 2;
 close all
 clear all
 
-gridtype = 'pebi';
+gridtype = 'radial';
+
+viscosity = 1;
 
 switch gridtype
 
@@ -32,7 +34,11 @@ switch gridtype
     ind = ismember(extfaces, dirichletBc.faces);
     neumannFaces = extfaces(~ind);
 
-    viscosity = 1;
+    
+    op = solver.helpers.dirOp;
+
+    v = reshape(repmat([1, 1], numel(solver.dirichletBc.nodes), 1)', [], 1); % in nodevec format
+    v = op.dPn'*v;
     
   case 'pebi'
 
@@ -68,7 +74,10 @@ switch gridtype
     ind = ismember(extfaces, dirichletBc.faces);
     neumannFaces = extfaces(~ind);
 
-    viscosity = 1;
+    op = solver.helpers.dirOp;
+
+    v = reshape(repmat([1, 1], numel(solver.dirichletBc.nodes), 1)', [], 1); % in nodevec format
+    v = op.dPn'*v;
 
   case 'radial'
 
@@ -96,35 +105,92 @@ switch gridtype
 
     % Get the hybrid grid
     G = radCartHybridGrid(G, cI, rW, rM, nR, pW);
+
+    tbls = setupTables(G, 'includetbls', {'extfacetbl', 'vectbl'});
+    extfaceTbl  = tbls.extfacetbl;
+    faceNodeTbl = tbls.facenodetbl;
+    vecTbl      = tbls.vectbl;
     
-    doplot = true
+    extfaces = extfaceTbl.get('faces');
+    c = G.faces.centroids(extfaces, :);
+
+    cr = bsxfun(@plus, c, -pW);
+
+    clear radfaceTbl
+    radfaceTbl.faces = extfaces(sum(cr.^2, 2) <= 1.5);
+    radfaceTbl = IndexArray(radfaceTbl);
+    radfaceIndTbl = radfaceTbl.addInd('ind', ones(radfaceTbl.num, 1));
+    
+    clear hdirfaceTbl
+    hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol |   c(:, 1) >= 4 - tol  );
+    hdirfaceTbl = IndexArray(hdirfaceTbl);
+    hdirfaceIndTbl = hdirfaceTbl.addInd('ind', 2*ones(hdirfaceTbl.num, 1));
+
+    dirfaceIndTbl = concatIndexArray(radfaceIndTbl, hdirfaceIndTbl);
+    
+    dirfaceNodeIndTbl = crossIndexArray(dirfaceIndTbl, faceNodeTbl, {'faces'});
+    dirnodeIndTbl     = projIndexArray(dirfaceNodeIndTbl, {'nodes', 'ind'});
+    
+    clear dirichletBc
+    dirichletBc.faces = dirfaceIndTbl.get('faces');
+    dirichletBc.nodes = dirnodeIndTbl.get('nodes');
+    
+    doplot = true;
     if doplot
         plotGrid(G);
+        plotFaces(G, radfaceTbl.get('faces'), 'edgecolor', 'red')
+        plotFaces(G, hdirfaceTbl.get('faces'), 'edgecolor', 'green')
     end
     
+    % Setup some Neumann boundary faces
+    ind = ismember(extfaces, dirichletBc.faces);
+    neumannFaces = extfaces(~ind);
+
+    solver = StokesSolver(G           , ...
+                          dirichletBc , ...
+                          neumannFaces, ...
+                          viscosity);
+    
+    dirichletNodeVecGindGtypeTbl = solver.tbls.dirichletNodeVecGindGtypeTbl;
+    
+    indVecTbl1 = vecTbl;
+    indVecTbl1 = indVecTbl1.addInd('ind', 2);
+    
+    prod = TensorProd();
+    prod.tbl1 = indVecTbl1;
+    prod.tbl2 = dirnodeIndTbl;
+    prod.reducefds = {'ind'};
+    prod = prod.setup();
+
+    dirnodeVecTbl1 = prod.tbl3;
+    v = prod.eval([1; 0], ones(dirnodeIndTbl.num, 1));
+
+    map = TensorMap();
+    map.fromTbl = dirnodeVecTbl1;
+    map.toTbl = dirichletNodeVecGindGtypeTbl;
+    map.mergefds = {'nodes', 'vec'};
+    map = map.setup();
+
+    v = map.eval(v);
+
+    op = solver.helpers.dirOp;
+    v = op.dPn'*v;
+    
+    A    = solver.operators.A;
+    Diri = solver.operators.Diri;
+
+    b = zeros(size(A, 1), 1);
+    b(end - size(Diri, 1) + 1 : end) = v;
+
+    x = A\b;
+
   otherwise
     
     error('case not recognized');
     
 end
 
-solver = StokesSolver(G           , ...
-                      dirichletBc , ...
-                      neumannFaces, ...
-                      viscosity);
 
-op = solver.helpers.dirOp;
-
-v = reshape(repmat([1, 1], numel(solver.dirichletBc.nodes), 1)', [], 1); % in nodevec format
-v = op.dPn'*v;
-
-A    = solver.operators.A;
-Diri = solver.operators.Diri;
-
-b = zeros(size(A, 1), 1);
-b(end - size(Diri, 1) + 1 : end) = v;
-
-x = A\b;
 
 u = solver.getNodalVelocity(x);
 p = solver.getPressure(x);
