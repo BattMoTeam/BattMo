@@ -465,9 +465,21 @@ classdef StokesSolver
 
             M1 = (nk_R)*invNtR*(nk_R');
 
-            % add regularisation
-            gamma = 1; % NOTE : this should be replaced by proper expression (see eq. 8.37 in reference)
-            M2    = gamma*(speye(size(N,1)) - N*invNNt*(N'));
+            D = spdiags(M1, 0);
+
+            map = TensorMap();
+            map.fromTbl = cellGtypeGindTbl;
+            map.toTbl = cellTbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            gamma = map.eval(D);
+            gamma = map.evalTranspose(gamma);
+            n = cellGtypeGindTbl.num;
+            gamma = spdiags(gamma, 0, n, n);
+
+            % NOTE : gamma should be divided by m (see eq. 8.37 in reference)
+            M2    = gamma*(speye(n) - N*invNNt*(N'));
 
             M = M1 + M2;
 
