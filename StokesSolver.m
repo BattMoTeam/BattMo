@@ -472,8 +472,8 @@ classdef StokesSolver
             map.toTbl = cellTbl;
             map.mergefds = {'cells'};
             map = map.setup();
-
-            gamma = map.eval(D);
+            
+            gamma = map.eval(D)./map.eval(ones(cellGtypeGindTbl.num, 1));
             gamma = map.evalTranspose(gamma);
             n = cellGtypeGindTbl.num;
             gamma = spdiags(gamma, 0, n, n);
