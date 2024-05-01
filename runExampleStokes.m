@@ -34,7 +34,11 @@ switch gridtype
     ind = ismember(extfaces, dirichletBc.faces);
     neumannFaces = extfaces(~ind);
 
-    
+    solver = StokesSolver(G           , ...
+                          dirichletBc , ...
+                          neumannFaces, ...
+                          viscosity);
+
     op = solver.helpers.dirOp;
 
     v = reshape(repmat([1, 1], numel(solver.dirichletBc.nodes), 1)', [], 1); % in nodevec format
@@ -78,6 +82,11 @@ switch gridtype
     ind = ismember(extfaces, dirichletBc.faces);
     neumannFaces = extfaces(~ind);
 
+    solver = StokesSolver(G           , ...
+                          dirichletBc , ...
+                          neumannFaces, ...
+                          viscosity);
+
     op = solver.helpers.dirOp;
 
     v = reshape(repmat([1, 1], numel(solver.dirichletBc.nodes), 1)', [], 1); % in nodevec format
@@ -87,11 +96,11 @@ switch gridtype
 
     mrstModule add nwm
 
-    backgroundgrid = 'pebi';
+    background_grid = 'cart';
     lx = 1;
     ly = 1;
 
-    switch backgroundgrid
+    switch background_grid
 
       case 'cart'
 
@@ -124,10 +133,10 @@ switch gridtype
         
     end
 
-    nR = 4;
-    rW = 0.05;
-    rM = 0.1;
-    rE = 0.12;
+    nR = 10;
+    rW = 0.2;
+    rM = 0.3;
+    rE = 0.31;
     
     pW = [lx/2, ly/2];
     
@@ -160,7 +169,8 @@ switch gridtype
     radfaceIndTbl = radfaceTbl.addInd('ind', ones(radfaceTbl.num, 1));
     
     clear hdirfaceTbl
-    hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol |   c(:, 1) >= lx - tol  );
+    % hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol |   c(:, 1) >= lx - tol  );
+    hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol);
     hdirfaceTbl = IndexArray(hdirfaceTbl);
     hdirfaceIndTbl = hdirfaceTbl.addInd('ind', 2*ones(hdirfaceTbl.num, 1));
 
@@ -214,13 +224,6 @@ switch gridtype
     op = solver.helpers.dirOp;
     v = op.dPn'*v;
     
-    A    = solver.operators.A;
-    Diri = solver.operators.Diri;
-
-    b = zeros(size(A, 1), 1);
-    b(end - size(Diri, 1) + 1 : end) = v;
-
-    x = A\b;
 
   otherwise
     
@@ -228,6 +231,15 @@ switch gridtype
     
 end
 
+%%
+
+A    = solver.operators.A;
+Diri = solver.operators.Diri;
+
+b = zeros(size(A, 1), 1);
+b(end - size(Diri, 1) + 1 : end) = v;
+
+x = A\b;
 
 u  = solver.getNodalVelocity(x);
 p  = solver.getPressure(x);
@@ -238,4 +250,8 @@ figure
 hold on
 plotGrid(G, 'facecolor', 'none');
 quiver(xn(:, 1), xn(:, 2), u(:, 1), u(:, 2), 'linewidth', 2);
+
+figure
+hold on
+plotCellData(G, p);
 
