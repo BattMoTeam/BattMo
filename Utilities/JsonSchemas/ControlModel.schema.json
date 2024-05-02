@@ -9,7 +9,7 @@
         "controlPolicy": {
           "type": "string",
           "enum": ["CCDischarge",
-                   "CCCHarge",
+                   "CCCharge",
                    "CC",
                    "CCCV",
                    "powerControl"]}}
