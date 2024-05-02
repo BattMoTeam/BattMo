@@ -49,12 +49,12 @@ classdef StokesSolver
                   %  x =  p 
                   %       l]
                   %
-                  %      [ M     Div' Diri'      
-                  %  A=    Div   0    0          
-                  %        Diri  0    0    ]     
+                  %       [ M     -Div' Diri'      
+                  %  A =    Div    0    0          
+                  %         Diri   0    0    ]     
                   %
                   %      [viscforces      
-                  %  b =  source          
+                  %  b =  source
                   %       dirichletValues]
                   %
                   % where
@@ -665,9 +665,9 @@ classdef StokesSolver
             Z32 = sparse(n3, n2);
             Z33 = sparse(n3, n3);
 
-            A = [[M   , Div', Diri']; ...
-                 [Div , Z22 , Z23]  ; ...
-                 [Diri, Z32 , Z33]];
+            A = [[M   , -Div', Diri']; ...
+                 [Div ,  Z22 , Z23]  ; ...
+                 [Diri,  Z32 , Z33]];
 
             solver.operators.A = A;
 
