@@ -96,7 +96,8 @@ switch gridtype
 
     mrstModule add nwm
 
-    background_grid = 'cart';
+    background_grid = 'pebi';
+    
     lx = 1;
     ly = 1;
 
@@ -109,8 +110,12 @@ switch gridtype
 
         G = cartGrid([nx, nx], [lx, ly]);
         G = computeGeometry(G);
+
+        xldir = 0;
         
       case 'pebi'
+
+        mrstModule add upr
 
         nx = 30;
         ny = 30;
@@ -127,9 +132,11 @@ switch gridtype
 
         G = computeGeometry(G);
         
+        xldir = -1;
+        
       otherwise
         
-        error('backgroundgrid not recognized');
+        error('background_grid not recognized');
         
     end
 
@@ -169,8 +176,8 @@ switch gridtype
     radfaceIndTbl = radfaceTbl.addInd('ind', ones(radfaceTbl.num, 1));
     
     clear hdirfaceTbl
-    % hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol |   c(:, 1) >= lx - tol  );
-    hdirfaceTbl.faces = extfaces( c(:, 1) <= 0 + tol);
+    hdirfaceTbl.faces = extfaces( c(:, 1) <= xldir + tol |   c(:, 1) >= lx - tol  );
+    % hdirfaceTbl.faces = extfaces( c(:, 1) <= xldir + tol);
     hdirfaceTbl = IndexArray(hdirfaceTbl);
     hdirfaceIndTbl = hdirfaceTbl.addInd('ind', 2*ones(hdirfaceTbl.num, 1));
 
@@ -186,8 +193,9 @@ switch gridtype
     doplot = true;
     if doplot
         plotGrid(G);
-        plotFaces(G, radfaceTbl.get('faces'), 'edgecolor', 'red')
-        plotFaces(G, hdirfaceTbl.get('faces'), 'edgecolor', 'green')
+        plotFaces(G, radfaceTbl.get('faces'), 'edgecolor', 'red', 'linewidth', 3)
+        plotFaces(G, hdirfaceTbl.get('faces'), 'edgecolor', 'green', 'linewidth', 3)
+        title('boundary conditions')
     end
     
     % Setup some Neumann boundary faces
@@ -250,8 +258,10 @@ figure
 hold on
 plotGrid(G, 'facecolor', 'none');
 quiver(xn(:, 1), xn(:, 2), u(:, 1), u(:, 2), 'linewidth', 2);
+title('velocity field')
 
 figure
 hold on
 plotCellData(G, p);
-
+title('pressure')
+colorbar
