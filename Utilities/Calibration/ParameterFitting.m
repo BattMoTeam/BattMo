@@ -68,16 +68,18 @@ classdef ParameterFitting
             
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            Vs.n = sum(model.(ne).(am).G.getVolumes());
-            Vs.p = sum(model.(pe).(am).G.getVolumes());
+            Vs.n = sum(model.(ne).(co).G.getVolumes());
+            Vs.p = sum(model.(pe).(co).G.getVolumes());
 
-            cmaxs.n = model.(ne).(am).(itf).cmax;
-            cmaxs.p = model.(pe).(am).(itf).cmax;
+            cmaxs.n = model.(ne).(co).(am).(itf).saturationConcentration;
+            cmaxs.p = model.(pe).(co).(am).(itf).saturationConcentration;
 
+            % Targets with some example values
             targets.resLi      = 1;
             targets.U          = 4.2;
             targets.specEnergy = 280*watt*hour/kilogram;
@@ -87,11 +89,12 @@ classdef ParameterFitting
             targets.avf_pos    = 0.9;
             targets.vf_neg     = 0.75;
             targets.vf_pos     = 0.665;
-            
-            weights.resLi      = 0;
-            weights.U          = 1e2;
-            weights.specEnergy = 1e2;
-            weights.cap        = 1e1;
+
+            % Weight used for each of the target above
+            weights.resLi      = 1;
+            weights.U          = 1;
+            weights.specEnergy = 1;
+            weights.cap        = 1;
             weights.NPratio    = 1;
             weights.avf_neg    = 1;
             weights.avf_pos    = 1;
@@ -154,11 +157,13 @@ classdef ParameterFitting
         % x(8) : volume fraction positivt electrode
             
             x = nan(pf.nparams, 1);
+
+            cmaxs = pf.cmaxs;
             
-            x(1) = cs.n0;
-            x(2) = cs.p0;
-            x(3) = cs.nT;
-            x(4) = cs.pT;
+            x(1) = cs.n0/cmaxs.n;
+            x(2) = cs.p0/cmaxs.p;
+            x(3) = cs.nT/cmaxs.n;
+            x(4) = cs.pT/cmaxs.p;
             x(5) = avfs.n;
             x(6) = avfs.p;
             x(7) = vfs.n;
@@ -172,10 +177,12 @@ classdef ParameterFitting
                 x = pf.getModelValues();
             end
 
-            cs.n0  = x(1);
-            cs.p0  = x(2);
-            cs.nT  = x(3);
-            cs.pT  = x(4);
+            cmaxs = pf.cmaxs;
+            
+            cs.n0  = x(1)*cmaxs.n;
+            cs.p0  = x(2)*cmaxs.p;
+            cs.nT  = x(3)*cmaxs.n;
+            cs.pT  = x(4)*cmaxs.p;
             avfs.n = x(5);
             avfs.p = x(6);
             vfs.n  = x(7);
@@ -187,6 +194,7 @@ classdef ParameterFitting
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
@@ -194,15 +202,15 @@ classdef ParameterFitting
             model = pf.model;
             cmaxs = pf.cmaxs;
             
-            avfs.n = model.(ne).(am).activeMaterialFraction;
-            vfs.n  = unique(model.(ne).(am).volumeFraction);
-            cs.n0  = model.(ne).(am).(itf).theta100*cmaxs.n;
-            cs.nT  = model.(ne).(am).(itf).theta0*cmaxs.n;
+            avfs.n = model.(ne).(co).volumeFractions(1);
+            vfs.n  = model.(ne).(co).volumeFraction;
+            cs.n0  = model.(ne).(co).(am).(itf).guestStoichiometry100*cmaxs.n;
+            cs.nT  = model.(ne).(co).(am).(itf).guestStoichiometry0*cmaxs.n;
 
-            avfs.p = model.(pe).(am).activeMaterialFraction;
-            vfs.p  = unique(model.(pe).(am).volumeFraction);
-            cs.p0  = model.(pe).(am).(itf).theta100*cmaxs.p;
-            cs.pT  = model.(pe).(am).(itf).theta0*cmaxs.p;
+            avfs.p = model.(pe).(co).volumeFractions(1);
+            vfs.p  = model.(pe).(co).volumeFraction;
+            cs.p0  = model.(pe).(co).(am).(itf).guestStoichiometry100*cmaxs.p;
+            cs.pT  = model.(pe).(co).(am).(itf).guestStoichiometry0*cmaxs.p;
 
             x = pf.assignToX(cs, avfs, vfs);
             
@@ -250,17 +258,7 @@ classdef ParameterFitting
         end
 
         function output = evaluateTargetValues(pf, x)
-            
-        % - resLi       : residual for total Li amount
-        % - energy      : battery energy
-        % - specEnergy  : battery specific energy
-        % - cap         : battery capacity
-        % - specCap_neg : negative electrode specific capacity
-        % - specCap_peg : positive electrode specific capacity
-        % - NPratio     : Balancing coefficient
-        %
-        % In addition, we return
-        % - dischargeFunc : Function that evaluates discharge curve as function of theta
+        % See output structure defined at the end of the function
 
             model    = pf.model;
             Vs       = pf.Vs;
@@ -269,6 +267,7 @@ classdef ParameterFitting
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
+            co  = 'Coating';
             am  = 'ActiveMaterial';
             itf = 'Interface';
 
@@ -321,10 +320,10 @@ classdef ParameterFitting
                 s = smax.*linspace(0, 1, N + 1)';
 
                 c = (1 - s).*c0s{ielde} + s.*cTs{ielde};
-                f = model.(elde).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, icmaxs{ielde});
+                f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, icmaxs{ielde});
                 
                 % function handler
-                fs{ielde} = @(s) model.(elde).(am).(itf).computeOCPFunc((1 - s).*c0s{ielde} + s.*cTs{ielde}, 298, icmaxs{ielde});
+                fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCPFunc((1 - s).*c0s{ielde} + s.*cTs{ielde}, 298, icmaxs{ielde});
                 
                 energies{ielde} = caps{ielde}*smax/N*sum(f);
                 
@@ -336,15 +335,15 @@ classdef ParameterFitting
             
             specEnergy = energy/pf.mass;
 
-            specCap_neg = cap_neg/pf.masses.(ne).(am).val;
-            specCap_pos = cap_pos/pf.masses.(pe).(am).val;
+            specCap_neg = cap_neg/pf.masses.(ne).(co).val;
+            specCap_pos = cap_pos/pf.masses.(pe).(co).val;
 
             nLi = Vs.n*avfs.n*vfs.n*cs.n0 + Vs.p*vfs.p*avfs.p*cs.p0;
             resLi = nLi./(Vs.p*vfs.p*avfs.p*cmaxs.p);
 
             NPratio = cap_neg./cap_pos;
 
-            U = model.(pe).(am).(itf).computeOCPFunc(cs.p0, 298, cmaxs.p) - model.(ne).(am).(itf).computeOCPFunc(cs.n0, 298, cmaxs.n);
+            U = model.(pe).(co).(am).(itf).computeOCPFunc(cs.p0, 298, cmaxs.p) - model.(ne).(co).(am).(itf).computeOCPFunc(cs.n0, 298, cmaxs.n);
             
             output = struct('nLi'          , nLi          , ...
                             'resLi'        , resLi        , ...
@@ -377,15 +376,15 @@ classdef ParameterFitting
             
             output = pf.evaluateTargetValues(x);
 
-            fprintf('%20s: %g [mol]\n','total Lithium amount', output.nLi);
-            fprintf('%20s: %g [V]\n','initial voltage', output.U);
-            fprintf('%20s: %g [Ah]\n', 'Capacity', output.cap/(1*hour));
-            fprintf('%20s: %g [Ah]\n', 'Negative Capacity', output.cap_neg/(1*hour));
-            fprintf('%20s: %g [Ah]\n', 'Positive Capacity', output.cap_pos/(1*hour));
+            fprintf('%20s: %g [-]\n'    , 'N/P ratio'                 , output.NPratio);
+            fprintf('%20s: %g [Ah]\n'   , 'Capacity'                  , output.cap/(1*hour));
+            fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy'           , output.specEnergy/(1*hour));
+            fprintf('%20s: %g [mol]\n'  , 'total Lithium amount'      , output.nLi);
+            fprintf('%20s: %g [V]\n'    , 'initial voltage'           , output.U);
+            fprintf('%20s: %g [Ah]\n'   , 'Negative Capacity'         , output.cap_neg/(1*hour));
+            fprintf('%20s: %g [Ah]\n'   , 'Positive Capacity'         , output.cap_pos/(1*hour));
             fprintf('%20s: %g [Ah/kg]\n', 'Negative Specific Capacity', output.specCap_neg/(1*hour));
             fprintf('%20s: %g [Ah/kg]\n', 'Positive Specific Capacity', output.specCap_pos/(1*hour));
-            fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy', output.specEnergy/(1*hour));
-            fprintf('%20s: %g [-]\n', 'N/P ratio', output.NPratio);
             
         end
 
@@ -421,18 +420,6 @@ classdef ParameterFitting
             lb = zeros(np, 1);
             ub = ones(np, 1);
 
-            % upper bound for the active material volume fractions
-            ub(5) = 0.95;
-            ub(6) = 0.95;
-
-            ub(1) = cmaxs.n;
-            ub(2) = cmaxs.p;
-            ub(3) = cmaxs.n;
-            ub(4) = cmaxs.p;
-
-            % We add lower bound for graphite on soc
-            lb(3) = 0.01*cmaxs.n;
-            
             A = zeros(2, np);
             A(:, 1 : 4) = [[1 0 -1 0];
                            [0 -1 0 1]];
@@ -444,25 +431,12 @@ classdef ParameterFitting
             pf.ub = ub;
             pf.cl = cl;
             pf.cu = cu;
+
             pf.A = A;
 
-            pf.objective         = @(x) pf.objective_func(x);
-            pf.gradient          = @(x) pf.gradient_func(x);
-            pf.constraints       = @(x) pf.constraints_func(x);            
-            pf.jacobian          = @(x) pf.jacobian_func(x);
-            pf.jacobianstructure = @() pf.jacobianstructure_func();
-            
         end
         
         function y = objective_func(pf, x)
-        % Targets
-        % - resLi       : residual factor for total amount of Lithium (see definition in method evaluateTargetValues)
-        % - energy      : battery energy
-        % - specEnergy  : battery specific energy
-        % - cap         : battery capacity
-        % - specCap_neg : negative electrode specific capacity
-        % - specCap_peg : positive electrode specific capacity
-        % - NPratio     : Balancing coefficient
             
             o = pf.evaluateTargetValues(x);
             t = pf.targets;
@@ -514,11 +488,11 @@ classdef ParameterFitting
 
             x0 = pf.getModelValues();
 
-            funcs.objective         = pf.objective;
-            funcs.gradient          = pf.gradient;
-            funcs.constraints       = pf.constraints;
-            funcs.jacobian          = pf.jacobian;
-            funcs.jacobianstructure = pf.jacobianstructure;
+            funcs.objective         = @(x) pf.objective_func(x);
+            funcs.gradient          = @(x) pf.gradient_func(x);
+            funcs.constraints       = @(x) pf.constraints_func(x);            
+            funcs.jacobian          = @(x) pf.jacobian_func(x);
+            funcs.jacobianstructure = @() pf.jacobianstructure_func();
             
             options.lb = pf.lb;
             options.ub = pf.ub;
