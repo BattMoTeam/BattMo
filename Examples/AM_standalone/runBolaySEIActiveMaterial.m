@@ -31,9 +31,12 @@ jsonstruct_bolay = parseBattmoJson(jsonfilename);
 jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
                                      jsonstruct_bolay});
 
-jsonstruct.sei_type = 'bolay';
-jsonstruct.(sd).N  = 10;
+
+jsonstruct.sei_type              = 'bolay';
+jsonstruct.(sd).N                = 10;
 jsonstruct.isRootSimulationModel = true;
+
+jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 
 inputparams = ActiveMaterialInputParams(jsonstruct);
 
@@ -57,7 +60,7 @@ T = 298.15;
 
 % The following datas come from :cite:`Bolay2022` (supplementary material)
 % Length of SEI layer
-SEIlength = 1e-8;
+SEIlength = 10*nano*meter;
 % SEI voltage drop
 SEIvoltageDrop = 0;
 
@@ -75,25 +78,21 @@ initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
 initState.(itf).SEIlength      = SEIlength;
 initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
 
-% we set also static variable fields
-initState.T = T;
+% We set also static variable fields
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
 %% Setup schedule
 
-% Reference rate which roughly corresponds to 1 hour for the data of this example
-Iref = 1.3e-4*ampere/(1*centi*meter)^2;
+Imax = 3e6*ampere;
 
-Imax = 1e1*Iref;
-
-total = 1*hour*(Iref/Imax);
+total = 10*minute;
 n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % rampup value for the current function, see rampupSwitchControl
-tup = dt;
+tup = 1e-2*minute;
 srcfunc = @(time) rampupControl(time, tup, Imax);
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
