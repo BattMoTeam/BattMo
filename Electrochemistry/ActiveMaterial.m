@@ -24,6 +24,12 @@ classdef ActiveMaterial < BaseModel
 
         diffusionModelType     % either 'full' or 'simple'
 
+        %% SEI layer case
+        sei_type % string defining the sei. Can take value
+                 % - 'none' (default)
+                 % - 'bolay'
+                 % - 'safari'
+
         % Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
@@ -46,12 +52,20 @@ classdef ActiveMaterial < BaseModel
                        'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
+                       'sei_type'              , ...
                        'isRootSimulationModel'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Interface = Interface(inputparams.Interface);
-
+            switch inputparams.sei_type
+              case {'none', 'safari'}
+                model.Interface = Interface(inputparams.Interface);
+              case 'bolay'
+                model.Interface = BolayInterface(inputparams.Interface);
+              otherwise
+                error('sei_type not recognized');
+            end
+            
             diffusionModelType = model.diffusionModelType;
 
             switch model.diffusionModelType

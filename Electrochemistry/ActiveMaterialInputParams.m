@@ -24,6 +24,12 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         diffusionModelType     % diffusion model type, either 'full' or 'simple'
 
+        %% SEI layer case
+        sei_type % string defining the sei. Can take value
+                 % - 'none' (default)
+                 % - 'bolay'
+                 % - 'safari'
+
         %% Advanced parameters
 
         isRootSimulationModel % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial for an example)
@@ -31,7 +37,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-        
+
+
     end
 
     methods
@@ -48,9 +55,20 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             itf = 'Interface';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            
-            inputparams.(itf) = InterfaceInputParams(pick('Interface'));
 
+            if ~isempty(inputparams.sei_type)
+                inputparams.sei_type = 'none';
+            end
+            
+            switch inputparams.sei_type
+              case {'none', 'safari'}
+                inputparams.(itf) = InterfaceInputParams(pick('Interface'));
+              case 'bolay'
+                inputparams.(itf) = BolayInterfaceInputParams(pick('Interface'));
+              otherwise
+                error('sei_type not recofnized')
+            end
+            
             if isempty(inputparams.diffusionModelType)
                 inputparams.diffusionModelType = 'full';
             end
