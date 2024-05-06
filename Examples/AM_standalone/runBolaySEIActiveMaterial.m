@@ -1,4 +1,4 @@
-%% Particle simulation with SEI layer growth
+%% Particle simulation with SEI layer growth (Bolay et al 2022)
 
 % clear the workspace and close open figures
 clear
@@ -45,24 +45,21 @@ model = model.setupForSimulation();
 %% Setup initial state
 
 Nsd  = model.(sd).N;
-Nsei = model.(sei).N;
 
 % Initial concentration value at the electrode
-cElectrodeInit   = 0.75*model.(itf).saturationConcentration;
+cElectrodeInit = 0.75*model.(itf).saturationConcentration;
 % Initial value of the potential at the electrode
 phiElectrodeInit = 0;
 % Initial concentration value in the electrolyte
-cElectrolyte     = 5e-1*mol/litre;
+cElectrolyte = 5e-1*mol/litre;
 % Temperature
-T                = 298.15;
+T = 298.15;
 
-% The following datas come from :cite:`Safari_2009`
-% Porosity of the SEI film
-epsiSEI     = 0.05;
-% Solvent concentration in the bulk of the electrolyte
-cECsolution = 4.541*mol/litre;
-% Solvent concentration in the SEI film
-cECexternal = epsiSEI*cECsolution;
+% The following datas come from :cite:`Bolay2022` (supplementary material)
+% Length of SEI layer
+SEIlength = 1e-8;
+% SEI voltage drop
+SEIvoltageDrop = 0;
 
 % We compute the OCP from the given data and use it to assign electrical potential in electrolyte
 initState.T = T;
@@ -73,21 +70,15 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E                = phiElectrodeInit;
-initState.I                = 0;
-initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
-initState.(sei).c          = cECexternal*ones(Nsei, 1);
-initState.(sei).cInterface = cECexternal;
-initState.(sei).delta      = 5*nano*meter;
-initState.R                = 0;
+initState.E               = phiElectrodeInit;
+initState.(sd).c          = cElectrodeInit*ones(Nsd, 1);
+initState.(itf).SEIlength = SEIlength;
+initState.(itf).SEIvoltageDrop      = SEIvoltageDrop;
 
 % we set also static variable fields
 initState.T = T;
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
-initState.(sr).phiElectrolyte  = phiElectrolyte;
-initState.(sei).cExternal      = cECexternal;
-
 
 %% Setup schedule
 

@@ -37,18 +37,18 @@ classdef BolayInterface < Interface
             % Length of SEI layer [m]
             varnames{end + 1} = 'SEIlength';
             % potential drop at SEI [V]
-            varnames{end + 1} = 'SEIu';
+            varnames{end + 1} = 'SEIvoltageDrop';
             % SEI flux [mol/m^2/s]
             varnames{end + 1} = 'SEIflux';
             % SEI mass conservation
             varnames{end + 1} = 'SEImassCons';
             % potential in electrolyte
-            varnames{end + 1} = 'SEIuEquation';
+            varnames{end + 1} = 'SEIvoltageDropEquation';
 
             model = model.registerVarNames(varnames);
 
             fn = @BolayInterface.updateSEIflux;
-            inputnames = {'SEIlength', 'SEIu', 'eta'};
+            inputnames = {'SEIlength', 'SEIvoltageDrop', 'eta'};
             model = model.registerPropFunction({'SEIflux', fn, inputnames});
 
             fn = @BolayInterface.updateSEImassCons;
@@ -56,12 +56,12 @@ classdef BolayInterface < Interface
             inputnames = {'SEIflux', 'SEIlength'};
             model = model.registerPropFunction({'SEImassCons', fn, inputnames});
 
-            fn = @BolayInterface.updateSEIuEquation;
-            inputnames = {'R', 'SEIu'};
-            model = model.registerPropFunction({'SEIuEquation', fn, inputnames});
+            fn = @BolayInterface.updateSEIvoltageDropEquation;
+            inputnames = {'R', 'SEIvoltageDrop'};
+            model = model.registerPropFunction({'SEIvoltageDropEquation', fn, inputnames});
 
             fn = @BolayInterface.updateEta;
-            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'SEIu'};
+            inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'SEIvoltageDrop'};
             model = model.registerPropFunction({'eta', fn, inputnames});
 
         end
@@ -76,7 +76,7 @@ classdef BolayInterface < Interface
 
             T   = state.T;
             eta = state.eta;
-            U   = state.SEIu;
+            U   = state.SEIvoltageDrop;
             L   = state.SEIlength;
 
             state.SEIflux = De*ce./L.*a*exp(-(F./(R*T)).*eta).*(1 - (F./(2*RT)).*U);
@@ -97,15 +97,15 @@ classdef BolayInterface < Interface
             
         end
         
-        function state = updateSEIuEquation(model, state)
+        function state = updateSEIvoltageDropEquation(model, state)
 
             k = model.SEIionicConductivity;
 
-            U = state.SEIu;
+            U = state.SEIvoltageDrop;
             L = state.SEIlength;
             R = state.R;
 
-            state.SEIuEquation = U - R.*L.*k;
+            state.SEIvoltageDropEquation = U - R.*L.*k;
             
         end
 
@@ -114,9 +114,9 @@ classdef BolayInterface < Interface
             phiElyte = state.phiElectrolyte;
             phiElde  = state.phiElectrode;
             OCP      = state.OCP;
-            SEIu     = state.SEIu;
+            SEIvoltageDrop     = state.SEIvoltageDrop;
 
-            state.eta = (phiElde - phiElyte - OCP - SEIu);
+            state.eta = (phiElde - phiElyte - OCP - SEIvoltageDrop);
             
         end
 
