@@ -56,7 +56,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            if ~isempty(inputparams.sei_type)
+            if isempty(inputparams.sei_type)
                 inputparams.sei_type = 'none';
             end
             

@@ -70,10 +70,10 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E               = phiElectrodeInit;
-initState.(sd).c          = cElectrodeInit*ones(Nsd, 1);
-initState.(itf).SEIlength = SEIlength;
-initState.(itf).SEIvoltageDrop      = SEIvoltageDrop;
+initState.E                    = phiElectrodeInit;
+initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
+initState.(itf).SEIlength      = SEIlength;
+initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
 
 % we set also static variable fields
 initState.T = T;
@@ -158,13 +158,6 @@ plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
 title('Concentration in particle / mol/L')
 legend show
 
-delta = cellfun(@(state) state.(sei).delta, states);
-figure
-plot(time/hour, delta/(nano*meter));
-xlabel('time [hour]');
-ylabel('thickness / nm');
-title('SEI thickness')
-
 c = states{end}.(sd).c;
 r = linspace(0, model.(sd).particleRadius, model.(sd).N);
 
@@ -174,33 +167,11 @@ xlabel('radius / m')
 ylabel('concentration / mol/L')
 title('Particle concentration profile (last time step)')
 
-r = states{end}.(sei).delta;
-r = linspace(0, r, model.(sei).N);
-c = states{end}.(sei).c;
+seilength = cellfun(@(state) state.(itf).SEIlength, states);
 
 figure
-plot(r/(nano*meter), c/(mol/litre));
-xlabel('x / mm')
-ylabel('concentration / mol/L');
-title('Concentration profile in SEI layer (last time step)');
+plot(time/hour, seilength);
+xlabel('time / hour')
+ylabel('length / m')
+title('SEI layer length')
 
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}

@@ -79,7 +79,7 @@ classdef BolayInterface < Interface
             U   = state.SEIvoltageDrop;
             L   = state.SEIlength;
 
-            state.SEIflux = De*ce./L.*a*exp(-(F./(R*T)).*eta).*(1 - (F./(2*RT)).*U);
+            state.SEIflux = De*ce./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
            
         end
         
