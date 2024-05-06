@@ -38,6 +38,9 @@ classdef Interface < BaseModel
 
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
+        sei_type % string defining interface type. Can take value
+                 % - 'none' (default)
+                 % - 'bolay'
 
         %% Computed parameters at model setup
 
@@ -64,7 +67,8 @@ classdef Interface < BaseModel
                        'guestStoichiometry0'         , ...
                        'density'                     , ...
                        'openCircuitPotential'        , ...
-                       'chargeTransferCoefficient'};
+                       'chargeTransferCoefficient'   , ...
+                       'sei_type'};
 
             model = dispatchParams(model, inputparams, fdnames);
 

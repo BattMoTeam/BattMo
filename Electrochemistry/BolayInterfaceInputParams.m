@@ -8,6 +8,7 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
         SEIstochiometricCoeffcient
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
+        
     end
     
     methods
@@ -17,9 +18,16 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
             inputparams = inputparams@InterfaceInputParams(jsonstruct);
             
         end
-        
+
+        function inputparams = validateInputParams(inputparams)
+
+            inputparams = validateInputParams@InterfaceInputParams(inputparams);
+
+            assert(strcmp(inputparams.sei_type, 'bolay'), 'Interface sei_type is not set properly');
+
+        end
+
     end
-    
     
 end
 

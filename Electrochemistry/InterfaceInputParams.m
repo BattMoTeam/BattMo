@@ -33,7 +33,10 @@ classdef InterfaceInputParams < InputParams
         openCircuitPotential
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
-      
+
+        sei_type % string defining interface type. Can take value
+                 % - 'none' (default)
+                 % - 'bolay'
     end
     
     methods
