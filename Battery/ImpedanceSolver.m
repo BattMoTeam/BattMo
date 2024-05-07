@@ -5,8 +5,10 @@ classdef ImpedanceSolver
         model
         inputparams
         state
-        soc
 
+        %% options
+        options
+        
         %% helpers quantity (see compute Impedance to see how they are used)
         %
         DM
@@ -18,17 +20,24 @@ classdef ImpedanceSolver
 
     methods
 
-        function impsolv = ImpedanceSolver(inputparams, soc)
+        function impsolv = ImpedanceSolver(inputparams, varargin)
+
+            default_options = struct('computeSteadyState' , true, ...
+                                     'soc'                , []  , ...
+                                     'initstate'          , []  , ...
+                                     'numberOfRampupSteps', 3   , ...
+                                     'numberOfTimeSteps'  , 10);
+
+            impsolv.options = merge_options(default_options, varargin{:});
 
             ctrl = 'Control';
 
-            impsolv.soc         = soc;
             impsolv.inputparams = inputparams;
 
             inputparams.(ctrl) = ImpedanceControlModelInputParams([]);
             impsolv.model = ImpedanceBattery(inputparams);
 
-            impsolv = impsolv.setupSteadyState(soc);
+            impsolv = impsolv.setupSteadyState();
             impsolv = impsolv.setupHelpers();
             
         end
@@ -99,36 +108,74 @@ classdef ImpedanceSolver
             impsolv.indUs = indUs;
             
         end
-        
-        function impsolv = setupSteadyState(impsolv, soc)
+
+        function impsolv = setupSteadyState(impsolv)
 
             ctrl = 'Control';
 
             inputparams = impsolv.inputparams;
+            options     = impsolv.options;
             
-            inputparams.(ctrl)                    = CCDischargeControlModelInputParams([]);;
+            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
-            inputparams.SOC                       = soc;
-            
-            model = Battery(inputparams);
 
-            state = model.setupInitialState();
-            
-            N = 10;
-            totalTime = 10*hour;
-            dt = rampupTimesteps(totalTime, totalTime/N, 3);
+            initcase = [];
+            if ~isempty(options.soc)
+                initcase = 'soc';
+            elseif ~isempty(options.initstate)
+                initcase = 'state';
+            else
+                error('initcase not found');
+            end
 
-            step.val = dt;
-            step.control = ones(numel(dt), 1);
 
-            control = model.Control.setupScheduleControl();
+            switch initcase
 
-            schedule = struct('step'   , step, ...
-                              'control', control);
-            
-            [~, states, report] = simulateScheduleAD(state, model, schedule);
+              case 'soc'
+                
+                inputparams.SOC = options.soc;
+                model = Battery(inputparams);
+                state = model.setupInitialState();
 
-            impsolv.state = states{end};
+              case 'state'
+
+                state = options.initstate;
+                model = Battery(inputparams);
+                
+              otherwise
+                
+                error('initcase not found');
+                
+            end
+
+
+            if options.computeSteadyState
+                
+                state.(ctrl).I = 0;
+                
+                N         = impsolv.options.numberOfTimeSteps;
+                totalTime = 10*hour;
+                nr        = impsolv.options.numberOfRampupSteps;
+                
+                dt = rampupTimesteps(totalTime, totalTime/N, nr);
+
+                step.val = dt;
+                step.control = ones(numel(dt), 1);
+
+                control.src = @(time, Imax) 0;
+
+                schedule = struct('step'   , step, ...
+                                  'control', control);
+                
+                [~, states, report] = simulateScheduleAD(state, model, schedule);
+
+                impsolv.state = states{end};
+
+            else
+
+                impsolv.state = state;
+                
+            end
 
         end
         

@@ -25,6 +25,8 @@ gen = BatteryGeneratorP2D();
 
 inputparams = gen.updateBatteryInputParams(inputparams);
 
+set(0, 'defaultlinelinewidth', 3);
+
 figure
 hold on
 
@@ -34,7 +36,7 @@ for isoc = 1 : numel(socs)
 
     soc = socs(isoc);
     
-    impsolv = ImpedanceSolver(inputparams, soc);
+    impsolv = ImpedanceSolver(inputparams, 'soc', soc, 'computeSteadyState', false);
 
     omegas = linspace(-3, 6, 500);
     omegas = 10.^omegas;
@@ -51,3 +53,4 @@ end
 
 legend show
 title('Impedance')
+axis equal
