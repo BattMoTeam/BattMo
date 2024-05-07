@@ -53,7 +53,7 @@ classdef ImpedanceSolver
 
                 omega = omegas(iomega);
 
-                A = (i*omega*DM + DA);
+                A = (i*2*pi*omega*DM + DA);
                 x = A\b;
 
                 Z(iomega) = x(indUs(1) : indUs(2));
@@ -173,6 +173,7 @@ classdef ImpedanceSolver
 
             else
 
+                state.time = 0; % value appears to be needed
                 impsolv.state = state;
                 
             end
