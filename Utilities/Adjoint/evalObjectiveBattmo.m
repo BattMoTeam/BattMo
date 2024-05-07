@@ -188,7 +188,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
               otherwise
 
-                error('Greadient method %s is not implemented',opt.gradientMethod);
+                error('Gradient method %s is not implemented', opt.gradientMethod);
 
             end
 
