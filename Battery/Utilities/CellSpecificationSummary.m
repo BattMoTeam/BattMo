@@ -19,18 +19,21 @@ classdef CellSpecificationSummary
     
     properties (SetAccess = private)
 
-        packingMass
+        has_packing
+        
+        packing_mass
+        packing_volume
 
         thicknesses % Used to compute mass loading
         
-        mass
+        mass   % total mass (includes packing mass if packing is present)
         masses % structure with mass of each of the cell components
 
         massLoadings % Computed if thicknesses are available
         
-        volume
+        volume  % total volume (includes packing volume if packing is present)
         volumes % structure with volume of each of the cell components
-        
+
         energy
         specificEnergy
         energyDensity
@@ -60,14 +63,13 @@ classdef CellSpecificationSummary
 
         function css = CellSpecificationSummary(model, varargin)
 
-
-
-            
-            opt = struct('packingMass'  , 0 , ...
-                         'thicknesses'  , [], ...
-                         'jsonstruct'   , [], ...
-                         'gridGenerator', [], ...
-                         'temperature'  , 298);
+            opt = struct('packing_mass'  , []   , ...
+                         'packing_volume', []   , ...
+                         'total_volume'  , []   , ...
+                         'thicknesses'   , []   , ...
+                         'jsonstruct'    , []   , ...
+                         'gridGenerator' , []   , ...
+                         'temperature'   , 298);
             opt = merge_options(opt, varargin{:});
 
             if isstruct(model)
@@ -76,7 +78,7 @@ classdef CellSpecificationSummary
                 opt.gridGenerator = gridGenerator;
             end
             
-            css.packingMass          = opt.packingMass;
+            css.packing_mass          = opt.packing_mass;
             css.temperature          = opt.temperature;
             css.gridGenerator        = opt.gridGenerator;
             css.dischargeSimulations = {};
@@ -101,9 +103,64 @@ classdef CellSpecificationSummary
             
         end
 
-        function css = updatePackingMass(css, packingMass)
+        function css = setupPacking(css, varargin)
 
-            css.packingMass = packingMass;
+            opt = struct('packing_mass'  , []  , ...
+                         'packing_volume', []  , ...                         
+                         'total_volume'  , []);
+            
+            opt = merge_options(opt, varargin{:});
+
+            packing_mass   = opt.packing_mass;
+            packing_volume = opt.packing_volume;
+            total_volume   = opt.total_volume;
+
+            if isempty(packing_volume) & isempty(total_volume) & isempty(packing_mass)
+                css.has_packing = false;
+                return
+            end
+
+            css.has_packing = true;
+            
+            if isempty(packing_mass)
+                fprintf('Packing mass is not given. We set the packing mass to zero.\n');
+                packing_mass = 0;
+            end
+            css.packing_mass = packing_mass;
+
+            if ~isempty(total_volume)
+                
+                css.volume = total_volume;
+                assert(css.volume > css.volumes.val, 'Total volume given is smaller that the sum of the components in the cell');
+                if ~isempty(packing_volume)
+                    fprintf('Both total volume and packing volume are given. We use the total volume\n')
+                end
+                if ~isempty(css.volumes)
+                    packing_volume = css.volume - css.volumes.val;
+                else
+                    packing_volume = [];
+                end
+                css.packing_volume = packing_volume;
+
+            else
+                
+                if ~isempty(packing_volume)
+                    css.packing_volume = packing_volume;
+                else
+                    fprintf('Packing volume or total volume are not given. We set the packing volume to zero\n');
+                    css.packing_volume = 0;
+                end
+                    
+                if ~isempty(css.volumes)
+                    total_volume = css.packing_volume + css.volumes.val;
+                else
+                    total_volume = [];
+                end
+                
+                css.volume = total_volume;
+                
+            end
+
             css = css.computeSpecs();
             
         end
@@ -195,9 +252,13 @@ classdef CellSpecificationSummary
             model = css.model;
             
             temperature = css.temperature;
-            packingMass = css.packingMass;
+
+            [mass, masses, volumes] = computeCellMass(model);
+
+            if css.has_packing
+                mass = mass + css.packing_mass;
+            end
             
-            [mass, masses, volumes] = computeCellMass(model, 'packingMass', packingMass);
             [capacity, capacities]  = computeCellCapacity(model);
             [energy, output]        = computeCellEnergy(model, 'temperature', temperature);
             
@@ -220,7 +281,15 @@ classdef CellSpecificationSummary
             
             % Compute specific energy and energy density
 
-            volume = volumes.val;
+            if css.has_packing
+                if isempty(css.volume)
+                    volume = ccs.packing_volume + volumes.val;
+                else
+                    volume = css.volume;
+                end
+            else
+                volume = volumes.val;
+            end
 
             specificEnergy = energy/mass;
             energyDensity  = energy/volume;
@@ -263,10 +332,20 @@ classdef CellSpecificationSummary
             
             lines = {};
 
-            lines = addLine(lines, 'Packing mass', 'kg', css.packingMass);
+            if css.has_packing
+                lines = addLine(lines, 'Packing mass', 'kg', css.packing_mass);
+                lines = addLine(lines, 'Packing volume', 'L', css.packing_volume/litre);
+            else
+                lines = addLine(lines, 'No packing', [], []);
+            end
             lines = addLine(lines, 'Temperature' , 'C' , css.temperature -  273.15);
-            lines = addLine(lines, 'Mass'        , 'kg', css.mass);
-            lines = addLine(lines, 'Volume'      , 'L' , css.volume/litre);
+            if css.has_packing
+                lines = addLine(lines, 'Mass (including packing)'  , 'kg', css.mass);
+                lines = addLine(lines, 'Volume (including packing)', 'L' , css.volume/litre);
+            else
+                lines = addLine(lines, 'Mass'        , 'kg', css.mass);
+                lines = addLine(lines, 'Volume'      , 'L' , css.volume/litre);
+            end
             if ~isempty(css.thicknesses)
                 lines = addLine(lines, 'Negative Electrode Coating Thickness', 'µm', css.thicknesses.(ne)/(micro*meter));
                 lines = addLine(lines, 'Positive Electrode Coating Thickness', 'µm', css.thicknesses.(pe)/(micro*meter));
@@ -307,7 +386,7 @@ classdef CellSpecificationSummary
                 s            = max(lgths);
 
                 fmt = sprintf('%%%ds : %%-8g %%s\n', s);
-                fmt2 = sprintf('%%%ds :          %%s\n', s);
+                fmt2 = sprintf('%%%ds\n', s);
                 
                 for iline = 1 : numel(lines)
                     line = lines{iline};
@@ -318,9 +397,7 @@ classdef CellSpecificationSummary
                                 line.unit);
                     else
                         fprintf(fmt2            , ...
-                                line.description, ...
-                                line.value      , ...
-                                line.unit);
+                                line.description);
                     end
                 end
                 
