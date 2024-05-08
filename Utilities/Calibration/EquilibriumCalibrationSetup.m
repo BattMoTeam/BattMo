@@ -106,17 +106,6 @@ classdef EquilibriumCalibrationSetup
                       'linIneq'         , linIneq};
         end
         
-        function ecs = setPackingMass(ecs, packingMass)
-
-            model = ecs.model;
-            
-            [mass, masses] = computeCellMass(model, 'packingMass', packingMass);
-
-            ecs.packingMass = packingMass;
-            ecs.mass        = mass;
-            ecs.masses      = masses;
-            
-        end
 
         function X = getDefaultValue(ecs)
         %% recall : ordering of parameters
@@ -148,7 +137,7 @@ classdef EquilibriumCalibrationSetup
                 X(2) = vf;
                 
                 compInds = model.(pe).(co).compInds;
-                X(3) = model.(pe).(am).(itf).guestStoichiometry100;
+                X(3) = model.(pe).(co).(am).(itf).guestStoichiometry100;
                 vf   = model.(pe).(co).volumeFraction*model.(pe).(co).volumeFractions(compInds.(am));
                 X(4) = vf;
 
@@ -409,7 +398,7 @@ classdef EquilibriumCalibrationSetup
                 c = (1 - s).*c0 + s.*cT;
                 f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, cmax);
 
-                props.(elde).dischargeFunc = @(s) model.(elde).(am).(itf).computeOCPFunc((1 - s).*c0 + s.*cT, T, cmax);
+                props.(elde).dischargeFunc = @(s) model.(elde).(co).(am).(itf).computeOCPFunc((1 - s).*c0 + s.*cT, T, cmax);
                 
                 energies.(elde) = cap*smax/N*sum(props.(elde).dischargeFunc(s));
 
@@ -433,7 +422,7 @@ classdef EquilibriumCalibrationSetup
             model       = ecs.model;
             packingMass = ecs.packingMass;
             if isempty(packingMass)
-                warning('Packing Mass is not given, we set it equal to zero')
+                fprintf('Packing Mass is not given, we set it equal to zero\n');
                 packingMass = 0;
             end
             mass = computeCellMass(model, 'packingMass', packingMass);
