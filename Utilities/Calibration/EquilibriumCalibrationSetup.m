@@ -23,7 +23,9 @@ classdef EquilibriumCalibrationSetup
         % At the moment, the following is implemented
         % case 1 (default) : The calibration parameters are theta100 and volume fraction for both electrodes
         % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
-
+        % case 3           : The calibration parameters are theta100 for both electrode, the volume fraction of the negative electrode
+        %                    The volume fraction of the the positive electrode is computed from a given NP ration
+        
         calibrationCaseParameters 
         
     end
@@ -41,37 +43,60 @@ classdef EquilibriumCalibrationSetup
             ecs.totalTime = ecs.exptime(end);
             ecs.model     = model;
 
-            % setup some default
-            data = struct('ne_theta_max', 1);
-            calibrationCaseParameters{1} = data;
-            data = struct('pe_theta', 0.99, ...
-                          'ne_theta_max', 1);
-            calibrationCaseParameters{2} = data;
-
-            ecs.calibrationCaseParameters = calibrationCaseParameters;
-
-        end
-
-        function data = getCaseParameters(ecs)
-
-            data = ecs.calibrationCaseParameters{ecs.calibrationCase};
+            ecs = ecs.setupCalibrationCase(1, 'verbose', false);
             
         end
 
-        function ecs = setCaseParameters(ecs, data)
+        function ecs = setupCalibrationCase(ecs, calibrationCase, varargin)
 
-            ecs.calibrationCaseParameters{ecs.calibrationCase} = data;
+            opt = struct('verbose', true);
+            [opt, extras] = merge_options(opt, varargin{:});
+
+            ecs.calibrationCase = calibrationCase;
+            
+            switch calibrationCase
+
+              case 1
+
+                data_default = struct('ne_theta_max', 1);
+
+              case 2
+
+                data_default = struct('pe_theta', 0.99, ...
+                                      'ne_theta_max', 1);
+              case 3
+
+                data_default = struct('ne_theta_max', 1, ...
+                                      'NP_ratio', 1.1);
+                
+              otherwise
+                error('case number not recognized');
+            end
+            
+            ecs.calibrationCaseParameters = merge_options(data_default, extras{:});
+
+            if opt.verbose
+                ecs.printVariableChoice();
+            end
             
         end
+        
 
         function linIneq = setupIneqConstraints(ecs)
-
-            data = ecs.getCaseParameters();
+        % not used for the moment (see setupOptimParams)
+            data = ecs.calibrationCaseParameters;
             
             switch ecs.calibrationCase
                 
               case 1
-
+                
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : theta100 cathode
+                % X(4) : alpha cathode (alpha = V*volumeFraction*cmax)
+                
                 A = -eye(4);
                 b = -0.1*[1, 1, 1, 1]';
 
@@ -80,11 +105,29 @@ classdef EquilibriumCalibrationSetup
 
               case 2
                 
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : alpha cathode (alpha = V*volumeFraction*cmax)
+                
                 A = -eye(3);
                 b = -0.1*[1, 1, 1]';
                 
                 A = [A; 1, 0, 0];
                 b = [b; data.ne_theta_max];
+
+              case 3
+                              
+                A = -eye(3);
+                b = -0.1*[1, 1, 1]';
+                
+                A = [A; 1, 0, 0];
+                b = [b; data.ne_theta_max];
+                
+              otherwise
+
+                error('ecs.calibrationCase not recognized');
                 
             end
 
@@ -94,7 +137,7 @@ classdef EquilibriumCalibrationSetup
         end
 
         function params = setupOptimParams(ecs)
-            
+        % not used for the moment
             linIneq = ecs.setupIneqConstraints();
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
@@ -108,15 +151,8 @@ classdef EquilibriumCalibrationSetup
         
 
         function X = getDefaultValue(ecs)
-        %% recall : ordering of parameters
-        %
-        % X(1) : theta100 anode
-        % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
-        % X(3) : theta100 cathode
-        % X(4) : alpha cathode (alpha = V*volumeFraction*cmax)
 
             
-        % We define some shorthand names for simplicity.
             model = ecs.model;
             
             ne  = 'NegativeElectrode';
@@ -128,6 +164,13 @@ classdef EquilibriumCalibrationSetup
             switch ecs.calibrationCase
 
               case 1
+                
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : theta100 cathode
+                % X(4) : alpha cathode (alpha = V*volumeFraction*cmax)
                 
                 X = nan(4, 1);
 
@@ -142,6 +185,12 @@ classdef EquilibriumCalibrationSetup
                 X(4) = vf;
 
               case 2
+
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : alpha cathode (alpha = V*volumeFraction*cmax)
                 
                 X = nan(3, 1);
 
@@ -153,6 +202,23 @@ classdef EquilibriumCalibrationSetup
                 compInds = model.(pe).(co).compInds;
                 vf   = model.(pe).(co).volumeFraction*model.(pe).(co).volumeFractions(compInds.(am));
                 X(3) = vf;
+                
+              case 3
+
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : theta100 cathode
+
+                X = nan(3, 1);
+
+                compInds = model.(ne).(co).compInds;
+                X(1) = model.(ne).(co).(am).(itf).guestStoichiometry100;
+                vf   = model.(ne).(co).volumeFraction*model.(ne).(co).volumeFractions(compInds.(am));
+                X(2) = vf;
+                
+                X(3) = model.(pe).(co).(am).(itf).guestStoichiometry100;                
                 
               otherwise
                 error('calibrationCase not recognized')
@@ -166,7 +232,10 @@ classdef EquilibriumCalibrationSetup
                 fprintf('\nThe calibration parameters are theta100 and volume fraction for both electrodes\n');
               case 2
                 fprintf('\nThe calibration parameters are theta100 for the negative electrode\n');
-                fprintf('\nThe volume fractions for both electrodes\n');
+                fprintf('The volume fractions for both electrodes\n');
+              case 3
+                fprintf('\nCalibration parameters are theta100 for both electrodes, volume fraction for negative electrode.\n');
+                fprintf('The volume fraction for positive electrode is computed from given NP_ration\n');
               otherwise
                 error('calibrationCase not recognized');
             end
@@ -189,6 +258,13 @@ classdef EquilibriumCalibrationSetup
             switch ecs.calibrationCase
 
               case 1
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : theta100 cathode
+                % X(4) : alpha cathode (alpha = V*volumeFraction*cmax)
+
 
                 for ielde = 1 : numel(eldes)
 
@@ -206,6 +282,13 @@ classdef EquilibriumCalibrationSetup
 
               case 2
                 
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : alpha cathode (alpha = V*volumeFraction*cmax)
+
+
                 vol  = sum(model.(ne).(co).G.getVolumes());
                 cmax = model.(ne).(co).(am).(itf).saturationConcentration;
                 
@@ -220,9 +303,40 @@ classdef EquilibriumCalibrationSetup
                 vals.(pe).volumeFraction = X(3);
                 vals.(pe).alpha          = X(3)*vol*cmax;
                 
-                data = ecs.getCaseParameters();
+                data = ecs.calibrationCaseParameters;
                 vals.(pe).tf             = 1;
                 vals.(pe).theta          = data.pe_theta;
+
+              case 3
+
+                %% recall : ordering of parameters
+                %
+                % X(1) : theta100 anode
+                % X(2) : alpha anode (alpha = V*volumeFraction*cmax)
+                % X(3) : theta100 cathode
+
+
+                vol  = sum(model.(ne).(co).G.getVolumes());
+                cmax = model.(ne).(co).(am).(itf).saturationConcentration;
+                
+                vals.(ne).tf             = 0;
+                vals.(ne).theta          = X(1);
+                vals.(ne).volumeFraction = X(2);
+                vals.(ne).alpha          = X(2)*vol*cmax;
+                
+                vals.(pe).tf             = 0;
+                vals.(pe).theta          = X(3);
+
+                data = ecs.calibrationCaseParameters;
+                npratio = data.NP_ratio;
+
+                vol  = sum(model.(pe).(co).G.getVolumes());
+                cmax = model.(pe).(co).(am).(itf).saturationConcentration;
+
+                vals.(pe).alpha = 1/npratio.*vals.(ne).alpha;
+                vals.(pe).volumeFraction = vals.(pe).alpha./(vol*cmax);
+                
+              otherwise
                 
             end
                 
@@ -238,7 +352,7 @@ classdef EquilibriumCalibrationSetup
 
 
         function theta = conc(ecs, t, elde, tf, theta_tf, alpha)
-        % theta is lithiation at time tf*totalTimr
+        % theta_tf is lithiation at time tf*totalTime
         % returns lithiation
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -259,14 +373,6 @@ classdef EquilibriumCalibrationSetup
         end
 
         function f = computeF(ecs, t, X)
-
-        %% ordering of parameters
-        %
-        % X(1) : theta100 cathode
-        % X(2) : alpha cathode (alpha = V*volumeFraction*cmax)
-        % X(3) : theta100 anode
-        % X(4) : alpha anode (alpha = V*volumeFraction*cmax)
-
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -428,7 +534,26 @@ classdef EquilibriumCalibrationSetup
             mass = computeCellMass(model, 'packingMass', packingMass);
 
         end
-        
+
+
+        function [Xopt, hist] = runUnitBoxBFGS(ecs)
+
+            [fexp, fcomp] = ecs.setupfunction();
+
+            X0 = ecs.getDefaultValue();
+            exptime = ecs.exptime;
+
+            topt = exptime;
+
+            opts = {'t', topt};
+            f = @(X) ecs.objective(X, opts{:});
+
+            params = ecs.setupOptimParams();
+
+            [~, Xopt, hist] = unitBoxBFGS(X0, f, params{:});
+
+        end
+
         function printParameters(ecs, X)
 
             vals = ecs.getPhysicalValues(X);
@@ -438,19 +563,20 @@ classdef EquilibriumCalibrationSetup
 
             eldes = {ne, pe};
 
-
             switch ecs.calibrationCase
-              case 1
+              case {1, 3}
                 fprintf('%-25s%20s%20s\n', '', 'theta', 'volume fraction');
-                thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(ne).theta , vals.(ne).tf*100);
+                thetastr = sprintf('%6.5f', vals.(ne).theta);
                 fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
-                thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(pe).theta , vals.(pe).tf*100);
+                thetastr = sprintf('%6.5f', vals.(pe).theta);
                 fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).volumeFraction);
               case 2
                 fprintf('%-25s%20s%20s\n', '', 'theta', 'volume fraction');
                 thetastr = sprintf('%6.5f (SOC = %3.0f%%)', vals.(ne).theta , vals.(ne).tf*100);
                 fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
                 fprintf('%-25s%20s%20.5f \n', pe, '', vals.(pe).volumeFraction);
+              otherwise
+                error('calibration case not recognized');
             end
             
         end
