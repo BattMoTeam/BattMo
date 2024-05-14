@@ -321,7 +321,7 @@ classdef Interface < BaseModel
 
             R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 
-            state.R = R/(n*F); % reaction rate in mol/(s*m^2)
+            R = R/(n*F); % reaction rate in mol/(s*m^2)
             
         end
 
