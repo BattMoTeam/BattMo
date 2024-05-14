@@ -1,4 +1,4 @@
-classdef ImpedanceBattery < GenericBattery
+classdef ImpedanceBattery < Battery
 
     properties
 
@@ -8,7 +8,7 @@ classdef ImpedanceBattery < GenericBattery
 
         function model = ImpedanceBattery(inputparams)
 
-            model = model@GenericBattery(inputparams);
+            model = model@Battery(inputparams);
 
         end
 
@@ -18,7 +18,7 @@ classdef ImpedanceBattery < GenericBattery
         %% Declaration of the Dynamical Variables and Function of the model
         % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@GenericBattery(model);
+            model = registerVarAndPropfuncNames@Battery(model);
 
             % defines shorthands for the submodels
             elyte   = 'Electrolyte';
@@ -52,6 +52,23 @@ classdef ImpedanceBattery < GenericBattery
             inputvarnames = {{elyte, 'c'}, {ctrl, 'omega'}};
             outputvarname = {elyte, 'massAccum'};
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+            eldes = {ne, pe};
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                if model.(elde).(co).(am).(itf).useDoubleLayerCapacity
+                    fn = str2func(sprintf('@(model, state) (ImpedanceBattery.updateCapacityRequation(model, state, ''%s''))', elde));
+                    fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
+                    inputvarnames = cellfun(@(name) {elde, co, am, itf, name}, {'phiElectrolyte', 'phiElectrode', 'cElectrolyte', 'capacityR', 'T'}, 'uniformoutput', false);
+                    inputvarnames{end + 1} = {ctrl, 'omega'};
+                    outputvarname = {elde, co, am, itf, 'capacityRequation'};
+                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+                end
+                
+            end
             
         end
 
@@ -144,6 +161,30 @@ classdef ImpedanceBattery < GenericBattery
                 isequal = false;
                 return
             end
+        end
+
+        function state = updateCapacityRequation(model, state, elde)
+
+            co      = 'Coating';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+
+            omega = state.Control.omega;
+            
+            itfmodel = model.(elde).(co).(am).(itf);
+            itfstate = state.(elde).(co).(am).(itf);
+            
+            cDL = itfmodel.doubleLayerCapacitance;
+            F   = itfmodel.constants.F;
+            R   = itfmodel.constants.R;
+            
+            jDL   = itfstate.capacityR;
+            T     = itfstate.T;
+            c     = itfstate.cElectrolyte;
+            dphi  = itfstate.phiElectrode - itfstate.phiElectrolyte;
+
+            state.(elde).(co).(am).(itf).capacityRequation = jDL - i*omega.*(cDL/F)*(dphi + (R.*T./F));
+            
         end
     end
 
