@@ -32,6 +32,15 @@ function tbls = setupTables(G, varargin)
                   'facenodetbl', facenodetbl);
 
 
+    if ismember('cellnodetbl', includetbls)
+
+        cellfacenodetbl = crossIndexArray(cellfacetbl, facenodetbl, {'faces'});
+        cellnodetbl = projIndexArray(cellfacenodetbl, {'cells', 'nodes'});
+
+        tbls.cellnodetbl = cellnodetbl;
+        
+    end
+    
     if any(ismember({'intfacetbl', 'cellintfacetbl'}, includetbls))
 
         intfaces = all(G.faces.neighbors> 0, 2);
