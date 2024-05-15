@@ -1,9 +1,17 @@
+%% Example for the stokes solver.
+% It requires the following extra modules to setup the irregular grid
+% nwm : https://bitbucket.org/LinZhao9/nwm.git
+% upr : https://github.com/rbe051/UPR.git
+% Download those and put them in your path using : addpath(genpath('.'))
+%
+% The option debugging works without those (not that we get a constant pressure in this example)
+
 dim = 2;
 
 close all
 clear all
 
-gridtype = 'radial';
+gridtype = 'debugging';
 
 viscosity = 1;
 
