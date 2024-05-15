@@ -5,13 +5,15 @@
   "use_thermal": false,
   "include_current_collectors": false,
   "Control": {
-    "controlPolicy": "CCDischarge",
-    "rampupTime": 0.1,
+    "controlPolicy": "CCCV",
+    "CRate": 1,
     "DRate": 1,
-    "lowerCutoffVoltage": 2.4,
+    "lowerCutoffVoltage": 3,
     "upperCutoffVoltage": 4.1,
-    "dIdtLimit": 0.01,
-    "dEdtLimit": 0.01
+    "numberOfCycles": 3,
+    "dIdtLimit": 1e-6,
+    "dEdtLimit": 1e-6,
+    "initialControl" : "discharging"
   },
   "NegativeElectrode": {
     "Coating": {
@@ -38,13 +40,13 @@
         "SolidElectrodeInterface" : {
           "molecularWeight": 0.162,
           "density": 1690,
-          "D": 6.8e-21,
+          "diffusionCoefficient": 6.8e-21,
+          "conductivity" : 5e-6,
           "N": 10
         },
         "SideReaction" : {
-          "beta" : 0.5,
-          "k" : 1.36e-12,
-          "conductivity" : 5e-6
+          "chargeTransferCoefficient" : 0.5,
+          "reactionRateConstant" : 1.36e-12
         }
       },
       "Binder": {

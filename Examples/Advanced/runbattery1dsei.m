@@ -5,48 +5,33 @@
 % Clear the workspace and close open figures
 clear all
 close all
-clc
 
 %% Import the required modules from MRST
 % load MRST modules
+
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the paramobj object.
 
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite_sei.json');
 
-paramobj = BatteryInputParams(jsonstruct);
-
-use_cccv = false;
-if use_cccv
-    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                         'DRate'             , 1         , ...
-                         'CRate'             , 1.5       , ...
-                         'lowerCutoffVoltage', 2.4       , ...
-                         'upperCutoffVoltage', 4.1       , ...
-                         'dIdtLimit'         , 0.01      , ...
-                         'dEdtLimit'         , 0.01);
-    cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-    paramobj.Control = cccvparamobj;
-end
+inputparams = BatteryInputParams(jsonstruct);
 
 % We define some shorthand names for simplicity.
+elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
+co      = 'Coating';
 am      = 'ActiveMaterial';
+am1     = 'ActiveMaterial1';
+am2     = 'ActiveMaterial2';
+cc      = 'CurrentCollector';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
+thermal = 'ThermalModel';
 ctrl    = 'Control';
-cc      = 'CurrentCollector';
+sr      = 'SideReaction';
+sei     = 'SolidElectrodeInterface';
 
 %% Setup the geometry and computational mesh
 % Here, we setup the 1D computational mesh that will be used for the
@@ -54,66 +39,26 @@ cc      = 'CurrentCollector';
 % in the class BatteryGenerator1D. 
 gen = BatteryGeneratorP2D();
 
-% Now, we update the paramobj with the properties of the mesh. 
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the mesh. 
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%  Initialize the battery model. 
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(paramobj);
+model = GenericBattery(inputparams);
 
-model.AutoDiffBackend= AutoDiffBackend();
+cgt = model.cgt;
 
-%% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current. 
+%% The control is used to set up the schedule
 
-DRate = model.Control.DRate;
+jsonstruct.TimeStepping.numberOfTimeSteps = 200;
 
-%% Setup the time step schedule 
-% Smaller time steps are used to ramp up the current from zero to its
-% operational value. Larger time steps are then used for the normal
-% operation.
-switch model.(ctrl).controlPolicy
-  case 'CCCV'
-    CRate = model.Control.DRate;
-    total = 1.5*hour/(DRate + CRate);
-  case 'CCDischarge'
-    total = 1.4*hour/DRate;
-  otherwise
-    error('control policy not recognized');
-end
-
-n    = 100;
-dt   = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% we setup the control by assigning a source and stop function.
-% control = struct('CCCV', true); 
-%  !!! Change this to an entry in the JSON with better variable names !!!
-
-switch model.Control.controlPolicy
-  case 'CCDischarge'
-    tup = 0.1; % rampup value for the current function, see rampupSwitchControl
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                model.Control.Imax, ...
-                                                model.Control.lowerCutoffVoltage);
-    % we setup the control by assigning a source and stop function.
-    control = struct('src', srcfunc, 'CCDischarge', true);
-  case 'CCCV'
-    control = struct('CCCV', true);
-  otherwise
-    error('control policy not recognized');
-end
-
-% This control is used to set up the schedule
-schedule = struct('control', control, 'step', step); 
+schedule = model.(ctrl).setupSchedule(jsonstruct);
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
 
-initstate = model.setupInitialState(); 
+initstate = model.setupInitialState();
 
 %% Setup the properties of the nonlinear solver 
 nls = NonLinearSolver(); 
@@ -121,43 +66,51 @@ nls = NonLinearSolver();
 nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+model.nonlinearTolerance = 1e-5*mean(model.Control.ImaxDischarge + model.Control.ImaxCharge);
 % Set verbosity
-model.verbose = false;
+model.verbose = true;
 
 %% Run the simulation
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% Process output and recover the output voltage and current from the output states.
 ind = cellfun(@(x) not(isempty(x)), states); 
 states = states(ind);
-E = cellfun(@(x) x.Control.E, states); 
-I = cellfun(@(x) x.Control.I, states);
-Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
-% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);
 time = cellfun(@(x) x.time, states); 
+E    = cellfun(@(x) x.Control.E, states); 
+I    = cellfun(@(x) x.Control.I, states);
 
-%% Plot the the output voltage and current
-plotDashboard(model, states, 'step', 0);
+for istate = 1 : numel(states)
+    states{istate} = model.addVariables(states{istate});
+end
 
-%{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+set(0, 'defaultlinelinewidth', 3)
+set(0, 'defaultaxesfontsize', 15)
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+figure
+plot(time/hour, E);
+title('Voltage / V')
+xlabel('Time / h')
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+figure
+plot(time/hour, I);
+title('Current / A')
+xlabel('Time / h')
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}
+figure
+hold on
+
+delta = cellfun(@(state) state.(ne).(co).(am).(sei).delta(end), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{max}')
+
+delta = cellfun(@(state) state.(ne).(co).(am).(sei).delta(1), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{min}')
+
+title('SEI thickness in negative electrode/ nm')
+xlabel('Time / h')
+
+legend show
+

@@ -43,9 +43,10 @@
         "nominalConcentration": {
           "$ref": "PhysicalQuantity.schema.json",
           "description": "nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json"
-        }
-      }
-    },
+        }}},
+    "nominalEthyleneCarbonateConcentration" : {
+      "$ref" : "PhysicalQuantity.schema.json",
+      "description" : "Nominal Ethylene Carbonate concentration in the electrolyte. This is used as initial concentration, in case the SEI layer is included in model, see Coating.schema.json and the active_material_type property"},
     "density": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the mass density of the material",

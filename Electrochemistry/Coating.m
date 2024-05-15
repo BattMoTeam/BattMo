@@ -300,7 +300,9 @@ classdef Coating < ElectronicComponent
 
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-
+            sei = 'SolidElectrodeInterface';
+            sr  = 'SideReaction';
+            
             varnames = {'jCoupling', ...
                         'jExternal', ...
                         'SOC'};
@@ -328,6 +330,11 @@ classdef Coating < ElectronicComponent
 
                 fn = @Coating.updateSOC;
                 model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
+
+                if strcmp(model.active_material_type, 'sei')
+                    fn = @Coating.updateSideReactionPhi;
+                    model = model.registerPropFunction({{am, sr, 'phiElectrode'}, fn, {'phi'}});
+                end
 
               case 'composite'
 
@@ -565,6 +572,15 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function state = updateSideReactionPhi(model, state)
+
+            am  = 'ActiveMaterial';
+            sr = 'SideReaction';
+
+            state.(am).(sr).phiElectrode = state.phi;
+            
+        end
+        
         function state = dispatchCompositeTemperature(model, state)
 
             am1 = 'ActiveMaterial1';
