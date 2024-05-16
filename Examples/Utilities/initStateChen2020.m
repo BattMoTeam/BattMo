@@ -78,29 +78,86 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     % setup initial positive electrode external coupling values
 
     initstate.(ctrl).E = OCP(1) - ref;
-    initstate.(ctrl).I = 0;
-    initstate.(ctrl).ctrlType = 'constantCurrent';
 
+    switch model.(ctrl).controlPolicy
+
+      case {'CCDischarge', 'CCCharge'}
+
+        initstate.(ctrl).ctrlType = 'constantCurrent';
+        initstate.(ctrl).I = model.(ctrl).Imax;
+
+      case 'CC'
+
+        initstate.(ctrl).ctrlType = 'constantCurrent';
+        initstate.(ctrl).I = 0;
+
+      case 'CCCV'
+
+        initstate.(ctrl).numberOfCycles = 0;
+
+        switch model.(ctrl).initialControl
+          case 'discharging'
+            initstate.(ctrl).ctrlType     = 'CC_discharge1';
+            initstate.(ctrl).nextCtrlType = 'CC_discharge1';
+            initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
+          case 'charging'
+            initstate.(ctrl).ctrlType     = 'CC_charge1';
+            initstate.(ctrl).nextCtrlType = 'CC_charge1';
+            initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
+          otherwise
+            error('initialControl not recognized');
+        end
+
+      case 'powerControl'
+
+        switch model.(ctrl).initialControl
+          case 'discharging'
+            error('to implement (should be easy...)')
+          case 'charging'
+            initstate.(ctrl).ctrlType = 'charge';
+            E = initstate.(ctrl).E;
+            P = model.(ctrl).chargingPower;
+            initstate.(ctrl).I = -P/E;
+          otherwise
+            error('initialControl not recognized');
+        end
+
+      case 'CC'
+
+        % this value will be overwritten after first iteration
+        initstate.(ctrl).I = 0;
+        switch model.(ctrl).initialControl
+          case 'discharging'
+            initstate.(ctrl).ctrlType = 'discharge';
+          case 'charging'
+            initstate.(ctrl).ctrlType = 'charge';
+          otherwise
+            error('initialControl not recognized');
+        end
+      otherwise
+        error('control policy not recognized');
+    end
+    
 end
 
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
