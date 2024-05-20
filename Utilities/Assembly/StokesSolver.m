@@ -35,9 +35,12 @@ classdef StokesSolver
                   % - A    : System matrix (see definition below)
                   % - M    : Stiffness matrix
                   % - Div  : Divergence operator
-                  % - Flux : Flux operator
-                  % - Diri : Dirichlet operator matrix (used in system matrix and to setup dirichletValues)
+                  % - Flux : Flux operator.
+                  %          Map from full set of dofs to face values.
+                  % - Diri : Dirichlet operator matrix (used in system matrix and to setup dirichletValues).
+                  %          Map from full set of dofs to Dirichlet vector node dofs (see also helpers dPn, gPn, dPf and  gPf below).
                   % - Neum : Neuman operator to setup external viscous forces term.
+                  %          Map from Neuman face vector values to full set of dofs.
                   % 
                   % The Stokes system takes the form
                   %
@@ -66,10 +69,10 @@ classdef StokesSolver
                   %        Div  : Divergence operator
                   %        Diri : Diri matrix
                   %        
-                  %        viscforces      : vector of same size of velocity u using the same degree of freedom.
+                  %        viscforces      : Vector of same size of velocity u using the same degree of freedom.
                   %                          It corresponds by duality to the viscous forces occuring at that the Neuman
-                  %                          boundary faces. It is setup using the Neum operator
-                  %        source          : source term with one value per cell
+                  %                          boundary faces. It is setup using the Neum operator.
+                  %        source          : Source term with one value per cell
                   %        dirichletValues : They are given through the degrees of freedom (same as velocity u) for the
                   %                          Dirichlet boundary faces. We use Diri to setup those
 
@@ -102,6 +105,7 @@ classdef StokesSolver
                 %      - gPf : global full-dof to face-dof at Dirichlet
                 %      - dPn : dirichlet from full-dof to nodal-vector-dof 
                 %      - dPf : dirichlet from full-dof to face-dof
+                %      Note that we have Diri = dPn'*gPn + dPf'*gPf
     end
 
     methods
