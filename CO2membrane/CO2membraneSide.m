@@ -3,14 +3,24 @@ classdef CO2membraneSide < BaseModel
     properties
 
         Boundary
+
+        couplingTerm
         
         constants
         
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
-        poiseuilleCoefficient
+        viscosity   % viscosity
+        temperature % temperature
+        diameter    % tube parameter
         
+        % Advanced parameter
+        poiseuilleCoefficient
+
+        %% helpers
+        Tbc
+        boundarySetup
     end
 
     methods
@@ -18,6 +28,15 @@ classdef CO2membraneSide < BaseModel
         function model = CO2membraneSide(inputparams)
             
             model = model@BaseModel();
+
+            fdnames = {'couplingTerm', ...
+                       'viscosity'   , ...
+                       'temperature' , ...
+                       'diameter'    , ...
+                       'poiseuilleCoefficient'};
+
+            model = dispatchParams(model, inputparams, fdnames);
+
             model.constants = PhysicalConstants();
 
             model.Boundary = CO2membraneSideBoundary([]);
@@ -28,6 +47,12 @@ classdef CO2membraneSide < BaseModel
             model.gasInd.Ar  = 4;
             model.nGas = 4;
 
+
+            if isempty(model.poiseuilleCoefficient)
+                % setup function to update it
+                error('not yet implemented');
+            end
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -52,12 +77,12 @@ classdef CO2membraneSide < BaseModel
             % mass conservation equations
             varnames{end + 1} = VarName({}, 'massConses', nGas);
             
-            % Boundary condition flux definition equation
-            varnames{end + 1} = {'Boundary', 'bcDefinition'};
-            
             % Boundary mol fraction equation setup
-            varnames{end + 1} = VarName({'Boundary'}, 'bcDefinition'};
-
+            varnames{end + 1} = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas);
+            
+            % Boundary flux definition
+            varnames{end + 1} = {'Boundary', 'bcFluxDefinition'};
+            
             % Control 
             varnames{end + 1} = VarName({'Boundary'}, 'control');
             
@@ -80,21 +105,21 @@ classdef CO2membraneSide < BaseModel
                 inputvarnames = {VarName({'Boundary'}, 'fluxes', nGas, igas)};
                 outputvarname = VarName({}, 'bcSources', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+                fn = @CO2membraneSide.updateBoundaryMolFractionsDefinitions;
+                inputvarnames = {VarName({}, 'molFractions', nGas, igas), ...
+                                 'pressure', ...
+                                 {'Boundary', 'pressure'}};
+                outputvarname = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas, igas);
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
             end
-            fn = @CO2membraneSide.updateBCdefinitions;
-            inputvarnames = {VarName({'Boundary'}, 'molFractions', nGas), ...
-                             VarName({}, 'molFractions', nGas)};
-            outputvarname = {'Boundary', 'bcDefinition'};
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            
-            fn = @CO2membraneSide.updateBCdefinitions;
-            inputvarnames = {{'Boundary', 'pressure'}                         , ...
-                             'pressure'                                       , ...
-                             {'Boundary', 'flux'}, ...
-                             VarName({}, 'molFractions', nGas, igas)          , ...
-                             VarName({'Boundary'}, 'fluxes', nGas, igas)};
-            outputvarname = {'Boundary', 'bcDefinition'};
+
+            fn = @CO2membraneSide.updateBcFluxDefinition;
+            inputvarnames = {{'Boundary', 'flux'}    , ...
+                             {'Boundary', 'pressure'}, ...
+                             'pressure'};
+            outputvarname = {'Boundary', 'bcFluxDefinition'};
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn = @CO2membraneSide.updateControl;
@@ -108,6 +133,24 @@ classdef CO2membraneSide < BaseModel
             inputvarnames = {VarName({}, 'pressures', nGas)};
             outputvarname = 'pressure';
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            
+        end
+
+        function state = updateBcFluxDefinition(model, state)
+
+            nGas  = model.nGas;
+            pcoef = model.PoiseuilleCoefficient;
+            Tbc   = model.Tbc;
+            
+            bd = 'Boundary';
+            
+            qBc = state.(bd).flux;
+            pBc = state.(bd).pressure;
+            
+            p = state.pressure;
+            p = mapToBc*p;
+
+            state.(bf).bcFluxDefinition = qBc - pcoef*Tbc*(pBc - p);
             
         end
 
@@ -145,7 +188,34 @@ classdef CO2membraneSide < BaseModel
             state.massSources = ms;
 
         end
-        
+
+
+        function state = updateBoundaryMolFractions(model, state)
+
+            bd        = 'Boundary';
+            nGas      = model.nGas;
+            givenMfBc = model.givenBoundaryVolumeFractions;
+            
+            pBc = state.(bd).pressure;
+            p = state.pressure;            
+            p = mapToBc*p;
+            
+            for igas = 1 : nGas
+
+                mf = state.molFractions{igas};
+                mf = mapToBc*mf;
+                
+                mfBc = state.(bd).molFractions{igas};
+
+                ind = pBc - p < 0;
+
+                bcdefs{igas}      = mfBc - mf;
+                bcdefs{igas}(ind) = mfBc(ind) - givenMfBc(ind);
+ 
+            end
+            
+                
+        end
         function state = updateFluxes(model, state)
             
             nGas  = model.nGas;
@@ -168,43 +238,22 @@ classdef CO2membraneSide < BaseModel
         end
 
 
-        function state = updateBCdefinitions(model, state)
+        function state = updateControl(model, state)
 
-            
-            bd    = 'Boundary';
-            nGas  = model.nGas;
-            pcoef = model.poiseuilleCoefficient;
-            
-            p = state.pressure;
-            p = mapToBc*p;
+            bd = 'Boundary';
+
+            bc = model.boundarySetup;
             
             pBc = state.(bd).pressure;
-            
-            for igas = 1 : nGas
+            qBc = state.(bd).flux;
 
-                mf = state.molFractions{igas};
-                mf = mapToBc*mf;
-                
-                mfBc = state.(bd).molFractions{igas};
-                
-                qBc = state.(bd).fluxes{igas};
-                
-                ind = p - pBc < 0;
+            eqs{1} = bc.pressureMap*pBc - bc.pressureValues;
+            eqs{2} = bc.fluxMap*qBc - bc.fluxValues;
 
-                bcdefs{igas}      = qBc - mf.*pcoef*(p - pBc);
-                bcdefs{igas}(ind) = qBc(ind) - mfBc(ind).*pcoef*(p(ind) - pBc(ind));
-
-            end
-
-            state.(bd).bcDefinitions = bcdefs;
-
-        end
-
-
-        function state = updateControls(model, state)
-
+            state.(bd).control = vertcat(eqs{:});
             
         end
+        
     end
 
     methods(Static)

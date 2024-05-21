@@ -43,35 +43,18 @@ classdef CO2membraneSideBoundary < BaseModel
             
             model = model.registerVarNames(varnames);
 
-            fn = @CO2membraneSideBoundary.updateFluxes;
-            inputvarnames = {VarName({}, 'molFractions', nGas), ...
-                             'flux'};
-            outputvarname = VarName({}, 'fluxes', nGas);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
-            fn = @CO2membraneSideBoundary.updateDependentMolFraction;
-            inputvarnames = {VarName({}, 'molFractions', nGas, (1 : (nGas - 1))')};
-            outputvarname = VarName({}, 'molFractions', nGas, nGas);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            
-        end
-
-        function state = updateDependentMolFraction(model, state)
-
-            nGas = model.nGas;
-            
-            tmf = 0*state.molFractions{1};
-
-            for igas = 1 : (nGas - 1)
-
-                tmf = tmf + state.molFractions{igas};
-
+            for igas = 1 : nGas
+                fn = @CO2membraneSideBoundary.updateFluxes;
+                inputvarnames = {VarName({}, 'molFractions', nGas, igas), ...
+                                 'flux'};
+                outputvarname = VarName({}, 'fluxes', nGas, igas);
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             end
-
-            state.molFractions{nGas} = 1 - tmf;
-
+            
         end
-        
+
+
         function state = updateFluxes(model, state)
 
             nGas = model.nGas;
