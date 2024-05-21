@@ -401,8 +401,9 @@ figure
 val = state.(ce).(elyte).pi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
-title('pi')
+title('pi / V')
 xlabel('x / mm')
+ylabel('y / mm')
 view(45, 31)
 colorbar
 
@@ -410,8 +411,9 @@ figure
 val = state.(ce).(elyte).pi - state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
-title('E')
+title('E / V')
 xlabel('x / mm')
+ylabel('y / mm')
 view(45, 31)
 colorbar
 
@@ -419,8 +421,9 @@ figure
 val = state.(ce).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
-title('phi')
+title('phi / V')
 xlabel('x / mm')
+ylabel('y / mm')
 view(73, 12)
 colorbar
 
@@ -438,6 +441,7 @@ surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Mass Fraction H2O');
 xlabel('x / mm')
+ylabel('y / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -449,6 +453,7 @@ surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Mass Fraction O2');
 xlabel('x / mm')
+ylabel('y / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -460,6 +465,7 @@ surf(X, Y, Z/barsa, 'edgecolor', 'none');
 colorbar
 title('Pressure / bar');
 xlabel('x / mm')
+ylabel('y / mm')
 view([50, 51]);
 
 figure('position', [1290, 755, 1275, 559])
@@ -471,6 +477,7 @@ surf(X, Y, Z, 'edgecolor', 'none');
 colorbar
 title('Density kg/m^3');
 xlabel('x / mm')
+ylabel('y / mm')
 view([50, 51]);
 
 
@@ -520,7 +527,7 @@ yc  = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
 
 figure
 plot(yc/(milli*meter), iHp./i);
-title('Faradic effect')
+title('Faradic efficiency')
 xlabel('height / mm')
 
 
