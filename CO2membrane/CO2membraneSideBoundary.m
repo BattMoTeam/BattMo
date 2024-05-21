@@ -15,12 +15,8 @@ classdef CO2membraneSideBoundary < BaseModel
         function model = CO2membraneSideBoundary(inputparams)
             
             model.constants = PhysicalConstants();
-            
-            model.gasInd.CO2 = 1;
-            model.gasInd.O2  = 2;
-            model.gasInd.N2  = 3;
-            model.gasInd.Ar  = 4;
-            model.nGas = 4;
+
+            model = CO2membrane.setupGasStructures(model);
 
         end
 

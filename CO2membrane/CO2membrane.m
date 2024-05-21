@@ -10,13 +10,11 @@ classdef CO2membrane < BaseModel
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
-        perms
+        permeabilities % structure with permability
         thickness
 
-        %% Advanced parameters
-        feedPoiseuilleCoefficient
-        permeatePoiseuilleCoefficient
-        
+        permValues % vector computed from permeabilities
+
     end
     
     methods
@@ -24,27 +22,32 @@ classdef CO2membrane < BaseModel
         function model = CO2membrane(inputparams)
             
             model = model@BaseModel();
-
-            % fdnames = {'G'                        , ...
-            %            'perms'                    , ...
-            %            'thickness'                , ...
-            %            'feedPoiseuilleCoefficient', ...
-            %            'permeatePoiseuilleCoefficient'};
             
-            % model = dispatchParams(model, inputparams, fdnames);
+            fdnames = {'permeabilities', ...
+                       'thickness'};
 
-            % model.Boundary = CO2membraneBoundary(inputparams.Boundary);
-            model.Feed     = CO2membraneSide([]);
-            model.Permeate = CO2membraneSide([]);
+            model = dispatchParams(model, inputparams, fdnames);
+            
+            model.Feed     = CO2membraneSide(inputparams.Feed);
+            model.Permeate = CO2membraneSide(inputparams.Permeate);
             
             model.constants = PhysicalConstants();
-            
-            model.gasInd.CO2 = 1;
-            model.gasInd.O2  = 2;
-            model.gasInd.N2  = 3;
-            model.gasInd.Ar  = 4;
-            model.nGas = 4;
 
+            model = CO2membrane.setupGasStructures(model);
+
+            nGas   = model.nGas;
+            gasInd = model.gasInd;
+            
+            fdnames = fieldnames(model.permeabilities);
+            assert(numel(fdnames) == nGas, 'problem in setup');
+            
+            for igas = 1 : nGas
+                fdname = fdnames{igas};
+                permValues(gasInd.(fdname)) = model.permeabilities.(fdname);
+            end
+
+            model.permValues = permValues;
+            
         end
         
         function model = registerVarAndPropfuncNames(model)
@@ -66,7 +69,6 @@ classdef CO2membrane < BaseModel
                 for  iside = 1 : numel(sides)
 
                     side = sides{iside};
-                    
                     
                     fn = @CO2membrane.updateSideMassConses;
                     inputvarnames = {VarName({side}, 'fluxes', nGas, igas)   , ...
@@ -111,7 +113,7 @@ classdef CO2membrane < BaseModel
         function state = updateTransferRates(model, state)
 
             nGas      = model.nGas;
-            perms     = model.perms;
+            perms     = model.permeabilities;
             thickness = model.thickness;
             
             for igas = 1 : nGas
@@ -128,8 +130,24 @@ classdef CO2membrane < BaseModel
             state.transferRates = js;
         end
         
+    end
 
-        
+    methods (Static)
+
+        function model = setupGasStructures(model)
+
+            gasInd.CO2 = 1;
+            gasInd.O2  = 2;
+            gasInd.N2  = 3;
+            gasInd.H2O = 4;
+            gasInd.Ar  = 5;
+
+            nGas = numel(fieldnames(gasInd));
+
+            model.gasInd = gasInd;
+            model.nGas   = nGas;
+            
+        end
 
     end
     

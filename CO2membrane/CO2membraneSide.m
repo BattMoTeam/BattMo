@@ -14,6 +14,11 @@ classdef CO2membraneSide < BaseModel
         viscosity   % viscosity
         temperature % temperature
         diameter    % tube parameter
+
+        control % Structure with fields
+                % - pressure
+                % - rate
+                % - composition
         
         % Advanced parameter
         poiseuilleCoefficient
@@ -21,6 +26,7 @@ classdef CO2membraneSide < BaseModel
         %% helpers
         Tbc
         boundarySetup
+        
     end
 
     methods
@@ -29,10 +35,12 @@ classdef CO2membraneSide < BaseModel
             
             model = model@BaseModel();
 
-            fdnames = {'couplingTerm', ...
+            fdnames = {'G'           , ...
+                       'couplingTerm', ...
                        'viscosity'   , ...
                        'temperature' , ...
                        'diameter'    , ...
+                       'control'     , ...
                        'poiseuilleCoefficient'};
 
             model = dispatchParams(model, inputparams, fdnames);
@@ -41,22 +49,17 @@ classdef CO2membraneSide < BaseModel
 
             model.Boundary = CO2membraneSideBoundary([]);
             
-            model.gasInd.CO2 = 1;
-            model.gasInd.O2  = 2;
-            model.gasInd.N2  = 3;
-            model.gasInd.Ar  = 4;
-            model.nGas = 4;
-
-
+            model = CO2membrane.setupGasStructures(model);
+            
             if isempty(model.poiseuilleCoefficient)
                 % setup function to update it
                 error('not yet implemented');
             end
+
             
         end
 
         function model = registerVarAndPropfuncNames(model)
-
 
             model = registerVarAndPropfuncNames@BaseModel(model);
             

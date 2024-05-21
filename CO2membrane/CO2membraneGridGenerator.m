@@ -2,12 +2,6 @@ classdef CO2membraneGridGenerator
     
     properties
 
-
-        Feed     % structure with following fields
-                 % - facearea
-        Permeate % structure with following fields
-                 % - facearea
-        
         nx       % Discretization number
         length   % Length
         
@@ -26,8 +20,6 @@ classdef CO2membraneGridGenerator
 
             gen.nx                = 10;
             gen.length            = 1;
-            gen.Feed.facearea     = 1;
-            gen.Permeate.facearea = 1;
             
         end
         
@@ -44,9 +36,7 @@ classdef CO2membraneGridGenerator
 
             for icomp = 1 : numel(components)
                 comp = components{icomp};
-                clear params
-                params.facearea = gen.(comp).facearea;
-                [inputparams.(comp), gen] = setupGrid(gen, inputparams.(comp), params)
+                [inputparams.(comp), gen] = setupGrid(gen, inputparams.(comp));
             end
             
         end
@@ -57,7 +47,7 @@ classdef CO2membraneGridGenerator
 
             for icomp = 1 : numel(components)
                 comp = components{icomp};
-                [inputparams.(comp), gen] = setupExternalCouplingTerm(gen, inputparams.(comp), params)
+                [inputparams.(comp), gen] = setupExternalCouplingTerm(gen, inputparams.(comp));
             end
             
         end
@@ -68,7 +58,7 @@ classdef CO2membraneGridGenerator
             G = cartGrid(gen.nx, gen.length);
             
             % Setup parent grid with given face area
-            parentGrid = Grid(G, 'faceArea', params.faceArea);
+            parentGrid = Grid(G);
 
             % The component subgrid is the whole grid in this case
             G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
@@ -90,6 +80,8 @@ classdef CO2membraneGridGenerator
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
+            inputparams.couplingTerm = coupTerm;
+            
         end
         
     end

@@ -13,16 +13,18 @@ classdef CO2membraneSideInputParams < ComponentInputParams
         % Advanced parameter
         poiseuilleCoefficient
         
+        control % Structure with fields
+                % - pressure
+                % - rate
+                % - composition
+
     end
 
     methods
         
-        function inputparams = CO2membraneSide(jsonstruct)
+        function inputparams = CO2membraneSideInputParams(jsonstruct)
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);
-
-            inputparams.Boundary = CO2membraneSideBoundaryInputParams(jsonstruct.Boundary);
-
 
         end
         
