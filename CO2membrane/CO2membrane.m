@@ -10,10 +10,10 @@ classdef CO2membrane < BaseModel
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
-        permeabilities % structure with permability
+        permeabilities % structure with permability for each gas
         thickness
 
-        permValues % vector computed from permeabilities
+        permeabilityValues % vector computed from permeabilities
 
     end
     
@@ -46,7 +46,7 @@ classdef CO2membrane < BaseModel
                 permValues(gasInd.(fdname)) = model.permeabilities.(fdname);
             end
 
-            model.permValues = permValues;
+            model.permeabilityValues = permValues;
             
         end
         
@@ -90,36 +90,61 @@ classdef CO2membrane < BaseModel
 
         end
 
-        function state = updateFeedMassConses(model, state)
-            
-            nGas = model.nGas;
-            div  = model.operators.div;
-            
-            for igas = 1 : nGas
+        function initstate = setupInitialState(model)
 
-                j   = state.transferRates{igas}
-                src = state.feedBcSources{igas}
-                q   = state.feedFluxes{igas};
+            initstate.Feed     = model.Feed.setupInitialState();
+            initstate.Permeate = model.Permeate.setupInitialState();
+            
+        end
 
-                eqs{igas} = div(q) + j - src;
+
+        
+        function state = updateSideMassConses(model, state)
+
+
+            function lstate = update(lstate, side)
+            % generic function to update mass cons term for a given side
+                nGas = model.(side).nGas;
+                G    = model.(side).G; 
                 
+                for igas = 1 : nGas
+
+                    j   = lstate.transferRates{igas};
+                    src = lstate.(side).bcSources{igas};
+                    q   = lstate.(side).fluxes{igas};
+
+                    eqs{igas} = G.getDiv(q) - src;
+
+                    switch side
+                      case 'Feed'
+                        eqs{igas} = eqs{igas} + j;
+                      case 'Permeate'
+                        eqs{igas} = eqs{igas} - j;
+                      otherwise
+                        error('not recognized');
+                    end
+                    
+                end
+
+                lstate.(side).massConses = eqs;
             end
 
-            state.feedMassConses = eqs;
-            
+            state = update(state, 'Feed');
+            state = update(state, 'Permeate');
+
         end
         
 
         function state = updateTransferRates(model, state)
 
             nGas      = model.nGas;
-            perms     = model.permeabilities;
+            perms     = model.permeabilityValues;
             thickness = model.thickness;
             
             for igas = 1 : nGas
 
-                fp = state.feedPressures{igas};
-                pp = state.permeatePressures{igas};
+                fp = state.Feed.pressures{igas};
+                pp = state.Permeate.pressures{igas};
 
                 perm = perms(igas);
 
@@ -128,6 +153,13 @@ classdef CO2membrane < BaseModel
             end
             
             state.transferRates = js;
+        end
+
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.src = [];
+            
         end
         
     end

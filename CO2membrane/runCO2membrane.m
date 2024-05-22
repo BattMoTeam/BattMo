@@ -9,7 +9,19 @@ inputparams = gen.updateInputParams(inputparams);
 
 model = CO2membrane(inputparams);
 
-return
+model = model.equipModelForComputation();
+
+initstate = model.setupInitialState();
+
+step = struct('val', 1, ...
+              'control', 1);
+
+control = struct('src', []);
+
+schedule = struct('step', step, ...
+                  'control', control);
+
+output = simulateScheduleAD(initstate, model, schedule);
 
 cgp = model.cgp
 cgt = model.cgt

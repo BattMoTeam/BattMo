@@ -23,14 +23,19 @@ classdef CO2membraneSide < BaseModel
         % Advanced parameter
         poiseuilleCoefficient
 
-        %% helpers
-        Tbc
-        controlHelper % structure with fields
+        %% Helpers
+        
+        boundaryHelper % control stucture with fields
+                       % - transmissibilities
+                       % - mapToBc
+                       % - mapFromBc
+                       % - molFractions (Vector of dimension nGas with the mol fractions. It used for the moment to setup
+                       %                 the composition at all boundaries. Fragile!)
+        controlHelper % control structure with fields
                       % - pressureMap
                       % - pressureValues
                       % - fluxMap
                       % - fluxValues
-        
     end
 
     methods
@@ -54,6 +59,7 @@ classdef CO2membraneSide < BaseModel
             model.Boundary = CO2membraneSideBoundary([]);
             
             model = CO2membrane.setupGasStructures(model);
+            
             model = model.setupHelpers();
             
             if isempty(model.poiseuilleCoefficient)
@@ -115,8 +121,9 @@ classdef CO2membraneSide < BaseModel
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
                 fn = @CO2membraneSide.updateBoundaryMolFractionsDefinitions;
-                inputvarnames = {VarName({}, 'molFractions', nGas, igas), ...
-                                 'pressure', ...
+                inputvarnames = {VarName({'Boundary'}, 'molFractions', nGas, igas), ...
+                                 VarName({}, 'molFractions', nGas, igas)          , ...
+                                 'pressure'                                       , ...
                                  {'Boundary', 'pressure'}};
                 outputvarname = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
@@ -146,6 +153,9 @@ classdef CO2membraneSide < BaseModel
 
         function model = setupHelpers(model, state)
 
+            gasInd = model.gasInd;
+            nGas   = model.nGas;
+            
             coupterms = model.couplingTerms;
             coupnames = cellfun(@(coupterm) coupterm.name, coupterms, 'uniformoutput', false);
 
@@ -158,9 +168,41 @@ classdef CO2membraneSide < BaseModel
 
             Tbc = model.G.getBcTrans(bcfaces);
 
+            % setup the given boundary mol fractions
+            fdnames = fieldnames(model.control.composition);
+            for igas = 1 : nGas
+                fdname = fdnames{igas};
+                mfs(gasInd.(fdname)) = model.control.composition.(fdname);
+            end
+            % We normalize to one
+            mfs = mfs./sum(mfs);
+
             bcfacetbl.faces = bcfaces;
             bcfacetbl = IndexArray(bcfacetbl);
 
+            bccelltbl.cells = coupterm.couplingcells;
+            bccelltbl = IndexArray(bccelltbl);
+            
+            celltbl.cells = (1 : model.G.getNumberOfCells())';
+            celltbl = IndexArray(celltbl);
+
+            map = TensorMap();
+            map.fromTbl = celltbl;
+            map.toTbl = bccelltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToBc = SparseTensor();
+            mapToBc = mapToBc.setFromTensorMap(map);
+            mapToBc = mapToBc.getMatrix();
+
+            mapFromBc = mapToBc';
+            
+            boundaryHelper = struct('transmissibilities', Tbc, ...
+                                    'mapFromBc', mapFromBc   , ...
+                                    'mapToBc', mapToBc       , ...
+                                    'molFractions', mfs);
+            
             ind = strcmp('control faces', coupnames);
             coupterm = coupterms{ind};            
 
@@ -177,21 +219,48 @@ classdef CO2membraneSide < BaseModel
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
-            controlHelper.pressureMap    = M;
-            controlHelper.fluxMap        = M;
-            controlHelper.pressureValues = model.control.pressure;
-            controlHelper.fluxValues     = model.control.rate;
+            controlHelper = struct('pressureMap', M                        , ...
+                                   'fluxMap', M                            , ...
+                                   'pressureValues', model.control.pressure, ...
+                                   'fluxValues', model.control.rate);
+            
+            model.boundaryHelper = boundaryHelper;
+            model.controlHelper  = controlHelper;
+            
+        end
 
-            model.Tbc           = Tbc;
-            model.controlHelper = controlHelper;
+        function initstate = setupInitialState(model)
+        % Here we give values to the primary variables
+
+            bd = 'Boundary';
+            
+            nGas     = model.nGas;
+            ctrlhelp = model.controlHelper;
+            bdhelp   = model.boundaryHelper;
+            
+            nc  = model.G.getNumberOfCells();
+            nbc = numel(model.boundaryHelper.transmissibilities);
+
+            mfs      = bdhelp.molFractions;
+            pressure = ctrlhelp.pressureValues(1); % we take the first value as a reasonable guess (in case several were given)
+            flux     = ctrlhelp.fluxValues(1);     % we take the first value as a reasonable guess
+            
+            initstate.(bd).pressure = pressure*ones(nbc, 1);
+            initstate.(bd).flux     = flux*ones(nbc, 1);
+            
+            for igas = 1 : nGas
+                initstate.(bd).molFractions{igas} = mfs(igas)*ones(nbc, 1);
+                initstate.pressures{igas} = mfs(igas)*pressure*ones(nc, 1);
+            end    
             
         end
         
         function state = updateBcFluxDefinition(model, state)
 
-            nGas  = model.nGas;
-            pcoef = model.PoiseuilleCoefficient;
-            Tbc   = model.Tbc;
+            nGas    = model.nGas;
+            pcoef   = model.poiseuilleCoefficient;
+            Tbc     = model.boundaryHelper.transmissibilities;
+            mapToBc = model.boundaryHelper.mapToBc;
             
             bd = 'Boundary';
             
@@ -201,51 +270,34 @@ classdef CO2membraneSide < BaseModel
             p = state.pressure;
             p = mapToBc*p;
 
-            state.(bf).bcFluxDefinition = qBc - pcoef*Tbc*(pBc - p);
-            
-        end
-
-        function state = updateMassConses(model, state)
-            
-            nGas = model.nGas;
-            div  = model.operators.div;
-            
-            for igas = 1 : nGas
-
-                j   = state.transferRates{igas}
-                src = state.bcSources{igas}
-                q   = state.fluxes{igas};
-
-                eqs{igas} = div(q) + j - src;
-                
-            end
-
-            state.MassConses = eqs;
+            state.(bd).bcFluxDefinition = qBc - pcoef*Tbc.*(pBc - p);
             
         end
 
         function state = updateSources(model, state)
 
             bd = 'Boundary';
-            nGas = model.nGas;
+            
+            nGas      = model.nGas;
+            mapFromBc = model.boundaryHelper.mapFromBc;
             
             for igas = 1 : nGas
 
-                qbc = state.(bd).massFluxes;
+                qbc = state.(bd).fluxes{igas};
                 ms{igas} = - mapFromBc*qbc;
                 
             end
 
-            state.massSources = ms;
+            state.bcSources = ms;
 
         end
 
-
-        function state = updateBoundaryMolFractions(model, state)
+        function state = updateBoundaryMolFractionsDefinitions(model, state)
 
             bd        = 'Boundary';
             nGas      = model.nGas;
-            givenMfBc = model.givenBoundaryVolumeFractions;
+            givenMfBc = model.boundaryHelper.molFractions;
+            mapToBc   = model.boundaryHelper.mapToBc;
             
             pBc = state.(bd).pressure;
             p = state.pressure;            
@@ -264,22 +316,24 @@ classdef CO2membraneSide < BaseModel
                 bcdefs{igas}(ind) = mfBc(ind) - givenMfBc(ind);
  
             end
-            
+
+            state.(bd).bcMolFractionDefinitions = bcdefs;
                 
         end
+        
         function state = updateFluxes(model, state)
             
             nGas  = model.nGas;
-            pcoef = model.PoiseuilleCoefficient;
+            pcoef = model.poiseuilleCoefficient;
 
             p = state.pressure;
             
             for igas = 1 : nGas
 
-                pigas = state.pressures{igas} 
+                pigas = state.pressures{igas};
                 xigas = pigas./p;
 
-                q = assembleHomogeneousFlux(model, pcoef, p);
+                q = assembleHomogeneousFlux(model, p, pcoef);
 
                 qs{igas} = assembleUpwindFlux(model, q, xigas);
                 
@@ -288,18 +342,17 @@ classdef CO2membraneSide < BaseModel
             state.fluxes = qs;
         end
 
-
         function state = updateControl(model, state)
 
             bd = 'Boundary';
 
-            ctrl = model.controlHelper;
+            ctrlhelp = model.controlHelper;
             
             pBc = state.(bd).pressure;
             qBc = state.(bd).flux;
 
-            eqs{1} = ctrl.pressureMap*pBc - ctrl.pressureValues;
-            eqs{2} = ctrl.fluxMap*qBc - ctrl.fluxValues;
+            eqs{1} = ctrlhelp.pressureMap*pBc - ctrlhelp.pressureValues;
+            eqs{2} = ctrlhelp.fluxMap*qBc - ctrlhelp.fluxValues;
 
             state.(bd).control = vertcat(eqs{:});
             
@@ -331,7 +384,7 @@ classdef CO2membraneSide < BaseModel
             
             for igas = 1 : nGas
 
-                pigas = state.pressures{igas} 
+                pigas = state.pressures{igas};
                 mfs{igas} = pigas./p;
 
             end
