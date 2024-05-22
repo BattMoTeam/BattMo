@@ -4,7 +4,7 @@ classdef CO2membraneSide < BaseModel
 
         Boundary
 
-        couplingTerm
+        couplingTerms
         
         constants
         
@@ -25,7 +25,11 @@ classdef CO2membraneSide < BaseModel
 
         %% helpers
         Tbc
-        boundarySetup
+        controlHelper % structure with fields
+                      % - pressureMap
+                      % - pressureValues
+                      % - fluxMap
+                      % - fluxValues
         
     end
 
@@ -36,7 +40,7 @@ classdef CO2membraneSide < BaseModel
             model = model@BaseModel();
 
             fdnames = {'G'           , ...
-                       'couplingTerm', ...
+                       'couplingTerms', ...
                        'viscosity'   , ...
                        'temperature' , ...
                        'diameter'    , ...
@@ -50,6 +54,7 @@ classdef CO2membraneSide < BaseModel
             model.Boundary = CO2membraneSideBoundary([]);
             
             model = CO2membrane.setupGasStructures(model);
+            model = model.setupHelpers();
             
             if isempty(model.poiseuilleCoefficient)
                 % setup function to update it
@@ -139,6 +144,49 @@ classdef CO2membraneSide < BaseModel
             
         end
 
+        function model = setupHelpers(model, state)
+
+            coupterms = model.couplingTerms;
+            coupnames = cellfun(@(coupterm) coupterm.name, coupterms, 'uniformoutput', false);
+
+
+            ind = strcmp('boundary faces', coupnames);
+            coupterm = coupterms{ind};
+            
+            G = model.G;
+            bcfaces = coupterm.couplingfaces;
+
+            Tbc = model.G.getBcTrans(bcfaces);
+
+            bcfacetbl.faces = bcfaces;
+            bcfacetbl = IndexArray(bcfacetbl);
+
+            ind = strcmp('control faces', coupnames);
+            coupterm = coupterms{ind};            
+
+            ctrlfacetbl.faces = coupterm.couplingfaces;
+            ctrlfacetbl = IndexArray(ctrlfacetbl);
+
+            map = TensorMap();
+            map.fromTbl  = bcfacetbl;
+            map.toTbl    = ctrlfacetbl;
+            map.mergefds = {'faces'};
+            map = map.setup();
+
+            M = SparseTensor();
+            M = M.setFromTensorMap(map);
+            M = M.getMatrix();
+
+            controlHelper.pressureMap    = M;
+            controlHelper.fluxMap        = M;
+            controlHelper.pressureValues = model.control.pressure;
+            controlHelper.fluxValues     = model.control.rate;
+
+            model.Tbc           = Tbc;
+            model.controlHelper = controlHelper;
+            
+        end
+        
         function state = updateBcFluxDefinition(model, state)
 
             nGas  = model.nGas;
@@ -245,13 +293,13 @@ classdef CO2membraneSide < BaseModel
 
             bd = 'Boundary';
 
-            bc = model.boundarySetup;
+            ctrl = model.controlHelper;
             
             pBc = state.(bd).pressure;
             qBc = state.(bd).flux;
 
-            eqs{1} = bc.pressureMap*pBc - bc.pressureValues;
-            eqs{2} = bc.fluxMap*qBc - bc.fluxValues;
+            eqs{1} = ctrl.pressureMap*pBc - ctrl.pressureValues;
+            eqs{2} = ctrl.fluxMap*qBc - ctrl.fluxValues;
 
             state.(bd).control = vertcat(eqs{:});
             

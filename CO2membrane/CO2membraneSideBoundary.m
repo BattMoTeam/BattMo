@@ -19,7 +19,6 @@ classdef CO2membraneSideBoundary < BaseModel
             model = CO2membrane.setupGasStructures(model);
 
         end
-
         
         function model = registerVarAndPropfuncNames(model)
             

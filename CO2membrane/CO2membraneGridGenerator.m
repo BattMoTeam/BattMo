@@ -27,6 +27,7 @@ classdef CO2membraneGridGenerator
 
             [inputparams, gen] = gen.setupGrids(inputparams);
             [inputparams, gen] = gen.setupExternalCouplingTerms(inputparams);
+            [inputparams, gen] = gen.setupControlCouplingTerms(inputparams);
             
         end
 
@@ -51,6 +52,18 @@ classdef CO2membraneGridGenerator
             end
             
         end
+
+        function [inputparams, gen] = setupControlCouplingTerms(gen, inputparams)
+
+            components = {'Feed', 'Permeate'};
+
+            for icomp = 1 : numel(components)
+                comp = components{icomp};
+                [inputparams.(comp), gen] = setupControlCouplingTerm(gen, inputparams.(comp));
+            end
+            
+        end
+        
         
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
@@ -76,14 +89,29 @@ classdef CO2membraneGridGenerator
                        gen.nx];
 
             compnames = {'inner'};
-            coupTerm = couplingTerm('boundary coupling', compnames);
+            coupTerm = couplingTerm('boundary faces', compnames);
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
-            inputparams.couplingTerm = coupTerm;
+            inputparams.couplingTerms{end + 1} = coupTerm;
             
         end
+
         
+        function [inputparams, gen] = setupControlCouplingTerm(gen, inputparams)
+
+            bcfaces = 1;
+            bccells = 1;
+
+            compnames = {'inner'};
+            coupTerm = couplingTerm('control faces', compnames);
+            coupTerm.couplingfaces = bcfaces;
+            coupTerm.couplingcells = bccells;
+
+            inputparams.couplingTerms{end + 1} = coupTerm;
+            
+        end
+
     end
     
 end

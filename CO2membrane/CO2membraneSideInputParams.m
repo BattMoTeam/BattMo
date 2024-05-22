@@ -4,7 +4,7 @@ classdef CO2membraneSideInputParams < ComponentInputParams
 
         Boundary
         
-        couplingTerm
+        couplingTerms
 
         viscosity   % viscosity
         temperature % temperature
