@@ -133,7 +133,9 @@ classdef CO2membraneSide < BaseModel
                 if model.isRootSimulationModel
 
                     fn = @CO2membraneSide.updateMassConses;
-                    inputvarnames = {VarName({}, 'fluxes', nGas, igas)   , ...
+                    fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
+                    inputvarnames = {VarName({}, 'molFractions', nGas, igas)   , ...
+                                     VarName({}, 'fluxes', nGas, igas)   , ...
                                      VarName({}, 'bcSources', nGas, igas)};
                     outputvarname = VarName({}, 'massConses', nGas, igas);
                     model = model.registerPropFunction({outputvarname, fn, inputvarnames});
@@ -269,7 +271,7 @@ classdef CO2membraneSide < BaseModel
             mfs      = bdhelp.molFractions;
             pressure = ctrlhelp.pressureValues(1); % we take the first value as a reasonable guess (in case several were given)
             flux     = ctrlhelp.fluxValues(1);     % we take the first value as a reasonable guess
-
+            
             initstate.pressure = pressure*ones(nc, 1);
             
             initstate.(bd).pressure = pressure*ones(nbc, 1);
@@ -282,17 +284,21 @@ classdef CO2membraneSide < BaseModel
             
         end
 
-        function state = updateMassConses(model, state)
+        function state = updateMassConses(model, state, state0, dt)
 
             nGas = model.nGas;
             G    = model.G;
+            vols = G.getVolumes();
             
             for igas = 1 : nGas
 
+                
                 src = state.bcSources{igas};
                 q   = state.fluxes{igas};
-
-                eqs{igas} = G.getDiv(q) - src;
+                mf  = state.molFractions{igas};
+                mf0 = state0.molFractions{igas};
+                
+                eqs{igas} = vols.*(mf - mf0)/dt + G.getDiv(q) - src;
                 
             end
 
