@@ -81,6 +81,8 @@ classdef CO2membraneSide < BaseModel
             varnames{end + 1} = VarName({}, 'fluxes', nGas);
             %  mol fractions
             varnames{end + 1} = VarName({}, 'molFractions', nGas);
+            %  mol fractions constraint
+            varnames{end + 1} = 'molFractionConstraint';
             %  pressures [pascal]
             varnames{end + 1} = VarName({}, 'pressures', nGas);
             %  total pressure [pascal]
@@ -109,10 +111,10 @@ classdef CO2membraneSide < BaseModel
                 outputvarname = VarName({}, 'fluxes', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
-                fn = @(model, state) CO2membraneSide.updateMolFractions(model, state);
+                fn = @(model, state) CO2membraneSide.updatePressures(model, state);
                 fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
-                inputvarnames = {'pressure', VarName({}, 'pressures', nGas, igas)};
-                outputvarname = VarName({}, 'molFractions', nGas, igas);
+                inputvarnames = {'pressure', VarName({}, 'molFractions', nGas, igas)};
+                outputvarname = VarName({}, 'pressures', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
                 fn = @CO2membraneSide.updateSources;
@@ -127,9 +129,24 @@ classdef CO2membraneSide < BaseModel
                                  {'Boundary', 'pressure'}};
                 outputvarname = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-                
+
+                if model.isRootSimulationModel
+
+                    fn = @CO2membraneSide.updateMassConses;
+                    inputvarnames = {VarName({}, 'fluxes', nGas, igas)   , ...
+                                     VarName({}, 'bcSources', nGas, igas)};
+                    outputvarname = VarName({}, 'massConses', nGas, igas);
+                    model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+                end
+
             end
 
+            fn = @CO2membraneSide.updateMolFractionConstraint;
+            intputvarnames = {VarName({}, 'fluxes', nGas)};
+            outputvarname = 'molFractionConstraint';
+            model = model.registerPropFunction({outputvarname, fn, inputvarnames});            
+            
             fn = @CO2membraneSide.updateBcFluxDefinition;
             inputvarnames = {{'Boundary', 'flux'}    , ...
                              {'Boundary', 'pressure'}, ...
@@ -143,12 +160,12 @@ classdef CO2membraneSide < BaseModel
             outputvarname = VarName({'Boundary'}, 'control');
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
-            fn = @(model, state) CO2membraneSide.updatePressure(model, state);
-            fn = {fn, @(prop) PropFunction.literalFunctionCallSetupFn(prop)};
-            inputvarnames = {VarName({}, 'pressures', nGas)};
-            outputvarname = 'pressure';
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            
+            if model.isRootSimulationModel
+
+                model = model.setAsExtraVarName(VarName({}, 'pressures', nGas));
+                
+            end
+
         end
 
         function model = setupHelpers(model, state)
@@ -254,6 +271,38 @@ classdef CO2membraneSide < BaseModel
             end    
             
         end
+
+        function state = updateMassConses(model, state)
+
+            nGas = model.nGas;
+            G    = model.G;
+            
+            for igas = 1 : nGas
+
+                src = state.bcSources{igas};
+                q   = state.fluxes{igas};
+
+                eqs{igas} = G.getDiv(q) - src;
+                
+            end
+
+            state.massConses = eqs;
+
+        end
+
+        function state = updateMolFractionConstraint(model, state)
+
+            nGas = model.nGas;
+
+            eq = 1;
+            
+            for igas = 1 : nGas
+                eq = eq - state.molFractions{igas};
+            end
+
+            state.massConses = eq;
+            
+        end
         
         function state = updateBcFluxDefinition(model, state)
 
@@ -274,6 +323,24 @@ classdef CO2membraneSide < BaseModel
             
         end
 
+        function state = updatePressures(model, state)
+
+            
+            nGas = model.nGas;
+            
+            p = state.pressure;
+            mfs = state.volumeFractions;
+            
+            for igas = 1 : nGas
+
+                pressures{igas} = mfs{igas}.*p;
+                
+            end
+
+            state.pressures = pressures;
+
+        end
+        
         function state = updateSources(model, state)
 
             bd = 'Boundary';
@@ -360,40 +427,5 @@ classdef CO2membraneSide < BaseModel
         
     end
 
-    methods(Static)
-        
-        function state = updatePressure(model, state)
-
-            nGas = model.nGas;
-            
-            p = 0*state.pressures{1};
-
-            for igas = 1 : nGas
-                p = p + state.pressures{igas};
-            end
-
-            state.pressure = p;
-            
-        end
-
-        function state = updateMolFractions(model, state)
-            
-            nGas = model.nGas;
-            
-            p = state.pressure;
-            
-            for igas = 1 : nGas
-
-                pigas = state.pressures{igas};
-                mfs{igas} = pigas./p;
-
-            end
-
-            state.molFractions = mfs;
-            
-        end
-
-        
-    end
 end
     
