@@ -285,7 +285,7 @@ classdef SubGrid < GenericGrid
         end
 
         function [bchT, bccells, bcsgn] = getBcTrans(grid, bcfaces)
-        % Returns half transmissibilities weighted with values of c and cell indexing for the given boundary faces
+        % Returns half transmissibilities and the cell indices for the given boundary faces
         % (bcfaces is given using subgrid indexing)
             
             tpfvGeometry = grid.getTPFVgeometry();
