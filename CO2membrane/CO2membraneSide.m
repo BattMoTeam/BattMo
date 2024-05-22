@@ -213,7 +213,15 @@ classdef CO2membraneSide < BaseModel
             mapToBc = mapToBc.setFromTensorMap(map);
             mapToBc = mapToBc.getMatrix();
 
-            mapFromBc = mapToBc';
+            map = TensorMap();
+            map.fromTbl = bccelltbl;
+            map.toTbl = celltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapFromBc = SparseTensor();
+            mapFromBc = mapFromBc.setFromTensorMap(map);
+            mapFromBc = mapFromBc.getMatrix();
             
             boundaryHelper = struct('transmissibilities', Tbc, ...
                                     'mapFromBc', mapFromBc   , ...
@@ -261,13 +269,15 @@ classdef CO2membraneSide < BaseModel
             mfs      = bdhelp.molFractions;
             pressure = ctrlhelp.pressureValues(1); % we take the first value as a reasonable guess (in case several were given)
             flux     = ctrlhelp.fluxValues(1);     % we take the first value as a reasonable guess
+
+            initstate.pressure = pressure*ones(nc, 1);
             
             initstate.(bd).pressure = pressure*ones(nbc, 1);
             initstate.(bd).flux     = flux*ones(nbc, 1);
             
             for igas = 1 : nGas
                 initstate.(bd).molFractions{igas} = mfs(igas)*ones(nbc, 1);
-                initstate.pressures{igas} = mfs(igas)*pressure*ones(nc, 1);
+                initstate.molFractions{igas} = mfs(igas)*ones(nc, 1);
             end    
             
         end
@@ -300,7 +310,7 @@ classdef CO2membraneSide < BaseModel
                 eq = eq - state.molFractions{igas};
             end
 
-            state.massConses = eq;
+            state.molFractionConstraint = eq;
             
         end
         
@@ -319,7 +329,8 @@ classdef CO2membraneSide < BaseModel
             p = state.pressure;
             p = mapToBc*p;
 
-            state.(bd).bcFluxDefinition = qBc - pcoef*Tbc.*(pBc - p);
+            % By convention, qBc denotes outward flux
+            state.(bd).bcFluxDefinition = qBc - pcoef*Tbc.*(p - pBc);
             
         end
 
@@ -351,6 +362,7 @@ classdef CO2membraneSide < BaseModel
             for igas = 1 : nGas
 
                 qbc = state.(bd).fluxes{igas};
+                % By convention, qBc are outward boundary fluxes
                 ms{igas} = - mapFromBc*qbc;
                 
             end
@@ -369,6 +381,8 @@ classdef CO2membraneSide < BaseModel
             pBc = state.(bd).pressure;
             p = state.pressure;            
             p = mapToBc*p;
+
+            ind = find(pBc - p >= 0);
             
             for igas = 1 : nGas
 
@@ -377,10 +391,8 @@ classdef CO2membraneSide < BaseModel
                 
                 mfBc = state.(bd).molFractions{igas};
 
-                ind = pBc - p < 0;
-
                 bcdefs{igas}      = mfBc - mf;
-                bcdefs{igas}(ind) = mfBc(ind) - givenMfBc(ind);
+                bcdefs{igas}(ind) = mfBc(ind) - givenMfBc(igas)*ones(numel(ind), 1);
  
             end
 
@@ -397,12 +409,11 @@ classdef CO2membraneSide < BaseModel
             
             for igas = 1 : nGas
 
-                pigas = state.pressures{igas};
-                xigas = pigas./p;
+                mf = state.molFractions{igas};
 
                 q = assembleHomogeneousFlux(model, p, pcoef);
 
-                qs{igas} = assembleUpwindFlux(model, q, xigas);
+                qs{igas} = assembleUpwindFlux(model, q, mf);
                 
             end
             
@@ -425,6 +436,13 @@ classdef CO2membraneSide < BaseModel
             
         end
         
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.src = [];
+            
+        end
+                
     end
 
 end
