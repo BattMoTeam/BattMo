@@ -18,8 +18,8 @@ classdef CO2membraneGridGenerator
         function gen = setupDefault(gen)
         % Setup some default values
 
-            gen.nx                = 10;
-            gen.length            = 1;
+            gen.nx     = 10;
+            gen.length = 1;
             
         end
         
