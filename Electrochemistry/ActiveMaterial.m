@@ -227,13 +227,15 @@ classdef ActiveMaterial < BaseModel
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            n    = model.(itf).numberOfElectronsTransferred;
-            F    = model.(itf).constants.F;
-            
+            n  = model.(itf).numberOfElectronsTransferred;
+            F  = model.(itf).constants.F;
+            rp = model.(sd).particleRadius;
+            vp = 4/3*pi*rp^3;
+
             I = state.I;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I - Rvol*n*F;
+            state.chargeCons = I -  vp* Rvol*n*F;
 
         end
         

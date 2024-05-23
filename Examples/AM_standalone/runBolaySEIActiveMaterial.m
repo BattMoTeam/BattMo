@@ -38,12 +38,18 @@ jsonstruct.isRootSimulationModel = true;
 
 jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 
+rp = jsonstruct.(sd).particleRadius ;
+jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
+
+
 inputparams = ActiveMaterialInputParams(jsonstruct);
 
 % We initiate the model
 model = ActiveMaterial(inputparams);
 
 model = model.setupForSimulation();
+
+
 
 %% Setup initial state
 
@@ -84,10 +90,35 @@ initState.(itf).phiElectrolyte = phiElectrolyte;
 
 %% Setup schedule
 
-Imax = 3e6*ampere;
+Imax = 3e-12*ampere;
 
-total = 10*minute;
-n     = 100;
+scalings = {};
+coef = Imax/PhysicalConstants.F;
+scalings{end + 1} = {{sd, 'massCons'}, coef};
+scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
+scalings{end + 1} = {{'chargeCons'}, Imax};
+
+L0 = 1*nano*meter;
+k  = model.(itf).SEIionicConductivity;
+rp = model.(sd).particleRadius;
+F  = PhysicalConstants.F;
+vsa = model.(sd).volumetricSurfaceArea;
+
+coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
+
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
+
+De = model.(itf).SEIelectronicDiffusionCoefficient;
+ce = model.(itf).SEIintersticialConcentration;
+
+coef = De*ce/L0;
+
+scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
+
+model.scalings = scalings;
+
+total = 60*minute;
+n     = 200;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 

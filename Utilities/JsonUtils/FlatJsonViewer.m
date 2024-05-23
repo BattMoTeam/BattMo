@@ -44,7 +44,8 @@ classdef FlatJsonViewer
                 fjv = fjv.filter(opt.filterdesc);
             end
             
-            T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames)
+            T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
+            disp(T);
 
             if ~isempty(opt.filename)
                 writetable(T, opt.filename);
