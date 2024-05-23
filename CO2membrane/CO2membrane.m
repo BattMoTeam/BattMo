@@ -13,6 +13,11 @@ classdef CO2membrane < BaseModel
         permeabilities % structure with permability for each gas
         thickness
 
+    end
+    
+    properties (SetAccess = immutable)
+
+        %% helpers
         permeabilityValues % vector computed from permeabilities
 
     end
@@ -70,11 +75,10 @@ classdef CO2membrane < BaseModel
 
                     side = sides{iside};
                     
-                    fn = @CO2membrane.updateSideMassConses;
-                    inputvarnames = {VarName({side}, 'fluxes', nGas, igas)   , ...
-                                     VarName({}, 'transferRates', nGas, igas), ...
+                    fn = @CO2membrane.updateMassSources;
+                    inputvarnames = {VarName({}, 'transferRates', nGas, igas), ...
                                      VarName({side}, 'bcSources', nGas, igas)};
-                    outputvarname = VarName({side}, 'massConses', nGas, igas);
+                    outputvarname = VarName({side}, 'massSources', nGas, igas);
                     model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
                 end
@@ -97,36 +101,51 @@ classdef CO2membrane < BaseModel
             
         end
 
+        function state = addVariables(model, state)
+
+        % Given a state where only the primary variables are defined, this
+        % functions add all the additional variables that are computed in the assembly process and have some physical
+        % interpretation.
+        %
+        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces
+
+            dt            = 1;
+            state0        = state;
+            drivingForces = model.getValidDrivingForces();
+
+            [~, state] = getEquations(model, state0, state, dt, drivingForces, 'ResOnly', true);
+
+        end
 
         
-        function state = updateSideMassConses(model, state)
-
+        
+        function state = updateMassSources(model, state)
 
             function lstate = update(lstate, side)
-            % generic function to update mass cons term for a given side
+            % generic function to update mass source term for a given side
+                
                 nGas = model.(side).nGas;
-                G    = model.(side).G; 
                 
                 for igas = 1 : nGas
+                    
+                    % transfer rate is positive from feed to permeate
+                    jrate = lstate.transferRates{igas};
+                    bcsrc = lstate.(side).bcSources{igas};
 
-                    j   = lstate.transferRates{igas};
-                    src = lstate.(side).bcSources{igas};
-                    q   = lstate.(side).fluxes{igas};
-
-                    eqs{igas} = G.getDiv(q) - src;
+                    msrcs{igas} = bcsrc;
 
                     switch side
                       case 'Feed'
-                        eqs{igas} = eqs{igas} + j;
+                        msrcs{igas} = msrcs{igas} - jrate;
                       case 'Permeate'
-                        eqs{igas} = eqs{igas} - j;
+                        msrcs{igas} = msrcs{igas} + jrate;
                       otherwise
                         error('not recognized');
                     end
                     
                 end
 
-                lstate.(side).massConses = eqs;
+                lstate.(side).massSources = msrcs;
             end
 
             state = update(state, 'Feed');
@@ -176,18 +195,28 @@ classdef CO2membrane < BaseModel
                 side = sides{iside};
                 
                 nGas = model.(side).nGas;
-
-                state.(side).(bd).pressure = max(0, state.(side).(bd).pressure);
+                
+                sum_side    = 0;
+                sum_bd_side = 0;
                 
                 for igas = 1 : nGas
 
-                    state.(side).pressures{igas} = max(0, state.(side).pressures{igas});
+                    state.(side).molFractions{igas} = max(0, state.(side).molFractions{igas});
+                    state.(side).molFractions{igas} = min(1, state.(side).molFractions{igas});
+
+                    sum_side = sum_side + state.(side).molFractions{igas};
+                    
                     state.(side).(bd).molFractions{igas} = max(0, state.(side).(bd).molFractions{igas});
                     state.(side).(bd).molFractions{igas} = min(1, state.(side).(bd).molFractions{igas});
                     
-                end
+                    sum_bd_side = sum_bd_side + state.(side).(bd).molFractions{igas};
 
+                end
                 
+                for igas = 1 : nGas
+                    state.(side).molFractions{igas}      = state.(side).molFractions{igas}./sum_side;
+                    state.(side).(bd).molFractions{igas} = state.(side).(bd).molFractions{igas}./sum_bd_side;
+                end                
             end
             
         end

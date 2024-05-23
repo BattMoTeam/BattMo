@@ -9,7 +9,17 @@ inputparams = gen.updateInputParams(inputparams);
 
 model = CO2membrane(inputparams);
 
-model = model.equipModelForComputation();
+
+
+shortNames =  {'Feed' ,'fd'  ;
+               'Permeate' ,'pt'  ;
+               'Boundary' ,'bd'  ;
+               'massConses' ,'mcs'  ;
+               'bcMolFractionDefinitions', 'bcmfdef';
+               'bcFluxDefinition', 'bcfluxdef'};
+
+
+model = model.equipModelForComputation('shortNames', shortNames);
 
 initstate = model.setupInitialState();
 
@@ -20,9 +30,13 @@ control = struct('src', []);
 
 schedule = struct('step', step, ...
                   'control', control);
+model.verbose = true;
 
-output = simulateScheduleAD(initstate, model, schedule);
+[~, states] = simulateScheduleAD(initstate, model, schedule);
 
+state = states{end};
+state = model.addVariables(state);
+return
 cgp = model.cgp
 cgt = model.cgt
 

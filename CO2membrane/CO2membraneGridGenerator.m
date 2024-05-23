@@ -18,7 +18,7 @@ classdef CO2membraneGridGenerator
         function gen = setupDefault(gen)
         % Setup some default values
 
-            gen.nx     = 10;
+            gen.nx     = 100;
             gen.length = 1;
             
         end
@@ -59,7 +59,7 @@ classdef CO2membraneGridGenerator
 
             for icomp = 1 : numel(components)
                 comp = components{icomp};
-                [inputparams.(comp), gen] = setupControlCouplingTerm(gen, inputparams.(comp));
+                [inputparams.(comp), gen] = setupControlCouplingTerm(gen, inputparams.(comp), comp);
             end
             
         end
@@ -98,10 +98,24 @@ classdef CO2membraneGridGenerator
         end
 
         
-        function [inputparams, gen] = setupControlCouplingTerm(gen, inputparams)
+        function [inputparams, gen] = setupControlCouplingTerm(gen, inputparams, comp)
 
-            bcfaces = 1;
-            bccells = 1;
+            switch comp
+                
+              case 'Feed'
+
+                bcfaces = 1;
+                bccells = 1;
+                
+              case 'Permeate'
+                
+                bcfaces = gen.nx + 1;
+                bccells = gen.nx;
+                
+              otherwise
+                error('comp not recognized');
+            end
+               
 
             compnames = {'inner'};
             coupTerm = couplingTerm('control faces', compnames);

@@ -17,10 +17,10 @@
                                              "Ar": 1
                                             }
                            }},
- "permeabilities" : {"CO2" : 1,
+ "permeabilities" : {"CO2" : 10,
                      "O2" : 1,
                      "N2" : 1,
                      "H2O" : 1,
-                     "Ar" : 1},
+                     "Ar" : 0.1},
  "thickness" : 1,
  "temperature" : 278}

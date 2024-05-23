@@ -1,4 +1,5 @@
-mrstDebug(20);
+
+%% prepare input for co2membrane
 
 filename = 'CO2membrane/co2membrane.json';
 jsonstruct = parseBattmoJson(filename);
@@ -9,9 +10,18 @@ gen = CO2membraneGridGenerator();
 
 inputparams = gen.updateInputParams(inputparams);
 
+%% Setup model for membrane side (using Feed input data)
+
 model = CO2membraneSide(inputparams.Feed);
 model.isRootSimulationModel = true;
-model = model.equipModelForComputation;
+
+shortNames =  {'Boundary' ,'bd'  ;
+               'bcMolFractionDefinitions', 'bcmfdef';
+               'bcFluxDefinition', 'bcfluxdef'};
+
+model = model.equipModelForComputation('shortNames', shortNames);
+
+%%
 
 cgp = model.cgp;
 cgt = model.cgt;
