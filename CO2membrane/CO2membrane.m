@@ -161,6 +161,36 @@ classdef CO2membrane < BaseModel
             forces.src = [];
             
         end
+
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)       
+
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+
+            % cap pressures
+
+            bd = 'Boundary';
+            sides = {'Feed', 'Permeate'};
+
+            for iside = 1 : numel(sides)
+
+                side = sides{iside};
+                
+                nGas = model.(side).nGas;
+
+                state.(side).(bd).pressure = max(0, state.(side).(bd).pressure);
+                
+                for igas = 1 : nGas
+
+                    state.(side).pressures{igas} = max(0, state.(side).pressures{igas});
+                    state.(side).(bd).molFractions{igas} = max(0, state.(side).(bd).molFractions{igas});
+                    state.(side).(bd).molFractions{igas} = min(1, state.(side).(bd).molFractions{igas});
+                    
+                end
+
+                
+            end
+            
+        end
         
     end
 
