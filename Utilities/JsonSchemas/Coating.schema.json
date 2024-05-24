@@ -9,6 +9,14 @@
     },
     {
       "properties": {
+        "activeMaterialModelSetup": {
+          "type" : "object",
+          "properties" : {
+            "composite" : {"type" : "boolean",
+                           "description" : "default is false. It true, setup a composite material with two active materials, using fields ActiveMaterial1 and ActiveMaterial2"},
+            "SEImodel" : {"type" : "string",
+                          "enum" : ["none", "Safari", "Bolay"]}
+        },
         "ActiveMaterial": {
           "$ref": "ActiveMaterial.schema.json"
         },
@@ -33,13 +41,6 @@
           "$ref": "PhysicalQuantity.schema.json",
           "description": "the Bruggeman coefficient for effective transport in porous media",
           "symbol": "beta"
-        },
-        "active_material_type": {
-          "type": "string",
-          "enum": [
-            "default",
-            "composite"
-          ]
         },
         "volumeFraction" : {
           "type": "number",

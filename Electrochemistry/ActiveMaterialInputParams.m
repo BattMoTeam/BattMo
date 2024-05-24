@@ -24,11 +24,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         diffusionModelType     % diffusion model type, either 'full' or 'simple'
 
-        %% SEI layer case
-        sei_type % string defining the sei. Can take value
-                 % - 'none' (default)
-                 % - 'bolay'
-                 % - 'safari'
+        %% SEI layer model choice
+        SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
+                  % - 'none' (default)
+                  % - 'Bolay'
+                  % - 'Safari'
 
         %% Advanced parameters
 
@@ -37,7 +37,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-
 
     end
 
@@ -56,20 +55,22 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            if isempty(inputparams.sei_type)
-                inputparams.sei_type = 'none';
+            if isempty(inputparams.SEImodel)
+                % Set default value for SEI model
+                inputparams.SEImodel = 'none';
             end
             
-            switch inputparams.sei_type
-              case {'none', 'safari'}
+            switch inputparams.SEImodel
+              case {'none', 'Safari'}
                 inputparams.(itf) = InterfaceInputParams(pick('Interface'));
-              case 'bolay'
+              case 'Bolay'
                 inputparams.(itf) = BolayInterfaceInputParams(pick('Interface'));
               otherwise
-                error('sei_type not recofnized')
+                error('SEImodel not recognized')
             end
             
             if isempty(inputparams.diffusionModelType)
+                % set default value for diffusion model type
                 inputparams.diffusionModelType = 'full';
             end
 
@@ -91,8 +92,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)

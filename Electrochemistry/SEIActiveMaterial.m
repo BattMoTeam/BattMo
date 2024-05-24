@@ -11,8 +11,6 @@ classdef SEIActiveMaterial < ActiveMaterial
 
         function model = SEIActiveMaterial(inputparams)
 
-            inputparams = inputparams.validateInputParams();
-
             model = model@ActiveMaterial(inputparams);
 
             model.SideReaction = SideReaction(inputparams.SideReaction);

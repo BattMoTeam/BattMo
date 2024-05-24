@@ -5,28 +5,34 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
     properties
 
         SolidElectrodeInterface
-        SideReaction        
+        SideReaction
+        
     end
 
     methods
 
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
 
+            if isfield(jsonstruct, 'SEImodel') && ~strcmp(jsonstruct.SEImodel, 'Safari')
+                error('Inconsitent model, check SEI model values')
+            end
+            
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
-
+            inputparams.SEImodel = 'Safari';
+            
             pick = @(fd) pickField(jsonstruct, fd);
             % For SEI, we always use full diffusion model
             inputparams.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
             inputparams.SideReaction            = SideReactionInputParams(pick('SideReaction'));
             inputparams.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)
 
             inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
+
+            assert(strcmp(inputparams.SEImodel, 'Safari'), 'The SEI model should be set to Safari');
             
             if inputparams.isRootSimulationModel
                 % only one particle in the stand-alone model

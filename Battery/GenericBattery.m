@@ -160,18 +160,15 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ielde};
 
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case {'default'}
-                    ams = {am};
-                  case {'sei'}
-                    ams = {am};
-                    is_sei_present = true;
-                  case 'composite'
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -348,18 +345,15 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ielde};
 
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'sei'
-                    ams = {am};
-                    is_sei_present = true;
-                  case 'composite'
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -656,18 +650,15 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ielde};
 
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'sei'
-                    ams = {am};
-                    is_sei_present = true;                    
-                  case 'composite'
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -855,18 +846,15 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ielde};
 
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'sei'
-                    ams = {am};
-                    is_sei_present = true;
-                  case 'composite'
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -1342,18 +1330,16 @@ classdef GenericBattery < BaseModel
             for ind = 1 : numel(eldes)
                 
                 elde = eldes{ind};
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'sei'
-                    is_sei_present = true;
-                    ams = {am};
-                  case 'composite'
+
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -1588,18 +1574,15 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ind};
 
-                is_sei_present = false;
-                
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'sei'
-                    ams = {am};
-                    is_sei_present = true;
-                  case 'composite'
+                if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
+                end
+
+                is_sei_present = true;
+                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
+                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -1672,16 +1655,8 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).active_material_type
-
-                  case {'default', 'sei'}
-
-                    am = 'ActiveMaterial';
-
-                    cmaxs{ielde} = model.(elde).(co).(am).(itf).saturationConcentration;
-
-                  case 'composite'
-
+                if model.(elde).(co).activeMaterialModelSetup.composite
+                    
                     am1 = 'ActiveMaterial1';
                     am2 = 'ActiveMaterial2';
 
@@ -1698,9 +1673,12 @@ classdef GenericBattery < BaseModel
 
                     cmaxs{ielde} = cmax;
 
-                  otherwise
+                else
 
-                    error('active_material_type not recognized');
+                    am = 'ActiveMaterial';
+
+                    cmaxs{ielde} = model.(elde).(co).(am).(itf).saturationConcentration;
+
 
                 end
 

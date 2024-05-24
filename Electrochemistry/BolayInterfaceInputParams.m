@@ -23,7 +23,7 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
 
             inputparams = validateInputParams@InterfaceInputParams(inputparams);
 
-            assert(strcmp(inputparams.sei_type, 'bolay'), 'Interface sei_type is not set properly');
+            assert(strcmp(inputparams.SEImodel, 'Bolay'), 'Interface sei_type is not set properly');
 
         end
 

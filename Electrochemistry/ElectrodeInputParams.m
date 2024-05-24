@@ -34,8 +34,6 @@ classdef ElectrodeInputParams < ComponentInputParams
             inputparams.(co) = CoatingInputParams(pick(co));
             inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
 
-            inputparams = inputparams.validateInputParams();
-
         end
 
         function inputparams = validateInputParams(inputparams)

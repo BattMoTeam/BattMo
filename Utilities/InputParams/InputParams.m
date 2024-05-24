@@ -42,6 +42,15 @@ classdef InputParams
             end
         end
 
+        function inputparams = setDefault(inputparams, names, defaultvalue)
+            
+            value = inputparams.getParam(names);
+            if isempty(value)
+                 inputparams = setParam(inputparams, names, defaultvalue);
+            end
+            
+        end
+        
         function inputparams = validateInputParams(inputparams)
 
         % Default automatic behaviour is that all the properties of inputparams that belong to class InputParams get
@@ -61,6 +70,26 @@ classdef InputParams
 
         end
 
+        
+        function inputparams = setupDefault(inputparams)
+        % Default automatic behaviour is that all the properties of inputparams that belong to class InputParams get
+        % assigned their default values
+        %
+
+            inputparamsFds = propertynames(inputparams);
+
+            for ind = 1 : numel(inputparamsFds)
+
+                fd = inputparamsFds{ind};
+
+                if isa(inputparams.(fd), 'InputParams')
+                    inputparams.(fd) = inputparams.(fd).validateInputParams();
+                end
+
+            end
+            
+        end
+        
     end
 
 end
