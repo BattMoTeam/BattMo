@@ -15,8 +15,7 @@
             "composite" : {"type" : "boolean",
                            "description" : "default is false. It true, setup a composite material with two active materials, using fields ActiveMaterial1 and ActiveMaterial2"},
             "SEImodel" : {"type" : "string",
-                          "enum" : ["none", "Safari", "Bolay"]}
-        },
+                          "enum" : ["none", "Safari", "Bolay"]}}},
         "ActiveMaterial": {
           "$ref": "ActiveMaterial.schema.json"
         },
