@@ -31,6 +31,8 @@ inputparams.(sei).N = 10;
 % We use a stand alone model for the particle
 inputparams.isRootSimulationModel = true;
 
+inputparams = inputparams.validateInputParams();
+
 % We initiate the model
 model = SEIActiveMaterial(inputparams);
 model = model.setupForSimulation();

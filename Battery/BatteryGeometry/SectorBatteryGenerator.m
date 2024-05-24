@@ -18,6 +18,7 @@ classdef SectorBatteryGenerator < SpiralBatteryGenerator
 
             gen.use_thermal = inputparams.use_thermal;
 
+            inputparams = inputparams.validateInputParams();
             [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
         end

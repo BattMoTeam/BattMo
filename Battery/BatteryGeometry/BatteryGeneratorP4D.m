@@ -87,6 +87,8 @@ classdef BatteryGeneratorP4D < BatteryGenerator
 
             assert(inputparams.include_current_collectors, 'This geometry must include current collectors');
 
+            inputparams = inputparams.validateInputParams();
+            
             fdnames = {'use_thermal'};
 
             gen = dispatchParams(gen, inputparams, fdnames);

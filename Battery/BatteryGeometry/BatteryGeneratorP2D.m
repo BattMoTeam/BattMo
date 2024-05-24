@@ -45,6 +45,8 @@ classdef BatteryGeneratorP2D < BatteryGenerator
 
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
+            inputparams = inputparams.validateInputParams();
+            
             gen.include_current_collectors = inputparams.include_current_collectors;
             gen.use_thermal = inputparams.use_thermal;
             inputparams = gen.setupBatteryInputParams(inputparams, []);

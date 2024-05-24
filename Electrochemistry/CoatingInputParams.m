@@ -94,7 +94,9 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         function inputparams = validateInputParams(inputparams)
 
             inputparams = validateInputParams@InputParams(inputparams);
-            inputparams = mergeParameters(inputparams, {{'ActiveMaterial', 'SEImodel'}, {'ActiveMaterial', 'Interface', 'SEImodel'}});
+            if ~inputparams.activeMaterialModelSetup.composite
+                inputparams = mergeParameters(inputparams, {{'ActiveMaterial', 'SEImodel'}, {'ActiveMaterial', 'Interface', 'SEImodel'}});
+            end
             
 
         end
