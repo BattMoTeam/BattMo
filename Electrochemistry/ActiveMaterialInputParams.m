@@ -50,50 +50,65 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 inputparams.isRootSimulationModel = false;
             end
 
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            pick = @(fd) pickField(jsonstruct, fd);
+            inputparams = inputparams.setupSEImodel(jsonstruct);
+            inputparams = inputparams.setupInterface(jsonstruct);
+            inputparams = inputparams.setupSolidDiffusion(jsonstruct);
+
+        end
+
+        function inputparams = setupSEImodel(inputparams, jsonstruct)
 
             if isempty(inputparams.SEImodel)
                 % Set default value for SEI model
                 inputparams.SEImodel = 'none';
             end
+
+        end
+        
+        function inputparams = setupInterface(inputparams, jsonstruct)
+
+            itf = 'Interface';
             
             switch inputparams.SEImodel
               case {'none', 'Safari'}
-                inputparams.(itf) = InterfaceInputParams(pick('Interface'));
+                inputparams.(itf) = InterfaceInputParams(pickField(jsonstruct, itf));
               case 'Bolay'
-                inputparams.(itf) = BolayInterfaceInputParams(pick('Interface'));
+                inputparams.(itf) = BolayInterfaceInputParams(pickField(jsonstruct, itf));
               otherwise
                 error('SEImodel not recognized')
             end
             
+        end
+        
+        function inputparams = setupSolidDiffusion(inputparams, jsonstruct)
+
+
+            sd = 'SolidDiffusion';
+
             if isempty(inputparams.diffusionModelType)
                 % set default value for diffusion model type
                 inputparams.diffusionModelType = 'full';
             end
-
+            
             diffusionModelType = inputparams.diffusionModelType;
             
             switch diffusionModelType
                 
               case 'simple'
                 
-                inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pick(sd));
+                inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
                 
               case 'full'
 
-                inputparams.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
+                inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
                 
               otherwise
                 
                 error('Unknown diffusionModelType %s', diffusionModelType);
                 
             end
-
         end
-
+        
         function inputparams = validateInputParams(inputparams)
 
 
