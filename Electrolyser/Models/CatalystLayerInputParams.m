@@ -36,8 +36,6 @@ classdef CatalystLayerInputParams < ComponentInputParams
                 inputparams.DissolutionModel = DissolutionModelInputParams(jsonstruct.DissolutionModel);
             end
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)

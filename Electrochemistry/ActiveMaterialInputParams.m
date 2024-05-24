@@ -24,6 +24,12 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         diffusionModelType     % diffusion model type, either 'full' or 'simple'
 
+        %% SEI layer model choice
+        SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
+                  % - 'none' (default)
+                  % - 'Bolay'
+                  % - 'Safari'
+
         %% Advanced parameters
 
         isRootSimulationModel % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial for an example)
@@ -31,7 +37,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-        
+
     end
 
     methods
@@ -48,10 +54,23 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             itf = 'Interface';
             
             pick = @(fd) pickField(jsonstruct, fd);
-            
-            inputparams.(itf) = InterfaceInputParams(pick('Interface'));
 
+            if isempty(inputparams.SEImodel)
+                % Set default value for SEI model
+                inputparams.SEImodel = 'none';
+            end
+            
+            switch inputparams.SEImodel
+              case {'none', 'Safari'}
+                inputparams.(itf) = InterfaceInputParams(pick('Interface'));
+              case 'Bolay'
+                inputparams.(itf) = BolayInterfaceInputParams(pick('Interface'));
+              otherwise
+                error('SEImodel not recognized')
+            end
+            
             if isempty(inputparams.diffusionModelType)
+                % set default value for diffusion model type
                 inputparams.diffusionModelType = 'full';
             end
 
@@ -73,8 +92,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)

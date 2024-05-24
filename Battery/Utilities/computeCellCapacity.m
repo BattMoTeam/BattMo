@@ -31,40 +31,7 @@ function [capacity, capacities] = computeCellCapacity(model)
 
         elde = eldes{ielde};
 
-        switch model.(elde).(co).active_material_type
-
-          case {'default', 'sei'}
-
-            am  = 'ActiveMaterial';
-
-            itfmodel = model.(elde).(co).(am).(itf);
-
-            n    = itfmodel.numberOfElectronsTransferred;
-            F    = itfmodel.constants.F;
-            G    = itfmodel.G;
-            cMax = itfmodel.saturationConcentration;
-
-            switch elde
-              case 'NegativeElectrode'
-                thetaMax = itfmodel.guestStoichiometry100;
-                thetaMin = itfmodel.guestStoichiometry0;
-              case 'PositiveElectrode'
-                thetaMax = itfmodel.guestStoichiometry0;
-                thetaMin = itfmodel.guestStoichiometry100;
-              otherwise
-                error('Electrode not recognized');
-            end
-
-            vol_fraction = model.(elde).(co).volumeFraction;
-
-            amind = model.(elde).(co).compInds.(am);
-            am_fraction  = model.(elde).(co).volumeFractions(amind);
-
-            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
-
-            cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
-
-          case 'composite'
+        if model.(elde).(co).activeMaterialModelSetup.composite
 
             am1 = 'ActiveMaterial1';
             am2 = 'ActiveMaterial2';
@@ -106,9 +73,36 @@ function [capacity, capacities] = computeCellCapacity(model)
 
             end
 
-          otherwise
+        else
 
-            error('active_material_type not recognized');
+            am  = 'ActiveMaterial';
+
+            itfmodel = model.(elde).(co).(am).(itf);
+
+            n    = itfmodel.numberOfElectronsTransferred;
+            F    = itfmodel.constants.F;
+            G    = itfmodel.G;
+            cMax = itfmodel.saturationConcentration;
+
+            switch elde
+              case 'NegativeElectrode'
+                thetaMax = itfmodel.guestStoichiometry100;
+                thetaMin = itfmodel.guestStoichiometry0;
+              case 'PositiveElectrode'
+                thetaMax = itfmodel.guestStoichiometry0;
+                thetaMin = itfmodel.guestStoichiometry100;
+              otherwise
+                error('Electrode not recognized');
+            end
+
+            vol_fraction = model.(elde).(co).volumeFraction;
+
+            amind = model.(elde).(co).compInds.(am);
+            am_fraction  = model.(elde).(co).volumeFractions(amind);
+
+            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
+
+            cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
 
         end
 
@@ -129,21 +123,21 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
