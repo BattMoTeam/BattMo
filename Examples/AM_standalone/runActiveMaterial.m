@@ -72,7 +72,7 @@ initState.E = OCP + phiElectrolyte;
 %% setup schedule
 
 % Reference rate which roughly corresponds to 1 hour for the data of this example
-Iref = 0.62*ampere/(1*centi*meter)^3;
+Iref = 5e-12;
 
 Imax = 5e1*Iref;
 
