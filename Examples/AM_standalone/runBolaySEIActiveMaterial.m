@@ -31,7 +31,7 @@ jsonstruct_bolay = parseBattmoJson(jsonfilename);
 jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
                                      jsonstruct_bolay});
 
-jsonstruct.sei_type              = 'bolay';
+jsonstruct.SEImodel              = 'Bolay';
 jsonstruct.(sd).N                = 10;
 jsonstruct.isRootSimulationModel = true;
 
@@ -42,6 +42,7 @@ jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
 
 
 inputparams = ActiveMaterialInputParams(jsonstruct);
+inputparams = inputparams.validateInputParams();
 
 % We initiate the model
 model = ActiveMaterial(inputparams);
