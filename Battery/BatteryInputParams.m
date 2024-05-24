@@ -29,14 +29,17 @@ classdef BatteryInputParams < InputParams
 
         function inputparams = BatteryInputParams(jsonstruct)
 
-            inputparams = inputparams@InputParams(jsonstruct);
-
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
+
+            jsonstruct = equalizeJsonStructField(jsonstruct, 'include_current_collectors', {ne, 'include_current_collectors'});
+            jsonstruct = equalizeJsonStructField(jsonstruct, 'include_current_collectors', {pe, 'include_current_collectors'});
+            
+            inputparams = inputparams@InputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 

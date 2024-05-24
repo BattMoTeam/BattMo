@@ -30,13 +30,11 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
+jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
+
 inputparams = BatteryInputParams(jsonstruct);
 
 inputparams = inputparams.(ne).(co).(am);
-
-inputparams.isRootSimulationModel = true;
-
-inputparams = inputparams.validateInputParams();
 
 model = ActiveMaterial(inputparams);
 model = model.setupForSimulation();

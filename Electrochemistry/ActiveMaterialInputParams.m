@@ -44,6 +44,56 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         function inputparams = ActiveMaterialInputParams(jsonstruct)
 
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            
+            jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
+
+            diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
+
+            if isUnAssigned(diffusionModelType)
+                jsonstruct.diffusionModelType = 'full';
+            end
+            
+            switch diffusionModelType
+                
+              case 'simple'
+                
+                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
+                
+              case 'full'
+                
+                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
+
+                diffusionCoefficient = getJsonStructField(jsonstruct, {sd, 'diffusionCoefficient'});
+                
+                if isAssigned(diffusionCoefficient)
+                    % we impose that cmax in the solid diffusion model and the interface are consistent
+                    paramnames = {'saturationConcentration', ...
+                                  'guestStoichiometry100', ...
+                                  'guestStoichiometry0'};
+                    for iparam = 1 : numel(paramnames)
+                        paramname = paramnames{iparam};
+                        jsonstruct = equalizeJsonStructField(jsonstruct, {sd, paramname}, {itf, paramname});
+                    end
+                    
+                end
+
+              otherwise
+                
+                error('Unknown diffusionModelType %s', diffusionModelType);
+                
+            end
+
+            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+
+            if isAssigned(isRootSimulationModel) && isRootSimulationModel 
+                % only one particle in the stand-alone model
+                jsonstruct = setJsonStructField(jsonstruct, {sd, 'np'}, 1);
+                % For the standalone model, we set the volume fraction to one (no other component is present)
+                jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
+            end
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             if isempty(inputparams.isRootSimulationModel)
@@ -84,11 +134,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
 
             sd = 'SolidDiffusion';
-
-            if isempty(inputparams.diffusionModelType)
-                % set default value for diffusion model type
-                inputparams.diffusionModelType = 'full';
-            end
             
             diffusionModelType = inputparams.diffusionModelType;
             
@@ -107,55 +152,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 error('Unknown diffusionModelType %s', diffusionModelType);
                 
             end
-        end
-        
-        function inputparams = validateInputParams(inputparams)
-
-
-            diffusionModelType = inputparams.diffusionModelType;
-            
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            inputparams = mergeParameters(inputparams, {{'density'}, {itf, 'density'}});
-
-            if inputparams.isRootSimulationModel
-                % only one particle in the stand-alone model
-                inputparams.(sd).np = 1;
-                % For the standalone model, we set the volume fraction to one (no other component is present)
-                inputparams.(sd).volumeFraction = 1;
-            end
-            
-            switch diffusionModelType
-                
-              case 'simple'
-                
-                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
-                
-              case 'full'
-                
-                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
-                
-                if ~isempty(inputparams.(sd).diffusionCoefficient)
-                    % we impose that cmax in the solid diffusion model and the interface are consistent
-                    paramnames = {'saturationConcentration', ...
-                                  'guestStoichiometry100', ...
-                                  'guestStoichiometry0'};
-                    for iparam = 1 : numel(paramnames)
-                        paramname = paramnames{iparam};
-                        inputparams = mergeParameters(inputparams, {{sd, paramname}, {itf, paramname}}, 'force', false);
-                    end
-                    
-                end
-
-              otherwise
-                
-                error('Unknown diffusionModelType %s', diffusionModelType);
-                
-            end
-
-            inputparams = validateInputParams@ComponentInputParams(inputparams);
-            
         end
         
     end
