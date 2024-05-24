@@ -7,6 +7,8 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
     sep   = 'Separator';
     cc    = 'CurrentCollector';
 
+    inputparams = inputparams.validateInputParams();
+    
     switch jsonstruct.Geometry.case
 
       case '1D'
