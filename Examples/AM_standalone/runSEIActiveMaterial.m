@@ -21,17 +21,12 @@ sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
+jsonstruct.isRootSimulationModel = true;
+
 inputparams = SEIActiveMaterialInputParams(jsonstruct);
 
 inputparams.(sd).N  = 10;
 inputparams.(sei).N = 10;
-
-%% Setup the model
-
-% We use a stand alone model for the particle
-inputparams.isRootSimulationModel = true;
-
-inputparams = inputparams.validateInputParams();
 
 % We initiate the model
 model = SEIActiveMaterial(inputparams);
