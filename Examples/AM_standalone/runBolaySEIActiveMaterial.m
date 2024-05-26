@@ -40,9 +40,7 @@ jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 rp = jsonstruct.(sd).particleRadius ;
 jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
 
-
 inputparams = ActiveMaterialInputParams(jsonstruct);
-inputparams = inputparams.validateInputParams();
 
 % We initiate the model
 model = ActiveMaterial(inputparams);

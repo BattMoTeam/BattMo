@@ -139,8 +139,6 @@ initstate = states{end};
 inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
 inputparams.(ctrl).CRate = DRate;
 
-inputparams = inputparams.validateInputParams();
-
 model = Battery(inputparams);
 
 step    = model.(ctrl).setupScheduleStep();
