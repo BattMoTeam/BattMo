@@ -6,9 +6,11 @@
   "properties": {
     "include_current_collectors": {
       "type": "boolean"
+      "description" : "include current collector. Default it false"
     },
     "use_thermal": {
       "type": "boolean"
+      "description": "include thermal effects. Default is false"
     }
   },
   "allOf": [
