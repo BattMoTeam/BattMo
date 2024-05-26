@@ -52,7 +52,7 @@ classdef BatteryInputParams < InputParams
                                                                {sep, 'use_thermal'}});
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'}, false);
             
             use_thermal = getJsonStructField(jsonstruct, 'use_thermal');
             
