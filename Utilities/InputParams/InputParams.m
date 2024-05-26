@@ -42,14 +42,6 @@ classdef InputParams
             end
         end
 
-        function inputparams = setDefault(inputparams, names, defaultvalue)
-            
-            value = inputparams.getParam(names);
-            if isempty(value)
-                 inputparams = setParam(inputparams, names, defaultvalue);
-            end
-            
-        end
         
         function inputparams = validateInputParams(inputparams)
 
