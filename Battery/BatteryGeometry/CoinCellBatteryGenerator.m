@@ -56,7 +56,6 @@ classdef CoinCellBatteryGenerator < BatteryGenerator
                        'use_thermal'};
             gen = dispatchParams(gen, params, fdnames);
 
-            inputparams = inputparams.validateInputParams();
             inputparams = gen.setupBatteryInputParams(inputparams, []);
 
         end

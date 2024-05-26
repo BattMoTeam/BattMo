@@ -48,7 +48,6 @@ classdef BatteryGeneratorP3D < BatteryGenerator
 
             gen = dispatchParams(gen, inputparams, fdnames);
 
-            inputparams = inputparams.validateInputParams();
             inputparams = gen.setupBatteryInputParams(inputparams, []);
 
         end
