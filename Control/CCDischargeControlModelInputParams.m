@@ -18,10 +18,9 @@ classdef CCDischargeControlModelInputParams < CCcontrolModelInputParams
         function inputparams = CCDischargeControlModelInputParams(jsonstruct);
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'useCVswitch', false);
-            jsonstruct.controlPolicy = 'CCDischarge';
+            jsonstruct = setJsonStructField(jsonstruct, 'controlPolicy', 'CCDischarge');
             
             inputparams = inputparams@CCcontrolModelInputParams(jsonstruct);
-            inputparams.controlPolicy = 'CCDischarge';
             
         end
 

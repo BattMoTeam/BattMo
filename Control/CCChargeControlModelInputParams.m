@@ -18,8 +18,8 @@ classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
 
         function inputparams = CCChargeControlModelInputParams(jsonstruct);
             
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useCVswitch', true)M
-            jsonstruct.controlPolicy = 'CCCharge';
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useCVswitch', true);
+            jsonstruct = setJsonStructField(jsonstruct, 'controlPolicy', 'CCCharge');
             
             inputparams = inputparams@CCcontrolModelInputParams(jsonstruct);
             
