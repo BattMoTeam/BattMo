@@ -31,14 +31,40 @@ classdef BatteryInputParams < InputParams
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             elyte   = 'Electrolyte';
             sep     = 'Separator';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            jsonstruct = equalizeJsonStructField(jsonstruct, 'include_current_collectors', {ne, 'include_current_collectors'});
-            jsonstruct = equalizeJsonStructField(jsonstruct, 'include_current_collectors', {pe, 'include_current_collectors'});
+            jsontruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
             
+            jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors', ...
+                                                               {ne, 'include_current_collectors'}, ...
+                                                               {pe, 'include_current_collectors'}});
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'use_thermal', false);
+            
+            jsonstruct = equalizeJsonStructFields(jsonstruct, {{'use_thermal'}       , ...
+                                                               {ne, 'use_thermal'}   , ...
+                                                               {pe, 'use_thermal'}   , ...
+                                                               {elyte, 'use_thermal'}, ...
+                                                               {sep, 'use_thermal'}});
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
+            
+            use_thermal = getJsonStructField(jsonstruct, 'use_thermal');
+            
+            if use_thermal
+                
+                iscomp1 = getJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'});
+                iscomp2 = getJsonStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'});
+                assert(~iscomp1 && ~iscomp2, 'We do not support for the moment thermal simulation for composite materials');
+
+            end
+
+
             inputparams = inputparams@InputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
@@ -66,45 +92,6 @@ classdef BatteryInputParams < InputParams
                 error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end
             inputparams.couplingTerms = {};
-
-        end
-
-        function inputparams = validateInputParams(inputparams)
-
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            co      = 'Coating';
-            elyte   = 'Electrolyte';
-            sep     = 'Separator';
-            thermal = 'ThermalModel';
-            ctrl    = 'Control';
-            
-            inputparams = mergeParameters(inputparams, {{'use_thermal'}       , ...
-                                                  {ne, 'use_thermal'}   , ...
-                                                  {pe, 'use_thermal'}   , ...
-                                                  {elyte, 'use_thermal'}, ...
-                                                  {sep, 'use_thermal'}});
-
-            inputparams = mergeParameters(inputparams, {{'include_current_collectors'}    , ...
-                                                  {ne, 'include_current_collectors'}, ...
-                                                  {pe, 'include_current_collectors'}});
-
-
-            inputparams.(ne)    = inputparams.(ne).validateInputParams();
-            inputparams.(pe)    = inputparams.(pe).validateInputParams();
-            inputparams.(elyte) = inputparams.(elyte).validateInputParams();
-            inputparams.(ctrl)  = inputparams.(ctrl).validateInputParams();
-            
-            if inputparams.use_thermal
-                inputparams.(thermal) = inputparams.(thermal).validateInputParams();
-
-                % for the moment we do not support thermal simulation with composite material. We check for that here
-                isok = ~inputparams.(ne).(co).activeMaterialModelSetup.composite;
-                isok = isok & ~inputparams.(ne).(co).activeMaterialModelSetup.composite;
-                assert(isok, 'We do not support for the moment thermal simulation for composite materials');
-
-            end
-
 
         end
 

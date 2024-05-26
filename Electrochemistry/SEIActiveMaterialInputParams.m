@@ -12,7 +12,16 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
     methods
 
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEImodel', 'Safari');
+            
+            assert(strcmp(jsonstruct.SEImodel, 'Safari'), 'The SEI model should be set to Safari');
 
+            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+            if isAssigned(isRootSimulationModel) && isRootSimulationModel
+                % only one particle in the stand-alone model
+                jsonstruct = setJsonStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
+            end
 
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
             
@@ -41,19 +50,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 
         end
         
-        function inputparams = validateInputParams(inputparams)
 
-            inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
-
-            assert(strcmp(inputparams.SEImodel, 'Safari'), 'The SEI model should be set to Safari');
-            
-            if inputparams.isRootSimulationModel
-                % only one particle in the stand-alone model
-                inputparams.SolidElectrodeInterface.np = 1;
-            end
-
-        end
-        
     end
     
 end

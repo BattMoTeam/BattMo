@@ -23,11 +23,11 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         
         activeMaterialModelSetup % instance of ActiveMaterialModelSetupInputParams. Contains fields
-                              % - 'composite' : boolean (default is false)
-                              % - 'SEImodel' : string with one of
-                              %                 "none" (default)
-                              %                 "Safari"
-                              %                 "Bolay"
+                                 % - 'composite' : boolean (default is false)
+                                 % - 'SEImodel' : string with one of
+                                 %                 "none" (default)
+                                 %                 "Safari"
+                                 %                 "Bolay"
 
         %% Advanced parameters
 
@@ -48,17 +48,19 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         function inputparams = CoatingInputParams(jsonstruct)
 
-            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
-
-            pick = @(fd) pickField(jsonstruct, fd);
-
-            if isfield(jsonstruct, 'activeMaterialModelSetup')
-                inputparams.activeMaterialModelSetup  = ActiveMaterialModelSetupInputParams(jsonstruct.activeMaterialModelSetup);
-            else
-                inputparams.activeMaterialModelSetup  = ActiveMaterialModelSetupInputParams([]);
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
+            
+            if ~jsonstruct.activeMaterialModelSetup.composite 
+                jsonstruct = equalizeJsonStructField(jsonstruct, {'ActiveMaterial', 'SEImodel'}, {'ActiveMaterial', 'Interface', 'SEImodel'});
             end
             
-            if inputparams.activeMaterialModelSetup.composite
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+            
+            if jsonstruct.activeMaterialModelSetup.composite
                 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
@@ -69,7 +71,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 
                 am = 'ActiveMaterial';
 
-                switch inputparams.activeMaterialModelSetup.SEImodel
+                switch jsonstruct.activeMaterialModelSetup.SEImodel
 
                   case {'none', 'Balay'}
 
@@ -88,16 +90,6 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             inputparams.Binder             = BinderInputParams(pick('Binder'));
             inputparams.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
-
-        end
-
-        function inputparams = validateInputParams(inputparams)
-
-            inputparams = validateInputParams@InputParams(inputparams);
-            if ~inputparams.activeMaterialModelSetup.composite
-                inputparams = mergeParameters(inputparams, {{'ActiveMaterial', 'SEImodel'}, {'ActiveMaterial', 'Interface', 'SEImodel'}});
-            end
-            
 
         end
 
