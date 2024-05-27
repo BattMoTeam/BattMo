@@ -68,8 +68,8 @@ classdef BolayInterface < Interface
 
         function state = updateSEIflux(model, state)
 
-            De = model.SEIelectronicDiffusionCoefficient;
-            ce = model.SEIintersticialConcentration;
+            De  = model.SEIelectronicDiffusionCoefficient;
+            ce0 = model.SEIintersticialConcentration;
 
             R = model.constants.R;
             F = model.constants.F;            
@@ -79,7 +79,7 @@ classdef BolayInterface < Interface
             U   = state.SEIvoltageDrop;
             L   = state.SEIlength;
 
-            state.SEIflux = De*ce./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
+            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
            
         end
         
