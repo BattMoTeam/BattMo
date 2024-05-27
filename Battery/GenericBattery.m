@@ -164,11 +164,6 @@ classdef GenericBattery < BaseModel
                     ams = {am};
                 end
 
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
-                end
-
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
@@ -180,8 +175,13 @@ classdef GenericBattery < BaseModel
                     model = model.registerPropFunction({{elde, co, amc, itf, 'phiElectrolyte'}, fn, inputnames});
                     model = model.registerPropFunction({{elde, co, amc, itf, 'cElectrolyte'}  , fn, inputnames});
 
-                    if is_sei_present
+                    switch model.(elde).(co).activeMaterialModelSetup.SEImodel
+                      case {'none', 'Bolay'}
+                        % nothing more to add
+                      case 'Safari'
                         model = model.registerPropFunction({{elde, co, amc, sr, 'phiElectrolyte'}, fn, inputnames});
+                      otherwise
+                        error('SEI model not recognized');
                     end
 
                 end
@@ -349,11 +349,6 @@ classdef GenericBattery < BaseModel
                     ams = {am};
                 end
 
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
-                end
-
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
@@ -387,8 +382,14 @@ classdef GenericBattery < BaseModel
 
                     end
 
-                    if is_sei_present
 
+                    switch model.(elde).(co).activeMaterialModelSetup.SEImodel
+                        
+                      case {'none', 'Bolay'}
+
+                        % nothing more to add
+                        
+                      case 'Safari'
                         % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
                         % scaling for the standalone model SEIActiveMaterial for the SEI parts.
                         
@@ -411,10 +412,13 @@ classdef GenericBattery < BaseModel
                         
                         scalings{end + 1} = {{elde, co, am, sei, 'interfaceBoundaryEq'}, coefref*scalingcoef};
                         scalings{end + 1} = {{elde, co, am, sei, 'massCons'}, coefref*scalingcoef};
-                        
+
+                      otherwise
+                        error('SEI model not recognized');
                     end
-                    
+
                 end
+                
             end
 
             model.scalings = scalings;
@@ -654,11 +658,6 @@ classdef GenericBattery < BaseModel
                     ams = {am};
                 end
 
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
-                end
-
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
@@ -682,8 +681,10 @@ classdef GenericBattery < BaseModel
                         error('diffusionModelType not recognized')
                     end
 
-                    if is_sei_present
-                        
+                    switch model.(elde).(co).activeMaterialModelSetup.SEImodel
+                      case 'none'
+                        %  nothing to do
+                      case 'Safari'
                         N = model.(elde).(co).(amc).(sei).N;
                         np = model.(elde).(co).(amc).(sei).np; % Note : we have by construction np = nc                        
 
@@ -694,6 +695,11 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).(sei).cInterface = cExternal*ones(np, 1);
                         initstate.(elde).(co).(amc).(sei).delta      = 5*nano*meter*ones(np, 1);
                         initstate.(elde).(co).(amc).R                = zeros(np, 1);
+
+                      case 'Bolay'
+
+                      otherwise
+                        error('SEI model not recognized');
                         
                     end
                     
@@ -848,11 +854,6 @@ classdef GenericBattery < BaseModel
                     ams = {am1, am2};
                 else
                     ams = {am};
-                end
-
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
@@ -1335,19 +1336,19 @@ classdef GenericBattery < BaseModel
                     ams = {am};
                 end
 
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
-                end
-
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
                     state.(elde).(co).(amc).(itf).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
                     state.(elde).(co).(amc).(itf).cElectrolyte   = c_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
 
-                    if is_sei_present
+                    switch model.(elde).(co).activeMaterialModelSetup.SEImodel
+                      case {'none', 'Bolay'}
+                        % nothing more to do
+                      case 'Safari'
                         state.(elde).(co).(amc).(sr).phiElectrolyte = phi_elyte(elyte_cells(bat.(elde).(co).G.mappings.cellmap));
+                      otherwise
+                        error('SEI model not recognized');
                     end
                     
                 end
@@ -1576,11 +1577,6 @@ classdef GenericBattery < BaseModel
                     ams = {am1, am2};
                 else
                     ams = {am};
-                end
-
-                is_sei_present = true;
-                if strcmp(model.(elde).(co).activeMaterialModelSetup.SEImodel, 'none')
-                    is_sei_present = false;
                 end
 
                 for iam = 1 : numel(ams)
