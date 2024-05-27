@@ -446,12 +446,10 @@ classdef GenericBattery < BaseModel
 
                       case 'Bolay'
 
-                        L0  = 1*nano*meter;
-                        k   = model.(elde).(co).(amc).(itf).SEIionicConductivity;
-                        vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
-                        
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, (RvolRef/vsa)*L0*k};
+                        % We use a normalized voltage drop and therefore the scaling here is equal to one.
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, 1};
 
+                        L0 = 1*nano*meter;
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
                         ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
                         
