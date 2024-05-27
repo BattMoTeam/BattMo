@@ -205,3 +205,11 @@ xlabel('time / hour')
 ylabel('length / m')
 title('SEI layer length')
 
+SEIvoltageDrops = cellfun(@(state) state.Interface.SEIvoltageDrop, states);
+
+figure;
+plot(time/hour, SEIvoltageDrops);
+xlabel('time / h');
+ylabel('Drop /V');
+title('SEI drop');
+grid on;
