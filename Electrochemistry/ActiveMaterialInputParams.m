@@ -93,33 +93,19 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 % For the standalone model, we set the volume fraction to one (no other component is present)
                 jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
-            
-            inputparams = inputparams@ComponentInputParams(jsonstruct);
-            
-            if isempty(inputparams.isRootSimulationModel)
-                inputparams.isRootSimulationModel = false;
-            end
 
-            inputparams = inputparams.setupSEImodel(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             inputparams = inputparams.setupInterface(jsonstruct);
             inputparams = inputparams.setupSolidDiffusion(jsonstruct);
 
         end
 
-        function inputparams = setupSEImodel(inputparams, jsonstruct)
-
-            if isempty(inputparams.SEImodel)
-                % Set default value for SEI model
-                inputparams.SEImodel = 'none';
-            end
-
-        end
         
         function inputparams = setupInterface(inputparams, jsonstruct)
 
             itf = 'Interface';
             
-            switch inputparams.SEImodel
+            switch jsonstruct.SEImodel
               case {'none', 'Safari'}
                 inputparams.(itf) = InterfaceInputParams(pickField(jsonstruct, itf));
               case 'Bolay'
@@ -135,7 +121,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             sd = 'SolidDiffusion';
             
-            diffusionModelType = inputparams.diffusionModelType;
+            diffusionModelType = jsonstruct.diffusionModelType;
             
             switch diffusionModelType
                 
