@@ -70,6 +70,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 % if active material is composite, we do not support SEI for the moment
                 errorMessage = 'For a composite material, we do no support SEI layer';
                 jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
             end
             
             inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
