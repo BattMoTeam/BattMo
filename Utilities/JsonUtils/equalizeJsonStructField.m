@@ -34,7 +34,10 @@ function jsonstruct = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldn
                 opt = merge_options(opt, varargin{:});
 
                 if opt.force
-                    jsonstruct = setJsonStructField(jsonstruct, fieldnamelist2, value1, 'handleMisMatch', 'quiet');
+                    errorMessage = sprintf('Different values are given for the fields jsonstruct.%s and jsonstruct.%s. We do not know which one to choose...', ...
+                                           strjoin(fieldnamelist1, '.')                                                                                      , ...
+                                           strjoin(fieldnamelist2, '.'));
+                    jsonstruct = setJsonStructField(jsonstruct, fieldnamelist2, value1, 'handleMisMatch', 'error', 'errorMessage', errorMessage);
                     if opt.warn
                         fprintf('Fist value given in equalizeJsonStructField is taken\n');
                     end
