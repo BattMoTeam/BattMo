@@ -455,8 +455,6 @@ classdef GenericBattery < BaseModel
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
                         ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
                         
-                        coef = De*ce/L0;
-                        
                         scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, De*ce/L0};
                         
                       case 'Safari'
@@ -764,8 +762,10 @@ classdef GenericBattery < BaseModel
 
                       case 'Bolay'
                         
-                        initstate.(ne).(co).(amc).(itf).SEIlength      = 5*nano*meter*ones(np, 1);
-                        initstate.(ne).(co).(amc).(itf).SEIvoltageDrop = zeros(np, 1);
+                        initstate.(ne).(co).(amc).(itf).normalizedSEIlength      = 5*ones(np, 1);
+                        initstate.(ne).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(np, 1);
+
+                        initstate = model.evalVarName(initstate, {ne, co, amc, itf, 'SEIlength'});
                         
                       otherwise
                         
