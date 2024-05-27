@@ -682,9 +682,12 @@ classdef GenericBattery < BaseModel
                     end
 
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
+
                       case 'none'
                         %  nothing to do
+                        
                       case 'Safari'
+                        
                         N = model.(elde).(co).(amc).(sei).N;
                         np = model.(elde).(co).(amc).(sei).np; % Note : we have by construction np = nc                        
 
@@ -697,8 +700,12 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).R                = zeros(np, 1);
 
                       case 'Bolay'
-
+                        
+                        initstate.(ne).(co).(amc).(itf).SEIlength      = 5*nano*meter*ones(np, 1);
+                        initstate.(ne).(co).(amc).(itf).SEIvoltageDrop = zeros(np, 1);
+                        
                       otherwise
+                        
                         error('SEI model not recognized');
                         
                     end
