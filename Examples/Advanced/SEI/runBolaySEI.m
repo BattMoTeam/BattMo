@@ -21,115 +21,42 @@ elyte = 'Electrolyte';
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
                         'lithium_ion_battery_nmc_graphite.json');
-jsonstruct_material = parseBattmoJson(jsonfilename);
-jsonstruct = jsonstruct_material.(ne).(co).(am);
+jsonstruct = parseBattmoJson(jsonfilename);
 
 jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
 
-jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
-                                     jsonstruct_bolay});
+jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
+                                              jsonstruct_bolay});
 
-jsonstruct.sei_type              = 'bolay';
-jsonstruct.(sd).N                = 10;
-jsonstruct.isRootSimulationModel = true;
+jsonstruct.(ne).(co).(am).SEImodel                     = 'Bolay';
 
-jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
+inputparams = BatteryInputParams(jsonstruct);
 
 rp = jsonstruct.(sd).particleRadius ;
 jsonstruct.(itf).volumetricSurfaceArea = 3./rp;
 
 
-inputparams = ActiveMaterialInputParams(jsonstruct);
+model = GenericBattery(inputparams);
+model = model.equipModelForComputation();
 
-% We initiate the model
-model = ActiveMaterial(inputparams);
+%% Setup the schedule
+%
 
-model = model.setupForSimulation();
+timestep.numberOfTimeSteps = 100;
 
+step    = model.Control.setupScheduleStep(timestep);
+control = model.Control.setupScheduleControl();
 
-
-%% Setup initial state
-
-Nsd  = model.(sd).N;
-
-% Initial concentration value at the electrode
-cElectrodeInit = 0.75*model.(itf).saturationConcentration;
-% Initial value of the potential at the electrode
-phiElectrodeInit = 0;
-% Initial concentration value in the electrolyte
-cElectrolyte = 5e-1*mol/litre;
-% Temperature
-T = 298.15;
-
-% The following datas come from :cite:`Bolay2022` (supplementary material)
-% Length of SEI layer
-SEIlength = 10*nano*meter;
-% SEI voltage drop
-SEIvoltageDrop = 0;
-
-% We compute the OCP from the given data and use it to assign electrical potential in electrolyte
-initState.T = T;
-initState.(sd).cSurface = cElectrodeInit;
-initState = model.evalVarName(initState, {itf, 'OCP'});
-
-OCP = initState.(itf).OCP;
-phiElectrolyte = phiElectrodeInit - OCP;
-
-% From the values computed above we set the values of the initial state
-initState.E                    = phiElectrodeInit;
-initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
-initState.(itf).SEIlength      = SEIlength;
-initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
-
-% We set also static variable fields
-initState.(itf).cElectrolyte   = cElectrolyte;
-initState.(itf).phiElectrolyte = phiElectrolyte;
-
-%% Setup schedule
-
-Imax = 3e-12*ampere;
-
-scalings = {};
-coef = Imax/PhysicalConstants.F;
-scalings{end + 1} = {{sd, 'massCons'}, coef};
-scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
-scalings{end + 1} = {{'chargeCons'}, Imax};
-
-L0 = 1*nano*meter;
-k  = model.(itf).SEIionicConductivity;
-rp = model.(sd).particleRadius;
-F  = PhysicalConstants.F;
-vsa = model.(sd).volumetricSurfaceArea;
-
-coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
-
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
-
-De = model.(itf).SEIelectronicDiffusionCoefficient;
-ce = model.(itf).SEIintersticialConcentration;
-
-coef = De*ce/L0;
-
-scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
-
-model.scalings = scalings;
-
-total = 60*minute;
-n     = 200;
-dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% rampup value for the current function, see rampupSwitchControl
-tup = 1e-2*minute;
-srcfunc = @(time) rampupControl(time, tup, Imax);
-
-cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
-control.src = srcfunc;
-
+% This control is used to set up the schedule
 schedule = struct('control', control, 'step', step);
+
+
+%% Setup the initial state of the model
+% The initial state of the model is setup using the model.setupInitialState() method.
+
+initstate = model.setupInitialState();
 
 %% Setup non-linear solver
 
@@ -141,7 +68,9 @@ model.nonlinearTolerance = 1e-5;
 %% Run simulation
 
 model.verbose = true;
-[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+return
 
 %% Plotting
 
