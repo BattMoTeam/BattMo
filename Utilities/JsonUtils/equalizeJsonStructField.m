@@ -1,12 +1,15 @@
-function jsonstruct = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldnamelist2, varargin)
+function [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldnamelist2, varargin)
 
     value1 = getJsonStructField(jsonstruct, fieldnamelist1);
     value2 = getJsonStructField(jsonstruct, fieldnamelist2);
 
+    bothUnAssigned = false;
+    
     if isUnAssigned(value1)
 
         if isUnAssigned(value2)
-
+            
+            bothUnAssigned = true;
             return
             
         else
