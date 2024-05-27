@@ -320,6 +320,7 @@ classdef GenericBattery < BaseModel
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
+            cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             am1     = 'ActiveMaterial1';
             am2     = 'ActiveMaterial2';
@@ -334,15 +335,67 @@ classdef GenericBattery < BaseModel
             
             eldes = {ne, pe};
 
-            F = model.con.F;
-
-            scalings = {};
-            scalings{end + 1} = {{elyte, 'massCons'}, 1/F};
-
+            % We compute a scaling for the reaction rate coefficient j0 (see Interface model) and Volumetric reaction rate Rvol
+            % in mol/(s*m^3) (see SolidDiffusion model)
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
 
+                if  model.(elde).(co).activeMaterialModelSetup.composite
+                    ams = {am1, am2};
+                else
+                    ams = {am};
+                end
+
+                % for simplicity, we use only the first material in case of composite;
+
+                amc = ams{1};
+
+                state.T            = model.initT;
+                state.cElectrolyte = model.(elyte).species.nominalConcentration;
+                % We use half max concentration
+                state.cElectrodeSurface = 0.5*model.(elde).(co).(amc).(itf).saturationConcentration;
+
+                state = model.(elde).(co).(amc).(itf).updateReactionRateCoefficient(state);
+
+                j0s(ielde) = state.j0;
+
+                Rvols(ielde) = j0s(ielde)*model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                
+            end
+
+            j0Ref   = mean(j0s);
+            RvolRef = mean(Rvols);
+            
+            volRef.(ne).(co) = mean(model.(ne).(co).G.getVolumes());
+            volRef.(pe).(co) = mean(model.(pe).(co).G.getVolumes());
+
+            if model.include_current_collectors
+                volRef.(ne).(cc) = mean(model.(ne).(cc).G.getVolumes());
+                volRef.(pe).(cc) = mean(model.(pe).(cc).G.getVolumes());
+            end
+            
+            volRef.(elyte) = mean(model.(elyte).G.getVolumes());
+            
+            F = model.con.F;
+
+            scalings = {};
+
+            scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
+            scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
+            
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+                
+                scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
+
+                if model.include_current_collectors
+                    % We use the same scaling as for the coating
+                    scalings{end + 1} = {{elde, cc, 'chargeCons'}, F*volRef.(elde).(cc)*RvolRef};
+                end
+                
                 if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
                 else
@@ -357,24 +410,23 @@ classdef GenericBattery < BaseModel
 
                       case 'simple'
 
-                        scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, 1/F};
-                        dt = 1; % dummy value, just to remind us of the form of the scaling
-                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, dt./(F*model.(elde).(co).G.getVolumes())};
+                        
+                        scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, RvolRef};
+
+                        rp  = model.(elde).(co).(amc).(sd).particleRadius;
+                        vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                        D0  = model.(elde).(co).(amc).(sd).referenceDiffusionCoefficient;
+                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, rp*RvolRef/(5*vsa*D0)};
                         
                       case 'full'
 
-                        n    = model.(elde).(co).(amc).(itf).numberOfElectronsTransferred;
-                        F    = model.con.F;
-                        vol  = model.(elde).(co).G.getVolumes();
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
-                        vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
 
-                        surfp = 4*pi*rp^2;
+                        surfp = 4*pi*rp^3;
 
-                        scalingcoef = (vsf*vol(1)*n*F)/surfp;
-
-                        scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, 1/scalingcoef};
-                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, 1/scalingcoef};
+                        coef = RvolRef*surfp/3;
+                        scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, coef};
+                        scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, coef};
                         
                       otherwise
 
@@ -385,35 +437,46 @@ classdef GenericBattery < BaseModel
 
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
                         
-                      case {'none', 'Bolay'}
+                      case 'none'
 
                         % nothing more to add
+
+                      case 'Bolay'
+
+                        L0  = 1*nano*meter;
+                        k   = model.(elde).(co).(amc).(itf).SEIionicConductivity;
+                        rp  = model.(elde).(co).(amc).(sd).particleRadius;
+                        vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                        
+                        coef = 1/F*L0*k/(4*pi/3*rp^2*vsa);
+                        
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, coef};
+
+                        De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
+                        ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
+                        
+                        coef = De*ce/L0;
+                        
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, coef};
                         
                       case 'Safari'
                         % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
                         % scaling for the standalone model SEIActiveMaterial for the SEI parts.
-                        
-                        coefref = 1/scalingcoef;
-                        
+
                         rp  = model.(elde).(co).(am).(sd).particleRadius;
                         vsa = model.(elde).(co).(am).(sd).volumetricSurfaceArea;
-                        scalingcoef = vsa*(4*pi*rp^3/3);
-                        
-                        coefref = coefref/scalingcoef;
-
                         Mw  = model.(elde).(co).(am).(sei).molecularWeight;
                         rho = model.(elde).(co).(am).(sei).density;
-                        scalingcoef = 0.5*Mw/rho;
 
-                        scalings{end + 1} = {{elde, co, am, sei, 'widthEq'}, scalingcoef*coefref};
+                        scalings{end + 1} = {{elde, co, am, sei, 'widthEq'}, RvolRef/vsa*Mw/rho};
 
                         deltaref = 1*nano*meter;
-                        scalingcoef = deltaref;
                         
-                        scalings{end + 1} = {{elde, co, am, sei, 'interfaceBoundaryEq'}, coefref*scalingcoef};
-                        scalings{end + 1} = {{elde, co, am, sei, 'massCons'}, coefref*scalingcoef};
+                        scalings{end + 1} = {{elde, co, am, sei, 'interfaceBoundaryEq'}, deltaref*RvolRef/vsa};
+                        scalings{end + 1} = {{elde, co, am, sei, 'massCons'}, deltaref*RvolRef/vsa};
 
                       otherwise
+                        
                         error('SEI model not recognized');
                     end
 
