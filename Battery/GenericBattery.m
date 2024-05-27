@@ -361,7 +361,10 @@ classdef GenericBattery < BaseModel
 
                 j0s(ielde) = state.j0;
 
-                Rvols(ielde) = j0s(ielde)*model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                F   = model.con.F;
+                
+                Rvols(ielde) = j0s(ielde)*vsa/F;
                 
             end
 
@@ -445,19 +448,16 @@ classdef GenericBattery < BaseModel
 
                         L0  = 1*nano*meter;
                         k   = model.(elde).(co).(amc).(itf).SEIionicConductivity;
-                        rp  = model.(elde).(co).(amc).(sd).particleRadius;
                         vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
                         
-                        coef = 1/F*L0*k/(4*pi/3*rp^2*vsa);
-                        
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, coef};
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, (RvolRef/vsa)*L0*k};
 
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
                         ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
                         
                         coef = De*ce/L0;
                         
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, coef};
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, De*ce/L0};
                         
                       case 'Safari'
                         % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
