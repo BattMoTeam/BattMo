@@ -26,8 +26,12 @@ classdef BolayInterface < Interface
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.SEIlengthRef      = 1*nano*meter;
-            model.SEIvoltageDropRef = 1e-17;
+            L0 = 1*nano*meter;
+            De = model.SEIelectronicDiffusionCoefficient;
+            ce = model.SEIintersticialConcentration;
+            
+            model.SEIlengthRef      = L0;
+            model.SEIvoltageDropRef = De*ce/L0;
             
         end
 

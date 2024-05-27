@@ -98,18 +98,12 @@ scalings{end + 1} = {{sd, 'massCons'}, coef};
 scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
 scalings{end + 1} = {{'chargeCons'}, Imax};
 
-L0 = 1*nano*meter;
-k  = model.(itf).SEIionicConductivity;
-rp = model.(sd).particleRadius;
-F  = PhysicalConstants.F;
-vsa = model.(sd).volumetricSurfaceArea;
-
-coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
-
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
+% We use a normalized voltage drop in the equation and therefore the following scaling here is set to one.
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, 1};
 
 De = model.(itf).SEIelectronicDiffusionCoefficient;
 ce = model.(itf).SEIintersticialConcentration;
+L0 = 1*nano*meter;
 
 coef = De*ce/L0;
 
