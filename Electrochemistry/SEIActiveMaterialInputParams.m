@@ -13,7 +13,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
             
-            errorMessage = 'We should have the Safari SEI model as input (otherwise this model should not be called)'
+            errorMessage = 'We should have the Safari SEI model as input (otherwise this model should not be called)';
             jsonstruct = setJsonStructField(jsonstruct, 'SEImodel', 'Safari', 'errorMessage', errorMessage);
             
             errorMessage = 'For the Safari SEI model, the use of the full diffusion model is required';
