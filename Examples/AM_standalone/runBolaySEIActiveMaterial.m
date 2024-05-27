@@ -28,8 +28,8 @@ jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_se
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
 
-jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
-                                     jsonstruct_bolay});
+jsonstruct = mergeJsonStructs({jsonstruct, ...
+                               jsonstruct_bolay});
 
 jsonstruct.SEImodel              = 'Bolay';
 jsonstruct.(sd).N                = 10;
