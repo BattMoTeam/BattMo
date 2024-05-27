@@ -31,7 +31,7 @@ jsonstruct_bolay = parseBattmoJson(jsonfilename);
 jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
                                      jsonstruct_bolay});
 
-jsonstruct.SEImodel              = 'Bolay';
+jsonstruct.sei_type              = 'bolay';
 jsonstruct.(sd).N                = 10;
 jsonstruct.isRootSimulationModel = true;
 
@@ -39,6 +39,7 @@ jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 
 rp = jsonstruct.(sd).particleRadius ;
 jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
+
 
 inputparams = ActiveMaterialInputParams(jsonstruct);
 
@@ -203,11 +204,3 @@ xlabel('time / hour')
 ylabel('length / m')
 title('SEI layer length')
 
-SEIvoltageDrops = cellfun(@(state) state.Interface.SEIvoltageDrop, states);
-
-figure;
-plot(time/hour, SEIvoltageDrops);
-xlabel('time / h');
-ylabel('Drop /V');
-title('SEI drop');
-grid on;

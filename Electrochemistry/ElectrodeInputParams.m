@@ -24,34 +24,26 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         function inputparams = ElectrodeInputParams(jsonstruct)
 
-            inputparams = inputparams@ComponentInputParams(jsonstruct);
-
             co = 'Coating';
             cc = 'CurrentCollector';
+
+
+            jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
+
+            include_current_collectors = getJsonStructField(jsonstruct, 'include_current_collectors');
+            if isAssigned(include_current_collectors) && include_current_collectors
+                jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
+            end
+
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 
             inputparams.(co) = CoatingInputParams(pick(co));
             inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
 
-            inputparams = inputparams.validateInputParams();
-
         end
 
-        function inputparams = validateInputParams(inputparams)
-
-            co = 'Coating';
-            cc = 'CurrentCollector';
-
-            inputparams = mergeParameters(inputparams, {{'use_thermal'}, {co, 'use_thermal'}});
-            inputparams.(co) = inputparams.(co).validateInputParams();
-
-            if ~isempty(inputparams.include_current_collectors)
-                inputparams = mergeParameters(inputparams, {{'use_thermal'}, {cc, 'use_thermal'}});
-                inputparams.(cc) = inputparams.(cc).validateInputParams();
-            end
-
-        end
     end
 
 end

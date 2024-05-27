@@ -21,6 +21,8 @@ classdef Electrolyser < BaseModel
 
             model = model@BaseModel();
 
+            inputparams = inputparams.validateInputParams();
+            
             fdnames = {'G' , ...
                        'couplingTerms'};
             model = dispatchParams(model, inputparams, fdnames);

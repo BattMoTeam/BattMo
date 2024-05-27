@@ -10,25 +10,7 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
         SEIintersticialConcentration
         
     end
-    
-    methods
-        
-        function inputparams = BolayInterfaceInputParams(jsonstruct)
 
-            inputparams = inputparams@InterfaceInputParams(jsonstruct);
-            
-        end
-
-        function inputparams = validateInputParams(inputparams)
-
-            inputparams = validateInputParams@InterfaceInputParams(inputparams);
-
-            assert(strcmp(inputparams.sei_type, 'bolay'), 'Interface sei_type is not set properly');
-
-        end
-
-    end
-    
 end
 
 

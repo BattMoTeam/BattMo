@@ -60,13 +60,10 @@ classdef Battery < GenericBattery
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).active_material_type
-                  case {'default', 'sei'}
-                    ams = {am};
-                  case 'composite'
+                if model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
                 end
 
                 for iam = 1 : numel(ams)
@@ -238,13 +235,10 @@ classdef Battery < GenericBattery
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'composite'
+                if model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
                 end
 
                 for iam = 1 : numel(ams)

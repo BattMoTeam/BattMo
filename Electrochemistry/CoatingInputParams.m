@@ -10,8 +10,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         Binder
         ConductingAdditive
 
-        % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
-        % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
+        % The two following models are instantiated only when activeMaterialModelSetup.composite is true and, in this case,
+        % ActiveMaterial model will remain empty. If activeMaterialModelSetup.composite is false, then the two models remains empty
         ActiveMaterial1
         ActiveMaterial2
 
@@ -22,11 +22,13 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         
-        active_material_type % Active material type string with one of following values:
-                             % - 'default'   (only one particle type : uses ActiveMaterial model)
-                             % - 'composite' (two different particles: uses CompositeActiveMaterial)
-                             % - 'sei'       (one particle with sei layer: uses SEIActiveMaterial)
-        
+        activeMaterialModelSetup % instance of ActiveMaterialModelSetupInputParams. Contains fields
+                                 % - 'composite' : boolean (default is false)
+                                 % - 'SEImodel' : string with one of
+                                 %                 "none" (default)
+                                 %                 "Safari"
+                                 %                 "Bolay"
+
         %% Advanced parameters
 
         volumeFractions
@@ -46,40 +48,48 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         function inputparams = CoatingInputParams(jsonstruct)
 
-            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
-
-            pick = @(fd) pickField(jsonstruct, fd);
-
-            if isempty(inputparams.active_material_type)
-                inputparams.active_material_type = 'default';
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
+            
+            if ~jsonstruct.activeMaterialModelSetup.composite 
+                jsonstruct = equalizeJsonStructField(jsonstruct, {'ActiveMaterial', 'SEImodel'}, {'ActiveMaterial', 'Interface', 'SEImodel'});
             end
-
-            switch inputparams.active_material_type
-
-              case 'default'
-
-                am = 'ActiveMaterial';
-                inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
-
-              case 'sei'
-
-                am = 'ActiveMaterial';
-                inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
-
-              case 'composite'
-
+            
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+            
+            if jsonstruct.activeMaterialModelSetup.composite
+                
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
                 inputparams.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
-              otherwise
-                error('active_material_type not recognized');
+            else
+                
+                am = 'ActiveMaterial';
+
+                switch jsonstruct.activeMaterialModelSetup.SEImodel
+
+                  case {'none', 'Balay'}
+
+                    inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                    
+                  case 'Safari'
+
+                    inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
+
+                  otherwise
+                    
+                    error('active material modelSEI layer model not recognized');
+                    
+                end
             end
+            
             inputparams.Binder             = BinderInputParams(pick('Binder'));
             inputparams.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
-
-            inputparams = inputparams.validateInputParams();
 
         end
 

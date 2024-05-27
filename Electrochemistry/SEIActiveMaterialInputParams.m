@@ -5,36 +5,52 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
     properties
 
         SolidElectrodeInterface
-        SideReaction        
+        SideReaction
+        
     end
 
     methods
 
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEImodel', 'Safari');
+            
+            assert(strcmp(jsonstruct.SEImodel, 'Safari'), 'The SEI model should be set to Safari');
+
+            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+            if isAssigned(isRootSimulationModel) && isRootSimulationModel
+                % only one particle in the stand-alone model
+                jsonstruct = setJsonStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
+            end
 
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
-
+            
             pick = @(fd) pickField(jsonstruct, fd);
-            % For SEI, we always use full diffusion model
-            inputparams.SolidDiffusion          = FullSolidDiffusionModelInputParams(pick('SolidDiffusion'));
+
             inputparams.SideReaction            = SideReactionInputParams(pick('SideReaction'));
             inputparams.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
-        function inputparams = validateInputParams(inputparams)
+        function inputparams = setupSEImodel(inputparams, jsonstruct)
 
-            inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
-            
-            if inputparams.isRootSimulationModel
-                % only one particle in the stand-alone model
-                inputparams.SolidElectrodeInterface.np = 1;
+            if isfield(jsonstruct, 'SEImodel') && ~strcmp(jsonstruct.SEImodel, 'Safari')
+                error('Inconsitent model, check SEI model values')
             end
+
+            inputparams.SEImodel = 'Safari';
+            
+        end
+                
+        function inputparams = setupSolidDiffusion(inputparams, jsonstruct)
+
+            sd = 'SolidDiffusion';
+            input.diffusionModelType = inputparams.diffusionModelType;
+            inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
 
         end
         
+
     end
     
 end
