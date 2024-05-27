@@ -77,10 +77,12 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E                    = phiElectrodeInit;
-initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
-initState.(itf).SEIlength      = SEIlength;
-initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
+initState.E                              = phiElectrodeInit;
+initState.(sd).c                         = cElectrodeInit*ones(Nsd, 1);
+initState.(itf).SEIlength                = SEIlength;
+initState.(itf).normalizedSEIlength      = SEIlength/model.(itf).SEIlengthRef;
+initState.(itf).normalizedSEIvoltageDrop = SEIvoltageDrop/model.(itf).SEIvoltageDropRef;
+
 
 % We set also static variable fields
 initState.(itf).cElectrolyte   = cElectrolyte;
