@@ -205,6 +205,11 @@ xlabel('time / hour')
 ylabel('length / m')
 title('SEI layer length')
 
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {itf, 'SEIvoltageDrop'});
+end
+
+
 SEIvoltageDrops = cellfun(@(state) state.Interface.SEIvoltageDrop, states);
 
 figure;
