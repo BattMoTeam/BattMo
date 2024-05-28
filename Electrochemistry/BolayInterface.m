@@ -7,7 +7,8 @@ classdef BolayInterface < Interface
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
         SEIstochiometricCoeffcient
-
+        SEIlengthInitial
+        
         SEIlengthRef
         SEIvoltageDropRef
     end
@@ -22,11 +23,12 @@ classdef BolayInterface < Interface
                        'SEIionicConductivity'             , ...
                        'SEIelectronicDiffusionCoefficient', ...        
                        'SEIintersticialConcentration'     , ...
-                       'SEIstochiometricCoeffcient'};
+                       'SEIstochiometricCoeffcient'       , ...
+                       'SEIlengthInitial'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            L0 = 1*nano*meter;
+            L0 = model.SEIlengthInitial;
             De = model.SEIelectronicDiffusionCoefficient;
             ce = model.SEIintersticialConcentration;
             

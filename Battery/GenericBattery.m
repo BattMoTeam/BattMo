@@ -446,7 +446,7 @@ classdef GenericBattery < BaseModel
                       case 'Bolay'
 
                         % We use a normalized voltage drop and therefore the scaling here is equal to one.
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, 1};
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, model.(elde).(co).(amc).(itf).SEIvoltageDropRef};
 
                         L0 = 1*nano*meter;
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
@@ -766,9 +766,10 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).R                = zeros(np, 1);
 
                       case 'Bolay'
-                        
-                        initstate.(ne).(co).(amc).(itf).normalizedSEIlength      = 5*ones(np, 1);
-                        initstate.(ne).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(np, 1);
+
+                        l = model.(elde).(co).(amc).(itf).SEIlengthInitial/model.(elde).(co).(amc).(itf).SEIlengthRef;
+                        initstate.(elde).(co).(amc).(itf).normalizedSEIlength      = l*ones(np, 1);
+                        initstate.(elde).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(np, 1);
 
                         initstate = model.evalVarName(initstate, {ne, co, amc, itf, 'SEIlength'});
                         

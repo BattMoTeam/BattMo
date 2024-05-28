@@ -30,7 +30,7 @@ jsonstruct_bolay = parseBattmoJson(jsonfilename);
 jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
                                               jsonstruct_bolay});
 
-jsonstruct.(ne).(co).(am).SEImodel                     = 'Bolay';
+jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
 
 inputparams = BatteryInputParams(jsonstruct);
 
