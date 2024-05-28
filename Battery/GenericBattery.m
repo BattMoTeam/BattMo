@@ -430,9 +430,9 @@ classdef GenericBattery < BaseModel
 
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
 
-                        surfp = 4*pi*rp^3;
+                        volp = 4/3*pi*rp^3;
 
-                        coef = RvolRef*surfp/3;
+                        coef = RvolRef*volp;
                         scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, coef};
                         scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, coef};
                         
