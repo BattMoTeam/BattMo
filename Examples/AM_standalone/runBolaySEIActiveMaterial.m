@@ -81,14 +81,14 @@ initState.E                              = phiElectrodeInit;
 initState.(sd).c                         = cElectrodeInit*ones(Nsd, 1);
 initState.(itf).SEIlength                = SEIlength;
 initState.(itf).normalizedSEIlength      = SEIlength/model.(itf).SEIlengthRef;
-initState.(itf).normalizedSEIvoltageDrop = SEIvoltageDrop/model.(itf).SEIvoltageDropRef;
+% initState.(itf).normalizedSEIvoltageDrop is setup below
 
 
 % We set also static variable fields
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
-%% Setup schedule
+%% Setup scaling
 
 Imax = 3e-12*ampere;
 
@@ -98,17 +98,31 @@ scalings{end + 1} = {{sd, 'massCons'}, coef};
 scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
 scalings{end + 1} = {{'chargeCons'}, Imax};
 
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, model.(itf).SEIvoltageDropRef};
+rp  = model.(sd).particleRadius;
+L   = model.(itf).SEIlengthRef;
+vsa = model.(sd).volumetricSurfaceArea;
+k   = model.(itf).SEIionicConductivity;
+
+volp = 4/3*pi*rp^3;
+
+SEIvoltageDropRef = L*Imax/(vsa*k*volp);
+model.(itf).SEIvoltageDropRef = SEIvoltageDropRef;
+
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, SEIvoltageDropRef};
 
 De = model.(itf).SEIelectronicDiffusionCoefficient;
 ce = model.(itf).SEIintersticialConcentration;
-L0 = model.(itf).SEIlengthRef;
+L  = model.(itf).SEIlengthRef;
 
-coef = De*ce/L0;
+coef = De*ce/L;
 
 scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
 
 model.scalings = scalings;
+
+initState.(itf).normalizedSEIvoltageDrop = SEIvoltageDrop/model.(itf).SEIvoltageDropRef;
+
+%% Setup schedule
 
 total = 60*minute;
 n     = 200;
@@ -208,6 +222,6 @@ SEIvoltageDrops = cellfun(@(state) state.Interface.SEIvoltageDrop, states);
 figure;
 plot(time/hour, SEIvoltageDrops);
 xlabel('time / h');
-ylabel('Drop /V');
-title('SEI drop');
+ylabel('Voltage drop /V');
+title('SEI voltage drop');
 grid on;
