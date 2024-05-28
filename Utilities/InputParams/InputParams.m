@@ -71,6 +71,14 @@ classdef InputParams
             end
 
         end
+
+        function printJsonStruct(inputparams)
+            
+            jsonstruct = inputparams.buildJsonStruct();
+            fjv = flattenJsonStruct(jsonstruct);
+            fjv.print();
+            
+        end
         
         function inputparams = validateInputParams(inputparams)
 
