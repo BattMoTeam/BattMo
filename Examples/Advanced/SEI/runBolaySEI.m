@@ -52,9 +52,7 @@ inputparams = BatteryInputParams(jsonstruct);
 gen = BatteryGeneratorP2D();
 inputparams = gen.updateBatteryInputParams(inputparams);
 
-
 model = GenericBattery(inputparams);
-model = model.equipModelForComputation();
 
 %% Setup the schedule
 %
