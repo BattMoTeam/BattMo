@@ -33,6 +33,9 @@ classdef GenericBattery < BaseModel
         use_thermal
         include_current_collectors
 
+        % We write here the jsonstruct that has been process when constructing inputparams
+        jsonstruct
+        
     end
 
     methods
@@ -55,6 +58,8 @@ classdef GenericBattery < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
+            model.jsonstruct = inputparams.jsonstruct;
+            
             model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
             model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
             model.Separator         = Separator(inputparams.Separator);
@@ -483,7 +488,13 @@ classdef GenericBattery < BaseModel
             model.scalings = scalings;
             
         end
-        
+
+        function printJsonStruct(model)
+
+            fjv = flattenJsonStruct(model.jsonstruct);
+            fjv.print();
+            
+        end
         function control = setupControl(model, inputparams)
 
             C = computeCellCapacity(model);
