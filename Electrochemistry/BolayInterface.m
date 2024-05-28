@@ -153,10 +153,10 @@ classdef BolayInterface < Interface
 
         function state = updateEta(model, state)
 
-            phiElyte = state.phiElectrolyte;
-            phiElde  = state.phiElectrode;
-            OCP      = state.OCP;
-            SEIvoltageDrop     = state.SEIvoltageDrop;
+            phiElyte       = state.phiElectrolyte;
+            phiElde        = state.phiElectrode;
+            OCP            = state.OCP;
+            SEIvoltageDrop = state.SEIvoltageDrop;
 
             state.eta = (phiElde - phiElyte - OCP - SEIvoltageDrop);
             
