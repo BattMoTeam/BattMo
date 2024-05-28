@@ -64,7 +64,7 @@ T = 298.15;
 
 % The following datas come from :cite:`Bolay2022` (supplementary material)
 % Length of SEI layer
-SEIlength = 10*nano*meter;
+SEIlength = model.(itf).SEIlengthInitial;
 % SEI voltage drop
 SEIvoltageDrop = 0;
 
@@ -98,12 +98,11 @@ scalings{end + 1} = {{sd, 'massCons'}, coef};
 scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
 scalings{end + 1} = {{'chargeCons'}, Imax};
 
-% We use a normalized voltage drop in the equation and therefore the following scaling here is set to one.
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, 1};
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, model.(itf).SEIvoltageDropRef};
 
 De = model.(itf).SEIelectronicDiffusionCoefficient;
 ce = model.(itf).SEIintersticialConcentration;
-L0 = 1*nano*meter;
+L0 = model.(itf).SEIlengthRef;
 
 coef = De*ce/L0;
 
