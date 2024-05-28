@@ -52,9 +52,7 @@ inputparams = BatteryInputParams(jsonstruct);
 rp = jsonstruct.(sd).particleRadius ;
 jsonstruct.(itf).volumetricSurfaceArea = 3./rp;
 
-
 model = GenericBattery(inputparams);
-model = model.equipModelForComputation();
 
 %% Setup the schedule
 %
