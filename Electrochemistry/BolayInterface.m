@@ -11,6 +11,7 @@ classdef BolayInterface < Interface
         
         SEIlengthRef
         SEIvoltageDropRef
+
     end
 
     methods
@@ -29,11 +30,8 @@ classdef BolayInterface < Interface
             model = dispatchParams(model, inputparams, fdnames);
 
             L0 = model.SEIlengthInitial;
-            De = model.SEIelectronicDiffusionCoefficient;
-            ce = model.SEIintersticialConcentration;
             
-            model.SEIlengthRef      = L0;
-            model.SEIvoltageDropRef = De*ce/L0;
+            model.SEIlengthRef = L0;
             
         end
 
@@ -148,7 +146,7 @@ classdef BolayInterface < Interface
             L = state.SEIlength;
             R = state.R;
 
-            state.SEIvoltageDropEquation = U - F*R.*L./k;
+            state.SEIvoltageDropEquation = U - F*R.*L/k;
             
         end
 

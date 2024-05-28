@@ -451,14 +451,19 @@ classdef GenericBattery < BaseModel
 
                       case 'Bolay'
 
-                        % We use a normalized voltage drop and therefore the scaling here is equal to one.
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, model.(elde).(co).(amc).(itf).SEIvoltageDropRef};
+                        F   = model.(elde).(co).(amc).(itf).constants.F;
+                        vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                        L   = model.(elde).(co).(amc).(itf).SEIlengthInitial;
+                        k   = model.(elde).(co).(amc).(itf).SEIionicConductivity;
 
-                        L0 = 1*nano*meter;
+                        SEIvoltageDropRef = F*RvolRef/vsa*L/k;
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, SEIvoltageDropRef};
+                        model.(elde).(co).(amc).(itf).SEIvoltageDropRef = SEIvoltageDropRef;
+                        
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
                         ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
                         
-                        scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, De*ce/L0};
+                        scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, De*ce/L};
                         
                       case 'Safari'
                         % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
