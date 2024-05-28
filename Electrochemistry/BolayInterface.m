@@ -142,12 +142,13 @@ classdef BolayInterface < Interface
         function state = updateSEIvoltageDropEquation(model, state)
 
             k = model.SEIionicConductivity;
+            F = model.con.F;
 
             U = state.SEIvoltageDrop;
             L = state.SEIlength;
             R = state.R;
 
-            state.SEIvoltageDropEquation = U - R.*L.*k;
+            state.SEIvoltageDropEquation = U - F*R.*L./k;
             
         end
 
