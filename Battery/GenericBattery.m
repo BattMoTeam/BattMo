@@ -743,6 +743,10 @@ classdef GenericBattery < BaseModel
                         error('diffusionModelType not recognized')
                     end
 
+                    if elde_itf.useDoubleLayerCapacity
+                        initstate.(elde).(co).(amc).(itf).capacityR = zeros(nc, 1);
+                    end
+
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
 
                       case 'none'
@@ -797,6 +801,15 @@ classdef GenericBattery < BaseModel
             initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
             initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if model.(elde).(co).(am).(itf).useDoubleLayerCapacity
+                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'cElectrolyte'});
+                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrode'});
+                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrolyte'});
+                end
+            end
+            
             %% Setup initial Current collectors state
 
             if model.(ne).include_current_collectors
