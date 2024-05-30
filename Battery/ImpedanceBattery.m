@@ -1,4 +1,4 @@
-classdef ImpedanceBattery < Battery
+classdef ImpedanceBattery < GenericBattery
 
     properties
 
@@ -8,7 +8,7 @@ classdef ImpedanceBattery < Battery
 
         function model = ImpedanceBattery(inputparams)
 
-            model = model@Battery(inputparams);
+            model = model@GenericBattery(inputparams);
 
         end
 
@@ -18,7 +18,7 @@ classdef ImpedanceBattery < Battery
         %% Declaration of the Dynamical Variables and Function of the model
         % (setup of varnameList and propertyFunctionList)
 
-            model = registerVarAndPropfuncNames@Battery(model);
+            model = registerVarAndPropfuncNames@GenericBattery(model);
 
             % defines shorthands for the submodels
             elyte   = 'Electrolyte';
