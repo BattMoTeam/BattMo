@@ -3,24 +3,14 @@ classdef ImpedanceControlModelInputParams < ControlModelInputParams
     methods
 
         function inputparams = ImpedanceControlModelInputParams(jsonstruct);
+
+
+            jsonstruct = setJsonStructField(jsonstruct, 'controlPolicy', 'Impedance');
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
             
         end
 
-        function inputparams = validateInputParams(inputparams)
-
-            if isempty(inputparams.controlPolicy)
-                % Default value is false
-                inputparams.controlPolicy = 'Impedance';
-            end
-
-            assert(strcmp(inputparams.controlPolicy, 'Impedance'));
-            
-            inputparams = validateInputParams@ControlModelInputParams(inputparams);
-            
-        end
-        
     end
     
 end
