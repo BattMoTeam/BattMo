@@ -340,7 +340,7 @@ classdef Interface < BaseModel
             jDL   = state.capacityR;
             T     = state.T;
             c     = state.cElectrolyte;
-            c0    = state0.cElectroyte;
+            c0    = state0.cElectrolyte;
             dphi  = state.phiElectrode - state.phiElectrolyte;
             dphi0 = state0.phiElectrode - state0.phiElectrolyte;
 
@@ -356,9 +356,21 @@ classdef Interface < BaseModel
         
         function state = updateTotalRateWithCapacity(model, state)
 
-            state.R = state.reactionR + state.capatiyRate;
+            state.R = state.reactionR + state.capacityR;
         end
 
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+
+            if model.useDoubleLayerCapacity
+                
+                newstate.cElectrolyte   = state.cElectrolyte;
+                newstate.phiElectrode   = state.phiElectrode;
+                newstate.phiElectrolyte = state.phiElectrolyte;
+                
+            end
+        
+        end
+        
     end
 end
 
