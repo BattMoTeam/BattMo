@@ -21,9 +21,9 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-includeImpedance = false;
+includeDoubleLayer = false;
 
-if includeImpedance
+if includeDoubleLayer
 
     jsonstruct.(ne).(co).(am).(itf).useDoubleLayerCapacity = true;
     jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 0.2;
