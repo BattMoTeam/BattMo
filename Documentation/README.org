@@ -41,15 +41,14 @@
 
   The command generates all the files for a static website and writes them in ~Documentation/_build/html~
 
-  All the files in this directory must then be copied to the ~BattMo-doc~ [[https://github.com/BattMoTeam/BattMo-doc][repo]]. From there, make a *force* push. We do
-  not keep track of the history of the ouput files (html), but we of course keep track of the documentation source, directly in the
-  main repo ~BattMo~.
+  When the changes are pushed, the documentation is also automatically compiled on github using github actions
 
-  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo-doc/actions][github pages section]]
+
+  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo/actions][github page section]]
 
   The result can be view at
 
-  https://battmoteam.github.io/BattMo-doc/
+  https://battmoteam.github.io/BattMo/
 
 * Special workflow for example scripts
 ** Compilation
