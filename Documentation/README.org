@@ -1,36 +1,42 @@
 #+TITLE: Documentation generation for BattMo
 * Requirements
-** sphinx
-   installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
-   #+begin_src
-     pip install sphinx
+** Installation
+   Run from the Documentationo directorty where the ~requirements.txt~ file is
+   #+begin_src 
+     pip install -r requirements.txt
    #+end_src
-** install sphinx rtd theme
-   https://pypi.org/project/sphinx-rtd-theme/
-   #+begin_src
-     pip install sphinx-rtd-theme
-   #+end_src
-** bibtex extension
-   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
-   #+begin_src
-     pip install sphinxcontrib-bibtex
-   #+end_src
-** globabsubs extension
-   #+begin_src
-     pip install sphinxcontrib-globalsubs
-   #+end_src
-** youtube
-   #+begin_src shell
-     pip install sphinxcontrib-youtube
-   #+end_src
-** collapse
-   #+begin_src shell
-     python -m pip install sphinx_collapse
-   #+end_src   
-** autosectionlabel
-   - part of default distribution
-   - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
-     name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
+** Overview of the package used in sphinx
+*** sphinx
+    installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
+    #+begin_src
+      pip install sphinx
+    #+end_src
+*** install sphinx rtd theme
+    https://pypi.org/project/sphinx-rtd-theme/
+    #+begin_src
+      pip install sphinx-rtd-theme
+    #+end_src
+*** bibtex extension
+    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
+    #+begin_src
+      pip install sphinxcontrib-bibtex
+    #+end_src
+*** globabsubs extension
+    #+begin_src
+      pip install sphinxcontrib-globalsubs
+    #+end_src
+*** youtube
+    #+begin_src shell
+      pip install sphinxcontrib-youtube
+    #+end_src
+*** collapse
+    #+begin_src shell
+      python -m pip install sphinx_collapse
+    #+end_src   
+*** autosectionlabel
+    - part of default distribution
+    - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
+      name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
    
 * Workflow for editing
 
