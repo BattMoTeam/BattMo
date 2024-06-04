@@ -1,7 +1,7 @@
 #+TITLE: Documentation generation for BattMo
 * Requirements
 ** Installation
-   Run from the Documentationo directorty where the ~requirements.txt~ file is
+   Run from the Documentation directory where the ~requirements.txt~ file is
    #+begin_src 
      pip install -r requirements.txt
    #+end_src
