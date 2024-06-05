@@ -1,6 +1,6 @@
 classdef Function
 
-% Generic class for an input function. The function can be given using different format. Each format is implemented with
+% Parent class for an input function. The function can be given using different format. Each format is implemented with
 % its own class. Use the separates function setupFunction to initiate the function
 
     properties
