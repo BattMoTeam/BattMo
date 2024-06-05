@@ -23,9 +23,10 @@ classdef NamedFunction
             
         end
         
-        function y = eval(fn, varargin)
+        function [varargout] = eval(fn, varargin)
 
-            y = fn.functionHandler(varargin{:});
+            varargout = cell(1, nargout);
+            [varargout{:}] = fn.functionHandler(varargin{:});
             
         end
         

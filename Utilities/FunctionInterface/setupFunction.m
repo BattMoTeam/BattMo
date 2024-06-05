@@ -26,11 +26,11 @@ function fn = setupFunction(jsonstruct)
         
       case 'named function'
         
-        fn = NamedFunction(jsonstruct)
+        fn = NamedFunction(jsonstruct);
         
       case 'constant'
 
-        fn = ConstantFunction(jsonstruct)
+        fn = ConstantFunction(jsonstruct);
 
       otherwise
 

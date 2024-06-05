@@ -31,9 +31,7 @@ classdef Interface < BaseModel
         density               % the mass density of the active material
 
         % A function to determine the open-circuit potential of the electrode under given conditions
-        %   - type : "function";
-        %   - functionName :  matlab function name (should be available in path)
-        %   - argumentList : ["cElectrode", "T", "cmax"]
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
 
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
@@ -45,7 +43,7 @@ classdef Interface < BaseModel
 
         %% Computed parameters at model setup
 
-        computeOCPFunc % Function handler to compute OCP
+        computeOCPFunc % Function object to compute the OCP (see setupFunction)
         useJ0Func      % true if we use a function to compute the function computeJ0Func to compute the exchange current density
         computeJ0Func  % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
 
@@ -73,7 +71,7 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionName);
+            model.computeOCPFunc = setupFunction(inputparams.openCircuitPotential);
 
             j0 = inputparams.exchangeCurrentDensity;
 
@@ -193,7 +191,7 @@ classdef Interface < BaseModel
             c = state.cElectrodeSurface;
             T = state.T;
 
-            [state.OCP, state.dUdT] = computeOCP(c, T, cmax);
+            [state.OCP, state.dUdT] = computeOCP.eval(c, T, cmax);
 
         end
 

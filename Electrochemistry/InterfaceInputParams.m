@@ -27,9 +27,7 @@ classdef InterfaceInputParams < InputParams
         density               % the mass density of the active material
 
         % A function to determine the open-circuit potential of the electrode under given conditions
-        %   - type : "function";
-        %   - functionName :  matlab function name (should be available in path)
-        %   - argumentList : ["cElectrode", "T", "cmax"]
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
