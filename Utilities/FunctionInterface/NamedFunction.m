@@ -7,12 +7,13 @@ classdef NamedFunction
         %% helper
 
         functionHandler
+        
     end
 
     methods
 
 
-        function fn = Function(jsonstruct)
+        function fn = NamedFunction(jsonstruct)
 
             fdnames = {'functionName'};
 
