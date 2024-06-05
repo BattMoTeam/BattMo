@@ -34,7 +34,7 @@ arbitrary argument value is obtained by linear interpolation using the tabulated
                              "description" : "number of arguments of the function"},
       "oneOf" : [
         {"properties" : {
-          "numberOfArgument" : {
+          "numberOfArguments" : {
             "const" : 1,
             "description" : "The function has a single argument"},
           "dataX" : {
@@ -46,7 +46,7 @@ arbitrary argument value is obtained by linear interpolation using the tabulated
             "items" : {"type" : "number"},
             "description" : "vector of values for the output"}}},
         {"properties" : {
-          "numberOfArgument" : {
+          "numberOfArguments" : {
             "const" : 2,
             "description" : "The function has two arguments. Not yet implemented."},
           "dataX1" : {
