@@ -21,7 +21,7 @@
           "guestStoichiometry100": 0.88,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
+            "argumentList": [
               "concentration",
               "temperature",
               "cmax"

@@ -10,7 +10,7 @@
     "bruggemanCoefficient": 1.5,
     "density": 1200,
     "diffusionCoefficient": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
@@ -22,7 +22,7 @@
       "value": 1
     },
     "ionicConductivity": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
@@ -56,7 +56,7 @@
           "guestStoichiometry100": 0.88,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
+            "argumentList": [
               "concentration",
               "temperature",
               "cmax"
@@ -124,7 +124,7 @@
           "guestStoichiometry100": 0.00014001,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
+            "argumentList": [
               "concentration",
               "temperature",
               "maximum concentration"

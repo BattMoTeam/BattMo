@@ -30,7 +30,7 @@
           "openCircuitPotential": {
             "type": "function",
             "functionname": "computeOCP_graphite",
-            "argumentlist": [
+            "argumentList": [
               "concentration",
               "temperature",
               "cmax"
@@ -100,7 +100,7 @@
           "openCircuitPotential": {
             "type": "function",
             "functionname": "computeOCP_nmc111",
-            "argumentlist": [
+            "argumentList": [
               "concentration",
               "temperature",
               "cmax"
@@ -172,7 +172,7 @@
     "ionicConductivity": {
       "type": "function",
       "functionname": "computeElectrolyteConductivity_default",
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ]
@@ -180,7 +180,7 @@
     "diffusionCoefficient": {
       "type": "function",
       "functionname": "computeDiffusionCoefficient_default",
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ]

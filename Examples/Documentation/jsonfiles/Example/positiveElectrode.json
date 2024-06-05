@@ -20,7 +20,7 @@
         "openCircuitPotential": {
           "type": "function",
           "functionname": "computeOCP_nmc111",
-          "argumentlist": [
+          "argumentList": [
             "concentration",
             "temperature",
             "cmax"

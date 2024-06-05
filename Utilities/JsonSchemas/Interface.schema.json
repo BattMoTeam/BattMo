@@ -32,7 +32,7 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentlist": {"type" : "array",
+          "argumentList": {"type" : "array",
                            "prefixItems": [{"const": "soc"}]
                           },
           "symbol": {"const" : "j0"}}}
@@ -58,7 +58,7 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentlist": {"type" : "array",
+          "argumentList": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},
                                            {"const": "temperature"},
                                            {"const": "cmax"}]

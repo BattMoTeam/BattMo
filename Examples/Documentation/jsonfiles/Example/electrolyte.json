@@ -2,7 +2,7 @@
   "ionicConductivity": {
     "type": "function",
     "functionname": "computeElectrolyteConductivity_default",
-    "argumentlist": [
+    "argumentList": [
       "concentration",
       "temperature"
     ]
@@ -10,7 +10,7 @@
   "diffusionCoefficient": {
     "type": "function",
     "functionname": "computeDiffusionCoefficient_default",
-    "argumentlist": [
+    "argumentList": [
       "concentration",
       "temperature"
     ]

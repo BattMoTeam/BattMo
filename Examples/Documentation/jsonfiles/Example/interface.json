@@ -10,7 +10,7 @@
   "openCircuitPotential": {
     "type": "function",
     "functionname": "computeOCP_graphite",
-    "argumentlist": [
+    "argumentList": [
       "concentration",
       "temperature",
       "cmax"]}}
