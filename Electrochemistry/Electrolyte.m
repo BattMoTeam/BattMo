@@ -58,8 +58,8 @@ classdef Electrolyte < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionname);
-            model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionname);
+            model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionName);
+            model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionName);
 
             model.constants = PhysicalConstants();
 

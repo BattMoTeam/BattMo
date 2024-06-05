@@ -20,8 +20,8 @@ classdef Interface < BaseModel
         % Tf empty, the default expression using the reaction rate constant is used, see method
         % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
         %   - type = {"function", "constant"} % if "constant" is selected, we use the reactionRateConstant value
-        %   - functionname :  matlab function name (should be available in path)
-        %   - argumentlist = ["cElectrodeSurface", "cmax"]
+        %   - functionName :  matlab function name (should be available in path)
+        %   - argumentList = ["cElectrodeSurface", "cmax"]
         exchangeCurrentDensity
 
         guestStoichiometry100 % the ratio of the concentration of the guest molecule to the saturation concentration
@@ -32,8 +32,8 @@ classdef Interface < BaseModel
 
         % A function to determine the open-circuit potential of the electrode under given conditions
         %   - type : "function";
-        %   - functionname :  matlab function name (should be available in path)
-        %   - argumentlist : ["cElectrode", "T", "cmax"]
+        %   - functionName :  matlab function name (should be available in path)
+        %   - argumentList : ["cElectrode", "T", "cmax"]
         openCircuitPotential
 
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
@@ -73,7 +73,7 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionname);
+            model.computeOCPFunc = str2func(inputparams.openCircuitPotential.functionName);
 
             j0 = inputparams.exchangeCurrentDensity;
 
@@ -81,7 +81,7 @@ classdef Interface < BaseModel
                 switch j0.type
                   case 'function'
                     model.useJ0Func = true;
-                    model.computeJ0Func = str2func(j0.functionname);
+                    model.computeJ0Func = str2func(j0.functionName);
                   case 'constant'
                     model.useJ0Func = false;
                   otherwise
