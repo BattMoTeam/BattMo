@@ -10,7 +10,7 @@
         "string expression",
         "named function",
         "constant"
-      ]
+      ],
       "description" : "Four input formats are supported for functions. The descriptions are provided in the schema below for each case."
     },
     "argumentList": {
@@ -26,8 +26,7 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "tabulated",
-        "description" : "The function is provided as tabulated data.  We give arrays for the input and output values. The output value for an
-arbitrary argument value is obtained by linear interpolation using the tabulated value"},
+        "description" : "The function is provided as tabulated data.  We give arrays for the input and output values. The output value for an arbitrary argument value is obtained by linear interpolation using the tabulated value"},
       "numberOfArguments" : {"type" : "integer",
                              "minimum" : 1,
                              "maximum" : 2,
@@ -40,7 +39,7 @@ arbitrary argument value is obtained by linear interpolation using the tabulated
           "dataX" : {
             "type" : "array",
             "items" : {"type" : "number"},
-            "description" : "vector of values for the input"}
+            "description" : "vector of values for the input"},
           "dataY" : {
             "type" : "array",
             "items" : {"type" : "number"},
