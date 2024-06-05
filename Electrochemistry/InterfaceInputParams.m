@@ -29,6 +29,13 @@ classdef InterfaceInputParams < InputParams
         % A function to determine the open-circuit potential of the electrode under given conditions
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
+
+        % flag which determines if entropy change should be computed and included
+        includeEntropyChange
+        
+        % A function to determine the entropy change
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
+        entropyChange
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
