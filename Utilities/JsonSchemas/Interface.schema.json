@@ -58,13 +58,18 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentList": {"type" : "array",
-                           "prefixItems": [{"const": "concentration"},
-                                           {"const": "temperature"},
-                                           {"const": "cmax"}]
-                          },
-          "symbol": {"const" : "OCP"}}}
-        ],
+          "symbol": {"const" : "OCP"}}},
+        { "oneOf" : [
+          { "properties" : {
+            "argumentList": {
+              "type" : "array",
+              "prefixItems": [{"const": "concentration"},
+                              {"const": "temperature"},
+                              {"const": "cmax"}]}}},
+          { "properties" : {
+            "argumentList": {
+              "type" : "array",
+              "prefixItems": [{"const": "stoichiometry"}]}}}]}],
       "description": "a function to determine the open-circuit potential of the electrode under given conditions"
     },
     "chargeTransferCoefficient": {
