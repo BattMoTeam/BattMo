@@ -9,8 +9,8 @@
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
     "type": "function",
-    "functionname": "computeOCP_nmc111_Chen",
-    "argumentlist": [
+    "functionName": "computeOCP_nmc111_Chen",
+    "argumentList": [
       "concentration",
       "temperature",
       "cmax"

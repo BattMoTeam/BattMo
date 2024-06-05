@@ -10,7 +10,7 @@
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
   "openCircuitPotential" : {"type" : "function",
-           "functionname" : "updateOCPFunc_LNMO_Mao",
-           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+           "functionName" : "updateOCPFunc_LNMO_Mao",
+           "argumentList" : ["concentration", "temperature", "maximum concentration"]
                            },
   "chargeTransferCoefficient" : 0.5} 

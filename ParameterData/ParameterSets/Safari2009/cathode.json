@@ -11,8 +11,8 @@
                   "volumetricSurfaceArea": 382183,
                   "numberOfElectronsTransferred" : 1,
                   "openCircuitPotential" : {"type" : "function",
-                           "functionname" : "computeOCP_nmc111",
-                           "argumentlist" : ["concentration", "temperature", "cmax"]}
+                           "functionName" : "computeOCP_nmc111",
+                           "argumentList" : ["concentration", "temperature", "cmax"]}
                   
                 },
   "SolidDiffusion" : {

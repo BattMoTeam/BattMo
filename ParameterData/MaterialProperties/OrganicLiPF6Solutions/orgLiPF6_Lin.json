@@ -5,12 +5,12 @@
   "initialConcentration": {"value" : 1,
                            "unit" : "mol/litre"},
   "Conductivity" : {"type": "function",
-                    "functionname" : "computeElectrolyteConductivityFunc_Lin",
-                    "argumentlist" : ["concentration", "temperature"]
+                    "functionName" : "computeElectrolyteConductivityFunc_Lin",
+                    "argumentList" : ["concentration", "temperature"]
                    },
   "DiffusionCoefficient" : {"type": "function",
-                            "functionname" : "computeDiffusionCoefficientFunc_Lin",
-                            "argumentlist" : ["concentration", "temperature"]
+                            "functionName" : "computeDiffusionCoefficientFunc_Lin",
+                            "argumentList" : ["concentration", "temperature"]
                            },
   "species": { "chargeNumber": 1,
                "transferenceNumber": 0.2594,

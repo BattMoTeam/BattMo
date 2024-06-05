@@ -10,8 +10,8 @@
     "guestStoichiometry0": 0.15,
     "chargeTransferCoefficient": 0.5,
     "openCircuitPotential" : {"type" : "function",
-                              "functionname" : "computeOCP_graphite",
-                              "argumentlist" : ["concentration", "temperature", "cmax"]}
+                              "functionName" : "computeOCP_graphite",
+                              "argumentList" : ["concentration", "temperature", "cmax"]}
   },
   "diffusionModelType": "full",
   "SolidDiffusion" : {

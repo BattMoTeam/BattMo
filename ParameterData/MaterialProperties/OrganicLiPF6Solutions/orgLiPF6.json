@@ -12,16 +12,16 @@
   },
   "ionicConductivity": {
     "type": "function",
-    "functionname": "computeElectrolyteConductivity_default",
-    "argumentlist": [
+    "functionName": "computeElectrolyteConductivity_default",
+    "argumentList": [
       "concentration",
       "temperature"
     ]
   },
   "diffusionCoefficient": {
     "type": "function",
-    "functionname": "computeDiffusionCoefficient_default",
-    "argumentlist": [
+    "functionName": "computeDiffusionCoefficient_default",
+    "argumentList": [
       "concentration",
       "temperature"
     ]

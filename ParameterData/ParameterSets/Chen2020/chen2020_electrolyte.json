@@ -3,16 +3,16 @@
                            "unit" : "mol/litre"},
   "ionicConductivity": {
     "type": "function",
-    "functionname": "computeElectrolyteConductivity_Nyman2008",
-    "argumentlist": [
+    "functionName": "computeElectrolyteConductivity_Nyman2008",
+    "argumentList": [
       "concentration",
       "temperature"
     ]
   },
   "diffusionCoefficient": {
     "type": "function",
-    "functionname": "computeDiffusionCoefficient_Nyman2008",
-    "argumentlist": [
+    "functionName": "computeDiffusionCoefficient_Nyman2008",
+    "argumentList": [
       "concentration",
       "temperature"
     ]

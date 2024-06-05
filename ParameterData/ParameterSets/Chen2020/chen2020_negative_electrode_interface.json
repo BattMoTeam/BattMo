@@ -9,8 +9,8 @@
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
     "type": "function",
-    "functionname": "computeOCP_graphite_Chen",
-    "argumentlist": [
+    "functionName": "computeOCP_graphite_Chen",
+    "argumentList": [
       "concentration",
       "temperature",
       "cmax"
