@@ -38,7 +38,7 @@ jsonstruct.isRootSimulationModel = true;
 jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 
 rp = jsonstruct.(sd).particleRadius ;
-jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
+jsonstruct.(itf).volumetricSurfaceArea = 3./rp;
 
 
 inputparams = ActiveMaterialInputParams(jsonstruct);
