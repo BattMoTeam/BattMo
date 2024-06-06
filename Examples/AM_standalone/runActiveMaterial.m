@@ -30,13 +30,11 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
+jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
+
 inputparams = BatteryInputParams(jsonstruct);
 
 inputparams = inputparams.(ne).(co).(am);
-
-inputparams.isRootSimulationModel = true;
-
-inputparams = inputparams.validateInputParams();
 
 model = ActiveMaterial(inputparams);
 model = model.setupForSimulation();
@@ -72,7 +70,7 @@ initState.E = OCP + phiElectrolyte;
 %% setup schedule
 
 % Reference rate which roughly corresponds to 1 hour for the data of this example
-Iref = 0.62*ampere/(1*centi*meter)^3;
+Iref = 5e-12;
 
 Imax = 5e1*Iref;
 

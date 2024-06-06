@@ -1,4 +1,4 @@
-%% Particle simulation with SEI layer growth
+%% Particle simulation with SEI layer growth (Bolay et al 2022)
 
 % clear the workspace and close open figures
 clear
@@ -8,51 +8,66 @@ close all
 % load MRST modules
 mrstModule add ad-core mrst-gui mpfa
 
-%% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','ParameterSets','Safari2009','anode_sei.json'));
-
-% Some shorthands used for the sub-models
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
+co    = 'Coating';
 sd    = 'SolidDiffusion';
 itf   = 'Interface';
 sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
 
+%% Setup the properties of the Li-ion battery materials and of the cell design
+jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
+                        'lithium_ion_battery_nmc_graphite.json');
+jsonstruct_material = parseBattmoJson(jsonfilename);
+jsonstruct = jsonstruct_material.(ne).(co).(am);
+
+jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
+jsonstruct_bolay = parseBattmoJson(jsonfilename);
+
+
+jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
+                                     jsonstruct_bolay});
+
+jsonstruct.sei_type              = 'bolay';
+jsonstruct.(sd).N                = 10;
 jsonstruct.isRootSimulationModel = true;
 
-inputparams = SEIActiveMaterialInputParams(jsonstruct);
+jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
 
-inputparams.(sd).N  = 10;
-inputparams.(sei).N = 10;
+rp = jsonstruct.(sd).particleRadius ;
+jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
+
+
+inputparams = ActiveMaterialInputParams(jsonstruct);
 
 % We initiate the model
-model = SEIActiveMaterial(inputparams);
+model = ActiveMaterial(inputparams);
+
 model = model.setupForSimulation();
+
+
 
 %% Setup initial state
 
 Nsd  = model.(sd).N;
-Nsei = model.(sei).N;
 
 % Initial concentration value at the electrode
-cElectrodeInit   = 0.75*model.(itf).saturationConcentration;
+cElectrodeInit = 0.75*model.(itf).saturationConcentration;
 % Initial value of the potential at the electrode
 phiElectrodeInit = 0;
 % Initial concentration value in the electrolyte
-cElectrolyte     = 5e-1*mol/litre;
+cElectrolyte = 5e-1*mol/litre;
 % Temperature
-T                = 298.15;
+T = 298.15;
 
-% The following datas come from :cite:`Safari_2009`
-% Porosity of the SEI film
-epsiSEI     = 0.05;
-% Solvent concentration in the bulk of the electrolyte
-cECsolution = 4.541*mol/litre;
-% Solvent concentration in the SEI film
-cECexternal = epsiSEI*cECsolution;
+% The following datas come from :cite:`Bolay2022` (supplementary material)
+% Length of SEI layer
+SEIlength = 10*nano*meter;
+% SEI voltage drop
+SEIvoltageDrop = 0;
 
 % We compute the OCP from the given data and use it to assign electrical potential in electrolyte
 initState.T = T;
@@ -63,36 +78,51 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E                = phiElectrodeInit;
-initState.I                = 0;
-initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
-initState.(sei).c          = cECexternal*ones(Nsei, 1);
-initState.(sei).cInterface = cECexternal;
-initState.(sei).delta      = 5*nano*meter;
-initState.R                = 0;
+initState.E                    = phiElectrodeInit;
+initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
+initState.(itf).SEIlength      = SEIlength;
+initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
 
-% we set also static variable fields
-initState.T = T;
+% We set also static variable fields
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
-initState.(sr).phiElectrolyte  = phiElectrolyte;
-initState.(sei).cExternal      = cECexternal;
-
 
 %% Setup schedule
 
-% Reference rate which roughly corresponds to 1 hour for the data of this example
-Iref = 1.3e-4*ampere/(1*centi*meter)^2;
+Imax = 3e-12*ampere;
 
-Imax = 1e1*Iref;
+scalings = {};
+coef = Imax/PhysicalConstants.F;
+scalings{end + 1} = {{sd, 'massCons'}, coef};
+scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
+scalings{end + 1} = {{'chargeCons'}, Imax};
 
-total = 1*hour*(Iref/Imax);
-n     = 100;
+L0 = 1*nano*meter;
+k  = model.(itf).SEIionicConductivity;
+rp = model.(sd).particleRadius;
+F  = PhysicalConstants.F;
+vsa = model.(sd).volumetricSurfaceArea;
+
+coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
+
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
+
+De = model.(itf).SEIelectronicDiffusionCoefficient;
+ce = model.(itf).SEIintersticialConcentration;
+
+coef = De*ce/L0;
+
+scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
+
+model.scalings = scalings;
+
+total = 60*minute;
+n     = 200;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 % rampup value for the current function, see rampupSwitchControl
-tup = dt;
+tup = 1e-2*minute;
 srcfunc = @(time) rampupControl(time, tup, Imax);
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
@@ -157,13 +187,6 @@ plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
 title('Concentration in particle / mol/L')
 legend show
 
-delta = cellfun(@(state) state.(sei).delta, states);
-figure
-plot(time/hour, delta/(nano*meter));
-xlabel('time [hour]');
-ylabel('thickness / nm');
-title('SEI thickness')
-
 c = states{end}.(sd).c;
 r = linspace(0, model.(sd).particleRadius, model.(sd).N);
 
@@ -173,33 +196,11 @@ xlabel('radius / m')
 ylabel('concentration / mol/L')
 title('Particle concentration profile (last time step)')
 
-r = states{end}.(sei).delta;
-r = linspace(0, r, model.(sei).N);
-c = states{end}.(sei).c;
+seilength = cellfun(@(state) state.(itf).SEIlength, states);
 
 figure
-plot(r/(nano*meter), c/(mol/litre));
-xlabel('x / mm')
-ylabel('concentration / mol/L');
-title('Concentration profile in SEI layer (last time step)');
+plot(time/hour, seilength);
+xlabel('time / hour')
+ylabel('length / m')
+title('SEI layer length')
 
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}

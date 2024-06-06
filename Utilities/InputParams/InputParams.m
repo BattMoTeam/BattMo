@@ -1,9 +1,18 @@
 classdef InputParams
 
+    properties
+
+        jsonstruct
+        
+    end
+    
     methods
 
         function inputparams = InputParams(jsonstruct)
+
             inputparams = assignJsonParams(inputparams, jsonstruct);
+            inputparams.jsonstruct = jsonstruct;
+            
         end
 
         function inputparams = setParam(inputparams, names, val)
@@ -42,6 +51,27 @@ classdef InputParams
             end
         end
 
+        function jsonstruct = buildJsonStruct(inputparams);
+
+            jsonstruct = inputparams.jsonstruct;
+            
+            inputparamsFds = propertynames(inputparams);
+
+            for ind = 1 : numel(inputparamsFds)
+
+                fd = inputparamsFds{ind};
+
+                if isa(inputparams.(fd), 'InputParams')
+                    subjsonstruct_fd = inputparams.(fd).buildJsonStruct();
+                    clear subjsonstruct;
+                    subjsonstruct.(fd) = subjsonstruct_fd;
+                    jsonstruct = mergeJsonStructs({subjsonstruct, jsonstruct}, 'warn', false);
+                end
+
+            end
+
+        end
+        
         function inputparams = validateInputParams(inputparams)
 
         % Default automatic behaviour is that all the properties of inputparams that belong to class InputParams get

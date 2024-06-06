@@ -1,21 +1,17 @@
-classdef CCcontrolModelInputParams < ControlModelInputParams
-%
-% Current control base class model
-%
-    methods
+classdef BolayInterfaceInputParams < InterfaceInputParams 
 
-        function inputparams = CCcontrolModelInputParams(jsonstruct);
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'controlPolicy', 'CC');
-            
-            inputparams = inputparams@ControlModelInputParams(jsonstruct);
-            
-        end
+    properties
 
+        SEImolarVolume
+        SEIionicConductivity
+        SEIstochiometricCoeffcient
+        SEIelectronicDiffusionCoefficient
+        SEIintersticialConcentration
+        
     end
-    
-end
 
+end
 
 
 %{

@@ -8,8 +8,8 @@ classdef Coating < ElectronicComponent
         Binder
         ConductingAdditive
 
-        % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
-        % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
+        % The two following models are instantiated only when activeMaterialModelSetup.composite is true, in this case,
+        % ActiveMaterial model will remain empty. If activeMaterialModelSetup.composite is false, then the two models remains empty
         ActiveMaterial1
         ActiveMaterial2
 
@@ -19,11 +19,13 @@ classdef Coating < ElectronicComponent
         effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         
-        active_material_type % Active material type string with one of following values:
-                             % - 'default'   (only one particle type : uses ActiveMaterial model)
-                             % - 'composite' (two different particles: uses CompositeActiveMaterial)
-                             % - 'sei'       (one particle with sei layer: uses SEIActiveMaterial)
-
+        activeMaterialModelSetup % Structure which describes the chose model, see schema in Utilities/JsonSchemas/Coating.schema.json. Here, we summarize
+                              % - 'composite' : boolean (default is false)
+                              % - 'SEImodel' : string with one of
+                              %                 "none" (default)
+                              %                 "Safari"
+                              %                 "Bolay"
+        
         % Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
         volumeFraction
@@ -50,7 +52,7 @@ classdef Coating < ElectronicComponent
 
             fdnames = {'effectiveDensity'               , ...
                        'bruggemanCoefficient'           , ...
-                       'active_material_type'           , ...
+                       'activeMaterialModelSetup'          , ...
                        'volumeFractions'                , ...
                        'volumeFraction'                 , ...
                        'thermalConductivity'            , ...
@@ -69,16 +71,13 @@ classdef Coating < ElectronicComponent
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
             
-            switch model.active_material_type
-              case {'default', 'sei'}
-                am = 'ActiveMaterial';
-                compnames = {am, bd, ad};
-              case 'composite'
+            if model.activeMaterialModelSetup.composite
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
                 compnames = {am1, am2, bd, ad};
-              otherwise
-                error('active_material_type not recognized.');
+            else 
+                am = 'ActiveMaterial';
+                compnames = {am, bd, ad};
             end
 
             model.compnames        = compnames;
@@ -107,8 +106,12 @@ classdef Coating < ElectronicComponent
             % We treat special cases for the specific volumes
 
             use_am_only = false;
-            switch model.active_material_type
-              case {'default', 'sei'}
+            if model.activeMaterialModelSetup.composite
+                if all(specificVolumes([compInds.(am1), compInds.(am2)]) == 0)
+                    assert(~isempty(model.volumeFractions) && ~isempty(model.volumeFraction), ...
+                           'Data in the subcomponents are missing. You can also provide volumeFractions and volumeFraction directly' )
+                end
+            else
                 if all(specificVolumes == 0)
                     use_am_only = true;
                 else
@@ -116,13 +119,6 @@ classdef Coating < ElectronicComponent
                         error('missing density and/or massFraction for the active material. The volume fraction cannot be computed ');
                     end
                 end
-              case 'composite'
-                if all(specificVolumes([compInds.(am1), compInds.(am2)]) == 0)
-                    assert(~isempty(model.volumeFractions) && ~isempty(model.volumeFraction), ...
-                           'Data in the subcomponents are missing. You can also provide volumeFractions and volumeFraction directly' )
-                end
-              otherwise
-                error('active material type not recognized');
             end
 
             % We normalize the volume fractions
@@ -200,22 +196,8 @@ classdef Coating < ElectronicComponent
             %% Setup the submodels
 
             np = inputparams.G.getNumberOfCells();
-            switch inputparams.active_material_type
-                
-              case 'default'
-                inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                if strcmp(inputparams.(am).diffusionModelType, 'full')
-                    inputparams.(am).(sd).np = np;
-                end
-                model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
-                
-              case 'sei'
-                inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                inputparams.(am).(sd).np  = np;
-                inputparams.(am).(sei).np = np;
-                model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
-                
-              case 'composite'
+
+            if model.activeMaterialModelSetup.composite
                 ams = {am1, am2};
                 for iam = 1 : numel(ams)
                     amc = ams{iam};
@@ -225,10 +207,31 @@ classdef Coating < ElectronicComponent
                     end
                     model.(amc) = ActiveMaterial(inputparams.(amc));
                 end
+
+            else
+
+                switch model.activeMaterialModelSetup.SEImodel
+                    
+                  case {'none', 'Bolay'}
+                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                    if strcmp(inputparams.(am).diffusionModelType, 'full')
+                        inputparams.(am).(sd).np = np;
+                    end
+                    model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
                 
-              otherwise
-                error('active_material_type not recognized');
-                
+                  case 'Safari'
+                    
+                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                    inputparams.(am).(sd).np  = np;
+                    inputparams.(am).(sei).np = np;
+                    model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
+                    
+                  otherwise
+                    
+                    error('SEI model not recognized')
+                    
+                end
+
             end
 
             model.Binder             = Binder(inputparams.Binder);
@@ -313,9 +316,7 @@ classdef Coating < ElectronicComponent
             % computed but not used)
             model = model.setAsExtraVarName('SOC');
 
-            switch model.active_material_type
-
-              case {'default', 'sei'}
+            if ~model.activeMaterialModelSetup.composite
 
                 am = 'ActiveMaterial';
 
@@ -331,13 +332,13 @@ classdef Coating < ElectronicComponent
                 fn = @Coating.updateSOC;
                 model = model.registerPropFunction({'SOC', fn, {{am, sd, 'cAverage'}}});
 
-                if strcmp(model.active_material_type, 'sei')
+                if strcmp(model.activeMaterialModelSetup.SEImodel, 'Safari')
                     fn = @Coating.updateSideReactionPhi;
                     model = model.registerPropFunction({{am, sr, 'phiElectrode'}, fn, {'phi'}});
                 end
 
-              case 'composite'
-
+            else
+                  
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
 
@@ -372,10 +373,6 @@ classdef Coating < ElectronicComponent
                 model = model.registerPropFunction({'SOC', fn, inputnames});
                 model = model.registerPropFunction({{am1, 'SOC'}, fn, inputnames});
                 model = model.registerPropFunction({{am2, 'SOC'}, fn, inputnames});
-
-              otherwise
-
-                error('active material type not recognized.')
 
             end
 
