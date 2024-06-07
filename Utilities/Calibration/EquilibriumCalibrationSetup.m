@@ -28,6 +28,7 @@ classdef EquilibriumCalibrationSetup
         % case 1 (default) : The calibration parameters are theta100 and volume fraction for both electrodes
         %                    Theta0 for the positive electrode is computed from the end point of the discharge curve
         %                    Theta0 for the negative electrode is computed to match a given NP ration (default value 1.1)
+        %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
         % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
         % case 3           : The calibration parameters are theta100, theta0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
         
@@ -106,7 +107,7 @@ classdef EquilibriumCalibrationSetup
                 % X(4) : volume fraction cathode
                 
                 % we use a non-zero default value to avoid problem
-                bounds.lower = [0.1, 0.1, 0.1, 0.1]';
+                bounds.lower = [0.01, 0.01, 0.01, 0.01]';
                 bounds.upper = [1, 1, 1, 1]';
                 
               case 2
@@ -492,12 +493,9 @@ classdef EquilibriumCalibrationSetup
             
         end
 
-        function [z, dz] = objective(ecs, X, varargin)
+        function [z, dz] = objective(ecs, X)
             
-            opt = struct('t', []);
-            opt = merge_options(opt, varargin{:});
-
-            t  = opt.t(:); % column vector
+            t  = ecs.exptime;
 
             [fexp, fcomp] = ecs.setupfunction();
             X = initVariablesADI(X);
@@ -540,17 +538,69 @@ classdef EquilibriumCalibrationSetup
         function y = constraints_func(ecs, X)
         % for ipopt api
 
-            assert(ecs.calibrationCase == 3, sprintf('this function has not been implemented for calibration case %d', ecs.calibrationCase));
+            switch ecs.calibrationCase
 
-            data = ecs.calibrationParameters;
-            
-            ne  = 'NegativeElectrode';
-            pe  = 'PositiveElectrode';
+              case 1
 
-            np_ratio = ecs.computeNPratio(X);
-            
-            y = np_ratio./data.np_ratio - 1;
-            
+                % We enforce that theta at total time is between 0 and 1
+                
+                I = ecs.expI;
+                F = ecs.F;
+                T = ecs.totalTime;
+
+                vals = ecs.assignFromX(X);
+                vals = ecs.setupAlphas(vals);
+                
+                ne  = 'NegativeElectrode';
+                pe  = 'PositiveElectrode';
+
+                eldes = {ne, pe};
+
+                y = {};
+                
+                for ielde = 1 : numel(eldes)
+
+                    elde = eldes{ielde};
+
+                    alpha    = vals.(elde).alpha;
+                    theta100 = vals.(elde).theta100;
+                    
+                    switch elde
+                      case ne
+                        sgn = -1;
+                      case pe
+                        sgn = 1;
+                    end
+
+                    theta = theta100 + T*((sgn*I)./(F*alpha));
+
+                    y{end + 1} = theta;
+                    y{end + 1} = 1 - theta;
+                    
+                end
+
+                y = vertcat(y{:});
+                
+              case 2
+
+                error('not implemented');
+                
+              case 3
+                
+                data = ecs.calibrationParameters;
+                
+                ne  = 'NegativeElectrode';
+                pe  = 'PositiveElectrode';
+
+                np_ratio = ecs.computeNPratio(X);
+                
+                y = np_ratio./data.np_ratio - 1;
+
+              otherwise
+                
+                error('ecs.calibrationCase not recognized');
+                
+            end
         end
 
         function dy = jacobian_constraints_func(ecs, X)
@@ -565,9 +615,25 @@ classdef EquilibriumCalibrationSetup
         function y = jacobian_constraints_structure_func(ecs)
         % we do not bother here and setup as full
             
-            assert(ecs.calibrationCase == 3, sprintf('this function has not been implemented for calibration case %d', ecs.calibrationCase));
-            y = sparse(ones(1, 6));
-            
+            switch ecs.calibrationCase
+
+              case 1
+
+                y = sparse(ones(4, 4));
+                
+              case 2
+
+                error('not implemented');
+                
+              case 3
+                
+                y = sparse(ones(1, 6));
+
+              otherwise
+                
+                error('ecs.calibrationCase not recognized');
+                
+            end            
         end
 
         function vals = updateThetas(ecs, X, varargin)
@@ -753,12 +819,7 @@ classdef EquilibriumCalibrationSetup
                 X0 = ecs.getDefaultValue();
             end
             
-            exptime = ecs.exptime;
-
-            topt = exptime;
-
-            opts = {'t', topt};
-            f = @(X) ecs.objective(X, opts{:});
+            f = @(X) ecs.objective(X);
 
             params = ecs.setupOptimParams();
 
@@ -781,10 +842,28 @@ classdef EquilibriumCalibrationSetup
             options.lb = ecs.bounds.lower;
             options.ub = ecs.bounds.upper;
 
-            assert(ecs.calibrationCase == 3, 'the constraint should be only set ip for calibration case 3');
             
-            options.cl = 0;
-            options.cu = 0;
+            switch ecs.calibrationCase
+
+              case 1
+
+                options.cl = 0*ones(4, 1);
+                options.cu = inf*ones(4, 1);                
+                
+              case 2
+
+                error('not implemented');
+                
+              case 3
+                
+                options.cl = 0;
+                options.cu = 0;
+                
+              otherwise
+                
+                error('ecs.calibrationCase not recognized');
+                
+            end 
 
             if nargin > 1
                 options.ipopt = ipopt_options;
