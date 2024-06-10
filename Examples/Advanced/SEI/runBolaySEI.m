@@ -37,7 +37,7 @@ jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
 
 jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
                             'initialControl'    , 'discharging', ...
-                            'numberOfCycles'    , 3            , ...
+                            'numberOfCycles'    , 8            , ...
                             'CRate'             , 1            , ...
                             'DRate'             , 1            , ...
                             'lowerCutoffVoltage', 3            , ...
@@ -57,8 +57,9 @@ model = GenericBattery(inputparams);
 %% Setup the schedule
 %
 
-schedule = model.(ctrl).setupSchedule([]);
-
+% schedule = model.(ctrl).setupSchedule([]);
+jsonstruct.TimeStepping.timeStepDuration = 200 ;
+schedule = model.(ctrl).setupSchedule(jsonstruct);
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
@@ -145,4 +146,31 @@ title('total lithium amount in negative electrode / mol')
 xlabel('Time / h')
 
 legend show
+%%
+
+quantities = [];
+for timeindex = 1 : numel(states)
+
+	pr = model.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.particleRadius;
+	l = states{timeindex}.(ne).(co).(am).(itf).SEIlength;
+
+	vf   = model.(ne).(co).volumeFraction;
+	vols = model.(ne).(co).G.getVolumes();
+
+	scoef   = model.(ne).(co).(am).(itf).SEIstochiometricCoeffcient;
+	seimvol = model.NegativeElectrode.Coating.ActiveMaterial.Interface.SEImolarVolume;
+
+	Liqqt = scoef/seimvol*vf*sum(4./3*pi*(((pr + l).^3 - pr^3)/pr^3).*vols);
+
+	quantities(end + 1) = Liqqt;
+
+end
+
+figure 
+
+plot(time/hour, quantities);
+title('Lithium quantity consummed');
+xlabel('Time / h');
+ylabel('quantity / mol');
+grid on;
 
