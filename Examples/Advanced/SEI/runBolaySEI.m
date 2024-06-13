@@ -167,10 +167,56 @@ for timeindex = 1 : numel(states)
 end
 
 figure 
-
 plot(time/hour, quantities);
 title('Lithium quantity consummed');
 xlabel('Time / h');
 ylabel('quantity / mol');
 grid on;
 
+
+
+%%
+
+PE_Li_quantities = [];
+NE_Li_quantities = [];
+Electrolyte_Li_quantities = [];
+Electrodes_Li_quantities = [];
+Total_Li_quantities = [];
+
+for timeindex = 1 : numel(states)
+	PE_qtt = sum(model.(pe).(co).volumeFractions(1).*model.(pe).(co).volumeFraction.*model.(pe).G.getVolumes.*states{timeindex}.(pe).(co).(am).(sd).cAverage);
+	NE_qtt = sum(model.(ne).(co).volumeFractions(1).*model.(ne).(co).volumeFraction.*model.(ne).G.getVolumes.*states{timeindex}.(ne).(co).(am).(sd).cAverage);
+	Elyte_qtt = sum(model.Electrolyte.volumeFraction.*model.Electrolyte.G.getVolumes.*states{timeindex}.Electrolyte.c);
+
+	Elode_qtt = PE_qtt + NE_qtt;
+	Tot_Liqqt =  PE_qtt + NE_qtt + Elyte_qtt;
+	
+	PE_Li_quantities(end + 1) = PE_qtt;
+	NE_Li_quantities(end + 1) = NE_qtt;
+	Electrolyte_Li_quantities(end + 1) = Elyte_qtt;
+	Electrodes_Li_quantities(end + 1) = Elode_qtt;
+	Total_Li_quantities(end + 1) = Tot_Liqqt;
+
+end
+
+figure
+hold on
+
+plot(time/hour, PE_Li_quantities,'DisplayName','Positive Electrode');
+plot(time/hour, NE_Li_quantities,'DisplayName','Negative Electrode');
+plot(time/hour, Electrolyte_Li_quantities,'DisplayName','Electrolyte');
+plot(time/hour, Electrodes_Li_quantities,'DisplayName','Both Electrodes');
+plot(time/hour, Total_Li_quantities,'DisplayName','Total (except SEI)');
+% plot(time/hour, quantities,'DisplayName','In the SEI');
+title('Lithium quantity');
+xlabel('Time / h');
+ylabel('quantity / mol');
+grid on;
+legend show
+
+figure 
+plot(time/hour, 100 * quantities / Total_Li_quantities(1));
+title('Percentage of Lithium consummed');
+xlabel('Time / h');
+ylabel('%');
+grid on;
