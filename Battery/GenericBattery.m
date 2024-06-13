@@ -818,13 +818,31 @@ classdef GenericBattery < BaseModel
             initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
             initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
+            
+            %% Setup initial variables needed in case of double layer
+            
             for ielde = 1 : numel(eldes)
+
                 elde = eldes{ielde};
-                if model.(elde).(co).(am).(itf).useDoubleLayerCapacity
-                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'cElectrolyte'});
-                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrode'});
-                    initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrolyte'});
+
+                if  model.(elde).(co).activeMaterialModelSetup.composite
+                    ams = {am1, am2};
+                else
+                    ams = {am};
                 end
+
+                for iam = 1 : numel(ams)
+
+                    amc = ams{iam};
+                    
+                    if model.(elde).(co).(amc).(itf).useDoubleLayerCapacity
+                        initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'cElectrolyte'});
+                        initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'phiElectrode'});
+                        initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'phiElectrolyte'});
+                    end
+
+                end
+                
             end
             
             %% Setup initial Current collectors state
