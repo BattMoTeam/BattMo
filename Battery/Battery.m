@@ -190,9 +190,9 @@ classdef Battery < GenericBattery
 
             time = state0.time + dt;
 
-            if(not(opts.ResOnly) && not(opts.reverseMode))
+            if (not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
-            elseif(opts.reverseMode)
+            elseif opts.reverseMode
                dispif(mrstVerbose, 'No AD initialization in equation old style')
                state0 = model.initStateAD(state0);
             else

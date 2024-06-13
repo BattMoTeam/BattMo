@@ -570,13 +570,18 @@ classdef BaseModel < PhysicalModel
         %% Methods used when the model is used as root model for a simulation. Then, the model is equipped for simulation
         %
         
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
             
-            opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
-            opt = merge_options(opt, varargin{:});
+            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
+            opts = merge_options(opts, varargin{:});
             
-            if ~opt.ResOnly
+            if (not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
+            elseif opts.reverseMode
+                dispif(mrstVerbose, 'No AD initialization in equation old style')
+                state0 = model.initStateAD(state0);
+            else
+                assert(opts.ResOnly);
             end
             
             %% We call the assembly equations ordered from the graph
