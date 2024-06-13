@@ -47,18 +47,18 @@ jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
 
 jsonstruct.(ctrl) = jsontruct_control;
 
-inputparams = BatteryInputParams(jsonstruct);
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
-rp = jsonstruct.(sd).particleRadius ;
-jsonstruct.(itf).volumetricSurfaceArea = 3./rp;
+jsonstruct = mergeJsonStructs({jsonstruct_geometry, ...
+                               jsonstruct});
 
-model = GenericBattery(inputparams);
+model = setupModelFromJson(jsonstruct);
 
 %% Setup the schedule
 %
 
 schedule = model.(ctrl).setupSchedule([]);
-
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.
