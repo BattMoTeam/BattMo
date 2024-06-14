@@ -210,6 +210,11 @@ classdef GenericBattery < BaseModel
             end
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
+            if model.include_current_collectors && model.(pe).use_normed_current_collector
+                fn = @GenericBattery.updateCurrentCollectorPhiRef;
+                inputnames = {{ctrl, 'E'}};
+                model = model.registerPropFunction({{pe, cc, 'phiRef'}, fn, inputnames});                
+            end
 
             inputnames = {};
             fn = @GenericBattery.updateControl;
@@ -283,17 +288,18 @@ classdef GenericBattery < BaseModel
 
                 if model.include_current_collectors
 
-                    inputnames = {{elde, cc, 'phi'}, ...
-                                  {elde, cc, 'conductivity'}};
+                    inputnames = {{elde, cc, 'phi'}         , ...
+                                  {elde, cc, 'conductivity'}, ...
+                                  {elde, co, 'phi'}         , ...
+                                  {elde, co, 'conductivity'}};
+
                     model = model.registerPropFunction({{elde, cc, 'jExternal'}, fn, inputnames});
+                    model = model.registerPropFunction({{elde, co, 'jExternal'}, fn, inputnames});
 
                     if model.use_thermal
                         model = model.registerPropFunction({{elde, cc, 'jFaceExternal'}, fn, inputnames});
                     end
 
-                    inputnames = {{elde, co, 'phi'}, ...
-                                  {elde, co, 'conductivity'}};
-                    model = model.registerPropFunction({{elde, co, 'jExternal'}, fn, inputnames});
 
                 else
 
@@ -369,6 +375,10 @@ classdef GenericBattery < BaseModel
                 F   = model.con.F;
                 
                 Rvols(ielde) = j0s(ielde)*vsa/F;
+
+                % reference for the conductivity
+                condRef.(elde).(cc) = model.(elde).(cc).effectiveElectronicConductivity;
+                condRef.(elde).(co) = model.(elde).(co).effectiveElectronicConductivity;
                 
             end
 
@@ -399,8 +409,9 @@ classdef GenericBattery < BaseModel
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
                 if model.include_current_collectors
-                    % We use the same scaling as for the coating
-                    scalings{end + 1} = {{elde, cc, 'chargeCons'}, F*volRef.(elde).(cc)*RvolRef};
+                    % We use the same scaling as for the coating multiplied by the conductivity ration
+                    coef = condRef.(elde).(cc)/condRef.(elde).(co);
+                    scalings{end + 1} = {{elde, cc, 'chargeCons'}, coef*F*volRef.(elde).(cc)*RvolRef};
                 end
                 
                 if  model.(elde).(co).activeMaterialModelSetup.composite
@@ -499,6 +510,8 @@ classdef GenericBattery < BaseModel
             fjv.print();
             
         end
+
+        
         function control = setupControl(model, inputparams)
 
             C = computeCellCapacity(model);
@@ -856,7 +869,11 @@ classdef GenericBattery < BaseModel
             if model.(pe).include_current_collectors
                 OCP = initstate.(pe).(co).(amc).(itf).OCP;
                 OCP = OCP(1) .* ones(bat.(pe).(cc).G.getNumberOfCells(), 1);
-                initstate.(pe).(cc).phi = OCP - ref;
+                if model.(pe).use_normed_current_collector
+                    initstate.(pe).(cc).scaledDeltaPhi = 0*OCP;
+                else
+                    initstate.(pe).(cc).phi = OCP - ref;
+                end
             end
 
             initstate.(ctrl).E = OCP(1) - ref;
@@ -1021,6 +1038,15 @@ classdef GenericBattery < BaseModel
 
         end
 
+        function state = updateCurrentCollectorPhiRef(model, state);
+
+            pe   = 'PositiveElectrode';
+            cc   = 'CurrentCollector';
+            ctrl = 'Control';
+            
+            state.(pe).(cc).phiRef = state.(ctrl).E;
+            
+        end
         
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels

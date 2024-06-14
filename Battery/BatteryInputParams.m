@@ -39,10 +39,14 @@ classdef BatteryInputParams < InputParams
 
             jsontruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
             
-            jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors', ...
+            jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors'      , ...
                                                                {ne, 'include_current_collectors'}, ...
                                                                {pe, 'include_current_collectors'}});
 
+            if getJsonStructField(jsonstruct,  {pe, 'include_current_collectors'})
+                jsonstruct = setDefaultJsonStructField(jsonstruct, {pe, 'use_normed_current_collector'}, true);
+            end
+            
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'use_thermal', false);
             
             jsonstruct = equalizeJsonStructFields(jsonstruct, {{'use_thermal'}       , ...
