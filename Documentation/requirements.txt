@@ -37,3 +37,4 @@ zipp==3.15.0
 sphinx-design
 mathjax==0.1.2
 sphinxcontrib-jsmath==1.0.1
+setuptools
