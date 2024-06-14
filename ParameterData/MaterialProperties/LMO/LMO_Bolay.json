@@ -1,0 +1,17 @@
+{
+  "description" :  "Data from @article{Bolay_2022, title={Microstructure-resolved degradation simulation of lithium-ion batteries in space applications}, volume={14}, ISSN={2666-2485}, url={http://dx.doi.org/10.1016/j.powera.2022.100083}, DOI={10.1016/j.powera.2022.100083}, journal={Journal of Power Sources Advances}, publisher={Elsevier BV}, author={Bolay, Linda J. and Schmitt, Tobias and Hein, Simon and Mendoza-Hernandez, Omar S. and Hosono, Eiji and Asakura, Daisuke and Kinoshita, Koichi and Matsuda, Hirofumi and Umeda, Minoru and Sone, Yoshitsugu and Latz, Arnulf and Horstmann, Birger}, year={2022}, month=mar, pages={100083} }",
+  "saturationConcentration": {"value" : ,
+                              "unit" : "1e4*mol/meter^3"},
+  "volumeFraction": 0.8,
+  "volumetricSurfaceArea": 885000,
+  "density": 4450,
+  "numberOfElectronsTransferred" : 1,
+  "activationEnergyOfReaction": 5000,
+  "reactionRateConstant": 2.33e-11,
+  "guestStoichiometry100": 1.4001e-04,
+  "guestStoichiometry0": 0.9811,
+  "openCircuitPotential" : {"type" : "function",
+           "functionname" : "updateOCPFunc_LNMO_Mao",
+           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
+                           },
+  "chargeTransferCoefficient" : 0.5} 
