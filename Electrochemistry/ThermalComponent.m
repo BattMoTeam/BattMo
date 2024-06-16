@@ -78,6 +78,19 @@ classdef ThermalComponent < BaseModel
             fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
             model = model.registerPropFunction({'accumHeat', fn, {'T'}});
 
+            if model.isRootSimulationModel
+
+                varnames = {'jHeatOhmSource'     , ...
+                            'jHeatChemicalSource', ...
+                            'jHeatReactionSource'};
+
+                model = model.removeVarNames(varnames);
+
+                fn = @ThermalComponent.updateSourceTerm;
+                fn = {fn, @(propfunc) PropFunction.drivingForceFuncCallSetupFn(propfunc)};
+                model = model.registerPropFunction({'jHeatSource', fn, {}});
+                
+            end
 
 
         end
@@ -170,6 +183,24 @@ classdef ThermalComponent < BaseModel
 
         end
 
+        function state = updateSourceTerm(model, state, drivingForces)
+        % used in case where model.isRootSimulationModel = true. Then the heat source is given in the drivingForces term
+
+            time = state.time;
+
+            state.jHeatSource = drivingForces.src(time);
+            
+        end
+
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+
+            forces.src = [];
+            
+        end            
+            
+        
         function state = updateThermalBoundarySourceTerms(model, state)
 
             G          = model.G;
