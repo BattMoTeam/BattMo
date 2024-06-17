@@ -377,8 +377,10 @@ classdef GenericBattery < BaseModel
                 Rvols(ielde) = j0s(ielde)*vsa/F;
 
                 % reference for the conductivity
-                condRef.(elde).(cc) = model.(elde).(cc).effectiveElectronicConductivity;
                 condRef.(elde).(co) = model.(elde).(co).effectiveElectronicConductivity;
+                if model.(elde).include_current_collectors
+                    condRef.(elde).(cc) = model.(elde).(cc).effectiveElectronicConductivity;
+                end
                 
             end
 
