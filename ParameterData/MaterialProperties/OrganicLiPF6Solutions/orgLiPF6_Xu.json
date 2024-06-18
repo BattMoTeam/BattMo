@@ -1,0 +1,39 @@
+{
+  "specificHeatCapacity": 1518.0,
+  "thermalConductivity": 0.099,
+  "density": 1210,
+  "initialConcentration": {"value" : 1,
+                           "unit" : "mol/litre"},
+  "Conductivity" : {"type": "function",
+                    "functionname" : "computeElectrolyteConductivityFunc_Xu",
+                    "argumentlist" : ["concentration", "temperature"]
+                   },
+  "DiffusionCoefficient" : {"type": "function",
+                            "functionname" : "computeDiffusionCoefficientFunc_Xu",
+                            "argumentlist" : ["concentration", "temperature"]
+                           },
+<<<<<<< HEAD:ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Lin.json
+  "species": { "chargeNumber": 1,
+               "transferenceNumber": 0.2594,
+               "nominalConcentration": 1000},
+  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Lin.json",
+||||||| ece1269c (Change from Xu to Lin and make it compatible with updates from refactoring):ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Lin.json
+  "compnames": [
+    "Li",
+    "PF6"
+  ],
+  "sp": { "z": 1,
+          "t": 0.2594},
+  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Lin.json",
+=======
+  "compnames": [
+    "Li",
+    "PF6"
+  ],
+  "sp": { "z": 1,
+          "t": 0.2594},
+  "Separator": { "filename": "ParameterData/BatteryComponentParameters/celgard2500_Xu.json",
+>>>>>>> parent of ece1269c (Change from Xu to Lin and make it compatible with updates from refactoring):ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6_Xu.json
+                 "isFile": true },
+  "BruggemanCoefficient": 1.5
+}
