@@ -175,7 +175,7 @@ classdef CcCvControlModel < ControlModel
                     state.ctrlType = 'CV_charge2';
                 end
               case 'CV_charge2'
-                if I < - ImaxDischarge
+                if I < - ImaxCharge
                     arefulfilled = false;
                     state.ctrlType = 'CC_charge1';
                 end
