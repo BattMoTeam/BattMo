@@ -5,33 +5,33 @@
   "initT": 293.15,
   "use_thermal": true,
   "include_current_collectors": true,
-  "Control" : {
-    "controlPolicy" : "CCDischarge",
-    "DRate" : 1,
-    "lowerCutoffVoltage" : 2,
-    "upperCutoffVoltage" : 4.1,
-    "dIdtLimit" : 0.01,
-    "dEdtLimit" : 0.01
+  "Control": {
+    "controlPolicy": "CCDischarge",
+    "DRate": 1,
+    "lowerCutoffVoltage": 2,
+    "upperCutoffVoltage": 4.1,
+    "dIdtLimit": 0.01,
+    "dEdtLimit": 0.01
   },
   "NegativeElectrode": {
     "Coating": {
       "BruggemanCoefficient": 1.5,
       "volumeFraction": 0.7,
       "ActiveMaterial": {
-	"specificHeatCapacity": 1435.0,
-	"thermalConductivity": 1.04,
-	"electricalConductivity": 2,
-	"Interface": {
+        "specificHeatCapacity": 1435.0,
+        "thermalConductivity": 1.04,
+        "electricalConductivity": 2,
+        "Interface": {
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
-	},
-	"diffusionModelType" : "full",
-	"SolidDiffusion" : {
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
           "activationEnergyOfDiffusion": 4000,
           "referenceDiffusionCoefficient": 3.9e-14,
-          "particleRadius": 14.75e-06,
+          "particleRadius": 1.475e-05,
           "N": 10
-	}
+        }
       }
     },
     "CurrentCollector": {
@@ -44,20 +44,20 @@
       "BruggemanCoefficient": 1.5,
       "volumeFraction": 0.72,
       "ActiveMaterial": {
-	"specificHeatCapacity": 1348.0,
-	"thermalConductivity": 1.48,
-	"electricalConductivity": 0.01,
-	"Interface": {
+        "specificHeatCapacity": 1348.0,
+        "thermalConductivity": 1.48,
+        "electricalConductivity": 0.01,
+        "Interface": {
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/LFP/LFP.json"
-	},
-	"diffusionModelType" : "full",
-	"SolidDiffusion": {
+        },
+        "diffusionModelType": "full",
+        "SolidDiffusion": {
           "activationEnergyOfDiffusion": 20000,
           "referenceDiffusionCoefficient": 1.25e-15,
           "particleRadius": 1.15e-06,
           "N": 10
-	}
+        }
       }
     },
     "CurrentCollector": {
@@ -70,8 +70,7 @@
     "isFile": true
   },
   "Separator": {
-    "comment": "Specification of separator not found in reference",
-    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500_Xu.json",
     "isFile": true
   },
   "ThermalModel": {
