@@ -105,7 +105,7 @@ classdef CcCvControlModel < ControlModel
 
             nextCtrlType = model.getNextCtrlType(ctrlType0);
 
-            switch ctrlType0
+            switch ctrlType
                 
               case 'CC_discharge1'
 
@@ -244,7 +244,7 @@ classdef CcCvControlModel < ControlModel
                 
               case 'CC_discharge2'
                 
-                condition = (E0 - Emin < 1e-1);
+                condition = (E0 - Emin <  1e-1);
                 
               case 'CC_charge1'
 
@@ -357,7 +357,7 @@ classdef CcCvControlModel < ControlModel
             end
 
             if ~isempty(params.timeStepDuration)
-                dt = params.timeStepDuration
+                dt = params.timeStepDuration;
             else
                 n  = params.numberOfTimeSteps;
                 dt = totalTime/n;
