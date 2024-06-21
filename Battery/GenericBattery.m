@@ -1680,9 +1680,6 @@ classdef GenericBattery < BaseModel
                 end
             end
 
-            ctrl = 'Control';
-            state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
-
             report = [];
 
         end
