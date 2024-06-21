@@ -1775,7 +1775,9 @@ classdef GenericBattery < BaseModel
 
             ctrl = 'Control';
             
-            state.(ctrl) = model.(ctrl).updateControl(state.(ctrl), state0.(ctrl), dt);
+            if iteration > 1
+                state.(ctrl) = model.(ctrl).updateControl(state.(ctrl), state0.(ctrl), dt);
+            end
 
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
