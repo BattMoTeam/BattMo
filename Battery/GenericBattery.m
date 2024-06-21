@@ -845,13 +845,11 @@ classdef GenericBattery < BaseModel
 
                 switch model.(ctrl).initialControl
                   case 'discharging'
-                    initstate.(ctrl).ctrlType     = 'CC_discharge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).I        = model.(ctrl).ImaxDischarge;
                   case 'charging'
-                    initstate.(ctrl).ctrlType     = 'CC_charge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
+                    initstate.(ctrl).ctrlType = 'CC_charge1';
+                    initstate.(ctrl).I        = - model.(ctrl).ImaxCharge;
                   otherwise
                     error('initialControl not recognized');
                 end
