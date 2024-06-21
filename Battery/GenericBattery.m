@@ -1712,8 +1712,6 @@ classdef GenericBattery < BaseModel
                 state.(ctrl).time = state.time;
             end
 
-            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
-
         end
 
         function model = setupCapping(model)
@@ -1775,14 +1773,18 @@ classdef GenericBattery < BaseModel
 
         function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
 
+            ctrl = 'Control';
+            
+            state.(ctrl) = model.(ctrl).updateControl(state.(ctrl), state0.(ctrl), dt);
+
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
             if report.Converged
 
-                if strcmp(model.Control.controlPolicy, 'CCCV')
+                if strcmp(model.(ctrl).controlPolicy, 'CCCV')
                     % we check for the constraints
 
-                    [arefullfilled, state.Control] = model.Control.checkConstraints(state.Control);
+                    [arefullfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
 
                     if ~arefullfilled
                         report.Converged = false;
