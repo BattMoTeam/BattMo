@@ -570,7 +570,7 @@ classdef BaseModel < PhysicalModel
         %% Methods used when the model is used as root model for a simulation. Then, the model is equipped for simulation
         %
         
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
             
             opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
             opt = merge_options(opt, varargin{:});
