@@ -21,7 +21,7 @@ ctrl  = 'Control';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite_bolay.json');
+                        'lithium_ion_battery_nmc_graphite.json');
 jsonstruct = parseBattmoJson(jsonfilename);
 
 jsonstruct.use_thermal = false;
@@ -49,7 +49,7 @@ jsonstruct.(ctrl) = jsontruct_control;
 
 %% 
 
-doCompare = true;
+doCompare = false;
 
 if doCompare
     
@@ -221,8 +221,6 @@ for timeindex = 1 : numel(states)
 
         indAm = model.(ne).(co).compInds.(am);
         
-        amvf = model.(ne).(co).volumeFractions(indAm);
-	vf   = model.(ne).(co).volumeFraction;
 	vols = model.(ne).(co).G.getVolumes();
 
         vsa = model.(ne).(co).(am).(itf).volumetricSurfaceArea;
@@ -230,7 +228,7 @@ for timeindex = 1 : numel(states)
 	scoef   = model.(ne).(co).(am).(itf).SEIstochiometricCoeffcient;
 	seimvol = model.(ne).(co).(am).(itf).SEImolarVolume;
 
-        Liqqt = (scoef/seimvol)*sum(l.*(vsa*amvf*vf*vols));
+        Liqqt = (scoef/seimvol)*sum(l.*(vsa*vols));
 	quantities(end + 1) = Liqqt;
         
 end
