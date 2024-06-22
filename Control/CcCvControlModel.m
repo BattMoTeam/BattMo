@@ -56,10 +56,10 @@ classdef CcCvControlModel < ControlModel
             end
 
             % values of these relative tolerances should be smaller than 1
-            tolerances = struct('CC_discharge1', 1e-2, ...
-                                'CC_discharge2', 1e-2, ...
-                                'CC_charge1'   , 1e-2, ...
-                                'CV_charge2'   , 0.5);
+            tolerances = struct('CC_discharge1', 1e-3, ...
+                                'CC_discharge2', 0.9 , ...
+                                'CC_charge1'   , 1e-3 , ...
+                                'CV_charge2'   , 0.9);
             
             model.tolerances = tolerances;
             
@@ -136,14 +136,11 @@ classdef CcCvControlModel < ControlModel
             
             nextCtrlType = model.getNextCtrlType(ctrlType0);
 
-            rsw = model.setupRegionSwitchFlags(state, ctrlType0);
-
-            if strcmp(ctrlType, nextCtrlType) && rsw.beforeSwitchRegion
-                
-                state.ctrlType = ctrlType0;
-
-            elseif strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
+            rsw  = model.setupRegionSwitchFlags(state, ctrlType0);
+            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
             
+            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion && ~rsw0.beforeSwitchRegion
+                
                 state.ctrlType = nextCtrlType;
 
             end
@@ -178,6 +175,7 @@ classdef CcCvControlModel < ControlModel
                 state.E = Emax;
                 
               otherwise
+                
                 error('ctrlType not recognized.')
 
             end
@@ -230,31 +228,17 @@ classdef CcCvControlModel < ControlModel
             arefulfilled = true;
             
             rsw = model.setupRegionSwitchFlags(state, state.ctrlType);
-            
-            if rsw.afterSwitchRegion
 
-                % We have converged but the conditions are not satisfied. We proceed with a restart with ctrlType0
+            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
                 
                 arefulfilled = false;
-                state.ctrlType = ctrlType0;
+                state.ctrlType = nextCtrlType;
+                state = model.updateValueFromControl(state);
 
             end
-
-            rsw = model.setupRegionSwitchFlags(state0, ctrlType0);
-
-            if rsw.beforeSwitchRegion
                 
-                arefullfiled = false;
-                % we have converged, but the previous step had not entered the switch region. We continue after a reset to ctrlType0
-                state.ctrlType = ctrlType0;
-                
-            end
-
-            
-            state = model.updateValueFromControl(state);
-            
         end
-
+        
         function rsf = setupRegionSwitchFlags(model, state, ctrlType)
 
             Emin    = model.lowerCutoffVoltage;
@@ -290,7 +274,7 @@ classdef CcCvControlModel < ControlModel
                 
               case 'CC_charge1'
                 
-                before = (E - Emax)/Emax < tols.(ctrlType);
+                before = (E - Emax)/Emax < -tols.(ctrlType);
                 after  = (E - Emax)/Emax > tols.(ctrlType);
 
               case 'CV_charge2'
@@ -335,7 +319,7 @@ classdef CcCvControlModel < ControlModel
                 end
                 
               case 'discharging'
-              
+                
                 if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'}) 
                     ncycles = ncycles + 1;
                 end
@@ -350,7 +334,7 @@ classdef CcCvControlModel < ControlModel
             
             
         end
-
+        
         function func = setupStopFunction(model)
             
             func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
@@ -422,7 +406,7 @@ classdef CcCvControlModel < ControlModel
         
     end
 
-
+    
     methods(Static)
 
         function nextCtrlType = getNextCtrlType(ctrlType)
@@ -453,7 +437,8 @@ classdef CcCvControlModel < ControlModel
 
         end
 
-    end        
+    end
+
 end
 
 
