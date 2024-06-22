@@ -1652,6 +1652,7 @@ classdef GenericBattery < BaseModel
             state.(elyte).c = max(cmin, state.(elyte).c);
 
             eldes = {ne, pe};
+            
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1679,7 +1680,7 @@ classdef GenericBattery < BaseModel
 
                 end
             end
-
+            
             report = [];
 
         end
@@ -1773,14 +1774,13 @@ classdef GenericBattery < BaseModel
 
         function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
 
-            ctrl = 'Control';
-            
-            if iteration > 1
-                state.(ctrl) = model.(ctrl).updateControl(state.(ctrl), state0.(ctrl), dt);
-            end
-
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
+            if ~report.Failure
+                ctrl = 'Control';
+                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
+            end
+            
             if report.Converged
 
                 if strcmp(model.(ctrl).controlPolicy, 'CCCV')
