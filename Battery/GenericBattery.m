@@ -1786,9 +1786,9 @@ classdef GenericBattery < BaseModel
                 if strcmp(model.(ctrl).controlPolicy, 'CCCV')
                     % we check for the constraints
 
-                    [arefullfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
+                    [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
 
-                    if ~arefullfilled
+                    if ~arefulfilled
                         report.Converged = false;
                     end
 
