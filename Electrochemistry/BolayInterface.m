@@ -103,7 +103,7 @@ classdef BolayInterface < Interface
 
             eta = phiElectrode - phiElectrolyte - Usei;
 
-            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
+            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*Usei);
            
         end
 
