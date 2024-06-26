@@ -69,7 +69,7 @@ classdef BolayInterface < Interface
             model = model.registerPropFunction({'SEIvoltageDrop', fn, inputnames});
             
             fn = @BolayInterface.updateSEIflux;
-            inputnames = {'SEIlength', 'SEIvoltageDrop', 'eta'};
+            inputnames = {'SEIlength', 'SEIvoltageDrop', 'phiElectrode', 'phiElectrolyte', 'T'};
             model = model.registerPropFunction({'SEIflux', fn, inputnames});
 
             fn = @BolayInterface.updateSEImassCons;
@@ -95,10 +95,13 @@ classdef BolayInterface < Interface
             R = model.constants.R;
             F = model.constants.F;            
 
-            T   = state.T;
-            eta = state.eta;
-            U   = state.SEIvoltageDrop;
-            L   = state.SEIlength;
+            T              = state.T;
+            phiElectrode   = state.phiElectrode;
+            phiElectrolyte = state.phiElectrolyte;
+            Usei           = state.SEIvoltageDrop;
+            L              = state.SEIlength;
+
+            eta = phiElectrode - phiElectrolyte - Usei;
 
             state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
            
