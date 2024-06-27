@@ -7,6 +7,10 @@ classdef BolayInterface < Interface
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
         SEIstochiometricCoeffcient
+        SEIlengthInitial
+        
+        SEIlengthRef
+        SEIvoltageDropRef
 
     end
 
@@ -20,10 +24,15 @@ classdef BolayInterface < Interface
                        'SEIionicConductivity'             , ...
                        'SEIelectronicDiffusionCoefficient', ...        
                        'SEIintersticialConcentration'     , ...
-                       'SEIstochiometricCoeffcient'};
+                       'SEIstochiometricCoeffcient'       , ...
+                       'SEIlengthInitial'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
+            L0 = model.SEIlengthInitial;
+            
+            model.SEIlengthRef = L0;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -36,8 +45,12 @@ classdef BolayInterface < Interface
             varnames = {};
             % Length of SEI layer [m]
             varnames{end + 1} = 'SEIlength';
+            % normalized length of SEI layer []
+            varnames{end + 1} = 'normalizedSEIlength';
             % potential drop at SEI [V]
             varnames{end + 1} = 'SEIvoltageDrop';
+            % potential drop at SEI []
+            varnames{end + 1} = 'normalizedSEIvoltageDrop';
             % SEI flux [mol/m^2/s]
             varnames{end + 1} = 'SEIflux';
             % SEI mass conservation
@@ -47,6 +60,14 @@ classdef BolayInterface < Interface
 
             model = model.registerVarNames(varnames);
 
+            fn = @BolayInterface.updateSEIlength;
+            inputnames = {'normalizedSEIlength'};
+            model = model.registerPropFunction({'SEIlength', fn, inputnames});
+
+            fn = @BolayInterface.updateSEIvoltageDrop;
+            inputnames = {'normalizedSEIvoltageDrop'};
+            model = model.registerPropFunction({'SEIvoltageDrop', fn, inputnames});
+            
             fn = @BolayInterface.updateSEIflux;
             inputnames = {'SEIlength', 'SEIvoltageDrop', 'eta'};
             model = model.registerPropFunction({'SEIflux', fn, inputnames});
@@ -68,8 +89,8 @@ classdef BolayInterface < Interface
 
         function state = updateSEIflux(model, state)
 
-            De = model.SEIelectronicDiffusionCoefficient;
-            ce = model.SEIintersticialConcentration;
+            De  = model.SEIelectronicDiffusionCoefficient;
+            ce0 = model.SEIintersticialConcentration;
 
             R = model.constants.R;
             F = model.constants.F;            
@@ -79,8 +100,20 @@ classdef BolayInterface < Interface
             U   = state.SEIvoltageDrop;
             L   = state.SEIlength;
 
-            state.SEIflux = De*ce./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
+            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
            
+        end
+
+        function state = updateSEIlength(model, state)
+
+            state.SEIlength = model.SEIlengthRef*state.normalizedSEIlength;
+            
+        end
+
+        function state = updateSEIvoltageDrop(model, state)
+
+            state.SEIvoltageDrop = model.SEIvoltageDropRef*state.normalizedSEIvoltageDrop;
+            
         end
         
         function state = updateSEImassCons(model, state, state0, dt)
@@ -96,25 +129,33 @@ classdef BolayInterface < Interface
             state.SEImassCons = s/V.*(L - L0)./dt - N;
             
         end
-        
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+
+            newstate = addVariablesAfterConvergence@Interface(model, newstate, state);
+            newstate.SEIlength = state.SEIlength;
+            
+        end
+            
         function state = updateSEIvoltageDropEquation(model, state)
 
             k = model.SEIionicConductivity;
+            F = model.constants.F;
 
             U = state.SEIvoltageDrop;
             L = state.SEIlength;
             R = state.R;
 
-            state.SEIvoltageDropEquation = U - R.*L.*k;
+            state.SEIvoltageDropEquation = U - F*R.*L/k;
             
         end
 
         function state = updateEta(model, state)
 
-            phiElyte = state.phiElectrolyte;
-            phiElde  = state.phiElectrode;
-            OCP      = state.OCP;
-            SEIvoltageDrop     = state.SEIvoltageDrop;
+            phiElyte       = state.phiElectrolyte;
+            phiElde        = state.phiElectrode;
+            OCP            = state.OCP;
+            SEIvoltageDrop = state.SEIvoltageDrop;
 
             state.eta = (phiElde - phiElyte - OCP - SEIvoltageDrop);
             

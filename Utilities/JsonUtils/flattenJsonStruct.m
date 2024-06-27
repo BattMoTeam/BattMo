@@ -1,13 +1,13 @@
-function flatjsonviewer = flattenJson(jsonstruct)
+function flatjsonviewer = flattenJsonStruct(jsonstruct)
 
-    flatjson = flattenJson_({}, jsonstruct, []);
+    flatjson = flattenJsonStruct_({}, jsonstruct, []);
     flatjson = reshape(flatjson, 2, [])';
 
     flatjsonviewer = FlatJsonViewer(flatjson);
 
 end
 
-function flatjson = flattenJson_(flatjson, jsonstruct, prefix)
+function flatjson = flattenJsonStruct_(flatjson, jsonstruct, prefix)
 
     dostruct = false;
     
@@ -34,7 +34,7 @@ function flatjson = flattenJson_(flatjson, jsonstruct, prefix)
             if iscell(subjsonstruct) && numel(subjsonstruct) > 1
                 subjsonstruct = {subjsonstruct};
             end
-            flatjson = flattenJson_(flatjson, subjsonstruct, subprefix);
+            flatjson = flattenJsonStruct_(flatjson, subjsonstruct, subprefix);
         end
     end
     

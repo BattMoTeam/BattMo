@@ -19,7 +19,8 @@ classdef Electrode < BaseModel
 
         include_current_collectors
         use_thermal
-
+        use_normed_current_collector
+        
     end
 
     methods
@@ -31,9 +32,10 @@ classdef Electrode < BaseModel
 
             model.AutoDiffBackend = SparseAutoDiffBackend('useBlocks', true);
 
-            fdnames = {'G'                         , ...
-                       'couplingTerm'              , ...
-                       'include_current_collectors', ...
+            fdnames = {'G'                           , ...
+                       'couplingTerm'                , ...
+                       'include_current_collectors'  , ...
+                       'use_normed_current_collector', ...
                        'use_thermal'};
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -42,7 +44,7 @@ classdef Electrode < BaseModel
             if inputparams.include_current_collectors
                 model.include_current_collectors = true;
                 assert(~isempty(inputparams.CurrentCollector), 'current collector input data is missing')
-                model.CurrentCollector = model.setupCurrentCollector(inputparams.CurrentCollector);
+                model.CurrentCollector = model.setupCurrentCollector(inputparams);
             else
                 model.include_current_collectors = false;
                 % if isempty(inputparams.CurrentCollector.G)
@@ -91,8 +93,13 @@ classdef Electrode < BaseModel
         end
 
         function cc = setupCurrentCollector(model, inputparams)
-        % standard instantiation
-            cc = CurrentCollector(inputparams);
+            
+            if inputparams.use_normed_current_collector
+                cc = NormedCurrentCollector(inputparams.CurrentCollector);
+            else
+                cc = CurrentCollector(inputparams.CurrentCollector);
+            end
+            
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)

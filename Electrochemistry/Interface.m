@@ -38,10 +38,14 @@ classdef Interface < BaseModel
 
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
-        SEImodel % string defining interface type. Can take value
-                  % - 'none' (default)
-                  % - 'Safari'
-                  % - 'Bolay'
+        %% Double layer capacity
+        % We use modeling equation from
+        % @article{Legrand_2014, title={Including double-layer capacitance in lithium-ion battery mathematical models},
+        % journal={Journal of Power Sources},
+        % author={Legrand, N. and Raël, S. and Knosp, B. and Hinaje, M. and Desprez, P. and Lapicque, F.}, year={2014}}
+
+        useDoubleLayerCapacity % if true, add double layer capacity (default is false)
+        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2
 
         %% Computed parameters at model setup
 
@@ -69,7 +73,8 @@ classdef Interface < BaseModel
                        'density'                     , ...
                        'openCircuitPotential'        , ...
                        'chargeTransferCoefficient'   , ...
-                       'SEImodel'};
+                       'useDoubleLayerCapacity'      , ...
+                       'doubleLayerCapacitance'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -91,6 +96,10 @@ classdef Interface < BaseModel
                 model.useJ0Func = false;
             end
 
+            if isempty(model.useDoubleLayerCapacity)
+                model.useDoubleLayerCapacity = false;
+            end
+                
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -115,16 +124,26 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'eta';
             % Reaction rate [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
-            % External potential drop used in Butler-Volmer in case of SEI see :class:`Electrochemistry.SEIActiveMaterial`
-            % varnames{end + 1} = 'externalPotentialDrop';
-            %
-            varnames{end + 1} = 'dUdT';
             % OCP [V]
             varnames{end + 1} = 'OCP';
+            % 
+            varnames{end + 1} = 'dUdT';
             % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
 
             model = model.registerVarNames(varnames);
+
+            if model.useDoubleLayerCapacity
+                varnames = {};
+                % Double layer capacity rate [mol s^-1 m^-2]
+                varnames{end + 1} = 'capacityR';
+                % Reaction rate [mol s^-1 m^-2] (same as R without the double layer capacity, now R will contain the sum)
+                varnames{end + 1} = 'reactionR';
+                % Double layer capacity rate equation
+                varnames{end + 1} = 'capacityRequation';
+                model = model.registerVarNames(varnames);                
+            end
+            
 
             fn = @Interface.updateReactionRateCoefficient;
             if model.useJ0Func
@@ -148,9 +167,29 @@ classdef Interface < BaseModel
             % inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'externalPotentialDrop'};
             % model = model.registerPropFunction({'eta', fn, inputnames});
 
-            fn = @Interface.updateReactionRate;
-            inputnames = {'T', 'eta', 'j0'};
-            model = model.registerPropFunction({'R', fn, inputnames});
+
+            if ~model.useDoubleLayerCapacity            
+
+                fn = @Interface.updateReactionRate;
+                inputnames = {'T', 'eta', 'j0'};
+                model = model.registerPropFunction({'R', fn, inputnames});
+                
+            else
+                
+                fn = @Interface.updateReactionCapacityRateEquation;
+                fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
+                inputnames = {'phiElectrolyte', 'phiElectrode', 'cElectrolyte', 'capacityR', 'T'};
+                model = model.registerPropFunction({'capacityRequation', fn, inputnames});
+
+                fn = @Interface.updateReactionRateWithCapacity;
+                inputnames = {'T', 'eta', 'j0'};
+                model = model.registerPropFunction({'reactionR', fn, inputnames});
+                
+                fn = @Interface.updateTotalRateWithCapacity;
+                inputnames = {'reactionR', 'capacityR'};
+                model = model.registerPropFunction({'R', fn, inputnames});
+                
+            end
 
 
         end
@@ -196,6 +235,7 @@ classdef Interface < BaseModel
             [state.OCP, state.dUdT] = computeOCP(c, T, cmax);
 
         end
+
 
         function state = updateReactionRateCoefficient(model, state)
 
@@ -246,6 +286,7 @@ classdef Interface < BaseModel
 
         end
 
+        
         function state = updateEta(model, state)
 
             phiElyte = state.phiElectrolyte;
@@ -267,8 +308,7 @@ classdef Interface < BaseModel
 
         end
 
-
-        function state = updateReactionRate(model, state)
+        function R = computeRate(model, state)
         % From definition of the overpotential eta, we have that reaction rate R is positive for oxydation.
 
             n     = model.numberOfElectronsTransferred;
@@ -281,10 +321,56 @@ classdef Interface < BaseModel
 
             R = ButlerVolmerEquation(j0, alpha, n, eta, T);
 
-            state.R = R/(n*F); % reaction rate in mol/(s*m^2)
-
+            R = R/(n*F); % reaction rate in mol/(s*m^2)
+            
         end
 
+        function state = updateReactionRate(model, state)
+
+            state.R = model.computeRate(state);
+            
+        end
+        
+        function state = updateReactionCapacityRateEquation(model, state, state0, dt)
+
+            cDL = model.doubleLayerCapacitance;
+            F   = model.constants.F;
+            R   = model.constants.R;
+            
+            jDL   = state.capacityR;
+            T     = state.T;
+            c     = state.cElectrolyte;
+            c0    = state0.cElectrolyte;
+            dphi  = state.phiElectrode - state.phiElectrolyte;
+            dphi0 = state0.phiElectrode - state0.phiElectrolyte;
+
+            state.capacityRequation = jDL - (cDL/(F*dt))*((dphi - dphi0) + (R.*T./F)./c.*(c - c0));
+            
+        end
+        
+        function state = updateReactionRateWithCapacity(model, state)
+
+            state.reactionR = model.computeRate(state);
+            
+        end
+        
+        function state = updateTotalRateWithCapacity(model, state)
+
+            state.R = state.reactionR + state.capacityR;
+        end
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+
+            if model.useDoubleLayerCapacity
+                
+                newstate.cElectrolyte   = state.cElectrolyte;
+                newstate.phiElectrode   = state.phiElectrode;
+                newstate.phiElectrolyte = state.phiElectrolyte;
+                
+            end
+        
+        end
+        
     end
 end
 

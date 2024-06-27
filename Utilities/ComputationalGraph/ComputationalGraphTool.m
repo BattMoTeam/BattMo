@@ -410,7 +410,7 @@ classdef ComputationalGraphTool
                 error('input type not recognized');
             end
 
-            propfuncinds = max(A(:, varnameinds), [], 1);
+            propfuncinds = max(A(:, varnameinds), [], 1)';
             staticinds = varnameinds(propfuncinds == 0);
             propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
@@ -458,9 +458,12 @@ classdef ComputationalGraphTool
             % Initialise variable state with empty structure. In this way calling the property function will raise an error that
             % we will catch (see call passed in eval below)
             mn = propfunc.modelnamespace;
-            state = ComputationalGraphTool.setupState([], mn);
-
-            model = cgt.model; % needed in function call passed in eval
+            
+            state         = ComputationalGraphTool.setupState([], mn);
+            state0        = state; % may be needed in case of accumulation term
+            dt            = 0;     % may be needed in case of accumulation term
+            drivingForces = [];    % may be needed in case of update of driving force term
+            model         = cgt.model; % needed in function call passed in eval
             
             fncallstr = propfunc.functionCallSetupFn(propfunc);
 

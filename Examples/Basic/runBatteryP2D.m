@@ -152,6 +152,12 @@ grid on
 xlabel 'time  / h';
 ylabel 'potential  / V';
 
+figure
+plot(time/hour, I);
+grid on
+xlabel 'time  / h';
+ylabel 'Current  / A';
+
 writeh5 = false;
 if writeh5
     writeOutput(model, states, 'output.h5');

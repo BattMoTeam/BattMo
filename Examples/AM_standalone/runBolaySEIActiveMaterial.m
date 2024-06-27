@@ -28,8 +28,8 @@ jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_se
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
 
-jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
-                                     jsonstruct_bolay});
+jsonstruct = mergeJsonStructs({jsonstruct, ...
+                               jsonstruct_bolay});
 
 jsonstruct.SEImodel              = 'Bolay';
 jsonstruct.(sd).N                = 10;
@@ -64,7 +64,7 @@ T = 298.15;
 
 % The following datas come from :cite:`Bolay2022` (supplementary material)
 % Length of SEI layer
-SEIlength = 10*nano*meter;
+SEIlength = model.(itf).SEIlengthInitial;
 % SEI voltage drop
 SEIvoltageDrop = 0;
 
@@ -77,16 +77,18 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E                    = phiElectrodeInit;
-initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
-initState.(itf).SEIlength      = SEIlength;
-initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
+initState.E                              = phiElectrodeInit;
+initState.(sd).c                         = cElectrodeInit*ones(Nsd, 1);
+initState.(itf).SEIlength                = SEIlength;
+initState.(itf).normalizedSEIlength      = SEIlength/model.(itf).SEIlengthRef;
+% initState.(itf).normalizedSEIvoltageDrop is setup below
+
 
 % We set also static variable fields
 initState.(itf).cElectrolyte   = cElectrolyte;
 initState.(itf).phiElectrolyte = phiElectrolyte;
 
-%% Setup schedule
+%% Setup scaling
 
 Imax = 3e-12*ampere;
 
@@ -96,24 +98,31 @@ scalings{end + 1} = {{sd, 'massCons'}, coef};
 scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
 scalings{end + 1} = {{'chargeCons'}, Imax};
 
-L0 = 1*nano*meter;
-k  = model.(itf).SEIionicConductivity;
-rp = model.(sd).particleRadius;
-F  = PhysicalConstants.F;
+rp  = model.(sd).particleRadius;
+L   = model.(itf).SEIlengthRef;
 vsa = model.(sd).volumetricSurfaceArea;
+k   = model.(itf).SEIionicConductivity;
 
-coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
+volp = 4/3*pi*rp^3;
 
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
+SEIvoltageDropRef = L*Imax/(vsa*k*volp);
+model.(itf).SEIvoltageDropRef = SEIvoltageDropRef;
+
+scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, SEIvoltageDropRef};
 
 De = model.(itf).SEIelectronicDiffusionCoefficient;
 ce = model.(itf).SEIintersticialConcentration;
+L  = model.(itf).SEIlengthRef;
 
-coef = De*ce/L0;
+coef = De*ce/L;
 
 scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
 
 model.scalings = scalings;
+
+initState.(itf).normalizedSEIvoltageDrop = SEIvoltageDrop/model.(itf).SEIvoltageDropRef;
+
+%% Setup schedule
 
 total = 60*minute;
 n     = 200;
@@ -203,3 +212,16 @@ xlabel('time / hour')
 ylabel('length / m')
 title('SEI layer length')
 
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {itf, 'SEIvoltageDrop'});
+end
+
+
+SEIvoltageDrops = cellfun(@(state) state.Interface.SEIvoltageDrop, states);
+
+figure;
+plot(time/hour, SEIvoltageDrops);
+xlabel('time / h');
+ylabel('Voltage drop /V');
+title('SEI voltage drop');
+grid on;
