@@ -11,7 +11,8 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
     jsonstruct = resolveUnitInputJson(jsonstruct);
 
     if isAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
-        jsonstruct = setJsonStructField(jsonstruct, {co, 'use_normed_current_collector'}, false);
+        jsonstruct = setJsonStructField(jsonstruct, {'PositiveElectrode', 'use_normed_current_collector'}, false);
+        jsonstruct = setJsonStructField(jsonstruct, {'NegativeElectrode', 'use_normed_current_collector'}, false);
     end        
     
     inputparams = BatteryInputParams(jsonstruct);
@@ -19,7 +20,7 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
     % Setup the geometry
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
-    if sAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
+    if isAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
         model = Battery(inputparams);
     else
         model = GenericBattery(inputparams);
