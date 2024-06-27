@@ -245,6 +245,29 @@ classdef ThermalComponent < BaseModel
 
         end
 
+
+        function outputvars = extractGlobalVariables(model, states)
+
+            ns = numel(states);
+
+            if ns == 0
+                % This happens when simulation fail to converge at first step
+                outputvars = [];
+            else
+                for i = 1 : ns
+
+                    T    = states{i}.T;
+                    
+                    Tmax = max(T);
+                    Tmin = min(T);
+
+                    outputvars{i} = struct('Tmax', Tmax, ...
+                                           'Tmin', Tmin);                        
+                end
+            end
+        end
+        
+
     end
 
 end
