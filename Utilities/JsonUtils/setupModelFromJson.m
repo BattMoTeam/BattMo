@@ -9,14 +9,17 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
     
     % We convert all the numerical value to SI unit.
     jsonstruct = resolveUnitInputJson(jsonstruct);
+
+    if isAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
+        jsonstruct = setJsonStructField(jsonstruct, {co, 'use_normed_current_collector'}, false);
+    end        
     
     inputparams = BatteryInputParams(jsonstruct);
 
     % Setup the geometry
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
-    linsolver = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver'});
-    if isAssigned(linsolver)
+    if sAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
         model = Battery(inputparams);
     else
         model = GenericBattery(inputparams);
