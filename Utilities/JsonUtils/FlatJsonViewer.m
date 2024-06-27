@@ -41,7 +41,7 @@ classdef FlatJsonViewer
             opt = merge_options(opt, varargin{:});
             
             if ~isempty(opt.filter)
-                fjv = fjv.filter(opt.filterdesc);
+                fjv = fjv.filter(opt.filter);
             end
             
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
