@@ -9,15 +9,16 @@
       "properties": {
         "totalTime": {
           "$ref": "PhysicalQuantity.schema.json",
-          "description": "Total time. If not given, may be inferred by some control models",
+          "description": "Total time. It is usually computed by the control models and then this value is ignored (for example from number of cycles in a CCCV protocol or for discharge and charge protocol).",
           "symmbol": ""
         },
         "timeStepDuration": {
           "type": "number"
+          "description" : "Length of the time step. The solution is computed for every time step."
         },
         "numberOfTimeSteps": {
           "type": "integer",
-          "description": "number of time steps, then we compute the time step duration from total time and number of time steps"
+          "description": "Number of time steps. If timeStepDuration is not given, we use this number to compute it, using  total time. The default number of time step values is 100."
         },
         "useRampup": {
           "type": "boolean"
