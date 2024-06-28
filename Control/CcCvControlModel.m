@@ -293,7 +293,7 @@ classdef CcCvControlModel < ControlModel
             end
 
             if ~isempty(params.timeStepDuration)
-                dt = params.timeStepDuration
+                dt = params.timeStepDuration;
             else
                 n  = params.numberOfTimeSteps;
                 dt = totalTime/n;

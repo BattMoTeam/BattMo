@@ -2,7 +2,7 @@ classdef ImpedanceControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function inputparams = ImpedanceControlModelInputParams(jsonstruct);
+        function inputparams = ImpedanceControlModelInputParams(jsonstruct)
 
 
             jsonstruct = setJsonStructField(jsonstruct, 'controlPolicy', 'Impedance');
