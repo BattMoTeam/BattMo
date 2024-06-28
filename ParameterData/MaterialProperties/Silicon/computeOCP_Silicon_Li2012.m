@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCPSiliconLi2012(c, T, cmax)
+function [OCP, dUdT] = computeOCP_Silicon_Li2012(c, T, cmax)
 % From
 % Juchuan Li, Xingcheng Xiao, Fuqian Yang, Mark W. Verbrugge, Yang-Tse Cheng
 % Potentiostatic Intermittent Titration Technique for Electrodes Governed by Diffusion and Interfacial Reaction

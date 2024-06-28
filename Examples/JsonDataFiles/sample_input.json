@@ -29,7 +29,7 @@
           "chargeTransferCoefficient": 0.5,
           "openCircuitPotential": {
             "type": "function",
-            "functionname": "computeOCP_graphite",
+            "functionname": "computeOCP_Graphite_Torchio",
             "argumentlist": [
               "concentration",
               "temperature",
@@ -99,7 +99,7 @@
           "chargeTransferCoefficient": 0.5,
           "openCircuitPotential": {
             "type": "function",
-            "functionname": "computeOCP_nmc111",
+            "functionname": "computeOCP_NMC111",
             "argumentlist": [
               "concentration",
               "temperature",

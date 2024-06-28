@@ -1,21 +1,18 @@
-function conductivity = computeElectrolyteConductivityFunc_Xu(c, T)
+function [OCP, dUdT] = computeOCP_Graphite_SiOx_Chen2020(c, ~, cmax)
+    % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
+    % from [1].
+
+    % References
+    % ----------
+    % .. [1] Chang-Hui Chen, Ferran Brosa Planella, Kieran O’Regan, Dominika Gastol, W.
+    % Dhammika Widanage, and Emma Kendrick. "Development of Experimental Techniques for
+    % Parameterization of Multi-scale Lithium-ion Battery Models." Journal of the
+    % Electrochemical Society 167 (2020): 080534.
+
+    sto = c./cmax;
+    OCP = 1.9793*exp(-39.3631*sto) + 0.2482 - 0.0909*tanh(29.8538*(sto - 0.1234)) - 0.04478*tanh(14.9159*(sto - 0.2769)) - 0.0205*tanh(30.4444*(sto - 0.6103));
     
-    conductivityFactor = 1e-4;
-    
-    %cnst = [-10.5   , 0.074    , -6.96e-5; ...
-    %        0.668e-3, -1.78e-5 , 2.80e-8; ...
-    %        0.494e-6, -8.86e-10, 0];            
-            
-    
-    % Ionic conductivity, [S m^-1]
-    %conductivity = conductivityFactor.* c .*( polyval(cnst(end:-1:1,1),c) + polyval(cnst(end:-1:1,2),c) .* T + ...
-    %                                          polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
-    %From cideMOD
-    conductivity=c.*1e-4*1.2544.* ...
-        (-8.2488+0.053248.*T-2.987e-5*(T.^2)+ ...
-        0.26235e-3.*c-9.3063e-6.*c.*T+ ...
-        8.069e-9.*c.*T.^2+ ...
-        2.2002e-7.*c.^2-1.765e-10.*T.*c.^2);
+    dUdT = 0;
     
 end
 
