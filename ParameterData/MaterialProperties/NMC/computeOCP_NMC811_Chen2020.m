@@ -1,17 +1,15 @@
-function [OCP, dUdT] = computeOCP_graphite_Chen(c, ~, cmax)
-    % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
+function [OCP, dUdT] = computeOCP_NMC811_Chen2020(c, T, cmax)
+
+    % LG M50 NMC open circuit potential as a function of stochiometry, fit taken
     % from [1].
 
-    % References
-    % ----------
-    % .. [1] Chang-Hui Chen, Ferran Brosa Planella, Kieran O’Regan, Dominika Gastol, W.
+    % [1] Chang-Hui Chen, Ferran Brosa Planella, Kieran O’Regan, Dominika Gastol, W.
     % Dhammika Widanage, and Emma Kendrick. "Development of Experimental Techniques for
     % Parameterization of Multi-scale Lithium-ion Battery Models." Journal of the
     % Electrochemical Society 167 (2020): 080534.
 
     sto = c./cmax;
-    OCP = 1.9793*exp(-39.3631*sto) + 0.2482 - 0.0909*tanh(29.8538*(sto - 0.1234)) - 0.04478*tanh(14.9159*(sto - 0.2769)) - 0.0205*tanh(30.4444*(sto - 0.6103));
-    
+    OCP = -0.8090*sto + 4.4875 - 0.0428*tanh(18.5138*(sto - 0.5542)) - 17.7326*tanh(15.7890*(sto - 0.3117)) + 17.5842*tanh(15.9308*(sto - 0.3120));
     dUdT = 0;
     
 end

@@ -8,7 +8,7 @@
   },
   "Conductivity": {
     "type": "function",
-    "functionname": "computeElectrolyteConductivityFunc_Xu",
+    "functionname": "computeElectrolyteConductivity_Xu2015",
     "argumentlist": [
       "concentration",
       "temperature"
@@ -16,7 +16,7 @@
   },
   "DiffusionCoefficient": {
     "type": "function",
-    "functionname": "computeDiffusionCoefficientFunc_Xu",
+    "functionname": "computeDiffusionCoefficient_Xu2015",
     "argumentlist": [
       "concentration",
       "temperature"

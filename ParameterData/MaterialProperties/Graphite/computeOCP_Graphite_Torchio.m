@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_graphite(c, T, cmax)
+function [OCP, dUdT] = computeOCP_Graphite_Torchio(c, T, cmax)
 %   Calculate the equilibrium open cirucuit potential of
 %   graphite according to the model used by Torchio et al [1].
 

@@ -23,7 +23,7 @@
         "electricalConductivity": 2,
         "Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
+          "filename": "ParameterData/MaterialProperties/Graphite/LiC6_Xu.json"
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
