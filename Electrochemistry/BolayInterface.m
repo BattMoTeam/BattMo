@@ -57,7 +57,9 @@ classdef BolayInterface < Interface
             varnames{end + 1} = 'SEImassCons';
             % potential in electrolyte
             varnames{end + 1} = 'SEIvoltageDropEquation';
-
+            % concentration of Lithium in the SEI (per total volume) in mol/m^3
+            varnames{end + 1} = 'SEIconcentration';
+            
             model = model.registerVarNames(varnames);
 
             fn = @BolayInterface.updateSEIlength;
@@ -85,8 +87,26 @@ classdef BolayInterface < Interface
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'SEIvoltageDrop'};
             model = model.registerPropFunction({'eta', fn, inputnames});
 
+            fn = @BolayInterface.updateSEIconcentration;
+            model = model.registerPropFunction({'SEIconcentration', fn, {'SEIlength'}});
+
+            model = model.setAsExtraVarName('SEIconcentration');
+            
         end
 
+
+        function state = updateSEIconcentration(model, state)
+            
+            vsa     = model.volumetricSurfaceArea;
+	    scoef   = model.SEIstochiometricCoeffcient;
+	    seimvol = model.SEImolarVolume;
+
+            l = state.SEIlength;
+            
+            state.SEIconcentration = (scoef/seimvol)*l.*vsa;
+
+        end
+        
         function state = updateSEIflux(model, state)
 
             De  = model.SEIelectronicDiffusionCoefficient;
