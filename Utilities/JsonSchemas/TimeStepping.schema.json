@@ -13,7 +13,7 @@
           "symmbol": ""
         },
         "timeStepDuration": {
-          "type": "number"
+          "type": "number",
           "description" : "Length of the time step. The solution is computed for every time step."
         },
         "numberOfTimeSteps": {
