@@ -15,7 +15,7 @@
   },
   "NegativeElectrode": {
     "Coating": {
-		"volumeFraction": 0.4,
+      "volumeFraction": 0.4,
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {

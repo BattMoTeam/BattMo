@@ -1,99 +1,81 @@
-%% Particle simulation with SEI layer growth (Bolay et al 2022)
 
-% clear the workspace and close open figures
-clear
-close all
+doSetup = false;
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
+if doSetup
+    
+    SOC = linspace(0, 1, 15);
+    % DiffE = [2; 3; 4]*1e-15;
+    % [~, simlist] = cartesianProduct(SOC, DiffE);
+    
+    [~, simlist] = cartesianProduct(SOC);
+    
+    outputs = {};
+    for isim = 1 : numel(simlist)
+        
+        input = simlist{isim};
+        simlist{isim}.simnumber = isim;
+        outputs{isim} = runBolaySEIfunction(input);
+        
+    end
 
-ne    = 'NegativeElectrode';
-pe    = 'PositiveElectrode';
-am    = 'ActiveMaterial';
-co    = 'Coating';
-sd    = 'SolidDiffusion';
-itf   = 'Interface';
-sei   = 'SolidElectrodeInterface';
-sr    = 'SideReaction';
-elyte = 'Electrolyte';
-ctrl  = 'Control';
-
-%% Setup the properties of the Li-ion battery materials and of the cell design
-jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite_bolay.json');
-jsonstruct = parseBattmoJson(jsonfilename);
-
-jsonstruct.use_thermal = false;
-
-jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
-jsonstruct_bolay = parseBattmoJson(jsonfilename);
-
-jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
-                                              jsonstruct_bolay});
-
-jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
-
-jsontruct_control = struct( 'controlPolicy'     , 'CCDischarge', ...
-                            'initialControl'    , 'discharging', ...
-                            'DRate'             , 1            , ...
-                            'lowerCutoffVoltage', 3            , ...
-                            'rampupTime'        , 100          , ...
-                            'upperCutoffVoltage', 4);
-
-jsonstruct.(ctrl) = jsontruct_control;
-
-
-jsonstruct.(ne).(co).(am).(itf).SEIelectronicDiffusionCoefficient = 3.5e-15;
-
-jsonstruct.SOC = 1;
-doPrintJsonStruct = false;
-
-if doPrintJsonStruct
-    fjv = flattenJsonStruct(jsonstruct);
-    % fjv.print('filter', {'parame name', 'SEI'})
 end
 
-%%
+bp = BatchProcessor(simlist);
+bp.printSimList(simlist);
 
-inputparams = BatteryInputParams(jsonstruct);
+capacity = computeCellCapacity(outputs{1}.model);
+F = PhysicalConstants.F;
 
-gen = BatteryGeneratorP2D();
-inputparams = gen.updateBatteryInputParams(inputparams);
+figure
+hold on
 
-model = GenericBattery(inputparams);
+for isim = 1 : numel(simlist)
 
-%% Setup the schedule
-%
+    input = simlist{isim};
 
-model.Control.Imax = 0;
+    output = outputs{input.simnumber};
+    
+    qty  = output.quantities;
+    qty  = qty - qty(1);
+    time = output.time;
+    
+    % legendtxt = sprintf('SOC : %g, De : %g', input.SOC, input.DiffE);
+    legendtxt = sprintf('SOC : %g', input.SOC);
+    plot(time/year, 100 * (qty*F) / capacity, 'displayname', legendtxt);
+    
+end
 
-% schedule = model.(ctrl).setupSchedule([]);
+title('Percentage of Lithium consummed');
+xlabel('Time / year');
+ylabel('%');
 
-jsonstruct.TimeStepping.numberOfTimeSteps = 200;
-jsonstruct.TimeStepping.totalTime         = 1*year;
+legend show
 
-schedule = model.(ctrl).setupSchedule(jsonstruct);
+grid on;
 
-%% Setup the initial state of the model
-% The initial state of the model is setup using the model.setupInitialState() method.
+qtys = [];
+socs = [];
+for isim = 1 : numel(simlist)
 
-initstate = model.setupInitialState();
+    input = simlist{isim};
 
-%% Setup non-linear solver
+    socs(isim) = input.SOC;
+    
+    output = outputs{input.simnumber};
+    
+    qty = output.quantities;
+    qty = qty - qty(1);
+    qty = 100 * (qty*F) / capacity;
+    
+    qtys(isim) = qty(end);
+    
+end
 
-nls = NonLinearSolver();
+figure
+plot(socs, qtys)
 
-nls.errorOnFailure   = false;
-nls.maxTimestepCuts  = 10;
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+return
 
-model.nonlinearTolerance = 1e-5;
-
-%% Run simulation
-
-model.verbose = true;
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% Setup for plotting
 
@@ -268,3 +250,4 @@ title('Percentage of Lithium consummed');
 xlabel('Time / year');
 ylabel('%');
 grid on;
+
