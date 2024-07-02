@@ -137,7 +137,41 @@
   },
   "Electrolyte": {
     "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
-    "isFile": true
+    "isFile": false,
+  "specificHeatCapacity": 2055.0,
+  "thermalConductivity": 0.6,
+  "density": 1200,
+  "initialConcentration": {
+    "value": 1,
+    "unit": "mol/litre"
+  },
+  "nominalEthyleneCarbonateConcentration": {
+    "value": 1,
+    "unit": "mol/litre"
+  },
+  "ionicConductivity": {
+    "type": "function",
+    "functionname": "computeElectrolyteConductivity_bolay",
+    "argumentlist": [
+      "concentration",
+      "temperature"
+    ]
+  },
+  "diffusionCoefficient": {
+    "type": "function",
+    "functionname": "computeDiffusionCoefficient_bolay",
+    "argumentlist": [
+      "concentration",
+      "temperature"
+    ]
+  },
+  "species": {
+    "chargeNumber": 1,
+    "transferenceNumber":0.2594,
+    "nominalConcentration": 1000
+  },
+  "bruggemanCoefficient": 1.5
+
   },
   "Separator": {
     "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
