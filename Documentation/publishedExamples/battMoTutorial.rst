@@ -35,7 +35,7 @@ In this tutorial we will simulate a lithium-ion battery consisting of a negative
 
 .. code-block:: matlab
 
-  fname = fullfile('ParameterData','BatteryCellParameters',...
+  fname = fullfile('ParameterData','BatteryCellParameters',...
                    'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
   jsonstruct = parseBattmoJson(fname);
 
@@ -74,7 +74,7 @@ Now we can set the diffusion model type for the active material (am) in the posi
   jsonstruct.(pe).(am).diffusionModelType = 'full';
   jsonstruct.(ne).(am).diffusionModelType = 'full';
 
-To see which other types of diffusion model are available one can view :battmo:`ActiveMaterialInputParams`.  When running a simulation, BattMo requires that all model parameters are stored in an instance of :battmo:`BatteryInputParams`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
+To see which other types of diffusion model are available one can view :battmo:`ActiveMaterialInputParams`. When running a simulation, BattMo requires that all model parameters are stored in an instance of :battmo:`BatteryInputParams`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
 
 .. code-block:: matlab
 
@@ -157,22 +157,11 @@ We can inspect the model object to find out which parameters are being used. For
 Controlling the simulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 The control model specifies how the battery is operated, i.e., how the simulation is controlled.
-In the first instance we use CCDischarge control policy. We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:
+The input parameters for the control have been given as part of the json structure :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`. The total simulation time is setup for us, computed from the CRate value. We use the method :code:`setupScheduleStep` in :battmo:`ControlModel` to setup the :code:`step` structure.
 
 .. code-block:: matlab
 
-  CRate = model.Control.CRate;
-  total = 1.1*hour/CRate;
-
-We want to break this total time into 100 timesteps. To begin with we will use equal values for each timestep.
-We create a structure containing the length of each step in seconds ('val') and also which control to use for each step ('control').
-In this case we use control 1 for all steps. This means that the functions used to setup the control values are the same at each step.
-
-.. code-block:: matlab
-
-  n  = 100;
-  dt = total/n;
-  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+  step = model.Control.setupScheduleStep();
 
 We create a control structure containing the source function and and a stopping criteria. The control parameters have been given in the json file :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
 The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
@@ -200,7 +189,7 @@ To run simulation we need to know the starting point which we will run it from, 
 Running the simulation
 ^^^^^^^^^^^^^^^^^^^^^^
 Once we have the initial state, the model and the schedule, we can call the simulateScheduleAD function which will actually run the simulation.
-The outputs from the simulation are: - sols: which provides the current and voltage of the battery at each   timestep. - states: which contains the values of the primary variables in the model   at each timestep. - reports: which contains technical information about the steps used in   the numerical solvers.
+The outputs from the simulation are: - sols: which provides the current and voltage of the battery at each timestep. - states: which contains the values of the primary variables in the model at each timestep. - reports: which contains technical information about the steps used in the numerical solvers.
 
 .. code-block:: matlab
 

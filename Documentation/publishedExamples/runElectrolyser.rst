@@ -13,7 +13,7 @@ Load MRST modules
 
 .. code-block:: matlab
 
-  mrstModule add ad-core matlab_bgl
+  mrstModule add ad-core
 
 
 Setup input
@@ -155,55 +155,57 @@ We consider the three domains and plot the pH in each of those. We setup the hel
 
 .. code-block:: matlab
 
-  models = {model.(oer).(ptl), ...
-            model.(her).(ptl), ...
-            model.(inm)};
+  doplot = false;
   
-  fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
-            {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
-            {'IonomerMembrane', 'cOH'}};
+  if doplot
   
-  h = figure();
-  set(h, 'position', [10, 10, 800, 450]);
-  hold on
+      models = {model.(oer).(ptl), ...
+                model.(her).(ptl), ...
+                model.(inm)};
   
-  ntime = numel(time);
-  times = linspace(1, ntime, 10);
-  cmap  = cmocean('deep', 10);
+      fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
+                {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
+                {'IonomerMembrane', 'cOH'}};
   
-  for ifield = 1 : numel(fields)
+      h = figure();
+      set(h, 'position', [10, 10, 800, 450]);
+      hold on
   
-      fd       = fields{ifield};
-      submodel = models{ifield};
+      ntime = numel(time);
+      times = linspace(1, ntime, 10);
+      cmap  = cmocean('deep', 10);
   
-      x    = submodel.grid.cells.centroids;
+      for ifield = 1 : numel(fields)
   
-      for itimes = 1 : numel(times);
+          fd       = fields{ifield};
+          submodel = models{ifield};
   
-          itime = floor(times(itimes));
-          % The method :code:`getProp` is used to recover the value from the state structure
-          val   = model.getProp(states{itime}, fd);
-          pH    = 14 + log10(val/(mol/litre));
+          x    = submodel.G.cells.centroids;
   
-          % plot of pH for the current submodel.
-          plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
+          for itimes = 1 : numel(times);
+  
+              itime = floor(times(itimes));
+              % The method :code:`getProp` is used to recover the value from the state structure
+              val   = model.getProp(states{itime}, fd);
+              pH    = 14 + log10(val/(mol/litre));
+  
+              % plot of pH for the current submodel.
+              plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
+  
+          end
   
       end
   
+      xlabel('x  /  mm');
+      ylabel('pH');
+      title('pH distribition in electrolyser')
+  
+      colormap(cmap)
+      hColorbar = colorbar;
+      caxis([0 3]);
+      hTitle = get(hColorbar, 'Title');
+      set(hTitle, 'string', 'J (A/cm^2)');
   end
-  
-  xlabel('x  /  mm');
-  ylabel('pH');
-  title('pH distribition in electrolyser')
-  
-  colormap(cmap)
-  hColorbar = colorbar;
-  caxis([0 3]);
-  hTitle = get(hColorbar, 'Title');
-  set(hTitle, 'string', 'J (A/cm^2)');
-
-.. figure:: runElectrolyser_02.png
-  :figwidth: 100%
 
 
 
