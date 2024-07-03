@@ -92,8 +92,8 @@ classdef BatteryInputParams < InputParams
                 inputparams.(ctrl) = CcCvControlModelInputParams(pick(ctrl));
               case 'powerControl'
                 inputparams.(ctrl) = PowerControlModelInputParams(pick(ctrl));
-              case 'CC'
-                inputparams.(ctrl) = CcControlModelInputParams(pick(ctrl));
+              case 'timecontrol'
+                inputparams.(ctrl) = TimeControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end

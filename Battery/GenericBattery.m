@@ -220,7 +220,7 @@ classdef GenericBattery < BaseModel
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC'}
+              case {'CCDischarge', 'CCCharge', 'CC', 'timecontrol'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
               case {'CCCV', 'Impedance'}
                 % do nothing
@@ -520,6 +520,10 @@ classdef GenericBattery < BaseModel
 
             switch inputparams.controlPolicy
 
+              case 'timecontrol'
+
+                control = TimeControlModel(inputparams);
+                
               case "Impedance"
 
                 control = ImpedanceControlModel(inputparams);
@@ -886,6 +890,12 @@ classdef GenericBattery < BaseModel
                 
                 initstate.(ctrl).I = 0;
 
+              case {'timecontrol'}
+
+                %  We initiate to some values, but they should be overriden as the simulation starts
+                initstate.(ctrl).I        = 0;
+                initstate.(ctrl).ctrlType = 'constantCurrent';
+                
               case {'CCDischarge', 'CCCharge'}
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
@@ -1147,6 +1157,13 @@ classdef GenericBattery < BaseModel
 
                 % nothing to do here
 
+              case {'timecontrol'}
+
+                [ctrlVal, ctrlType] = model.(ctrl).computeInput(state.time);
+
+                state.(ctrl).ctrlVal  = ctrlVal;
+                state.(ctrl).ctrlType = ctrlType;
+                
               case {'CCDischarge', 'CCCharge'}
 
                 Imax = model.(ctrl).Imax;
@@ -1630,6 +1647,8 @@ classdef GenericBattery < BaseModel
                 forces.powerControl = true;
               case 'CC'
                 forces.CC = true;
+              case 'timecontrol'
+                forces.timecontrol = true;
               case 'None'
                 % used only in addVariables
               otherwise
