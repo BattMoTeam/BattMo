@@ -35,7 +35,7 @@ classdef GenericBattery < BaseModel
 
         % We write here the jsonstruct that has been process when constructing inputparams
         jsonstruct
-        
+
     end
 
     methods
@@ -59,7 +59,7 @@ classdef GenericBattery < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             model.jsonstruct = inputparams.jsonstruct;
-            
+
             model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
             model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
             model.Separator         = Separator(inputparams.Separator);
@@ -109,7 +109,7 @@ classdef GenericBattery < BaseModel
                            'Control'                ,'ctrl'   ; ...
                            'SideReaction'           ,'sr'     ; ...
                            'SolidElectrodeInterface','sei'};
-            
+
             model = model.equipModelForComputation('shortNames', shortNames);
 
         end
@@ -137,7 +137,7 @@ classdef GenericBattery < BaseModel
             ctrl    = 'Control';
             sr      = 'SideReaction';
             sei     = 'SolidElectrodeInterface';
-            
+
             if ~model.use_thermal
                 % we register the temperature variable, as it is not done by the ThermalModel which is empty in this case
                 model = model.registerVarName({thermal, 'T'});
@@ -213,14 +213,14 @@ classdef GenericBattery < BaseModel
             if model.include_current_collectors && model.(pe).use_normed_current_collector
                 fn = @GenericBattery.updateCurrentCollectorPhiRef;
                 inputnames = {{ctrl, 'E'}};
-                model = model.registerPropFunction({{pe, cc, 'phiRef'}, fn, inputnames});                
+                model = model.registerPropFunction({{pe, cc, 'phiRef'}, fn, inputnames});
             end
 
             inputnames = {};
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC', 'timecontrol'}
+              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
               case {'CCCV', 'Impedance'}
                 % do nothing
@@ -342,12 +342,12 @@ classdef GenericBattery < BaseModel
             ctrl    = 'Control';
             sr      = 'SideReaction';
             sei     = 'SolidElectrodeInterface';
-            
+
             eldes = {ne, pe};
 
             % We compute a scaling for the reaction rate coefficient j0 (see Interface model) and Volumetric reaction rate Rvol
             % in mol/(s*m^3) (see SolidDiffusion model)
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
@@ -373,7 +373,7 @@ classdef GenericBattery < BaseModel
 
                 vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
                 F   = model.con.F;
-                
+
                 Rvols(ielde) = j0s(ielde)*vsa/F;
 
                 % reference for the conductivity
@@ -381,12 +381,12 @@ classdef GenericBattery < BaseModel
                 if model.(elde).include_current_collectors
                     condRef.(elde).(cc) = model.(elde).(cc).effectiveElectronicConductivity;
                 end
-                
+
             end
 
             j0Ref   = mean(j0s);
             RvolRef = mean(Rvols);
-            
+
             volRef.(ne).(co) = mean(model.(ne).(co).G.getVolumes());
             volRef.(pe).(co) = mean(model.(pe).(co).G.getVolumes());
 
@@ -394,20 +394,20 @@ classdef GenericBattery < BaseModel
                 volRef.(ne).(cc) = mean(model.(ne).(cc).G.getVolumes());
                 volRef.(pe).(cc) = mean(model.(pe).(cc).G.getVolumes());
             end
-            
+
             volRef.(elyte) = mean(model.(elyte).G.getVolumes());
-            
+
             F = model.con.F;
 
             scalings = {};
 
             scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
             scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
                 if model.include_current_collectors
@@ -415,7 +415,7 @@ classdef GenericBattery < BaseModel
                     coef = condRef.(elde).(cc)/condRef.(elde).(co);
                     scalings{end + 1} = {{elde, cc, 'chargeCons'}, coef*F*volRef.(elde).(cc)*RvolRef};
                 end
-                
+
                 if  model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
                 else
@@ -430,14 +430,14 @@ classdef GenericBattery < BaseModel
 
                       case 'simple'
 
-                        
+
                         scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, RvolRef};
 
                         rp  = model.(elde).(co).(amc).(sd).particleRadius;
                         vsa = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
                         D0  = model.(elde).(co).(amc).(sd).referenceDiffusionCoefficient;
                         scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, rp*RvolRef/(5*vsa*D0)};
-                        
+
                       case 'full'
 
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
@@ -447,7 +447,7 @@ classdef GenericBattery < BaseModel
                         coef = RvolRef*volp;
                         scalings{end + 1} = {{elde, co, amc, sd, 'massCons'}, coef};
                         scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, coef};
-                        
+
                       otherwise
 
                         error('diffusionModelType not recognized');
@@ -456,7 +456,7 @@ classdef GenericBattery < BaseModel
 
 
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
-                        
+
                       case 'none'
 
                         % nothing more to add
@@ -471,12 +471,12 @@ classdef GenericBattery < BaseModel
                         SEIvoltageDropRef = F*RvolRef/vsa*L/k;
                         scalings{end + 1} = {{elde, co, amc, itf, 'SEIvoltageDropEquation'}, SEIvoltageDropRef};
                         model.(elde).(co).(amc).(itf).SEIvoltageDropRef = SEIvoltageDropRef;
-                        
+
                         De = model.(elde).(co).(amc).(itf).SEIelectronicDiffusionCoefficient;
                         ce = model.(elde).(co).(amc).(itf).SEIintersticialConcentration;
-                        
+
                         scalings{end + 1} = {{elde, co, amc, itf, 'SEImassCons'}, De*ce/L};
-                        
+
                       case 'Safari'
                         % we use the scaling given for {elde, co, amc, sd, 'massCons'} and use the same ratio as in the
                         % scaling for the standalone model SEIActiveMaterial for the SEI parts.
@@ -489,45 +489,45 @@ classdef GenericBattery < BaseModel
                         scalings{end + 1} = {{elde, co, am, sei, 'widthEq'}, RvolRef/vsa*Mw/rho};
 
                         deltaref = 1*nano*meter;
-                        
+
                         scalings{end + 1} = {{elde, co, am, sei, 'interfaceBoundaryEq'}, deltaref*RvolRef/vsa};
                         scalings{end + 1} = {{elde, co, am, sei, 'massCons'}, deltaref*RvolRef/vsa};
 
                       otherwise
-                        
+
                         error('SEI model not recognized');
                     end
 
                 end
-                
+
             end
 
             model.scalings = scalings;
-            
+
         end
 
         function printJsonStruct(model)
 
             fjv = flattenJsonStruct(model.jsonstruct);
             fjv.print();
-            
+
         end
 
-        
+
         function control = setupControl(model, inputparams)
 
             C = computeCellCapacity(model);
 
             switch inputparams.controlPolicy
 
-              case 'timecontrol'
+              case 'timeControl'
 
                 control = TimeControlModel(inputparams);
-                
+
               case "Impedance"
 
                 control = ImpedanceControlModel(inputparams);
-                
+
               case "CCDischarge"
 
                 control = CCDischargeControlModel(inputparams);
@@ -547,7 +547,7 @@ classdef GenericBattery < BaseModel
                 DRate = control.DRate;
                 control.ImaxCharge    = (C/hour)*CRate;
                 control.ImaxDischarge = (C/hour)*DRate;
-                
+
               case "powerControl"
 
                 control = PowerControlModel(inputparams);
@@ -735,7 +735,7 @@ classdef GenericBattery < BaseModel
             ctrl    = 'Control';
             sr      = 'SideReaction';
             sei     = 'SolidElectrodeInterface';
-            
+
             initstate.(thermal).T = T*ones(nc, 1);
 
             %% Synchronize temperatures
@@ -786,14 +786,14 @@ classdef GenericBattery < BaseModel
 
                       case 'none'
                         %  nothing to do
-                        
+
                       case 'Safari'
-                        
+
                         N = model.(elde).(co).(amc).(sei).N;
-                        np = model.(elde).(co).(amc).(sei).np; % Note : we have by construction np = nc                        
+                        np = model.(elde).(co).(amc).(sei).np; % Note : we have by construction np = nc
 
                         cExternal = jsonstruct.Electrolyte.initialEthyleneCarbonateConcentration;
-                        
+
                         initstate.(elde).(co).(amc).(sei).cExternal  = cExternal;
                         initstate.(elde).(co).(amc).(sei).c          = cExternal*ones(N*np, 1);
                         initstate.(elde).(co).(amc).(sei).cInterface = cExternal*ones(np, 1);
@@ -807,13 +807,13 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(np, 1);
 
                         initstate = model.evalVarName(initstate, {ne, co, amc, itf, 'SEIlength'});
-                        
+
                       otherwise
-                        
+
                         error('SEI model not recognized');
-                        
+
                     end
-                    
+
                 end
 
                 % In case of two material, we choose first material for the initial OCP
@@ -837,9 +837,9 @@ classdef GenericBattery < BaseModel
             initstate.(elyte).phi = zeros(bat.(elyte).G.getNumberOfCells(), 1) - ref;
             initstate.(elyte).c   = jsonstruct.Electrolyte.initialConcentration*ones(bat.(elyte).G.getNumberOfCells(), 1);
 
-            
+
             %% Setup initial variables needed in case of double layer
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
@@ -853,7 +853,7 @@ classdef GenericBattery < BaseModel
                 for iam = 1 : numel(ams)
 
                     amc = ams{iam};
-                    
+
                     if model.(elde).(co).(amc).(itf).useDoubleLayerCapacity
                         initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'cElectrolyte'});
                         initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'phiElectrode'});
@@ -861,9 +861,9 @@ classdef GenericBattery < BaseModel
                     end
 
                 end
-                
+
             end
-            
+
             %% Setup initial Current collectors state
 
             if model.(ne).include_current_collectors
@@ -887,15 +887,15 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
 
               case {'Impedance'}
-                
+
                 initstate.(ctrl).I = 0;
 
-              case {'timecontrol'}
+              case {'timeControl'}
 
                 %  We initiate to some values, but they should be overriden as the simulation starts
                 initstate.(ctrl).I        = 0;
                 initstate.(ctrl).ctrlType = 'constantCurrent';
-                
+
               case {'CCDischarge', 'CCCharge'}
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
@@ -949,7 +949,7 @@ classdef GenericBattery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
-                
+
               otherwise
                 error('control policy not recognized');
             end
@@ -1035,12 +1035,12 @@ classdef GenericBattery < BaseModel
             opt = merge_options(opt, varargin{:});
 
             jsonstruct = exportParams@BaseModel(model);
-            
+
             fdnames = {'SOC'        , ...
                        'initT'      , ...
                        'use_thermal', ...
                        'include_current_collectors'};
-            
+
             for ifd = 1 : numel(fdnames)
                 fdname = fdnames{ifd};
                 jsonstruct.(fdname) = model.(fdname);
@@ -1055,11 +1055,11 @@ classdef GenericBattery < BaseModel
             pe   = 'PositiveElectrode';
             cc   = 'CurrentCollector';
             ctrl = 'Control';
-            
+
             state.(pe).(cc).phiRef = state.(ctrl).E;
-            
+
         end
-        
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -1157,13 +1157,13 @@ classdef GenericBattery < BaseModel
 
                 % nothing to do here
 
-              case {'timecontrol'}
+              case {'timeControl'}
 
                 [ctrlVal, ctrlType] = model.(ctrl).computeInput(state.time);
 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrlType;
-                
+
               case {'CCDischarge', 'CCCharge'}
 
                 Imax = model.(ctrl).Imax;
@@ -1487,7 +1487,7 @@ classdef GenericBattery < BaseModel
             cc    = 'CurrentCollector';
             sr    = 'SideReaction';
             sei   = 'SolidElectrodeInterface';
-            
+
             eldes = {ne, pe};
             phi_elyte = state.(elyte).phi;
             c_elyte = state.(elyte).c;
@@ -1496,7 +1496,7 @@ classdef GenericBattery < BaseModel
             elyte_cells(bat.(elyte).G.mappings.cellmap) = (1 : bat.(elyte).G.getNumberOfCells())';
 
             for ind = 1 : numel(eldes)
-                
+
                 elde = eldes{ind};
 
                 if  model.(elde).(co).activeMaterialModelSetup.composite
@@ -1519,7 +1519,7 @@ classdef GenericBattery < BaseModel
                       otherwise
                         error('SEI model not recognized');
                     end
-                    
+
                 end
 
             end
@@ -1623,13 +1623,13 @@ classdef GenericBattery < BaseModel
             faces    = coupterm.couplingfaces;
             cond_pcc = model.(pe).(mat).effectiveElectronicConductivity;
             [trans_pcc, cells] = model.(pe).(mat).G.getBcTrans(faces);
-            
+
             state.Control.EIequation = sum(cond_pcc.*trans_pcc.*(phi(cells) - E)) - I;
 
 
         end
 
-        
+
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -1647,8 +1647,8 @@ classdef GenericBattery < BaseModel
                 forces.powerControl = true;
               case 'CC'
                 forces.CC = true;
-              case 'timecontrol'
-                forces.timecontrol = true;
+              case 'timeControl'
+                forces.timeControl = true;
               case 'None'
                 % used only in addVariables
               otherwise
@@ -1817,7 +1817,7 @@ classdef GenericBattery < BaseModel
                 elde = eldes{ielde};
 
                 if model.(elde).(co).activeMaterialModelSetup.composite
-                    
+
                     am1 = 'ActiveMaterial1';
                     am2 = 'ActiveMaterial2';
 
