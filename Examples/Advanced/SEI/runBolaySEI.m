@@ -248,7 +248,7 @@ F = PhysicalConstants.F;
 qty  = quantities;
 qty  = qty - qty(1);
 
-plot(time/year, 100 * (qty*F) / capacity);
+plot(time/hour, 100 * (qty*F) / capacity);
 
 title('Percentage of Lithium consummed');
 xlabel('Time / h');
