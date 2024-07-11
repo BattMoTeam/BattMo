@@ -146,6 +146,7 @@ plot(time/hour, u, 'displayname', 'at x_{min}')
 
 title('SEI voltage drop in negative electrode/ V')
 xlabel('Time / h')
+legend show
 
 %%
 figure
@@ -159,10 +160,8 @@ for istate = 1 : numel(states)
 end
 
 plot(time/hour, m);
-title('total lithium amount in negative electrode / mol')
+title('Total lithium amount in negative electrode / mol')
 xlabel('Time / h')
-
-legend show
 
 %%
 
