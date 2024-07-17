@@ -38,8 +38,8 @@ function [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct, fiel
 
                 if opt.force
                     errorMessage = sprintf('Different values are given for the fields jsonstruct.%s and jsonstruct.%s. We do not know which one to choose...', ...
-                                           strjoin(fieldnamelist1, '.')                                                                                      , ...
-                                           strjoin(fieldnamelist2, '.'));
+                                           getPrintableName(fieldnamelist1)                                                                                  , ...
+                                           getPrintableName(fieldnamelist2));
                     jsonstruct = setJsonStructField(jsonstruct, fieldnamelist2, value1, 'handleMisMatch', 'error', 'errorMessage', errorMessage);
                     if opt.warn
                         fprintf('Fist value given in equalizeJsonStructField is taken\n');
@@ -53,7 +53,18 @@ function [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct, fiel
 
     end
       
+end
 
 
-    
+function namestr = getPrintableName(fieldnamelist)
+
+    if ischar(fieldnamelist)
+
+        namestr = getPrintableName({fieldnamelist})
+        return
+        
+    end
+
+    namestr = strjoin(fieldnamelist, '.')
+
 end
