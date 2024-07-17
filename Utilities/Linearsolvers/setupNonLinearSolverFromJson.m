@@ -1,4 +1,4 @@
-function [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct)
+function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct)
 
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();

@@ -26,6 +26,8 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
         model = GenericBattery(inputparams);
     end
 
+    jsonstruct = model.jsonstruct;
+    
 end
 
 
