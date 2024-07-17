@@ -417,7 +417,7 @@ classdef ComputationalGraphTool
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
             if ~isempty(staticinds)
-                propfuncinds = [staticpropinds, propfuncinds];
+                propfuncinds = [staticpropinds; propfuncinds];
             end
 
             propfuncinds = unique(propfuncinds);
