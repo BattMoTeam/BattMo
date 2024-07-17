@@ -103,7 +103,7 @@ classdef FlatJsonViewer
             ind = regexp(columnnames, r);
             ind = cellfun(@(res) ~isempty(res), ind);
             ind = find(ind);
-            assert(numel(ind) == 1);
+            assert(numel(ind) == 1, 'Ambiguous column name has been given');
 
             function res = strmatch(str)
                 if regexp(str, r)
