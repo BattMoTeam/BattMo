@@ -1,5 +1,5 @@
 {
-  "comment": "Data set from Lin 2015",
+  "comment": "Data set from Xu 2015",
   "G": null,
   "SOC": 0.99,
   "initT": 293.15,
@@ -23,7 +23,7 @@
         "electricalConductivity": 2,
         "Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/LiC6/LiC6_Xu.json"
+          "filename": "ParameterData/MaterialProperties/Graphite/LiC6_Xu.json"
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {

@@ -1,4 +1,4 @@
-function [OCP, dUdT] = updateOCPFunc_lnmo_Mao(c, T, cmax)
+function [OCP, dUdT] = computeOCP_LNMO_Mao(c, T, cmax)
 % Data from 
 % @article{Mao_2020, title={Entropy Change Characteristics of the LiNi0.5Mn1.5O4 Cathode Material for Lithium-Ion Batteries}, volume={5}, ISSN={2470-1343}, url={http://dx.doi.org/10.1021/acsomega.9b03794}, DOI={10.1021/acsomega.9b03794}, number={8}, journal={ACS Omega}, publisher={American Chemical Society (ACS)}, author={Mao, Jing and Zhang, Peng and Liu, Xin and Liu, Yanxia and Shao, Guosheng and Dai, Kehua}, year={2020}, month=feb, pages={4109–4114} }
     

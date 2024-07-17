@@ -12,7 +12,8 @@
                    "CCCharge",
                    "CC",
                    "CCCV",
-                   "powerControl"]}}
+                   "powerControl",
+		   "timeControl"]}}
     }},
     "allOf": [
       {"if": {

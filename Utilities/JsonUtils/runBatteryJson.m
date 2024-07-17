@@ -76,7 +76,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         error('initializationSetup not recognized');
     end
 
-    [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct);
+    [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct);
 
     %% Run the simulation
     %
@@ -136,8 +136,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     output.states = states;
 
-    if isfield(jsonstruct, 'Output') ...
-        && isfield(jsonstruct.Output, 'variables') ...
+    if isAssigned(jsonstruct, {'Output', 'variables'}) ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
 
         if ismember('specificEnergy', jsonstruct.Output.variables)

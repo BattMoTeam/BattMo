@@ -101,7 +101,7 @@ inputparams.Control.lowerCutoffVoltage = 3;
 inputparams.Control.DRate              = DRate;
 inputparams.Control.rampupTime         = 0.1/DRate;
 
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Setup schedule
 DRate = 1;

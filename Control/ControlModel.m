@@ -12,6 +12,7 @@ classdef ControlModel < BaseModel
         % - 'CCCharge'
         % - 'CC'
         % - 'CCCV'
+        % - 'timecontrol'
         %
         controlPolicy
         

@@ -169,8 +169,8 @@ classdef Electrode < BaseModel
 
                 trans = 1./(1./tco + 1./tcc); % Harmonic average
                 crosscurrent = trans.*(bcphi_cc - bcphi_co);
-                co_jCoupling = subsasgnAD(co_jCoupling,bccell_co, crosscurrent);
-                cc_jCoupling = subsasgnAD(cc_jCoupling,bccell_cc, -crosscurrent);
+                co_jCoupling = subsasgnAD(co_jCoupling, bccell_co, crosscurrent);
+                cc_jCoupling = subsasgnAD(cc_jCoupling, bccell_cc, -crosscurrent);
 
                 G = model.(cc).G;
                 nf = G.getNumberOfFaces();

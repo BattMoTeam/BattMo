@@ -1,4 +1,8 @@
 function jsonstruct = setJsonStructField(jsonstruct, fieldnamelist, value, varargin)
+    % in varargin, the key 'handleMisMatch' can take following vaules
+    % - 'error'   : returns error if value already set and does not match with the new given one (default)
+    % - 'quiet'   : does not warn about case above
+    % - 'warning' : warn but no error
 
     if ischar(fieldnamelist)
         % handle case wher fieldnamelist is just a char
