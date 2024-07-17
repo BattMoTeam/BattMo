@@ -58,7 +58,7 @@ classdef GenericBattery < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.jsonstruct = inputparams.jsonstruct;
+            model.jsonstruct = inputparams.buildJsonStruct();
 
             model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
             model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
