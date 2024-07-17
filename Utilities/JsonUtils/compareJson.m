@@ -57,9 +57,6 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
     
     flatjsonboth = vertcat(flatjsoncommon, flatjsondifferent, flatjsonmissing);
 
-    [~, ia] = sort(flatjsonboth(:, 1));
-    flatjsonboth = flatjsonboth(ia, :);
-    
     flatjsonviewer = FlatJsonViewer(flatjsonboth);
     
 end
