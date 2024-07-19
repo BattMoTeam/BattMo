@@ -2,7 +2,26 @@ classdef EquilibriumCalibrationSetup
 %% The goal of this class is to solve the following calibration problem:
 % Given a discharge curve, find the set of parameters that give the better match.
 % By default (calibrationCase = 1), the calibration parameters are the guest stoichiometry at discharge start and the volume fraction, for both electrodes.
-    
+%
+%  Usage description :
+%  1. Instantiate object using model and expdata
+%     expdata is a structure with fields
+%     - I    : Current used (scalar)
+%     - U    : vector with voltage values
+%     - time : vector with time values (same dimension as U)
+%
+%  2. Run one of the optimiser, that is either
+%     [Xopt, hist] = runUnitBoxBFGS(ecs, X0);
+%     or
+%     [Xopt, info] = runIpOpt(ecs, ipopt_options);
+%     (see documentation for those)
+%
+%  3. The optimal parameter values are given by the vector Xopt.
+%     They can be converted to a more readable structure using
+%     vals = assignFromX(ecs, X)
+%     (see documentation for this method)
+%
+% See installation instruction for ipopt optimiser in README.org in this directory
     properties
         
         model % Battery model
@@ -18,12 +37,8 @@ classdef EquilibriumCalibrationSetup
         
         packingMass % mass of packing 
 
-        bounds % Vector of variable bounds on the variables, with field
-               % - lower
-               % - upper
-
         calibrationCase = 1
-        % different calibration case depending on the parameters that are chosen. See method printVariableChoice
+        % different calibration case depending on the parameters that are chosen. See method printVariableChoice below
         % At the moment, the following is implemented
         % case 1 (default) : The calibration parameters are theta100 and volume fraction for both electrodes
         %                    Theta0 for the positive electrode is computed from the end point of the discharge curve
@@ -31,7 +46,14 @@ classdef EquilibriumCalibrationSetup
         %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
         % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
         % case 3           : The calibration parameters are theta100, theta0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
+
+
+        %% Helper structures, assigned during setup
         
+        bounds % Vector of variable bounds on the variables, with field
+               % - lower
+               % - upper
+
         calibrationParameters 
 
     end
@@ -422,7 +444,7 @@ classdef EquilibriumCalibrationSetup
         
         
         function [fexp, fcomp] = setupfunction(ecs)
-
+        % Setup the function to compute the discharge curves, either for the experimental data or for the given set of parameter, using the model.
             fcomp = @(t, X) ecs.computeF(t, X);
             fexp  = @(t) ecs.experimentalF(t);
             
