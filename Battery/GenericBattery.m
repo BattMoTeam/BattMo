@@ -1223,15 +1223,17 @@ classdef GenericBattery < BaseModel
                 elde = eldes{ind};
 
                 if model.include_current_collectors
+
                     cc_model = model.(elde).(cc);
                     cc_map   = cc_model.G.mappings.cellmap;
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.effectiveElectronicConductivity;
                     cc_vols  = cc_model.G.getVolumes();
                     cc_jsq   = cc_model.G.getCellFluxNorm(cc_j);
-                    state.(elde).(cc).jsq = cc_jsq;  % store square of current density
+
                     src = subsetPlus(src, cc_vols .* cc_jsq ./ cc_econd, cc_map);
-                    %                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
+                    state.(elde).(cc).jHeatOhmSource = cc_vols .* cc_jsq ./ cc_econd, cc_map;
+                    
                 end
 
                 co_model = model.(elde).(co);
@@ -1240,10 +1242,9 @@ classdef GenericBattery < BaseModel
                 co_econd = co_model.effectiveElectronicConductivity;
                 co_vols  = co_model.G.getVolumes();
                 co_jsq   = co_model.G.getCellFluxNorm(co_j);
-                state.(elde).(co).jsq = co_jsq;
 
-                %src(co_map) = src(co_map) + co_vols.*co_jsq./co_econd;
                 src = subsetPlus(src, co_vols.*co_jsq./co_econd, co_map);
+                state.(elde).(co).jHeatOhmSource = co_vols.*co_jsq./co_econd;
             end
 
             % Electrolyte
@@ -1256,10 +1257,10 @@ classdef GenericBattery < BaseModel
             elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
             elyte_vols     = elyte_model.G.getVolumes();
             elyte_jsq      = elyte_model.G.getCellFluxNorm(elyte_j);
-            state.(elyte).jsq = elyte_jsq; %store square of current density
 
-            %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
             src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
+            state.(elyte).jHeatOhmSource = elyte_vols.*elyte_jsq./elyte_econd;
+
             state.(thermal).jHeatOhmSource = src;
 
         end
@@ -1459,7 +1460,8 @@ classdef GenericBattery < BaseModel
                 eta  = locstate.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
-
+                % itf_src = n*F*vols.*Rvol.*eta;
+                
                 src(co_map) = src(co_map) + itf_src;
 
             end
