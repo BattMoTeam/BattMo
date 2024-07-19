@@ -9,7 +9,7 @@
       "properties": {
         "totalTime": {
           "$ref": "PhysicalQuantity.schema.json",
-          "description": "Total time. It is usually computed by the control models and then this value is ignored (for example from number of cycles in a CCCV protocol or for discharge and charge protocol).",
+          "description": "Total time. It is usually computed by the control models from their specific input. If given, it will (in general) overwrite this computed value. Check for the specific control model you are using",
           "symmbol": ""
         },
         "timeStepDuration": {
