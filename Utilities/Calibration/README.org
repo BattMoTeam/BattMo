@@ -1,13 +1,8 @@
 * IPOPT installation
-  - For linux, we use [[https://github.com/coin-or/Ipopt][Ipopt]] (Interior Point OPTimizer, pronounced eye-pea-Opt)) for nonlinear optimization
+  - [[https://github.com/coin-or/Ipopt][Ipopt]] (Interior Point OPTimizer, pronounced eye-pea-Opt)) is a tool for nonlinear optimization
   - We use matlab interface provided by [[https://github.com/ebertolazzi/mexIPOPT][mexIPOPT]]
   - Installation described [[https://github.com/ebertolazzi/mexIPOPT/releases][here]]
     - open file IPOPT-toolbox.mltbx in Matlab
     - In the directory mexIPOPT/toolbox, run script setup.m
-    - that's it!
-  - For windows, we use the OPTI toolbox from [[https://inverseproblem.co.nz/OPTI/]] .
-  - The source files and installation instructions are found [[https://github.com/jonathancurrie/OPTI][here]]
-    - Download the zip from [[https://github.com/jonathancurrie/OPTI/archive/master.zip]]
-    - Run the install script opti_Install.m from the source directory.
-  - After installation, run the ~setup~ script inside the ipopt package. It will add all the ipopt functionalities to
-    the Matlab path, so they can be run
+    - After installation, run the ~setup~ script inside the ipopt package. It will add all the ipopt functionalities to
+      the Matlab path, so they can be run
