@@ -40,7 +40,7 @@ classdef CCChargeControlModel < CCcontrolModel
             
             if ~model.useCVswitch
                 
-                func = @(model, state, state_prev) (state.Control.E < model.Control.upperCutoffVoltage);
+                func = @(model, state, state_prev) (state.Control.E > model.Control.upperCutoffVoltage);
 
             end
             
