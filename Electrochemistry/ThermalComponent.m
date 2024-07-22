@@ -261,8 +261,9 @@ classdef ThermalComponent < BaseModel
                     Tmax = max(T);
                     Tmin = min(T);
 
-                    outputvars{i} = struct('Tmax', Tmax, ...
-                                           'Tmin', Tmin);                        
+                    outputvars{i} = struct('time', states{i}.time, ...
+                                           'Tmax', Tmax          , ...
+                                           'Tmin', Tmin);
                 end
             end
         end
