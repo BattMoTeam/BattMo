@@ -1542,7 +1542,7 @@ classdef GenericBattery < BaseModel
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
 
-                state.(ne).(cc).jExternal = jExternal;
+                state.(ne).(cc).jExternal     = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
                 state.(ne).(co).jExternal     = 0;
                 state.(ne).(co).jFaceExternal = 0;
@@ -1554,7 +1554,7 @@ classdef GenericBattery < BaseModel
 
                 [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(co), phi, 0, sigma);
 
-                state.(ne).(co).jExternal = jExternal;
+                state.(ne).(co).jExternal     = jExternal;
                 state.(ne).(co).jFaceExternal = jFaceExternal;
 
             end
