@@ -10,6 +10,9 @@ classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
         rampupTime
         useCVswitch
         upperCutoffVoltage
+
+        % Advanced variable
+        Imax % If given this values is used instead of CRate
         
     end
     
