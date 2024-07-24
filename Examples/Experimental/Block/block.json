@@ -1,0 +1,15 @@
+{
+  "initT": 298.15,
+  "use_thermal": true,
+  "Control": {
+    "controlPolicy" : "current",
+    "Imax": 1
+  },
+  "ElectronicModel": {
+    "effectiveElectronicConductivity": 59600000.0
+  },
+  "ThermalModel" : {
+    "effectiveThermalConductivity": 398,
+    "effectiveVolumetricHeatCapacity": 1e6
+  }
+}
