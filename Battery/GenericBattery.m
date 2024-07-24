@@ -537,8 +537,10 @@ classdef GenericBattery < BaseModel
               case 'CCCharge'
 
                 control = CCChargeControlModel(inputparams);
-                rate = control.CRate;
-                control.Imax = (C/hour)*rate;
+                if isempty(control.Imax)
+                    rate = control.CRate;
+                    control.Imax = (C/hour)*rate;
+                end
 
               case "CCCV"
 
