@@ -1,17 +1,17 @@
-classdef ControlModelInputParams < InputParams
+classdef HomogeneousBlockControlModelInputParams < ControlModelInputParams
 %
     
     properties
 
-        controlPolicy
-
+        Imax
+        
     end
     
     methods
 
-        function inputparams = ControlModelInputParams(jsonstruct)
+        function inputparams = HomogeneousBlockControlModelInputParams(jsonstruct)
             
-            inputparams = inputparams@InputParams(jsonstruct);
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
             
         end
         

@@ -1,6 +1,6 @@
 {
   "initT": 298.15,
-  "use_thermal": true,
+  "use_thermal": false,
   "Control": {
     "controlPolicy" : "current",
     "Imax": 1
