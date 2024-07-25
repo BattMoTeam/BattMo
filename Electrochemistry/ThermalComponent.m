@@ -9,6 +9,7 @@ classdef ThermalComponent < BaseModel
        externalHeatTransferCoefficient
        externalTemperature
 
+       %% Helpers, set when model is initiated
        bcfacecellmap
        bccells
 
