@@ -1,3 +1,5 @@
+mrstModule add ad-core mrst-gui mpfa
+
 el      = 'ElectronicModel';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
@@ -14,11 +16,11 @@ gen.xlength = 1.1;
 gen.ylength = 1.3;
 gen.zlength = 1.5;
 
-gen.nx = 5;
-gen.ny = 7;
-gen.nz = 9;
+gen.nx = 20;
+gen.ny = 20;
+gen.nz = 20;
 
-inputparams = gen.updateGridInputParams(inputparams);
+inputparams = gen.updateGridInputParams(inputparams, jsonstruct);
 
 model = HomogeneousBlock(inputparams);
 
@@ -48,11 +50,17 @@ model.verbose = true;
 
 %% plotting
 
+close all
+
 state = states{end};
 G = model.(el).grid;
 
 figure
-plotCellData(G, state.(el).phi);
+plotToolbar(model.(el).grid, state.(el).phi);
 
 figure
 plotToolbar(model.(thermal).grid, state.(thermal).T);
+
+state = model.addVariables(state);
+figure
+plotToolbar(model.(thermal).grid, state.(thermal).jHeatSource);
