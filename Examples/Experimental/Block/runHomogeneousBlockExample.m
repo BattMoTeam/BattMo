@@ -11,6 +11,9 @@ inputparams = gen.updateGridInputParams(inputparams);
 
 model = HomogeneousBlock(inputparams);
 
+cgt = model.cgt;
+cgp = model.cgp;
+
 initstate = model.setupInitialState();
 
 totalTime = 1*minute;
@@ -36,5 +39,9 @@ model.verbose = true;
 
 state = states{end};
 G = model.(el).grid;
+
 figure
 plotCellData(G, state.(el).phi);
+
+figure
+plotToolbar(model.(thermal).grid, state.(thermal).T);

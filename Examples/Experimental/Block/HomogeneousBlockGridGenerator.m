@@ -34,13 +34,16 @@ classdef HomogeneousBlockGridGenerator
             params_el = pickField(params, el);
             inputparams.(el) = gen.setupElectronicModel(inputparams.(el), params_el);
 
-            if inputparams.use_thermal
-                params_thermal = pickField(params, thermal);
-                inputparams.(thermal) = gen.setupThermalModel(inputparams.(thermal), params_thermal);
-            end
-
             inputparams = gen.setupExternalElectronicCoupling(inputparams, params);
             
+            if inputparams.use_thermal
+                
+                params_thermal = pickField(params, thermal);
+                inputparams.(thermal) = gen.setupThermalModel(inputparams.(thermal), params_thermal);
+                inputparams.(thermal) = gen.setupExternalThermalCoupling(inputparams.(thermal), params_thermal);
+                
+            end
+
         end
 
 
@@ -105,6 +108,23 @@ classdef HomogeneousBlockGridGenerator
             
         end
 
+        function inputparams = setupExternalThermalCoupling(gen, inputparams, params)
+
+            G = inputparams.G.mrstFormat;
+
+            tbls = setupTables(G, 'includetbls', {'extfacetbl'});
+            extfacetbl  = tbls.extfacetbl;
+            cellfacetbl = tbls.cellfacetbl;
+
+            coupcellfacetbl = crossIndexArray(extfacetbl, cellfacetbl, {'faces'});
+
+            coupterm = couplingTerm('external', {'External'});
+            coupterm.couplingfaces = coupcellfacetbl.get('faces');
+            coupterm.couplingcells = coupcellfacetbl.get('cells');
+
+            inputparams.couplingTerm = coupterm;
+            
+        end
         
     end
 

@@ -20,13 +20,14 @@ classdef HomogeneousBlockInputParams < InputParams
 
         function inputparams = HomogeneousBlockInputParams(jsonstruct)
 
-
-            inputparams = inputparams@InputParams(jsonstruct);
-
             el      = 'ElectronicModel';
             thermal = 'ThermalModel';
             ctrl    = 'Control';
             
+            jsonstruct = equalizeJsonStructField(jsonstruct, 'use_thermal', {el, 'use_thermal'});
+
+            inputparams = inputparams@InputParams(jsonstruct);
+
             pick = @(fd) pickField(jsonstruct, fd);
 
             inputparams.(el)      = ElectronicComponentInputParams(pick(el));

@@ -26,10 +26,18 @@ classdef HomogeneousBlock < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
             
+            el      = 'ElectronicModel';
+            thermal = 'ThermalModel';
+            ctrl    = 'Control';
+
             model.ElectronicModel = ElectronicComponent(inputparams.ElectronicModel);
 
             if model.use_thermal
-                model.ThermalModel = ThermalComponent(inputparams.ThermalModel);
+                model.(thermal) = ThermalComponent(inputparams.(thermal));
+
+                nc = model.(thermal).G.getNumberOfCells();
+                model.(thermal).effectiveThermalConductivity = model.(thermal).effectiveThermalConductivity*ones(nc, 1);
+                
             end
 
             model.Control = HomogeneousBlockControlModel(inputparams.Control);
@@ -64,12 +72,11 @@ classdef HomogeneousBlock < BaseModel
                             {thermal, 'jHeatReactionSource'}};
 
                 model = model.removeVarNames(varnames);
-                
-            else
-                
-                model = model.removeVarName({el, 'T'});
-                
+
             end
+                
+            % for the moment there is no coupling back
+            model = model.removeVarName({el, 'T'});
 
             fn = @HomogeneousBlock.setupEIequation;
             inputnames = {{ctrl, 'E'}, ...
@@ -83,25 +90,18 @@ classdef HomogeneousBlock < BaseModel
                           {ctrl, 'E'}};
             model = model.registerPropFunction({{el, 'jBcSource'}, fn, inputnames});
             model = model.registerPropFunction({{el, 'eSource'}, fn, inputnames}); % set to zero
+
             if model.use_thermal
-                model = model.registerPropFunction({'jFaceBc', fn, inputnames});
+                model = model.registerPropFunction({{el, 'jFaceBc'}, fn, inputnames});
             end
             
             
             %% Function that update the Thermal Ohmic Terms
 
             if model.use_thermal
-                
-                fn = @HomogeneousBlock.updateJfaceBc;
-                varnames ={{el, 'j'}       , ...
-                           {el, 'conductivity'}};
-                model = model.registerPropFunction({{el, 'jFace'}, fn, inputnames});
-
-
 
                 fn = @HomogeneousBlock.updateHeatSourceTerms;
-                varnames ={{el, 'jFace'}       , ...
-                           {el, 'conductivity'}};
+                inputnames ={{el, 'jFace'}};
                 model = model.registerPropFunction({{thermal, 'jHeatSource'}, fn, inputnames});
 
             end
@@ -151,13 +151,31 @@ classdef HomogeneousBlock < BaseModel
             state.(el).jBcSource = jInput + jOutput;
 
             if model.use_thermal
-                state.(el).jFaceBcSource = jFaceInput + jFaceOutput;
+                state.(el).jFaceBc = jFaceInput + jFaceOutput;
             end
             
             state.(el).eSource = 0;
 
         end
 
+        function state = updateHeatSourceTerms(model, state)
+
+            el      = 'ElectronicModel';
+            thermal = 'ThermalModel';
+            
+            econd = model.(el).effectiveElectronicConductivity;
+            vols  = model.(el).G.getVolumes();
+            
+            jFace = state.(el).jFace;
+
+            jsq = model.(el).G.getCellFluxNorm(jFace);
+
+            % Here we assume that the electronic and thermal component have the same grid
+            state.(thermal).jHeatSource = vols.*jsq./econd;
+            
+        end
+
+        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -204,7 +222,9 @@ classdef HomogeneousBlock < BaseModel
             
             if model.use_thermal
                 T = model.initT;
-                initstate.(thermal).T = T;
+                nc = model.(thermal).G.getNumberOfCells();
+
+                initstate.(thermal).T = T*ones(nc, 1);
             end
             
         end
