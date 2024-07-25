@@ -81,8 +81,11 @@ classdef HomogeneousBlockGridGenerator
             
             tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
+
+            d = max(G.faces.centroids(:, 1)) - min(G.faces.centroids(:, 1));
+            tol = 1e-5*d/gen.nx;
             
-            inputfacetbl.faces = find(G.faces.centroids(:, 1) == 0);
+            inputfacetbl.faces = find(G.faces.centroids(:, 1) < tol);
             inputfacetbl = IndexArray(inputfacetbl);
 
             inputcellfacetbl = crossIndexArray(inputfacetbl, cellfacetbl, {'faces'});
@@ -93,7 +96,7 @@ classdef HomogeneousBlockGridGenerator
 
             couplingTerms{1} = coupterm;
 
-            outputfacetbl.faces = find(G.faces.centroids(:, 1) == max(G.faces.centroids(:, 1)));
+            outputfacetbl.faces = find(G.faces.centroids(:, 1) > max(G.faces.centroids(:, 1)) - tol);
             outputfacetbl = IndexArray(outputfacetbl);
 
             outputcellfacetbl = crossIndexArray(outputfacetbl, cellfacetbl, {'faces'});
