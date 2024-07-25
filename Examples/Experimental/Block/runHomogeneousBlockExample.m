@@ -4,9 +4,20 @@ ctrl    = 'Control';
             
 jsonstruct = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/Experimental/Block/block.json');
 
+jsonstruct.(ctrl).Imax = 0.8;
+
 inputparams = HomogeneousBlockInputParams(jsonstruct);
 
 gen = HomogeneousBlockGridGenerator();
+
+gen.xlength = 1.1;
+gen.ylength = 1.3;
+gen.zlength = 1.5;
+
+gen.nx = 5;
+gen.ny = 7;
+gen.nz = 9;
+
 inputparams = gen.updateGridInputParams(inputparams);
 
 model = HomogeneousBlock(inputparams);
