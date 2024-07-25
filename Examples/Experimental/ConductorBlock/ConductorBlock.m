@@ -1,4 +1,4 @@
-classdef HomogeneousBlock < BaseModel
+classdef ConductorBlock < BaseModel
 %
     properties
 
@@ -17,7 +17,7 @@ classdef HomogeneousBlock < BaseModel
 
     methods
 
-        function model = HomogeneousBlock(inputparams)
+        function model = ConductorBlock(inputparams)
 
             model = model@BaseModel();
             fdnames = {'couplingTerms'             , ...
@@ -40,7 +40,7 @@ classdef HomogeneousBlock < BaseModel
                 
             end
 
-            model.Control = HomogeneousBlockControlModel(inputparams.Control);
+            model.Control = ConductorBlockControlModel(inputparams.Control);
 
             coupnames = cellfun(@(coupterm) coupterm.name, model.couplingTerms, 'uniformoutput', false);
             
@@ -78,13 +78,13 @@ classdef HomogeneousBlock < BaseModel
             % for the moment there is no coupling back
             model = model.removeVarName({el, 'T'});
 
-            fn = @HomogeneousBlock.setupEIequation;
+            fn = @ConductorBlock.setupEIequation;
             inputnames = {{ctrl, 'E'}, ...
                           {ctrl, 'I'}};
             inputnames{end + 1} = {el, 'phi'};
             model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, inputnames});
 
-            fn = @HomogeneousBlock.setupExternalCoupling;
+            fn = @ConductorBlock.setupExternalCoupling;
             inputnames = {{el, 'phi'}         , ...
                           {el, 'conductivity'}, ...
                           {ctrl, 'E'}};
@@ -100,7 +100,7 @@ classdef HomogeneousBlock < BaseModel
 
             if model.use_thermal
 
-                fn = @HomogeneousBlock.updateHeatSourceTerms;
+                fn = @ConductorBlock.updateHeatSourceTerms;
                 inputnames ={{el, 'jFace'}};
                 model = model.registerPropFunction({{thermal, 'jHeatSource'}, fn, inputnames});
 

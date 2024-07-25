@@ -1,4 +1,4 @@
-classdef HomogeneousBlockControlModel < ControlModel
+classdef ConductorBlockControlModel < ControlModel
 
     properties
 
@@ -8,7 +8,7 @@ classdef HomogeneousBlockControlModel < ControlModel
     
     methods
 
-        function model = HomogeneousBlockControlModel(inputparams)
+        function model = ConductorBlockControlModel(inputparams)
 
             model = model@ControlModel(inputparams);
             

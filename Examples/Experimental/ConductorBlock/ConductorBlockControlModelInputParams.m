@@ -1,4 +1,4 @@
-classdef HomogeneousBlockControlModelInputParams < ControlModelInputParams
+classdef ConductorBlockControlModelInputParams < ControlModelInputParams
 %
     
     properties
@@ -9,7 +9,7 @@ classdef HomogeneousBlockControlModelInputParams < ControlModelInputParams
     
     methods
 
-        function inputparams = HomogeneousBlockControlModelInputParams(jsonstruct)
+        function inputparams = ConductorBlockControlModelInputParams(jsonstruct)
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
             

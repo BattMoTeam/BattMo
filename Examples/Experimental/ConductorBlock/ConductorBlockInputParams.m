@@ -1,4 +1,4 @@
-classdef HomogeneousBlockInputParams < InputParams
+classdef ConductorBlockInputParams < InputParams
 %
 % Input parameter class for the :code:`Battery` model.
 %
@@ -18,7 +18,7 @@ classdef HomogeneousBlockInputParams < InputParams
 
     methods
 
-        function inputparams = HomogeneousBlockInputParams(jsonstruct)
+        function inputparams = ConductorBlockInputParams(jsonstruct)
 
             el      = 'ElectronicModel';
             thermal = 'ThermalModel';
@@ -32,7 +32,7 @@ classdef HomogeneousBlockInputParams < InputParams
 
             inputparams.(el)      = ElectronicComponentInputParams(pick(el));
             inputparams.(thermal) = ThermalComponentInputParams(pick(thermal));
-            inputparams.(ctrl)    = HomogeneousBlockControlModelInputParams(pick(ctrl));
+            inputparams.(ctrl)    = ConductorBlockControlModelInputParams(pick(ctrl));
 
         end
 

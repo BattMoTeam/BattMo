@@ -3,26 +3,27 @@ mrstModule add ad-core mrst-gui mpfa
 el      = 'ElectronicModel';
 thermal = 'ThermalModel';
 ctrl    = 'Control';
-            
-jsonstruct = parseBattmoJson('/home/xavier/Matlab/Projects/battmo/Examples/Experimental/Block/block.json');
+
+filename = fullfile(battmoDir(), 'Examples', 'Experimental', 'ConductorBlock', 'conductorBlock.json');
+jsonstruct = parseBattmoJson(filename);
 
 jsonstruct.(ctrl).Imax = 0.8;
 
-inputparams = HomogeneousBlockInputParams(jsonstruct);
+inputparams = ConductorBlockInputParams(jsonstruct);
 
-gen = HomogeneousBlockGridGenerator();
+gen = ConductorBlockGridGenerator();
 
 gen.xlength = 1.1;
 gen.ylength = 1.3;
 gen.zlength = 1.5;
 
-gen.nx = 20;
-gen.ny = 20;
-gen.nz = 20;
+gen.nx = 5;
+gen.ny = 4;
+gen.nz = 3;
 
 inputparams = gen.updateGridInputParams(inputparams, jsonstruct);
 
-model = HomogeneousBlock(inputparams);
+model = ConductorBlock(inputparams);
 
 cgt = model.cgt;
 cgp = model.cgp;

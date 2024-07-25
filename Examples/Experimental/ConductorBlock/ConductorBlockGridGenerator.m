@@ -1,4 +1,4 @@
-classdef HomogeneousBlockGridGenerator
+classdef ConductorBlockGridGenerator
 
     properties
 
