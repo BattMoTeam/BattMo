@@ -205,6 +205,7 @@ classdef BatteryGenerator
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             elyte = 'Electrolyte';
+            sep   = 'Separator';
             co    = 'Coating';
 
             couplingTerms = {};
@@ -239,6 +240,31 @@ classdef BatteryGenerator
 
             inputparams.couplingTerms = couplingTerms;
 
+            function elytecells = getElectrolyteCells(elde)
+                ind = strcmp({ne, pe}, elde);
+                coupterm = couplingTerms{ind};
+                elytecells = coupterm.couplingcells(:, 2);
+            end
+
+            if inputparams.(elyte).useRegionBruggemanCoefficients
+
+                nc = inputparams.(elyte).G.getNumberOfCells();
+                
+                rtags = NaN(nc, 1);
+                elytecells = getElectrolyteCells(ne);
+                rtags(elytecells) = 1;
+                elytecells = getElectrolyteCells(pe);
+                rtags(elytecells) = 2;                
+                
+                G_sep = inputparams.(sep).G;
+                sepcells = (1 : G_sep.getNumberOfCells())';
+                elytecells = G_elyte.mappings.invcellmap(G_sep.mappings.cellmap(sepcells));
+                rtags(elytecells) = 3;
+
+                inputparams.(elyte).regionTags = rtags;
+                
+            end
+            
         end
 
 
