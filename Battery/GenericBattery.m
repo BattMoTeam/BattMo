@@ -1234,7 +1234,7 @@ classdef GenericBattery < BaseModel
                     cc_jsq   = cc_model.G.getCellFluxNorm(cc_j);
 
                     src = subsetPlus(src, cc_vols .* cc_jsq ./ cc_econd, cc_map);
-                    state.(elde).(cc).jHeatOhmSource = cc_vols .* cc_jsq ./ cc_econd, cc_map;
+                    state.(elde).(cc).jHeatOhmSource = cc_vols .* cc_jsq ./ cc_econd;
                     
                 end
 
