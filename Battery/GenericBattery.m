@@ -1544,9 +1544,10 @@ classdef GenericBattery < BaseModel
                 phi   = state.(ne).(cc).phi;
                 sigma = state.(ne).(cc).conductivity;
 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma);
+                coupterm = model.(ne).(cc).externalCouplingTerm;
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma, coupterm);
 
-                state.(ne).(cc).jExternal = jExternal;
+                state.(ne).(cc).jExternal     = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
                 state.(ne).(co).jExternal     = 0;
                 state.(ne).(co).jFaceExternal = 0;
@@ -1556,9 +1557,10 @@ classdef GenericBattery < BaseModel
                 phi   = state.(ne).(co).phi;
                 sigma = state.(ne).(co).conductivity;
 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(co), phi, 0, sigma);
+                coupterm = model.(ne).(co).externalCouplingTerm;
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(co), phi, 0, sigma, coupterm);
 
-                state.(ne).(co).jExternal = jExternal;
+                state.(ne).(co).jExternal     = jExternal;
                 state.(ne).(co).jFaceExternal = jFaceExternal;
 
             end
@@ -1583,7 +1585,8 @@ classdef GenericBattery < BaseModel
                 phi   = state.(pe).(cc).phi;
                 sigma = state.(pe).(cc).conductivity;
 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma);
+                coupterm = model.(pe).(cc).externalCouplingTerm;
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma, coupterm);
 
                 state.(pe).(cc).jExternal     = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
@@ -1594,7 +1597,8 @@ classdef GenericBattery < BaseModel
                 phi   = state.(pe).(co).phi;
                 sigma = state.(pe).(co).conductivity;
 
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(co), phi, E, sigma);
+                coupterm = model.(pe).(co).externalCouplingTerm;
+                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(co), phi, E, sigma, coupterm);
 
                 state.(pe).(co).jExternal     = jExternal;
                 state.(pe).(co).jFaceExternal = jFaceExternal;

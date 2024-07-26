@@ -1,20 +1,22 @@
-function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity, coupterm)
+classdef ConductorBlockControlModelInputParams < ControlModelInputParams
+%
+    
+    properties
 
-    jExternal = phi*0.0; %NB hack to initialize zero ad
+        Imax
+        
+    end
+    
+    methods
 
-    faces = coupterm.couplingfaces;
-    bcval = phiExternal;
-    [t, cells, sgn] = model.G.getBcTrans(faces);
-    current = conductivity.*t.*(bcval - phi(cells));
-    jExternal = subsetPlus(jExternal, current, cells);
-    G = model.G;
-    nf = G.topology.faces.num;
-    zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
-    jFaceExternal = zeroFaceAD;
-    jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn.*current);
-
-    %assert(~any(isnan(sgn(faces))));
-
+        function inputparams = ConductorBlockControlModelInputParams(jsonstruct)
+            
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            
+        end
+        
+    end
+    
 end
 
 
