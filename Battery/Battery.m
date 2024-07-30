@@ -258,11 +258,11 @@ classdef Battery < GenericBattery
                         F    = model.con.F;
                         vol  = model.(elde).(co).G.getVolumes();
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
-                        vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                        vsa  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
 
                         surfp = 4*pi*rp^2;
 
-                        scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                        scalingcoef = (vsa*vol(1)*n*F)/surfp;
 
                         state.(elde).(co).(amc).(sd).massCons         = scalingcoef.*state.(elde).(co).(amc).(sd).massCons;
                         state.(elde).(co).(amc).(sd).solidDiffusionEq = scalingcoef.*state.(elde).(co).(amc).(sd).solidDiffusionEq;
