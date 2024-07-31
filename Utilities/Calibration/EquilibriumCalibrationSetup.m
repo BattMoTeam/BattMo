@@ -369,6 +369,7 @@ classdef EquilibriumCalibrationSetup
                 cmax = model.(elde).(co).(am).(itf).saturationConcentration;
 
                 vals.(elde).alpha = vals.(elde).volumeFraction*vol*cmax;
+                vals.(elde).cmax  = cmax;
                 
             end
             
@@ -451,7 +452,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function theta = conc(ecs, t, elde, tf, theta_tf, alpha)
+        function theta = computeTheta(ecs, t, elde, tf, theta_tf, alpha)
         % theta_tf is lithiation at time tf*totalTime
         % returns lithiation at time t
             ne      = 'NegativeElectrode';
@@ -495,14 +496,16 @@ classdef EquilibriumCalibrationSetup
             theta100 = vals.(pe).theta100;
             alpha    = vals.(pe).alpha;
             
-            theta = ecs.conc(t, pe, 0, theta100, alpha);
-            f = model.(pe).(co).(am).(itf).computeOCPFunc(theta, T, 1);
+            theta = ecs.computeTheta(t, pe, 0, theta100, alpha);
+            cmax = vals.(pe).cmax;
+            f = model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             theta100 = vals.(ne).theta100;
             alpha    = vals.(ne).alpha;
             
-            theta = ecs.conc(t, ne, 0, theta100, alpha);
-            f = f - model.(ne).(co).(am).(itf).computeOCPFunc(theta, T, 1);
+            theta = ecs.computeTheta(t, ne, 0, theta100, alpha);
+            cmax = vals.(ne).cmax;
+            f = f - model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
         end
 
@@ -680,9 +683,9 @@ classdef EquilibriumCalibrationSetup
                 if opt.includeTheta0
                     
                     % We compute theta0 in cathode as the lithiation at end of discharge in 
-                    vals.(pe).theta0 = ecs.conc(totalTime, pe, 0, vals.(pe).theta100, vals.(pe).alpha);
+                    vals.(pe).theta0 = ecs.computeTheta(totalTime, pe, 0, vals.(pe).theta100, vals.(pe).alpha);
 
-                    % vals.(ne).theta0 = ecs.conc(totalTime, ne, 0, vals.(ne).theta100, vals.(ne).alpha);
+                    % vals.(ne).theta0 = ecs.computeTheta(totalTime, ne, 0, vals.(ne).theta100, vals.(ne).alpha);
                     
                     data = ecs.calibrationParameters;
                     np_ratio = data.np_ratio;
@@ -702,7 +705,7 @@ classdef EquilibriumCalibrationSetup
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    vals.(elde).theta0 = ecs.conc(totalTime, elde, 0, vals.(elde).theta100, vals.(elde).alpha);
+                    vals.(elde).theta0 = ecs.computeTheta(totalTime, elde, 0, vals.(elde).theta100, vals.(elde).alpha);
                 end
                 
               case 3
