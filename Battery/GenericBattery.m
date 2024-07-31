@@ -1290,7 +1290,7 @@ classdef GenericBattery < BaseModel
             D      = state.(elyte).D;        % Effective diffusion coefficient
             Dgradc = state.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
             DFaceGradc = zeroFace;
-            DFaceGradc(intfaces) = Dgradc;
+            DFaceGradc = subsetPlus(DFaceGradc, Dgradc, intfaces);
 
             % Compute norm of square norm of diffusion flux
             elyte_model   = model.(elyte);
