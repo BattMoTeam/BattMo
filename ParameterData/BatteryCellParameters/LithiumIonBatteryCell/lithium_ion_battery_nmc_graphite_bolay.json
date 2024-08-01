@@ -25,20 +25,18 @@
         "thermalConductivity": 1.04,
         "electronicConductivity": 100,
         "Interface": {
-          "isFile": false,
-          "filename": "ParameterData/MaterialProperties/Graphite/graphite.json",
-			"saturationConcentration": 31610,
-  "volumetricSurfaceArea": 303000,
-  "numberOfElectronsTransferred" : 1,
-  "activationEnergyOfReaction": 5000,
-  "reactionRateConstant": 5.031e-11,
-  "guestStoichiometry100": 0.88551,
-  "guestStoichiometry0": 0.1429,
-  "chargeTransferCoefficient": 0.5,
-  "openCircuitPotential" : {"type": "function",
-           "functionname" : "computeOCP_graphite",
-           "argumentlist" : ["concentration", "temperature", "cmax"]
-          }
+	  "saturationConcentration": 31610,
+          "volumetricSurfaceArea": 303000,
+          "numberOfElectronsTransferred" : 1,
+          "activationEnergyOfReaction": 5000,
+          "reactionRateConstant": 5.031e-11,
+          "guestStoichiometry100": 0.88551,
+          "guestStoichiometry0": 0.1429,
+          "chargeTransferCoefficient": 0.5,
+          "openCircuitPotential" : {"type": "function",
+                                    "functionname" : "computeOCP_Graphite_Torchio",
+                                    "argumentlist" : ["concentration", "temperature", "cmax"]
+                                   }
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
@@ -76,7 +74,7 @@
   },
   "PositiveElectrode": {
     "Coating": {
-		"volumeFraction": 0.4,
+      "volumeFraction": 0.4,
       "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
@@ -86,20 +84,18 @@
         "thermalConductivity": 2.1,
         "electronicConductivity": 100,
         "Interface": {
-          "isFile": false,
-          "filename": "ParameterData/MaterialProperties/NMC/nmc111.json",
-			"saturationConcentration": 26000,
-  "volumetricSurfaceArea": 214000,
-  "density": 4650,
-  "numberOfElectronsTransferred" : 1,
-  "activationEnergyOfReaction": 5000,
-  "reactionRateConstant": 2.33e-11,
-  "guestStoichiometry100": 0.4955,
-  "guestStoichiometry0": 0.99174,
-  "chargeTransferCoefficient" : 0.5,
-  "openCircuitPotential" : {"type" : "function",
-                            "functionname" : "computeOCP_nmc111",
-                            "argumentlist" : ["concentration", "temperature", "cmax"]}
+	  "saturationConcentration": 26000,
+          "volumetricSurfaceArea": 214000,
+          "density": 4650,
+          "numberOfElectronsTransferred" : 1,
+          "activationEnergyOfReaction": 5000,
+          "reactionRateConstant": 2.33e-11,
+          "guestStoichiometry100": 0.4955,
+          "guestStoichiometry0": 0.99174,
+          "chargeTransferCoefficient" : 0.5,
+          "openCircuitPotential" : {"type" : "function",
+                                    "functionname" : "computeOCP_NMC111",
+                                    "argumentlist" : ["concentration", "temperature", "cmax"]}
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
@@ -136,47 +132,43 @@
     }
   },
   "Electrolyte": {
-    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
-    "isFile": false,
-  "specificHeatCapacity": 2055.0,
-  "thermalConductivity": 0.6,
-  "density": 1200,
-  "initialConcentration": {
-    "value": 1,
-    "unit": "mol/litre"
-  },
-  "nominalEthyleneCarbonateConcentration": {
-    "value": 1,
-    "unit": "mol/litre"
-  },
-  "ionicConductivity": {
-    "type": "function",
-    "functionname": "computeElectrolyteConductivity_bolay",
-    "argumentlist": [
-      "concentration",
-      "temperature"
-    ]
-  },
-  "diffusionCoefficient": {
-    "type": "function",
-    "functionname": "computeDiffusionCoefficient_bolay",
-    "argumentlist": [
-      "concentration",
-      "temperature"
-    ]
-  },
-  "species": {
-    "chargeNumber": 1,
-    "transferenceNumber":0.2594,
-    "nominalConcentration": 1000
-  },
-  "bruggemanCoefficient": 1.5
+    "specificHeatCapacity": 2055.0,
+    "thermalConductivity": 0.6,
+    "density": 1200,
+    "initialConcentration": {
+      "value": 1,
+      "unit": "mol/litre"
+    },
+    "nominalEthyleneCarbonateConcentration": {
+      "value": 1,
+      "unit": "mol/litre"
+    },
+    "ionicConductivity": {
+      "type": "function",
+      "functionname": "computeElectrolyteConductivity_bolay",
+      "argumentlist": [
+        "concentration",
+        "temperature"
+      ]
+    },
+    "diffusionCoefficient": {
+      "type": "function",
+      "functionname": "computeDiffusionCoefficient_bolay",
+      "argumentlist": [
+        "concentration",
+        "temperature"
+      ]
+    },
+    "species": {
+      "chargeNumber": 1,
+      "transferenceNumber":0.2594,
+      "nominalConcentration": 1000
+    },
+    "bruggemanCoefficient": 1.5
 
   },
   "Separator": {
-    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
-    "isFile": false,
-	  "porosity": 0.5,
+    "porosity": 0.5,
     "specificHeatCapacity": 1978,
     "thermalConductivity": 0.334,
     "density": 946,
