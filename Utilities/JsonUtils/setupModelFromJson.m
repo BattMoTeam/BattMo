@@ -21,7 +21,7 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
     [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, jsonstruct);
 
     if isAssigned(jsonstruct, {'NonLinearSolver', 'LinearSolver'})
-        model = GenericBattery(inputparams);
+        model = Battery(inputparams);
     else
         model = GenericBattery(inputparams);
     end
