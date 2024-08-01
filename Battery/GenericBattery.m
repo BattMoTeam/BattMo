@@ -404,9 +404,14 @@ classdef GenericBattery < BaseModel
             scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
             scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
 
+            scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
+            scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
+                
+                scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
@@ -914,13 +919,11 @@ classdef GenericBattery < BaseModel
 
                 switch model.(ctrl).initialControl
                   case 'discharging'
-                    initstate.(ctrl).ctrlType     = 'CC_discharge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                    initstate.(ctrl).I        = model.(ctrl).ImaxDischarge;
                   case 'charging'
-                    initstate.(ctrl).ctrlType     = 'CC_charge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
+                    initstate.(ctrl).ctrlType = 'CC_charge1';
+                    initstate.(ctrl).I        = - model.(ctrl).ImaxCharge;
                   otherwise
                     error('initialControl not recognized');
                 end
@@ -1743,6 +1746,7 @@ classdef GenericBattery < BaseModel
             state.(elyte).c = max(cmin, state.(elyte).c);
 
             eldes = {ne, pe};
+            
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1770,10 +1774,7 @@ classdef GenericBattery < BaseModel
 
                 end
             end
-
-            ctrl = 'Control';
-            state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl));
-
+            
             report = [];
 
         end
@@ -1804,8 +1805,6 @@ classdef GenericBattery < BaseModel
             if strcmp(model.(ctrl).controlPolicy, 'powerControl')
                 state.(ctrl).time = state.time;
             end
-
-            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt, drivingForces);
 
         end
 
@@ -1870,14 +1869,19 @@ classdef GenericBattery < BaseModel
 
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
+            if ~report.Failure
+                ctrl = 'Control';
+                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
+            end
+            
             if report.Converged
 
-                if strcmp(model.Control.controlPolicy, 'CCCV')
+                if strcmp(model.(ctrl).controlPolicy, 'CCCV')
                     % we check for the constraints
 
-                    [arefullfilled, state.Control] = model.Control.checkConstraints(state.Control);
+                    [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
 
-                    if ~arefullfilled
+                    if ~arefulfilled
                         report.Converged = false;
                     end
 
