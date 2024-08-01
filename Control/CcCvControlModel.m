@@ -241,10 +241,11 @@ classdef CcCvControlModel < ControlModel
         
         function rsf = setupRegionSwitchFlags(model, state, ctrlType)
 
-            Emin          = model.lowerCutoffVoltage;
-            Emax          = model.upperCutoffVoltage;
-            ImaxCharge    = model.ImaxCharge;
-            ImaxDischarge = model.ImaxDischarge;
+            Emin    = model.lowerCutoffVoltage;
+            Emax    = model.upperCutoffVoltage;
+            dIdtMin = model.dIdtLimit;
+            dEdtMin = model.dEdtLimit;
+            tols    = model.tolerances;
             
             E    = state.E;
             I    = state.I;
@@ -270,12 +271,6 @@ classdef CcCvControlModel < ControlModel
                     before = false;
                     after  = false;
                 end
-              case 'CV_charge2'
-                if I < - ImaxCharge
-                    arefulfilled = false;
-                    state.ctrlType = 'CC_charge1';
-                end
-              otherwise
                 
               case 'CC_charge1'
                 

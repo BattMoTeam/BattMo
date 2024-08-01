@@ -403,9 +403,6 @@ classdef GenericBattery < BaseModel
 
             scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
             scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
-
-            scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
-            scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
             
             for ielde = 1 : numel(eldes)
 
