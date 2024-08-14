@@ -715,7 +715,7 @@ function setPlot(gca, p, varargin)
         colorbar;
     end
 
-    if ~isempty(opt.timebar)
+    if ~isempty(opt.timeBar)
         hold on
         plot(opt.timeBar(:,1), opt.timeBar(:,2), 'k--', 'linewidth', 1);
         hold off
