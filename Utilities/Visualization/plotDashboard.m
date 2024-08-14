@@ -678,7 +678,7 @@ function [fig] = plotDashboard(model, states, varargin)
 
 end
 
-function setPlot(gca, p, varargin)
+function setPlot(ax, p, varargin)
 
     opt = struct('xlabel' , '', ...
                  'ylabel' , '', ...
@@ -690,17 +690,31 @@ function setPlot(gca, p, varargin)
                  'timeBar', []);
     opt = merge_options(opt, varargin{:});
 
+    colormap(crameri('nuuk'));
+
+    if ~isempty(opt.timeBar)
+        hold on
+        plot(opt.timeBar(:,1), opt.timeBar(:,2), 'k--', 'linewidth', 1);
+        hold off
+    end
+
     style = setFigureStyle('theme'      , p.Results.theme      , ...
                            'size'       , p.Results.size       , ...
                            'orientation', p.Results.orientation, ...
                            'quantity'   , 'single');
     style.fontSize = 10;
 
-    colormap(crameri('nuuk'));
+    set(ax, ...
+        'FontSize' , style.fontSize       , ...
+        'FontName' , style.fontName       , ...
+        'color'    , style.backgroundColor, ...
+        'XColor'   , style.fontColor      , ...
+        'YColor'   , style.fontColor      , ...
+        'GridColor', style.fontColor)
 
-    xlabel(gca, opt.xlabel);
-    ylabel(gca, opt.ylabel);
-    title(gca, opt.title);
+    xlabel(ax, opt.xlabel);
+    ylabel(ax, opt.ylabel);
+    title(ax, opt.title);
 
     if ~isempty(opt.xlim)
         xlim(opt.xlim);
@@ -715,27 +729,14 @@ function setPlot(gca, p, varargin)
         colorbar;
     end
 
-    if ~isempty(opt.timeBar)
-        hold on
-        plot(opt.timeBar(:,1), opt.timeBar(:,2), 'k--', 'linewidth', 1);
-        hold off
-    end
-
     axis tight;
     grid on;
 
-    set(gca, ...
-        'FontSize' , style.fontSize       , ...
-        'FontName' , style.fontName       , ...
-        'color'    , style.backgroundColor, ...
-        'XColor'   , style.fontColor      , ...
-        'YColor'   , style.fontColor      , ...
-        'GridColor', style.fontColor)
-
     if opt.griddim == 3
-        view(45,45);
+        view(45, 45);
         axis equal;
     end
+
 
 end
 
