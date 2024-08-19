@@ -24,12 +24,18 @@ classdef CCChargeControlModel < CCcontrolModel
             
             model = model@CCcontrolModel(inputparams);
 
-            fdnames = {'CRate'      , ...
-                       'rampupTime' , ...
-                       'useCVswitch', ...
-                       'upperCutoffVoltage'};
+            fdnames = {'CRate'             , ...
+                       'rampupTime'        , ...
+                       'useCVswitch'       , ...
+                       'upperCutoffVoltage', ...
+                       'Imax'};
 
             model = dispatchParams(model, inputparams, fdnames);
+
+            if ~isempty(model.Imax)
+                % If Imax is given, then it should be used and the CRate ignored.
+                model.CRate = [];
+            end
             
         end
         
@@ -40,7 +46,7 @@ classdef CCChargeControlModel < CCcontrolModel
             
             if ~model.useCVswitch
                 
-                func = @(model, state, state_prev) (state.Control.E < model.Control.upperCutoffVoltage);
+                func = @(model, state, state_prev) (state.Control.E > model.Control.upperCutoffVoltage);
 
             end
             

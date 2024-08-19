@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_nmc111_Chen(c, T, cmax)
+function [OCP, dUdT] = computeOCP_NMC811_Chen2020(c, T, cmax)
 
     % LG M50 NMC open circuit potential as a function of stochiometry, fit taken
     % from [1].

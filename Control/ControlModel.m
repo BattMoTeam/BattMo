@@ -12,6 +12,7 @@ classdef ControlModel < BaseModel
         % - 'CCCharge'
         % - 'CC'
         % - 'CCCV'
+        % - 'timecontrol'
         %
         controlPolicy
         
@@ -64,7 +65,7 @@ classdef ControlModel < BaseModel
             state.controlEquation = [];
         end
         
-        function state = updateControlState(model, state)
+        function state = updateControlState(model, state, state0, dt)
         % Implemented by child model.
         % Base class behaviour is do nothing.
         end

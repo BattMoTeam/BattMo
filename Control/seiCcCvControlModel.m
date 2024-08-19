@@ -80,7 +80,7 @@ classdef seiCcCvControlModel < ControlModel
             
         end
 
-        function state = updateControlState(model, state)
+        function state = updateControlState(model, state, state0,dt)
             
             Emin = model.lowerCutoffVoltage;
             Imax = model.Imax;

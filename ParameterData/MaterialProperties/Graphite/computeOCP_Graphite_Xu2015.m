@@ -1,6 +1,6 @@
-function [OCP, dUdT] = computeOCPFunc_LiC6_Lin(c, T, cmax)
+function [OCP, dUdT] = computeOCP_Graphite_Torchio_Xu2015(c, T, cmax)
 %% TODO : implement function model to avoid reading
-
+    
     data = [0.00, 1.28683
             0.01, 0.65272
             0.02, 0.52621
@@ -34,7 +34,7 @@ function [OCP, dUdT] = computeOCPFunc_LiC6_Lin(c, T, cmax)
     stoc = c./cmax;
 
     OCP = interpTable(data(:, 1), data(:, 2), stoc);
-
+    
     data = [0.01049, 3.00E-04
             0.03146, 2.47E-04
             0.05244, 1.95E-04

@@ -1,6 +1,6 @@
-function [OCP, dUdT] = computeOCPFunc_LFP_Lin(c, T, cmax)
+function [OCP, dUdT] = computeOCP_LFP_Xu2015(c, T, cmax)
 %% TODO : implement function model to avoid reading
-
+    
     stoc = c./cmax;
 
     data = [0.00, 4.1433
@@ -65,5 +65,5 @@ function [OCP, dUdT] = computeOCPFunc_LFP_Lin(c, T, cmax)
             9.89111e-1, -3.11393e-5];
 
     dUdT = interpTable(data(:, 1), data(:, 2), stoc);
-
+    
 end

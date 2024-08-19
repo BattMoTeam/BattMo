@@ -1,12 +1,15 @@
-function jsonstruct = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldnamelist2, varargin)
+function [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldnamelist2, varargin)
 
     value1 = getJsonStructField(jsonstruct, fieldnamelist1);
     value2 = getJsonStructField(jsonstruct, fieldnamelist2);
 
+    bothUnAssigned = false;
+    
     if isUnAssigned(value1)
 
         if isUnAssigned(value2)
-
+            
+            bothUnAssigned = true;
             return
             
         else
@@ -34,7 +37,10 @@ function jsonstruct = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldn
                 opt = merge_options(opt, varargin{:});
 
                 if opt.force
-                    jsonstruct = setJsonStructField(jsonstruct, fieldnamelist2, value1, 'handleMisMatch', 'quiet');
+                    errorMessage = sprintf('Different values are given for the fields jsonstruct.%s and jsonstruct.%s. We do not know which one to choose...', ...
+                                           getPrintableName(fieldnamelist1)                                                                                  , ...
+                                           getPrintableName(fieldnamelist2));
+                    jsonstruct = setJsonStructField(jsonstruct, fieldnamelist2, value1, 'handleMisMatch', 'error', 'errorMessage', errorMessage);
                     if opt.warn
                         fprintf('Fist value given in equalizeJsonStructField is taken\n');
                     end
@@ -47,7 +53,18 @@ function jsonstruct = equalizeJsonStructField(jsonstruct, fieldnamelist1, fieldn
 
     end
       
+end
 
 
-    
+function namestr = getPrintableName(fieldnamelist)
+
+    if ischar(fieldnamelist)
+
+        namestr = getPrintableName({fieldnamelist})
+        return
+        
+    end
+
+    namestr = strjoin(fieldnamelist, '.')
+
 end

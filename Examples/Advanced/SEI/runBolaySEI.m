@@ -17,119 +17,60 @@ itf   = 'Interface';
 sei   = 'SolidElectrodeInterface';
 sr    = 'SideReaction';
 elyte = 'Electrolyte';
+ctrl  = 'Control';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
                         'lithium_ion_battery_nmc_graphite.json');
-jsonstruct_material = parseBattmoJson(jsonfilename);
-jsonstruct = jsonstruct_material.(ne).(co).(am);
+jsonstruct = parseBattmoJson(jsonfilename);
+
+jsonstruct.use_thermal = false;
 
 jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
 
-jsonstruct.(itf) = mergeJsonStructs({jsonstruct.(itf), ...
-                                     jsonstruct_bolay});
+jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
+                                              jsonstruct_bolay});
 
-jsonstruct.sei_type              = 'bolay';
-jsonstruct.(sd).N                = 10;
-jsonstruct.isRootSimulationModel = true;
+jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
 
-jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
+jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
+                            'initialControl'    , 'discharging', ...
+                            'numberOfCycles'    , 4            , ...
+                            'CRate'             , 1            , ...
+                            'DRate'             , 1            , ...
+                            'lowerCutoffVoltage', 3            , ...
+                            'upperCutoffVoltage', 4            , ...
+                            'dIdtLimit'         , 1e-4         , ...
+                            'dEdtLimit'         , 1e-4);
 
-rp = jsonstruct.(sd).particleRadius ;
-jsonstruct.(itf).volumetricSurfaceAreas  = 3./rp;
+jsonstruct.(ctrl) = jsontruct_control;
+
+jsonstruct.(ne).(co).(am).(itf).SEIelectronicDiffusionCoefficient = 3.5e-15;
+
+jsonstruct.SOC = 1;
 
 
-inputparams = ActiveMaterialInputParams(jsonstruct);
+%%
 
-% We initiate the model
-model = ActiveMaterial(inputparams);
+inputparams = BatteryInputParams(jsonstruct);
 
-model = model.setupForSimulation();
+gen = BatteryGeneratorP2D();
+inputparams = gen.updateBatteryInputParams(inputparams);
 
+model = GenericBattery(inputparams);
 
+%% Setup the schedule
 
-%% Setup initial state
+% schedule = model.(ctrl).setupSchedule([]);
+jsonstruct.TimeStepping.timeStepDuration = 200;
+schedule = model.(ctrl).setupSchedule(jsonstruct);
 
-Nsd  = model.(sd).N;
+%% Setup the initial state of the model
+% The initial state of the model is setup using the model.setupInitialState() method.
 
-% Initial concentration value at the electrode
-cElectrodeInit = 0.75*model.(itf).saturationConcentration;
-% Initial value of the potential at the electrode
-phiElectrodeInit = 0;
-% Initial concentration value in the electrolyte
-cElectrolyte = 5e-1*mol/litre;
-% Temperature
-T = 298.15;
-
-% The following datas come from :cite:`Bolay2022` (supplementary material)
-% Length of SEI layer
-SEIlength = 10*nano*meter;
-% SEI voltage drop
-SEIvoltageDrop = 0;
-
-% We compute the OCP from the given data and use it to assign electrical potential in electrolyte
-initState.T = T;
-initState.(sd).cSurface = cElectrodeInit;
-initState = model.evalVarName(initState, {itf, 'OCP'});
-
-OCP = initState.(itf).OCP;
-phiElectrolyte = phiElectrodeInit - OCP;
-
-% From the values computed above we set the values of the initial state
-initState.E                    = phiElectrodeInit;
-initState.(sd).c               = cElectrodeInit*ones(Nsd, 1);
-initState.(itf).SEIlength      = SEIlength;
-initState.(itf).SEIvoltageDrop = SEIvoltageDrop;
-
-% We set also static variable fields
-initState.(itf).cElectrolyte   = cElectrolyte;
-initState.(itf).phiElectrolyte = phiElectrolyte;
-
-%% Setup schedule
-
-Imax = 3e-12*ampere;
-
-scalings = {};
-coef = Imax/PhysicalConstants.F;
-scalings{end + 1} = {{sd, 'massCons'}, coef};
-scalings{end + 1} = {{sd, 'solidDiffusionEq'}, coef};
-scalings{end + 1} = {{'chargeCons'}, Imax};
-
-L0 = 1*nano*meter;
-k  = model.(itf).SEIionicConductivity;
-rp = model.(sd).particleRadius;
-F  = PhysicalConstants.F;
-vsa = model.(sd).volumetricSurfaceArea;
-
-coef = Imax*L0*k/(4*pi/3*(rp)^3*F*vsa);
-
-scalings{end + 1} = {{itf, 'SEIvoltageDropEquation'}, coef};
-
-De = model.(itf).SEIelectronicDiffusionCoefficient;
-ce = model.(itf).SEIintersticialConcentration;
-
-coef = De*ce/L0;
-
-scalings{end + 1} = {{itf, 'SEImassCons'}, coef};
-
-model.scalings = scalings;
-
-total = 60*minute;
-n     = 200;
-dt    = total/n;
-step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% rampup value for the current function, see rampupSwitchControl
-tup = 1e-2*minute;
-srcfunc = @(time) rampupControl(time, tup, Imax);
-
-cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
-control.src = srcfunc;
-
-schedule = struct('control', control, 'step', step);
+initstate = model.setupInitialState();
 
 %% Setup non-linear solver
 
@@ -141,66 +82,179 @@ model.nonlinearTolerance = 1e-5;
 %% Run simulation
 
 model.verbose = true;
-[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
+%% Setup for plotting
+
+ind = cellfun(@(x) not(isempty(x)), states); 
+states = states(ind);
+time = cellfun(@(x) x.time, states); 
+E    = cellfun(@(x) x.Control.E, states); 
+I    = cellfun(@(x) x.Control.I, states);
+
+for istate = 1 : numel(states)
+    states{istate} = model.addVariables(states{istate});
+end
 
 %% Plotting
 
-set(0, 'defaulttextfontsize', 15);
-set(0, 'defaultaxesfontsize', 15);
-set(0, 'defaultlinelinewidth', 3);
-set(0, 'defaultfigureposition', [10, 10, 800, 400]);
+close all
 
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
+set(0, 'defaultlinelinewidth', 3)
+set(0, 'defaultaxesfontsize', 15)
 
-time = cellfun(@(state) state.time, states);
+%%
 
-cSurface = cellfun(@(state) state.(sd).cSurface, states);
 figure
-plot(time/hour, cSurface/(1/litre));
-xlabel('time / h');
-ylabel('Surface concentration / mol/L');
-title('Surface concentration');
+plot(time/hour, E, '*-');
+title('Voltage / V')
+xlabel('Time / h')
 
-E = cellfun(@(state) state.E, states);
+%%
+
 figure
-plot(time/hour, E);
-xlabel('time / h');
-ylabel('Potential / V');
-title('Potential');
+plot(time/hour, I);
+title('Current / A')
+xlabel('Time / h')
 
-
-cmin = cellfun(@(state) min(state.(sd).c), states);
-cmax = cellfun(@(state) max(state.(sd).c), states);
-
-for istate = 1 : numel(states)
-    states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
-end
-
-caver = cellfun(@(state) max(state.(sd).cAverage), states);
+%%
 
 figure
 hold on
-plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
-plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
-plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
-title('Concentration in particle / mol/L')
+
+delta = cellfun(@(state) state.(ne).(co).(am).(itf).SEIlength(end), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{max}')
+
+delta = cellfun(@(state) state.(ne).(co).(am).(itf).SEIlength(1), states);
+plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{min}')
+
+title('SEI thickness in negative electrode/ nm')
+xlabel('Time / h')
+
 legend show
 
-c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+%%
 
 figure
-plot(r, c/(mol/litre));
-xlabel('radius / m')
-ylabel('concentration / mol/L')
-title('Particle concentration profile (last time step)')
+hold on
 
-seilength = cellfun(@(state) state.(itf).SEIlength, states);
+u = cellfun(@(state) state.(ne).(co).(am).(itf).SEIvoltageDrop(end), states);
+plot(time/hour, u, 'displayname', 'at x_{max}')
 
+u = cellfun(@(state) state.(ne).(co).(am).(itf).SEIvoltageDrop(1), states);
+plot(time/hour, u, 'displayname', 'at x_{min}')
+
+title('SEI voltage drop in negative electrode/ V')
+xlabel('Time / h')
+legend show
+
+%%
 figure
-plot(time/hour, seilength);
-xlabel('time / hour')
-ylabel('length / m')
-title('SEI layer length')
 
+vols = model.(ne).(co).G.getVolumes();
+
+for istate = 1 : numel(states)
+    state = states{istate};
+    state = model.evalVarName(state, {ne, co, am, itf, 'SEIconcentration'});
+    m(istate) = sum(vols.*state.(ne).(co).(am).(sd).cAverage);
+end
+
+plot(time/hour, m);
+title('Total lithium amount in negative electrode / mol')
+xlabel('Time / h')
+
+%%
+
+quantities = [];
+
+vols = model.(ne).(co).G.getVolumes();
+
+for timeindex = 1 : numel(states)
+
+    state = states{timeindex};
+    state = model.evalVarName(state, {ne, co, am, itf, 'SEIconcentration'});
+    cSEI  = state.(ne).(co).(am).(itf).SEIconcentration;
+    
+    Liqqt = sum(cSEI.*vols);
+    quantities(end + 1) = Liqqt;
+    
+end
+
+figure 
+plot(time/hour, quantities);
+title('Lithium quantity consummed');
+xlabel('Time / h');
+ylabel('quantity / mol');
+grid on;
+
+PE_Li_quantities          = [];
+NE_Li_quantities          = [];
+Electrolyte_Li_quantities = [];
+Electrodes_Li_quantities  = [];
+Total_Li_quantities       = [];
+
+for timeindex = 1 : numel(states)
+
+
+    amvf     = model.(pe).(co).volumeFractions(1);
+    vf       = model.(pe).(co).volumeFraction;
+    vols     = model.(pe).G.getVolumes;
+    cAverage = states{timeindex}.(pe).(co).(am).(sd).cAverage;
+
+    PE_qtt = sum(amvf.*vf.*vols.*cAverage);
+    
+    amvf     = model.(ne).(co).volumeFractions(1);
+    vf       = model.(ne).(co).volumeFraction;
+    vols     = model.(ne).G.getVolumes;
+    cAverage = states{timeindex}.(ne).(co).(am).(sd).cAverage;
+
+    NE_qtt = sum(amvf.*vf.*vols.*cAverage);
+
+    Elyte_qtt = sum(model.Electrolyte.volumeFraction.*model.Electrolyte.G.getVolumes.*states{timeindex}.Electrolyte.c);
+
+    Elode_qtt = PE_qtt + NE_qtt;
+    Tot_Liqqt = PE_qtt + NE_qtt + Elyte_qtt;
+        
+    PE_Li_quantities(end + 1)          = PE_qtt;
+    NE_Li_quantities(end + 1)          = NE_qtt;
+    Electrolyte_Li_quantities(end + 1) = Elyte_qtt;
+    Electrodes_Li_quantities(end + 1)  = Elode_qtt;
+    Total_Li_quantities(end + 1)       = Tot_Liqqt;
+end
+
+title('SEI thickness in negative electrode/ nm')
+xlabel('Time / h')
+
+legend show
+figure
+hold on
+
+plot(time/hour, PE_Li_quantities                ,'DisplayName','Positive Electrode');
+plot(time/hour, NE_Li_quantities                ,'DisplayName','Negative Electrode');
+plot(time/hour, Electrolyte_Li_quantities       ,'DisplayName','Electrolyte');
+plot(time/hour, Electrodes_Li_quantities        ,'DisplayName','Both Electrodes');
+plot(time/hour, Total_Li_quantities             ,'DisplayName','Total (except SEI)');
+plot(time/hour, Total_Li_quantities + quantities,'DisplayName','Total (including SEI)');
+plot(time/hour, quantities                      ,'DisplayName','In the SEI');
+title('Lithium quantity');
+xlabel('Time / h');
+ylabel('quantity / mol');
+grid on;
+legend show
+
+%%
+
+figure 
+
+capacity = computeCellCapacity(model);
+F = PhysicalConstants.F;
+
+qty  = quantities;
+qty  = qty - qty(1);
+
+plot(time/hour, 100 * (qty*F) / capacity);
+
+title('Percentage of Lithium consummed');
+xlabel('Time / h');
+ylabel('%');
+grid on;

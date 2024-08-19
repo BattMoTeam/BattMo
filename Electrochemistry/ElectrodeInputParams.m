@@ -17,7 +17,8 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         include_current_collectors
         use_thermal
-
+        use_normed_current_collector
+        
     end
 
     methods
@@ -27,20 +28,30 @@ classdef ElectrodeInputParams < ComponentInputParams
             co = 'Coating';
             cc = 'CurrentCollector';
 
-
             jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
 
             include_current_collectors = getJsonStructField(jsonstruct, 'include_current_collectors');
+
             if isAssigned(include_current_collectors) && include_current_collectors
                 jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
             end
 
+            if include_current_collectors
+                jsonstruct = setDefaultJsonStructField(jsonstruct, {'use_normed_current_collector'}, false);
+            end
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 
             inputparams.(co) = CoatingInputParams(pick(co));
-            inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
+            if include_current_collectors
+                if getJsonStructField(jsonstruct, 'use_normed_current_collector')
+                    inputparams.(cc) = NormedCurrentCollectorInputParams(pick(cc));
+                else
+                    inputparams.(cc) = CurrentCollectorInputParams(pick(cc));
+                end
+            end
 
         end
 

@@ -9,7 +9,7 @@
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
     "type": "function",
-    "functionName": "computeOCP_graphite_Chen",
+    "functionname": "computeOCP_Graphite_SiOx_Chen2020",
     "argumentList": [
       "concentration",
       "temperature",

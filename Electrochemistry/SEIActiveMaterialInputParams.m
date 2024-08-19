@@ -13,11 +13,14 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
 
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
             
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEImodel', 'Safari');
+            errorMessage = 'We should have the Safari SEI model as input (otherwise this model should not be called)';
+            jsonstruct = setJsonStructField(jsonstruct, 'SEImodel', 'Safari', 'errorMessage', errorMessage);
             
-            assert(strcmp(jsonstruct.SEImodel, 'Safari'), 'The SEI model should be set to Safari');
-
+            errorMessage = 'For the Safari SEI model, the use of the full diffusion model is required';
+            jsonstruct = setJsonStructField(jsonstruct, 'diffusionModelType', 'full', 'errorMessage', errorMessage);
+            
             isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+            
             if isAssigned(isRootSimulationModel) && isRootSimulationModel
                 % only one particle in the stand-alone model
                 jsonstruct = setJsonStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
@@ -31,25 +34,8 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             inputparams.SolidElectrodeInterface = SolidElectrodeInterfaceInputParams(pick('SolidElectrodeInterface'));
 
         end
-
-        function inputparams = setupSEImodel(inputparams, jsonstruct)
-
-            if isfield(jsonstruct, 'SEImodel') && ~strcmp(jsonstruct.SEImodel, 'Safari')
-                error('Inconsitent model, check SEI model values')
-            end
-
-            inputparams.SEImodel = 'Safari';
-            
-        end
                 
-        function inputparams = setupSolidDiffusion(inputparams, jsonstruct)
 
-            sd = 'SolidDiffusion';
-            input.diffusionModelType = inputparams.diffusionModelType;
-            inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
-
-        end
-        
 
     end
     

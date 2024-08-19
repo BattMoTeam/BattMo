@@ -68,7 +68,7 @@
                     },
                     "openCircuitPotential": {
                         "type": "function",
-                        "functionName": "computeOCP_graphite",
+                        "functionname": "computeOCP_Graphite_Torchio",
                         "argumentList": [
                             "concentration",
                             "temperature",
@@ -229,8 +229,13 @@
                     },
                     "openCircuitPotential": {
                         "type": "function",
+<<<<<<< variant A
                         "functionName": "computeOCP_nmc111",
                         "argumentList": [
+>>>>>>> variant B
+                        "functionname": "computeOCP_NMC111",
+                        "argumentlist": [
+======= end
                             "concentration",
                             "temperature",
                             "cmax"

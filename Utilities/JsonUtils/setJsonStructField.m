@@ -1,4 +1,8 @@
 function jsonstruct = setJsonStructField(jsonstruct, fieldnamelist, value, varargin)
+    % in varargin, the key 'handleMisMatch' can take following vaules
+    % - 'error'   : returns error if value already set and does not match with the new given one (default)
+    % - 'quiet'   : does not warn about case above
+    % - 'warning' : warn but no error
 
     if ischar(fieldnamelist)
         % handle case wher fieldnamelist is just a char
@@ -31,7 +35,8 @@ function jsonstruct = setJsonStructField(jsonstruct, fieldnamelist, value, varar
                 
             else
                 
-                opt = struct('handleMisMatch', 'error');
+                opt = struct('handleMisMatch', 'error', ...
+                             'errorMessage', []);
                 opt = merge_options(opt, varargin{:});
                 
                 switch opt.handleMisMatch
@@ -47,8 +52,12 @@ function jsonstruct = setJsonStructField(jsonstruct, fieldnamelist, value, varar
                     
                   case 'error'
 
-                    errortxt = sprintf('mismatch values in assignment of %s. We use the given value\n', fieldname);
-                    error(errortxt);
+                    if isempty(opt.errorMessage)
+                        errorMessage = sprintf('mismatch values in assignment of %s. We use the given value\n', fieldname);
+                    else
+                        errorMessage = opt.errorMessage;
+                    end
+                    error(errorMessage);
                     
                 end
 

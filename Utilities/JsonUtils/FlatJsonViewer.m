@@ -41,7 +41,7 @@ classdef FlatJsonViewer
             opt = merge_options(opt, varargin{:});
             
             if ~isempty(opt.filter)
-                fjv = fjv.filter(opt.filterdesc);
+                fjv = fjv.filter(opt.filter);
             end
             
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
@@ -103,7 +103,7 @@ classdef FlatJsonViewer
             ind = regexp(columnnames, r);
             ind = cellfun(@(res) ~isempty(res), ind);
             ind = find(ind);
-            assert(numel(ind) == 1);
+            assert(numel(ind) == 1, 'Ambiguous column name has been given');
 
             function res = strmatch(str)
                 if regexp(str, r)

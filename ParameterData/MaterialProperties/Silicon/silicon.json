@@ -8,7 +8,7 @@
   "guestStoichiometry0": 0.1429,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential" : {"type": "function",
-           "functionName" : "computeOCPSiliconLi2012",
-           "argumentList" : ["concentration", "temperature", "cmax"]
-          }
+                            "functionname" : "computeOCP_Silicon_Li2012",
+                            "argumentList" : ["concentration", "temperature", "cmax"]
+                           }
 }

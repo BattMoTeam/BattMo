@@ -46,7 +46,7 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Setup the time step schedule
 % Smaller time steps are used to ramp up the current from zero to its

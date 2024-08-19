@@ -570,13 +570,18 @@ classdef BaseModel < PhysicalModel
         %% Methods used when the model is used as root model for a simulation. Then, the model is equipped for simulation
         %
         
-        function [problem, state] = getEquations(model, state0, state,dt, drivingForces, varargin)
+        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
             
-            opt = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
-            opt = merge_options(opt, varargin{:});
+            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
+            opts = merge_options(opts, varargin{:});
             
-            if ~opt.ResOnly
+            if (not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
+            elseif opts.reverseMode
+                dispif(mrstVerbose, 'No AD initialization in equation old style')
+                state0 = model.initStateAD(state0);
+            else
+                assert(opts.ResOnly);
             end
             
             %% We call the assembly equations ordered from the graph
@@ -719,7 +724,35 @@ classdef BaseModel < PhysicalModel
         % By default, discard validateModel from MRST
             
         end
+
+        function inds = getRangePrimaryVariable(model, adsample, varname)
+
+            ivar = model.getIndexPrimaryVariable(varname);
+
+            ss = cellfun(@(jac) size(jac, 2), adsample.jac);
+            ss = cumsum(ss);
+            ss = [1, ss(1 : end - 1) + 1; ...
+                  ss];
+            inds = ss(:, ivar);
+
+        end
         
+        function ind = getIndexPrimaryVariable(model, varname)
+
+            primvarnames = model.getPrimaryVariableNames();
+
+            for ivar = 1 : numel(primvarnames)
+                isequal = ImpedanceBattery.compareVarName(varname, primvarnames{ivar});
+                if isequal
+                    ind = ivar;
+                    return
+                end
+            end
+
+            error('primary variable not found');
+            
+        end
+                
     end
 
     methods(Static)

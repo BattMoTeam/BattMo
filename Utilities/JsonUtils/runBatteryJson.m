@@ -76,7 +76,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
         error('initializationSetup not recognized');
     end
 
-    [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct);
+    [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct);
 
     %% Run the simulation
     %
@@ -104,7 +104,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
             [globvars, states, reports] = getPackedSimulatorOutput(problem);
 
         else
-            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+            [globvars, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         end
     else
         output = struct('model'    , model    , ...
@@ -120,8 +120,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Process output and recover the output voltage and current from the output states.
     ind = cellfun(@(x) not(isempty(x)), states);
-    states = states(ind);
-
+    states   = states(ind);
+    globvars = globvars(ind);
+    
     E    = cellfun(@(state) state.Control.E, states);
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states);
@@ -134,10 +135,10 @@ function  output = runBatteryJson(jsonstruct, varargin)
                     'E'        , E        , ... % Unit : V
                     'I'        , I); ... % Unit : A
 
-    output.states = states;
-
-    if isfield(jsonstruct, 'Output') ...
-        && isfield(jsonstruct.Output, 'variables') ...
+    output.globvars = globvars;
+    output.states   = states;
+    
+    if isAssigned(jsonstruct, {'Output', 'variables'}) ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
 
         if ismember('specificEnergy', jsonstruct.Output.variables)

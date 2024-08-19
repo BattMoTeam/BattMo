@@ -9,7 +9,7 @@
     "guestStoichiometry0": 0.999,
     "chargeTransferCoefficient": 0.5,
     "openCircuitPotential": {"type": "function",
-                             "functionName": "computeOCPFunc_LFP_Lin",
+                             "functionname": "computeOCP_LFP_Xu2015",
                              "argumentList" : ["concentration", "temperature", "cmax"]
                             }
 }

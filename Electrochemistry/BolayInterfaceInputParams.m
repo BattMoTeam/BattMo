@@ -8,6 +8,7 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
         SEIstochiometricCoeffcient
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
+        SEIlengthInitial
         
     end
 

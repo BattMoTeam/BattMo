@@ -39,10 +39,15 @@ classdef InterfaceInputParams < InputParams
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
+        %% SEI model
         SEImodel % string defining interface type. Can take value
                   % - 'none' (default)
                   % - 'Safari'
                   % - 'Bolay'
+        
+        %% Double layer capacity
+        useDoubleLayerCapacity % if true, add double layer capacity (default is false)
+        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2      
     end
     
     methods

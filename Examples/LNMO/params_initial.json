@@ -61,7 +61,7 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_graphite_Chen",
+            "functionname": "computeOCP_Graphite_SiOx_Chen2020",
             "type": "function"
           },
           "reactionRateConstant": 6.716e-12,
@@ -129,7 +129,7 @@
               "temperature",
               "maximum concentration"
             ],
-            "functionname": "updateOCPFunc_LNMO_Pron",
+            "functionname": "computeOCP_LNMO_Pron",
             "type": "function"
           },
           "reactionRateConstant": 2.33e-11,

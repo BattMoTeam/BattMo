@@ -1,0 +1,31 @@
+{
+  "specificHeatCapacity": 1518.0,
+  "thermalConductivity": 0.099,
+  "density": 1210,
+  "initialConcentration": {
+    "value": 1,
+    "unit": "mol/litre"
+  },
+  "ionicConductivity": {
+    "type": "function",
+    "functionname": "computeElectrolyteConductivity_Xu2015",
+    "argumentlist": [
+      "concentration",
+      "temperature"
+    ]
+  },
+  "diffusionCoefficient": {
+    "type": "function",
+    "functionname": "computeDiffusionCoefficient_Xu2015",
+    "argumentlist": [
+      "concentration",
+      "temperature"
+    ]
+  },
+  "species": {
+    "chargeNumber": 1,
+    "transferenceNumber": 0.2594,
+    "nominalConcentration": 1000
+  },
+  "bruggemanCoefficient": 1.5
+}
