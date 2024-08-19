@@ -1,4 +1,4 @@
-classdef NamedFunction
+classdef NamedFunction < Function
 % The function is implemented and available in the path. It then called using its name.
     properties
         
@@ -15,6 +15,8 @@ classdef NamedFunction
 
         function fn = NamedFunction(jsonstruct)
 
+            fn = fn@Function(jsonstruct);
+            
             fdnames = {'functionName'};
 
             fn = dispatchParams(fn, jsonstruct, fdnames);

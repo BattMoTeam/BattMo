@@ -34,6 +34,15 @@ classdef Interface < BaseModel
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
 
+        % flag which determines if entropy change should be computed and included
+        includeEntropyChange
+        
+        % A function to determine the entropy change
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
+        entropyChange
+
+        referenceTemperature % Used to compute effective OCP from reference OCP and entropy change
+        
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
         %% Double layer capacity
@@ -47,9 +56,10 @@ classdef Interface < BaseModel
 
         %% Computed parameters at model setup
 
-        computeOCPFunc % Function object to compute the OCP (see setupFunction)
-        useJ0Func      % true if we use a function to compute the function computeJ0Func to compute the exchange current density
-        computeJ0Func  % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
+        computeOCPFunc     % Function object to compute the OCP (see setupFunction)
+        computeEntropyChangeFunc % Function object to compute dUdT (see setupFunction)
+        useJ0Func          % true if we use a function to compute the function computeJ0Func to compute the exchange current density
+        computeJ0Func      % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
 
     end
 
@@ -70,6 +80,9 @@ classdef Interface < BaseModel
                        'guestStoichiometry0'         , ...
                        'density'                     , ...
                        'openCircuitPotential'        , ...
+                       'entropyChange'               , ...
+                       'referenceTemperature'        , ...
+                       'includeEntropyChange'        , ...
                        'chargeTransferCoefficient'   , ...
                        'useDoubleLayerCapacity'      , ...
                        'doubleLayerCapacitance'};
@@ -78,6 +91,10 @@ classdef Interface < BaseModel
 
             model.computeOCPFunc = setupFunction(inputparams.openCircuitPotential);
 
+            if model.includeEntropyChange
+                model.computeEntropyChangeFunc = setupFunction(inputparams.entropyChange);
+            end
+            
             j0 = inputparams.exchangeCurrentDensity;
 
             if ~isempty(j0)
@@ -122,10 +139,14 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'eta';
             % Reaction rate [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
+            % OCP0 [V] at reference temperature
+            varnames{end + 1} = 'OCP0';
             % OCP [V]
             varnames{end + 1} = 'OCP';
-            % 
-            varnames{end + 1} = 'dUdT';
+            % Entropy
+            if model.includeEntropyChange
+                varnames{end + 1} = 'dUdT';
+            end
             % Reaction rate coefficient [A m^-2]
             varnames{end + 1} = 'j0';
 
@@ -142,7 +163,6 @@ classdef Interface < BaseModel
                 model = model.registerVarNames(varnames);                
             end
             
-
             fn = @Interface.updateReactionRateCoefficient;
             if model.useJ0Func
                 inputnames = {'cElectrodeSurface'};
@@ -151,11 +171,24 @@ classdef Interface < BaseModel
             end
             model = model.registerPropFunction({'j0', fn, inputnames});
 
-            fn = @Interface.updateOCP;
-            inputnames = {'cElectrodeSurface', 'T'};
-            model = model.registerPropFunction({'OCP', fn, inputnames});
-            model = model.registerPropFunction({'dUdT', fn, inputnames});
+            fn = @Interface.updateOCP0;
+            inputnames = {'cElectrodeSurface'};
+            model = model.registerPropFunction({'OCP0', fn, inputnames});
 
+            if model.includeEntropyChange
+                fn = @Interface.updatedUdT;
+                inputnames = {'cElectrodeSurface'};            
+                model = model.registerPropFunction({'dUdT', fn, inputnames});
+            end
+
+            fn = @Interface.updateOCP;
+            if model.includeEntropyChange
+                inputnames = {'OCP0', 'dUdT', 'T'};
+            else
+                inputnames = {'OCP0'};
+            end
+            model = model.registerPropFunction({'OCP', fn, inputnames});
+            
             fn = @Interface.updateEta;
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP'};
             model = model.registerPropFunction({'eta', fn, inputnames});
@@ -222,21 +255,58 @@ classdef Interface < BaseModel
 
         end
 
-        function state = updateOCP(model, state)
-
+        function state = updateOCP0(model, state)
+            
             computeOCP = model.computeOCPFunc;
             cmax = model.saturationConcentration;
-
+            
             c = state.cElectrodeSurface;
-            T = state.T;
 
-            [state.OCP, state.dUdT] = computeOCP.eval(c, T, cmax);
+            if computeOCP.numberOfArguments == 1
+                state.OCP0 = computeOCP.eval(c/cmax);
+            else
+                cmax = model.saturationConcentration;
+                state.OCP0 = computeOCP.eval(c, cmax);
+            end
 
         end
 
+        function state = updatedUdT(model, state)
+
+            computeEntCh = model.computeEntropyChangeFunc;
+            cmax         = model.saturationConcentration;
+
+            c = state.cElectrodeSurface;
+            
+            if computeEntCh.numberOfArguments
+                state.dUdT = computeEntCh.eval(c/cmax);
+            else
+                state.dUdT = computeEntCh.eval(c, cmax);
+            end
+
+        end
+        
+        function state = updateOCP(model, state)
+
+            if model.includeEntropyChange
+                
+                Tref = model.referenceTemperature;
+                
+                dUdT = state.dUdT;
+                T    = state.T;
+                OCP0 = state.OCP0;
+
+                state.OCP = state.OCP0 + dUdT.*(T - Tref);
+                
+            else
+                
+                state.OCP = state.OCP0;
+                
+            end
+            
+        end
 
         function state = updateReactionRateCoefficient(model, state)
-
 
             if model.useJ0Func
 

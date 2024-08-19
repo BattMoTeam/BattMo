@@ -11,7 +11,7 @@ classdef Function
                        % - 'named function',
                        % - 'constant'
 
-        argumentList % cell array of string which describes the expected argument of the function. Mainly for documentation at the moment (no consequence if not given)
+        argumentList % cell array of string which describes the expected argument of the function. Mainly for documentation at the moment or to infer number of argument
 
         %% helper
 
@@ -29,7 +29,7 @@ classdef Function
 
             fn = dispatchParams(fn, jsonstruct, fdnames);
 
-            fn.numberOfArguments = numel(argumentList);
+            fn.numberOfArguments = numel(fn.argumentList);
 
         end
         

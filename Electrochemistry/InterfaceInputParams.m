@@ -36,6 +36,8 @@ classdef InterfaceInputParams < InputParams
         % A function to determine the entropy change
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
         entropyChange
+
+        referenceTemperature % Used to compute effective OCP from reference OCP and entropy change
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
@@ -54,6 +56,8 @@ classdef InterfaceInputParams < InputParams
         
         function inputparams = InterfaceInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'entropyChange', false);
+            
             inputparams = inputparams@InputParams(jsonstruct);
             
         end
