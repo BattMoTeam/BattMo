@@ -26,8 +26,8 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_Graphite_SiOx_Chen2020",
-            "type": "function"
+            "functionName": "computeOCP_Graphite_SiOx_Chen2020",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,

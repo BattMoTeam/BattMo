@@ -7,8 +7,8 @@
     "reactionRateConstant": 1.76e-11,
     "guestStoichiometry100": 0.51873811,
     "guestStoichiometry0": 0.001,
-    "openCircuitPotential": {"type": "function",
-                             "functionname": "computeOCP_Graphite_Torchio_Xu2015",
+    "openCircuitPotential": {"functionFormat": "named function",
+                             "functionName": "computeOCP_Graphite_Torchio_Xu2015",
                              "argumentList" : ["concentration", "temperature", "cmax"]
                             }
 }

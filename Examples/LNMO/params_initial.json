@@ -14,8 +14,8 @@
         "concentration",
         "temperature"
       ],
-      "functionname": "computeDiffusionCoefficient_default",
-      "type": "function"
+      "functionName": "computeDiffusionCoefficient_default",
+      "functionFormat": "named function"
     },
     "initialConcentration": {
       "unit": "mol/litre",
@@ -26,8 +26,8 @@
         "concentration",
         "temperature"
       ],
-      "functionname": "computeElectrolyteConductivity_default",
-      "type": "function"
+      "functionName": "computeElectrolyteConductivity_default",
+      "functionFormat": "named function"
     },
     "species": {
       "chargeNumber": 1,
@@ -61,8 +61,8 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_Graphite_SiOx_Chen2020",
-            "type": "function"
+            "functionName": "computeOCP_Graphite_SiOx_Chen2020",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,
@@ -129,8 +129,8 @@
               "temperature",
               "maximum concentration"
             ],
-            "functionname": "computeOCP_LNMO_Pron",
-            "type": "function"
+            "functionName": "computeOCP_LNMO_Pron",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 2.33e-11,
           "saturationConcentration": 24358,

@@ -17,8 +17,8 @@
         "concentration",
         "temperature"
       ],
-      "functionname": "computeDiffusionCoefficient_default",
-      "type": "function"
+      "functionName": "computeDiffusionCoefficient_default",
+      "functionFormat": "named function"
     },
     "initialConcentration": {
       "unit": "mol/litre",
@@ -29,8 +29,8 @@
         "concentration",
         "temperature"
       ],
-      "functionname": "computeElectrolyteConductivity_default",
-      "type": "function"
+      "functionName": "computeElectrolyteConductivity_default",
+      "functionFormat": "named function"
     },
     "species": {
       "chargeNumber": 1,
@@ -60,8 +60,8 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_Graphite_Torchio",
-            "type": "function"
+            "functionName": "computeOCP_Graphite_Torchio",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 30555,
@@ -94,8 +94,8 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_Silicon_Li2012",
-            "type": "function"
+            "functionName": "computeOCP_Silicon_Li2012",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 311307.4,
@@ -168,8 +168,8 @@
               "temperature",
               "maximum concentration"
             ],
-            "functionname": "computeOCP_LNMO_Pron",
-            "type": "function"
+            "functionName": "computeOCP_LNMO_Pron",
+            "functionFormat": "named function"
           },
           "reactionRateConstant": 2.33e-11,
           "saturationConcentration": 24358,

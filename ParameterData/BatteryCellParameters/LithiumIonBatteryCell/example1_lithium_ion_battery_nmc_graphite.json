@@ -67,8 +67,8 @@
                         "unit": ""
                     },
                     "openCircuitPotential": {
-                        "type": "function",
-                        "functionname": "computeOCP_Graphite_Torchio",
+                        "functionFormat": "named function",
+                        "functionName": "computeOCP_Graphite_Torchio",
                         "argumentList": [
                             "concentration",
                             "temperature",
@@ -228,14 +228,9 @@
                         "unit": ""
                     },
                     "openCircuitPotential": {
-                        "type": "function",
-<<<<<<< variant A
-                        "functionName": "computeOCP_nmc111",
+                        "functionFormat": "named function",
+                        "functionName": "computeOCP_NMC111",
                         "argumentList": [
->>>>>>> variant B
-                        "functionname": "computeOCP_NMC111",
-                        "argumentlist": [
-======= end
                             "concentration",
                             "temperature",
                             "cmax"
@@ -350,7 +345,7 @@
             "unit": ""
         },
         "ionicConductivity": {
-            "type": "function",
+            "functionFormat": "named function",
             "functionName": "computeElectrolyteConductivity_default",
             "argumentList": [
                 "concentration",
@@ -358,7 +353,7 @@
             ]
         },
         "diffusionCoefficient": {
-            "type": "function",
+            "functionFormat": "named function",
             "functionName": "computeDiffusionCoefficient_default",
             "argumentList": [
                 "concentration",
