@@ -70,7 +70,14 @@
         "description" : "The evaluation of the string should return the value of the function. In this case, the name of the argument matters. This feature is not yet supported in matlab"},
       "stringExpression": {
         "type": "string",
-        "description": "The string to be evaluated"}}},
+        "description": "The string to be evaluated"},
+      "language": {
+        "type" : "string",
+        "description" : "language the function string is supposed to be evaluated"}
+      "variablesNames" : {
+        "type" : "array"
+        "items" : {"type" : "string"},
+        "description" : "name of the variables used in the string expresssion. There must be there one value per argument in argument list."}}},
     {"properties" : {
       "functionFormat" : {
         "const" : "constant",
