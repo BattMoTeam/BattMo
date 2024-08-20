@@ -250,10 +250,6 @@ classdef CcCvControlModel < ControlModel
             E    = state.E;
             I    = state.I;
 
-            if isa(E, 'ADI')
-                keyboard
-            end
-            
             switch ctrlType
 
               case 'CC_discharge1'
