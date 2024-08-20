@@ -57,20 +57,37 @@
     "openCircuitPotential": {
       "allOf": [
         {"$ref": "Function.schema.json"},
-        { "properties" : {
+        {"properties" : {
           "symbol": {"const" : "OCP"}}},
-        { "oneOf" : [
-          { "properties" : {
+        {"oneOf" : [
+          {"properties" : {
             "argumentList": {
               "type" : "array",
               "prefixItems": [{"const": "concentration"},
-                              {"const": "temperature"},
                               {"const": "cmax"}]}}},
           { "properties" : {
             "argumentList": {
               "type" : "array",
-              "prefixItems": [{"const": "stoichiometry"}]}}}]}],
-      "description": "a function to determine the open-circuit potential of the electrode under given conditions"
+              "prefixItems": [{"const": "guestStoichiometry"}]}}}]}],
+      "description": "open-circuit potential function of the electrode under a reference temperature. Temperature dependence is added via the entropy change."},
+    "referenceTemperature" : {"type" : "number",
+                              "description" : "Reference temperature used to compute the OCP from the entropy change, OCP = OCP_ref + dUdT*(T - T_ref)"},
+    "entropyChange" : {
+      "allOf": [
+      { "$ref": "Function.schema.json"},
+      { "properties" : {
+        "symbol": {"const" : "dUdT"}}},
+      { "oneOf" : [
+        { "properties" : {
+          "argumentList": {
+            "type" : "array",
+            "prefixItems": [{"const": "concentration"},
+                            {"const": "cmax"}]}}},
+        { "properties" : {
+          "argumentList": {
+            "type" : "array",
+            "prefixItems": [{"const": "guestStoichiometry"}]}}}]}]
+      "description": "Entropy change function"
     },
     "chargeTransferCoefficient": {
       "$ref": "PhysicalQuantity.schema.json",
