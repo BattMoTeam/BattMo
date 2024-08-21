@@ -52,13 +52,9 @@
           "guestStoichiometry100": 0.88,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
+            "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
-            "functionFormat": "named function"
+            "argumentList": ["guestStoichiometry"],
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,
@@ -126,14 +122,17 @@
           "guestStoichiometry100": 0.00014001,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "maximum concentration"
-            ],
+            "functionFormat": "named function",
             "functionName": "computeOCP_LNMO_Pron",
-            "functionFormat": "named function"
+            "argumentList": [
+              "guestStoichiometry"
+            ]},
+          "entropyChange" : {
+            "functionFormat": "named function",
+            "functionName" : "computeEntropyChange_LNMO_Pron",
+            "argumentList" : ["guestStoichiometry"]
           },
+          "referenceTemperature": 293.15,
           "saturationConcentration": 24358,
           "volumetricSurfaceArea": 221476
         },

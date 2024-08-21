@@ -21,13 +21,9 @@
           "guestStoichiometry100": 0.88,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
+            "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
-            "functionFormat": "named function"
+            "argumentList": ["guestStoichiometry"]
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,

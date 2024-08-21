@@ -95,11 +95,7 @@
           "openCircuitPotential": {
             "functionFormat": "named function",
             "functionName": "computeOCP_NMC111",
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ]
+            "argumentList": ["guestStoichiometry"]
           }
         },
         "diffusionModelType": "full",

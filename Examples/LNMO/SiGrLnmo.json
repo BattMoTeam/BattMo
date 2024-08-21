@@ -55,13 +55,16 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
-            "functionName": "computeOCP_Graphite_Torchio",
             "functionFormat": "named function"
+            "functionName": "computeOCP_Graphite_Torchio",
+            "argumentList": ["guestStoichiometry"],
+          },
+          "referenceTemperature": 298.15,
+          "includeEntropyChange" : true,
+          "entropyChange" : {
+            "functionFormat": "named function",
+            "functionName" : "computeEntropyChange_Graphite_Torchio",
+            "argumentList" : ["guestStoichiometry"]
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 30555,
@@ -89,13 +92,9 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
-            "functionName": "computeOCP_Silicon_Li2012",
             "functionFormat": "named function"
+            "functionName": "computeOCP_Silicon_Li2012",
+            "argumentList": ["guestStoichiometry"],
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 311307.4,
