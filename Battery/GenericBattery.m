@@ -222,7 +222,7 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
-              case {'CCCV', 'Impedance'}
+              case {'CCCV', 'Impedance', 'rest'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
@@ -525,6 +525,10 @@ classdef GenericBattery < BaseModel
               case 'timeControl'
 
                 control = TimeControlModel(inputparams);
+
+              case 'rest'
+
+                control = RestControlModel(inputparams);
 
               case "Impedance"
 
@@ -894,7 +898,7 @@ classdef GenericBattery < BaseModel
 
                 initstate.(ctrl).I = 0;
 
-              case {'timeControl'}
+              case {'timeControl', 'rest'}
 
                 %  We initiate to some values, but they should be overriden as the simulation starts
                 initstate.(ctrl).I        = 0;
@@ -1155,7 +1159,7 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case {'CCCV', 'powerControl'}
+              case {'CCCV', 'powerControl', 'rest'}
 
                 % nothing to do here
 
@@ -1615,6 +1619,8 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case 'CCCV'
                 forces.CCCV = true;
+              case 'rest'
+                forces.rest = true;
               case 'CCDischarge'
                 forces.CCDischarge = true;
               case 'CCCharge'
