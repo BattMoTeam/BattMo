@@ -319,9 +319,14 @@ classdef Coating < ElectronicComponent
 
                 am = 'ActiveMaterial';
 
-                fn = @Coating.updateEsource;
-                model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
-
+                if strcmp(model.activeMaterialModelSetup.SEImodel, 'Bolay')
+                    fn = @Coating.updateBolayEsource;
+                    model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}, {am, itf, 'SEIflux'}}});
+                else
+                    fn = @Coating.updateEsource;
+                    model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
+                end
+                
                 fn = @Coating.updatePhi;
                 model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
 
@@ -375,6 +380,7 @@ classdef Coating < ElectronicComponent
 
             end
 
+            
             if model.use_thermal
                 varnames = {'jFaceCoupling', ...
                             'jFaceExternal'};
@@ -514,6 +520,26 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function state = updateBolayEsource(model, state)
+
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+
+            F    = model.constants.F;
+            n    = model.(am).(itf).numberOfElectronsTransferred;
+            vsa  = model.(am).(itf).volumetricSurfaceArea;
+            
+            vols = model.G.getVolumes();
+
+            Rvol    = state.(am).(sd).Rvol;
+            seiflux = state.(am).(itf).SEIflux;
+            
+            state.eSource =  F*vols.*( -n*Rvol + vsa*seiflux );
+
+        end
+
+        
        function state = updateCompositeEsource(model, state)
 
             am1 = 'ActiveMaterial1';

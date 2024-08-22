@@ -21,7 +21,7 @@ ctrl  = 'Control';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_nmc_graphite_bolay.json');
 jsonstruct = parseBattmoJson(jsonfilename);
 
 jsonstruct.use_thermal = false;
@@ -29,28 +29,30 @@ jsonstruct.use_thermal = false;
 jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
-
 jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
                                               jsonstruct_bolay});
 
 jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
 
-jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
+jsontruct_control = struct( 'controlPolicy'     , 'CCDischarge', ...
                             'initialControl'    , 'discharging', ...
-                            'numberOfCycles'    , 4            , ...
-                            'CRate'             , 1            , ...
                             'DRate'             , 1            , ...
                             'lowerCutoffVoltage', 3            , ...
-                            'upperCutoffVoltage', 4            , ...
-                            'dIdtLimit'         , 1e-4         , ...
-                            'dEdtLimit'         , 1e-4);
+                            'rampupTime'        , 100          , ...
+                            'upperCutoffVoltage', 4);
 
 jsonstruct.(ctrl) = jsontruct_control;
+
 
 jsonstruct.(ne).(co).(am).(itf).SEIelectronicDiffusionCoefficient = 3.5e-15;
 
 jsonstruct.SOC = 1;
+doPrintJsonStruct = false;
 
+if doPrintJsonStruct
+    fjv = flattenJsonStruct(jsonstruct);
+    % fjv.print('filter', {'parame name', 'SEI'})
+end
 
 %%
 
@@ -62,9 +64,15 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 model = GenericBattery(inputparams);
 
 %% Setup the schedule
+%
+
+model.Control.Imax = 0;
 
 % schedule = model.(ctrl).setupSchedule([]);
-jsonstruct.TimeStepping.timeStepDuration = 200;
+
+jsonstruct.TimeStepping.numberOfTimeSteps = 200;
+jsonstruct.TimeStepping.totalTime         = 1*year;
+
 schedule = model.(ctrl).setupSchedule(jsonstruct);
 
 %% Setup the initial state of the model
@@ -75,7 +83,10 @@ initstate = model.setupInitialState();
 %% Setup non-linear solver
 
 nls = NonLinearSolver();
-nls.errorOnFailure = false;
+
+nls.errorOnFailure   = false;
+nls.maxTimestepCuts  = 10;
+nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
 model.nonlinearTolerance = 1e-5;
 
@@ -106,16 +117,16 @@ set(0, 'defaultaxesfontsize', 15)
 %%
 
 figure
-plot(time/hour, E, '*-');
+plot(time/year, E, '*-');
 title('Voltage / V')
-xlabel('Time / h')
+xlabel('Time / year')
 
 %%
 
 figure
-plot(time/hour, I);
+plot(time/year, I);
 title('Current / A')
-xlabel('Time / h')
+xlabel('Time / year')
 
 %%
 
@@ -123,13 +134,13 @@ figure
 hold on
 
 delta = cellfun(@(state) state.(ne).(co).(am).(itf).SEIlength(end), states);
-plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{max}')
+plot(time/year, delta/(nano*meter), 'displayname', 'at x_{max}')
 
 delta = cellfun(@(state) state.(ne).(co).(am).(itf).SEIlength(1), states);
-plot(time/hour, delta/(nano*meter), 'displayname', 'at x_{min}')
+plot(time/year, delta/(nano*meter), 'displayname', 'at x_{min}')
 
 title('SEI thickness in negative electrode/ nm')
-xlabel('Time / h')
+xlabel('Time / year')
 
 legend show
 
@@ -139,14 +150,13 @@ figure
 hold on
 
 u = cellfun(@(state) state.(ne).(co).(am).(itf).SEIvoltageDrop(end), states);
-plot(time/hour, u, 'displayname', 'at x_{max}')
+plot(time/year, u, 'displayname', 'at x_{max}')
 
 u = cellfun(@(state) state.(ne).(co).(am).(itf).SEIvoltageDrop(1), states);
-plot(time/hour, u, 'displayname', 'at x_{min}')
+plot(time/year, u, 'displayname', 'at x_{min}')
 
 title('SEI voltage drop in negative electrode/ V')
-xlabel('Time / h')
-legend show
+xlabel('Time / year')
 
 %%
 figure
@@ -155,13 +165,14 @@ vols = model.(ne).(co).G.getVolumes();
 
 for istate = 1 : numel(states)
     state = states{istate};
-    state = model.evalVarName(state, {ne, co, am, itf, 'SEIconcentration'});
     m(istate) = sum(vols.*state.(ne).(co).(am).(sd).cAverage);
 end
 
-plot(time/hour, m);
-title('Total lithium amount in negative electrode / mol')
-xlabel('Time / h')
+plot(time/year, m);
+title('total lithium amount in negative electrode / mol')
+xlabel('Time / year')
+
+legend show
 
 %%
 
@@ -177,15 +188,17 @@ for timeindex = 1 : numel(states)
     
     Liqqt = sum(cSEI.*vols);
     quantities(end + 1) = Liqqt;
-    
+        
 end
 
 figure 
-plot(time/hour, quantities);
+plot(time/year, quantities);
 title('Lithium quantity consummed');
-xlabel('Time / h');
+xlabel('Time / year');
 ylabel('quantity / mol');
 grid on;
+
+%%
 
 PE_Li_quantities          = [];
 NE_Li_quantities          = [];
@@ -214,47 +227,44 @@ for timeindex = 1 : numel(states)
 
     Elode_qtt = PE_qtt + NE_qtt;
     Tot_Liqqt = PE_qtt + NE_qtt + Elyte_qtt;
-        
+	
     PE_Li_quantities(end + 1)          = PE_qtt;
     NE_Li_quantities(end + 1)          = NE_qtt;
     Electrolyte_Li_quantities(end + 1) = Elyte_qtt;
     Electrodes_Li_quantities(end + 1)  = Elode_qtt;
     Total_Li_quantities(end + 1)       = Tot_Liqqt;
+
 end
 
-title('SEI thickness in negative electrode/ nm')
-xlabel('Time / h')
+%%
 
-legend show
 figure
 hold on
 
-plot(time/hour, PE_Li_quantities                ,'DisplayName','Positive Electrode');
-plot(time/hour, NE_Li_quantities                ,'DisplayName','Negative Electrode');
-plot(time/hour, Electrolyte_Li_quantities       ,'DisplayName','Electrolyte');
-plot(time/hour, Electrodes_Li_quantities        ,'DisplayName','Both Electrodes');
-plot(time/hour, Total_Li_quantities             ,'DisplayName','Total (except SEI)');
-plot(time/hour, Total_Li_quantities + quantities,'DisplayName','Total (including SEI)');
-plot(time/hour, quantities                      ,'DisplayName','In the SEI');
+plot(time/year, PE_Li_quantities                ,'DisplayName', 'Positive Electrode');
+plot(time/year, NE_Li_quantities                ,'DisplayName', 'Negative Electrode');
+plot(time/year, Electrolyte_Li_quantities       ,'DisplayName', 'Electrolyte');
+plot(time/year, Electrodes_Li_quantities        ,'DisplayName', 'Both Electrodes');
+plot(time/year, Total_Li_quantities             ,'DisplayName', 'Total (except SEI)');
+plot(time/year, Total_Li_quantities + quantities,'DisplayName', 'Total (including SEI)');
+plot(time/year, quantities                      ,'DisplayName', 'In the SEI');
+
 title('Lithium quantity');
-xlabel('Time / h');
+xlabel('Time / year');
 ylabel('quantity / mol');
+
 grid on;
+
 legend show
 
 %%
 
-figure 
-
 capacity = computeCellCapacity(model);
 F = PhysicalConstants.F;
 
-qty  = quantities;
-qty  = qty - qty(1);
-
-plot(time/hour, 100 * (qty*F) / capacity);
-
+figure 
+plot(time/year, 100 * (quantities*F) / capacity);
 title('Percentage of Lithium consummed');
-xlabel('Time / h');
+xlabel('Time / year');
 ylabel('%');
 grid on;

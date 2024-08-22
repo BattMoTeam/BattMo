@@ -28,7 +28,8 @@ classdef CcCvControlModel < ControlModel
         ImaxCharge
         ImaxDischarge
         
-        
+        %
+        tolerances
     end
     
     
@@ -53,6 +54,15 @@ classdef CcCvControlModel < ControlModel
                 warning('Number of cycles has not been given in CCCV control. We use numberOfCycles = 1.');
                 model.numberOfCycles = 1;
             end
+
+            % values of these relative tolerances should be smaller than 1
+            tolerances = struct('CC_discharge1', 1e-3, ...
+                                'CC_discharge2', 0.9 , ...
+                                'CC_charge1'   , 1e-3 , ...
+                                'CV_charge2'   , 0.9);
+            
+            model.tolerances = tolerances;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -66,20 +76,110 @@ classdef CcCvControlModel < ControlModel
             % - CC_charge1
             % - CV_charge2
             varnames{end + 1} = 'ctrlType';
+
+            % Estimate of the time derivative for voltage and current
+            varnames{end + 1} = 'dIdt';
+            varnames{end + 1} = 'dEdt';
+            
             % Variable to store number of cycles
             varnames{end + 1} = 'numberOfCycles';
             model = model.registerVarNames(varnames);
 
-            model = model.setAsStaticVarName('numberOfCycles');
-            model = model.setAsExtraVarName('numberOfCycles');
+            % The following variables are not used in the residual assembly
+
+            varnames = {'numberOfCycles', ...
+                        'dIdt'          , ...
+                        'dEdt'};
             
+            model = model.setAsStaticVarNames(varnames);
+            model = model.setAsExtraVarNames(varnames);
+
+            % Register the functions
+
             fn = @CcCvControlModel.updateControlEquation;
             model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
+
+            fn = @CcCvControlModel.updateDerivatives;
+            fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
+            inputvarnames = {'E', 'I'};
+            model = model.registerPropFunction({'dIdt', fn, {'E', 'I'}});            
+            model = model.registerPropFunction({'dEdt', fn, {'E', 'I'}});
             
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
-            state.ctrlType = state0.nextCtrlType;
+
+        function state = updateDerivatives(model, state, state0, dt)
+
+            E  = state.E;
+            I  = state.I;
+            E0 = state0.E;
+            I0 = state0.I;
+
+            state.dIdt = (I - I0)/dt;
+            state.dEdt = (E - E0)/dt;
+            
+        end
+
+        
+        
+        function state = updateControlState(model, state, state0, dt)
+
+            
+            state = model.updateDerivatives(state, state0, dt);
+            
+            if ~isfield(state, 'ctrlType')
+                return
+            end
+
+            ctrlType  = state.ctrlType;
+            ctrlType0 = state0.ctrlType;
+            
+            nextCtrlType = model.getNextCtrlType(ctrlType0);
+
+            rsw  = model.setupRegionSwitchFlags(state, ctrlType0);
+            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
+            
+            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion && ~rsw0.beforeSwitchRegion
+                
+                state.ctrlType = nextCtrlType;
+
+            end
+
+            state = model.updateValueFromControl(state);
+
+        end
+
+        function state = updateValueFromControl(model, state)
+
+            ImaxD = model.ImaxDischarge;
+            ImaxC = model.ImaxCharge;
+            Emin  = model.lowerCutoffVoltage;
+            Emax  = model.upperCutoffVoltage;
+
+            switch state.ctrlType
+                
+              case 'CC_discharge1'
+
+                state.I = ImaxD;
+                
+              case 'CC_discharge2'
+
+                state.I = 0;
+
+              case 'CC_charge1'
+
+                state.I = - ImaxC;
+                
+              case 'CV_charge2'
+
+                state.E = Emax;
+                
+              otherwise
+                
+                error('ctrlType not recognized.')
+
+            end
+            
         end
         
         function state = updateControlEquation(model, state)
@@ -111,37 +211,6 @@ classdef CcCvControlModel < ControlModel
             
         end
 
-        function state = updateControlState(model, state)
-            
-            Emin  = model.lowerCutoffVoltage;
-            Emax  = model.upperCutoffVoltage;
-            ImaxD = model.ImaxDischarge;
-            
-            ctrlType = state.ctrlType;
-            E = state.E;
-            I = state.I;
-
-            switch ctrlType
-                
-              case 'CC_discharge1'
-
-                if E <= Emin
-                    state.ctrlType = 'CC_discharge2';
-                    fprintf('switch control from CC_discharge1 to CC_discharge2\n');
-                end
-            
-              case 'CC_charge1'
-
-                if E > Emax
-                    state.ctrlType = 'CV_charge2';
-                    fprintf('switch control from CC_charge1 to CV_charge2\n');
-                end
-
-            end    
-            
-        end
-        
-
         function cleanState = addStaticVariables(model, cleanState, state)
 
             cleanState.numberOfCycles = state.numberOfCycles;
@@ -149,108 +218,119 @@ classdef CcCvControlModel < ControlModel
             
         end
         
-        function  [arefulfilled, state] = checkConstraints(model, state)
+        function  [arefulfilled, state] = checkConstraints(model, state, state0, dt)
 
-            Emin          = model.lowerCutoffVoltage;
-            Emax          = model.upperCutoffVoltage;
-            ImaxCharge    = model.ImaxCharge;
-            ImaxDischarge = model.ImaxDischarge;
+            ctrlType  = state.ctrlType;
+            ctrlType0 = state0.ctrlType;
             
-            E        = state.E;
-            I        = state.I;
-            ctrlType = state.ctrlType;
+            nextCtrlType = model.getNextCtrlType(ctrlType0);
 
             arefulfilled = true;
+            
+            rsw = model.setupRegionSwitchFlags(state, state.ctrlType);
+
+            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
+                
+                arefulfilled = false;
+                state.ctrlType = nextCtrlType;
+                state = model.updateValueFromControl(state);
+
+            end
+                
+        end
+        
+        function rsf = setupRegionSwitchFlags(model, state, ctrlType)
+
+            Emin    = model.lowerCutoffVoltage;
+            Emax    = model.upperCutoffVoltage;
+            dIdtMin = model.dIdtLimit;
+            dEdtMin = model.dEdtLimit;
+            tols    = model.tolerances;
+            
+            E    = state.E;
+            I    = state.I;
+
             switch ctrlType
+
               case 'CC_discharge1'
-                if E < Emin
-                    arefulfilled = false;
-                    state.ctrlType = 'CC_discharge2';
-                end
+
+                before = (E - Emin)/Emin > tols.(ctrlType);
+                after  = (E - Emin)/Emin < -tols.(ctrlType);
+                
               case 'CC_discharge2'
-                % do not check anything in this case
+
+                if isfield(state, 'dEdt')
+                    dEdt = state.dEdt;
+                    before = (abs(dEdt) - dEdtMin)/dEdtMin > tols.(ctrlType);
+                    after  = (abs(dEdt) - dEdtMin)/dEdtMin < -tols.(ctrlType);
+                else
+                    before = false;
+                    after  = false;
+                end
+                
               case 'CC_charge1'
-                if E > Emax
-                    arefulfilled = false;
-                    state.ctrlType = 'CV_charge2';
-                end
+                
+                before = (E - Emax)/Emax < -tols.(ctrlType);
+                after  = (E - Emax)/Emax > tols.(ctrlType);
+
               case 'CV_charge2'
-                if I < - ImaxCharge
-                    arefulfilled = false;
-                    state.ctrlType = 'CC_charge1';
+
+                if isfield(state, 'dIdt')
+                    dIdt = state.dIdt;
+                    before = (abs(dIdt) - dIdtMin)/dIdtMin > tols.(ctrlType);
+                    after  = (abs(dIdt) - dIdtMin)/dIdtMin < -tols.(ctrlType);
+                else
+                    before = false;
+                    after  = false;
                 end
+                
               otherwise
-                
-                error('controlType not recognized');
-                
-            end            
+
+            end
+
+            rsf = struct('beforeSwitchRegion', before, ...
+                         'afterSwitchRegion' , after);
+            
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
-            Emin     = model.lowerCutoffVoltage;
-            Emax     = model.upperCutoffVoltage;
-            dEdtMin  = model.dEdtLimit;
-            dIdtMin  = model.dIdtLimit;
             initctrl = model.initialControl;
-            E        = state.E;
-            ctrlType = state.ctrlType;
-            ncycles  = state0.numberOfCycles;
             
-            dEdt = (state.E - state0.E)/dt;
-            dIdt = (state.I - state0.I)/dt;
+            ctrlType  = state.ctrlType;
+            ctrlType0 = state0.ctrlType;
             
-            switch ctrlType
-              
-              case 'CC_discharge1'
-                
-                nextCtrlType = 'CC_discharge1';
-                if (E <= Emin) 
-                    nextCtrlType = 'CC_discharge2';
-                end
-            
-              case 'CC_discharge2'
-                
-                nextCtrlType = 'CC_discharge2';
-                if (abs(dEdt) <= dEdtMin)
-                    nextCtrlType = 'CC_charge1';
-                    if strcmp(initctrl, 'charging')
-                        ncycles = ncycles + 1;
-                    end
-                end
-            
-              case 'CC_charge1'
+            ncycles   = state0.numberOfCycles;
 
-                nextCtrlType = 'CC_charge1';
-                if (E >= Emax) 
-                    nextCtrlType = 'CV_charge2';
-                end 
-                
-              case 'CV_charge2'
+            state = model.updateDerivatives(state, state0, dt);
+            
+            state.ctrlType0 = state.ctrlType;
+            
+            switch initctrl
 
-                nextCtrlType = 'CV_charge2';
-                if (abs(dIdt) < dIdtMin)
-                    nextCtrlType = 'CC_discharge1';
-                    if strcmp(initctrl, 'discharging')
-                        ncycles = ncycles + 1;
-                    end
-                end                  
+              case 'charging'
+
+                if ismember(ctrlType0, {'CC_discharge1', 'CC_discharge2'}) && ismember(ctrlType, {'CC_charge1', 'CV_charge2'})
+                    ncycles = ncycles + 1;
+                end
+                
+              case 'discharging'
+                
+                if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'}) 
+                    ncycles = ncycles + 1;
+                end
                 
               otherwise
                 
-                error('controlType not recognized');
+                error('initctrl not recognized');
                 
             end
 
-            if ~strcmp(ctrlType, nextCtrlType)
-                fprintf('Switch control type from %s to %s\n', ctrlType, nextCtrlType);
-            end
-            
-            state.nextCtrlType   = nextCtrlType;
             state.numberOfCycles = ncycles;
             
+            
         end
-
+        
         function func = setupStopFunction(model)
             
             func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
@@ -324,9 +404,40 @@ classdef CcCvControlModel < ControlModel
         end
         
     end
+
     
-    
-        
+    methods(Static)
+
+        function nextCtrlType = getNextCtrlType(ctrlType)
+
+            switch ctrlType
+                
+              case 'CC_discharge1'
+
+                nextCtrlType = 'CC_discharge2';
+                
+              case 'CC_discharge2'
+                
+                nextCtrlType = 'CC_charge1';
+
+              case 'CC_charge1'
+                
+                nextCtrlType = 'CV_charge2';
+
+              case 'CV_charge2'
+                
+                nextCtrlType = 'CC_discharge1';
+                
+              otherwise
+
+                error('ctrlType not recognized.')
+                
+            end
+
+        end
+
+    end
+
 end
 
 

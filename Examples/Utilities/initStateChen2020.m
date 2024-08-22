@@ -98,11 +98,9 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         switch model.(ctrl).initialControl
           case 'discharging'
             initstate.(ctrl).ctrlType     = 'CC_discharge1';
-            initstate.(ctrl).nextCtrlType = 'CC_discharge1';
             initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
           case 'charging'
             initstate.(ctrl).ctrlType     = 'CC_charge1';
-            initstate.(ctrl).nextCtrlType = 'CC_charge1';
             initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
           otherwise
             error('initialControl not recognized');

@@ -57,7 +57,9 @@ classdef BolayInterface < Interface
             varnames{end + 1} = 'SEImassCons';
             % potential in electrolyte
             varnames{end + 1} = 'SEIvoltageDropEquation';
-
+            % concentration of Lithium in the SEI (per total volume) in mol/m^3
+            varnames{end + 1} = 'SEIconcentration';
+            
             model = model.registerVarNames(varnames);
 
             fn = @BolayInterface.updateSEIlength;
@@ -69,7 +71,7 @@ classdef BolayInterface < Interface
             model = model.registerPropFunction({'SEIvoltageDrop', fn, inputnames});
             
             fn = @BolayInterface.updateSEIflux;
-            inputnames = {'SEIlength', 'SEIvoltageDrop', 'eta'};
+            inputnames = {'SEIlength', 'SEIvoltageDrop', 'phiElectrode', 'phiElectrolyte', 'T'};
             model = model.registerPropFunction({'SEIflux', fn, inputnames});
 
             fn = @BolayInterface.updateSEImassCons;
@@ -85,8 +87,26 @@ classdef BolayInterface < Interface
             inputnames = {'phiElectrolyte', 'phiElectrode', 'OCP', 'SEIvoltageDrop'};
             model = model.registerPropFunction({'eta', fn, inputnames});
 
+            fn = @BolayInterface.updateSEIconcentration;
+            model = model.registerPropFunction({'SEIconcentration', fn, {'SEIlength'}});
+
+            model = model.setAsExtraVarName('SEIconcentration');
+            
         end
 
+
+        function state = updateSEIconcentration(model, state)
+            
+            vsa     = model.volumetricSurfaceArea;
+	    scoef   = model.SEIstochiometricCoeffcient;
+	    seimvol = model.SEImolarVolume;
+
+            l = state.SEIlength;
+            
+            state.SEIconcentration = (scoef/seimvol)*l.*vsa;
+
+        end
+        
         function state = updateSEIflux(model, state)
 
             De  = model.SEIelectronicDiffusionCoefficient;
@@ -95,12 +115,15 @@ classdef BolayInterface < Interface
             R = model.constants.R;
             F = model.constants.F;            
 
-            T   = state.T;
-            eta = state.eta;
-            U   = state.SEIvoltageDrop;
-            L   = state.SEIlength;
+            T              = state.T;
+            phiElectrode   = state.phiElectrode;
+            phiElectrolyte = state.phiElectrolyte;
+            Usei           = state.SEIvoltageDrop;
+            L              = state.SEIlength;
 
-            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*U);
+            eta = phiElectrode - phiElectrolyte - Usei;
+
+            state.SEIflux = De*ce0./L.*exp(-(F./(R*T)).*eta).*(1 - (F./(2*R*T)).*Usei);
            
         end
 

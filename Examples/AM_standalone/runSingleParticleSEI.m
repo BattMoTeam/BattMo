@@ -137,7 +137,6 @@ switch model.(ctrl).controlPolicy
   case 'CCCV'
     initState.(ctrl).E = 0;
     initState.(ctrl).ctrlType     = 'CV_charge2';
-    initState.(ctrl).nextCtrlType = 'CV_charge2';
   case 'CV'
     % ok. nothing to do
   otherwise
