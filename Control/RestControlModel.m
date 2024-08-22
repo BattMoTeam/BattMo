@@ -74,8 +74,14 @@ classdef RestControlModel < ControlModel
 
         end
 
-    end
+        function control = setupScheduleControl(model)
+
+            control.rest = true;
+            
+        end
         
+    end
+
 end
 
 
