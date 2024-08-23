@@ -723,7 +723,11 @@ function setPlot(ax, style, varargin)
 
     if ~isempty(opt.timeBar)
         hold on
-        plot(opt.timeBar(:,1), opt.timeBar(:,2), 'k--', 'linewidth', 1);
+        if ~isempty(opt.ylim)
+            plot(opt.timeBar(:,1), min(opt.timeBar(:,2), opt.ylim(2)), 'k--', 'linewidth', 1);
+        else
+            plot(opt.timeBar(:,1), opt.timeBar(:,2), 'k--', 'linewidth', 1);
+        end
         hold off
     end
 
