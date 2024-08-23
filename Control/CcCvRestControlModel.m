@@ -16,6 +16,8 @@ classdef CcCvRestControlModel < ControlModel
 
         Ilimit
 
+        totalRestTime
+        
         % This values are initiated depending on C/D rate values and battery model
         ImaxCharge
         ImaxDischarge
@@ -36,14 +38,16 @@ classdef CcCvRestControlModel < ControlModel
                        'DRate'             , ...
                        'lowerCutoffVoltage', ...
                        'upperCutoffVoltage', ...
-                       'Ilimit'};
+                       'Ilimit'            , ...
+                       'totalRestTime'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
             % values of these relative tolerances should be smaller than 1
             tolerances = struct('CC_charge1'   , 1e-3, ...
-                                'CV_charge2'   , 0.9 , ...
-                                'CC_discharge1', 1e-3);
+                                'CV_charge2'   , 1e-3, ...
+                                'CC_discharge1', 1e-3, ...
+                                'Rest'         , 1*minute);
             
             model.tolerances = tolerances;
             
@@ -66,11 +70,11 @@ classdef CcCvRestControlModel < ControlModel
             
             % Register the functions
             fn = @CcCvRestControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
+            model = model.registerPropFunction({'controlEquation', fn, {'restTime', 'ctrlType', 'E', 'I'}});
 
             % Register the functions
             fn = @CcCvRestControlModel.updateRestTime;
-            fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)}
+            fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
             model = model.registerPropFunction({'restTime', fn, {'ctrlType'}});
             
         end
@@ -78,25 +82,35 @@ classdef CcCvRestControlModel < ControlModel
         function state = updateRestTime(model, state, state0, dt)
 
             switch state0.ctrlType
+                
               case 'CC_charge1'
+                
                 state.restTime = 0;
+                
               case 'CV_charge2'
+                
                 if strcmp(state.ctrlType, 'Rest')
                     state.restTime = dt;
                 else
                     state.restTime = 0;
                 end
+                
               case 'Rest'
+                
                 if strcmp(state.ctrlType, 'Rest')
                     state.restTime = state0.restTime + dt;
                 else
                     % do nothing
                 end
+                
               case 'CC_discharge1'
+                
                 % do nothing
+                
               otherwise
                 error('ctrlType not recognized');
             end
+
 
         end
             
@@ -107,6 +121,8 @@ classdef CcCvRestControlModel < ControlModel
                 return
             end
 
+            state = model.updateRestTime(state, state0, dt);
+            
             ctrlType  = state.ctrlType;
             ctrlType0 = state0.ctrlType;
             
@@ -213,30 +229,18 @@ classdef CcCvRestControlModel < ControlModel
         
         function rsf = setupRegionSwitchFlags(model, state, ctrlType)
 
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
+            Emin       = model.lowerCutoffVoltage;
+            Emax       = model.upperCutoffVoltage;
+            ImaxC      = model.ImaxCharge;
+            totaltRest = model.totalRestTime;
+            
             tols    = model.tolerances;
             
-            E    = state.E;
-            I    = state.I;
+            E     = state.E;
+            I     = state.I;
+            trest = state.restTime;
 
             switch ctrlType
-
-              case 'CC_discharge1'
-
-                before = (E - Emin)/Emin > tols.(ctrlType);
-                after  = (E - Emin)/Emin < -tols.(ctrlType);
-                
-              case 'CC_discharge2'
-
-                if isfield(state, 'dEdt')
-                    dEdt = state.dEdt;
-                    before = (abs(dEdt) - dEdtMin)/dEdtMin > tols.(ctrlType);
-                    after  = (abs(dEdt) - dEdtMin)/dEdtMin < -tols.(ctrlType);
-                else
-                    before = false;
-                    after  = false;
-                end
                 
               case 'CC_charge1'
                 
@@ -245,14 +249,18 @@ classdef CcCvRestControlModel < ControlModel
 
               case 'CV_charge2'
 
-                if isfield(state, 'dIdt')
-                    dIdt = state.dIdt;
-                    before = (abs(dIdt) - dIdtMin)/dIdtMin > tols.(ctrlType);
-                    after  = (abs(dIdt) - dIdtMin)/dIdtMin < -tols.(ctrlType);
-                else
-                    before = false;
-                    after  = false;
-                end
+                before = (I - ImaxC)/ImaxC < -tols.(ctrlType);
+                after  = (I - ImaxC)/ImaxC > tols.(ctrlType);
+
+              case 'Rest'
+
+                before = (tRest - totaltRest) < -tols.(ctrlType);
+                after  = (tRest - totaltRest) < tols.(ctrlType);
+                
+              case 'CC_discharge'
+
+                before = (E - Emin)/Emin > tols.(ctrlType);
+                after  = (E - Emin)/Emin < -tols.(ctrlType);
                 
               otherwise
 
@@ -263,47 +271,21 @@ classdef CcCvRestControlModel < ControlModel
             
         end
         
-        function state = updateControlAfterConvergence(model, state, state0, dt)
-
-            initctrl = model.initialControl;
-            
-            ctrlType  = state.ctrlType;
-            ctrlType0 = state0.ctrlType;
-            
-            ncycles   = state0.numberOfCycles;
-
-            state = model.updateDerivatives(state, state0, dt);
-            
-            state.ctrlType0 = state.ctrlType;
-            
-            switch initctrl
-
-              case 'charging'
-
-                if ismember(ctrlType0, {'CC_discharge1', 'CC_discharge2'}) && ismember(ctrlType, {'CC_charge1', 'CV_charge2'})
-                    ncycles = ncycles + 1;
-                end
-                
-              case 'discharging'
-                
-                if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'}) 
-                    ncycles = ncycles + 1;
-                end
-                
-              otherwise
-                
-                error('initctrl not recognized');
-                
-            end
-
-            state.numberOfCycles = ncycles;
-            
-            
-        end
         
         function func = setupStopFunction(model)
+
+            function dostop = stopfunction(mainModel, state, state_prev)
+
+                Emin = model.lowerCutoffVoltage;
+                dostop = false;
+
+                if strcmp(state.Control.ctrlType, 'CC_discharge') && state.Control.E <= Emin
+                    dostop = true;
+                end
+                
+            end
             
-            func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
+            func = @stopfunction;
             
         end
 
@@ -316,11 +298,6 @@ classdef CcCvRestControlModel < ControlModel
 
         function step = setupScheduleStep(model, timeSteppingParams)
             
-        % Setup and a return the step structure that is part of the schedule which is used as input for
-        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
-        % why we include this method here, for convenience. It can be overloaded by derived classes. The
-        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
-
             if (nargin > 1)
                 params = timeSteppingParams;
             else
@@ -331,21 +308,16 @@ classdef CcCvRestControlModel < ControlModel
             
             CRate   = model.CRate;
             DRate   = model.DRate;
-            ncycles = model.numberOfCycles;
-
-            if isempty(ncycles)
-                totalTime = params.totalTime;
-            else 
-                if ~isempty(params.totalTime) 
-                    warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
-                end
-                totalTime = ncycles*1.2*(1*hour/CRate + 1*hour/DRate);
+            trest   = model.totalRestTime;
+            
+            if isempty(params.totalTime) 
+                totalTime = 1*hour/CRate + 1*hour/DRate + trest;
             end
 
             if ~isempty(params.timeStepDuration)
                 dt = params.timeStepDuration;
             else
-                if ~isempty(params.numberOfTimeSteps) 
+                if isempty(params.numberOfTimeSteps) 
                     error('No timeStepDuration and numberOfTimeSteps are given');
                 end
                 n  = params.numberOfTimeSteps;
@@ -363,18 +335,15 @@ classdef CcCvRestControlModel < ControlModel
             step = struct('val', dts, 'control', ones(numel(dts), 1));
 
         end
-
-        
         
         function control = setupScheduleControl(model)
             
             control = setupScheduleControl@ControlModel(model);
-            control.CCCV = true;
+            control.CCCVrest = true;
             
         end
         
     end
-
     
     methods(Static)
 

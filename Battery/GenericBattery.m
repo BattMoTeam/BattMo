@@ -222,7 +222,7 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
-              case {'CCCV', 'Impedance', 'rest'}
+              case {'CCCV', 'Impedance', 'rest', 'CCCVrest'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
@@ -529,6 +529,14 @@ classdef GenericBattery < BaseModel
               case 'rest'
 
                 control = RestControlModel(inputparams);
+
+              case 'CCCVrest'
+
+                control = CcCvRestControlModel(inputparams);
+                CRate = control.CRate;
+                DRate = control.DRate;
+                control.ImaxCharge    = (C/hour)*CRate;
+                control.ImaxDischarge = (C/hour)*DRate;
 
               case "Impedance"
 
@@ -909,6 +917,11 @@ classdef GenericBattery < BaseModel
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = model.(ctrl).Imax;
 
+              case {'CCCVrest'}
+
+                initstate.(ctrl).ctrlType = 'CC_charge1';
+                initstate.(ctrl).I = -model.(ctrl).ImaxCharge;
+
               case 'CC'
 
                 initstate.(ctrl).ctrlType = 'constantCurrent';
@@ -1159,7 +1172,7 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case {'CCCV', 'powerControl', 'rest'}
+              case {'CCCV', 'powerControl', 'rest', 'CCCVrest'}
 
                 % nothing to do here
 
@@ -1184,7 +1197,9 @@ classdef GenericBattery < BaseModel
                     state.(ctrl).ctrlType = ctrltype;
 
                 else
+                    
                     ctrlVal = drivingForces.src(time, Imax);
+                    
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
@@ -1615,27 +1630,11 @@ classdef GenericBattery < BaseModel
             forces = getValidDrivingForces@PhysicalModel(model);
 
             forces.src = [];
+
             ctrl = 'Control';
-            switch model.(ctrl).controlPolicy
-              case 'CCCV'
-                forces.CCCV = true;
-              case 'rest'
-                forces.rest = true;
-              case 'CCDischarge'
-                forces.CCDischarge = true;
-              case 'CCCharge'
-                forces.CCCharge = true;
-              case 'powerControl'
-                forces.powerControl = true;
-              case 'CC'
-                forces.CC = true;
-              case 'timeControl'
-                forces.timeControl = true;
-              case 'None'
-                % used only in addVariables
-              otherwise
-                error('Error controlPolicy not recognized');
-            end
+            ctrlpol = model.(ctrl).controlPolicy;
+            forces.(ctrlpol) = true;
+
             % TODO this is a hack to get thing go
             forces.Imax = [];
 

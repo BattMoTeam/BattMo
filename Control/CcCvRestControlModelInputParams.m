@@ -10,6 +10,8 @@ classdef CcCvRestControlModelInputParams < ControlModelInputParams
         upperCutoffVoltage
 
         Ilimit % Current limit 
+
+        totalRestTime
         
     end
     
