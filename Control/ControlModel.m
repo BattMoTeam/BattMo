@@ -69,6 +69,7 @@ classdef ControlModel < BaseModel
         function state = updateControlState(model, state, state0, dt)
         % Implemented by child model.
         % Base class behaviour is do nothing.
+        % Called after each Newton iteration
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)

@@ -920,6 +920,7 @@ classdef GenericBattery < BaseModel
               case {'CCCVrest'}
 
                 initstate.(ctrl).ctrlType = 'CC_charge1';
+                initstate.(ctrl).restTime = 0;
                 initstate.(ctrl).I = -model.(ctrl).ImaxCharge;
 
               case 'CC'
@@ -1848,7 +1849,7 @@ classdef GenericBattery < BaseModel
             
             if report.Converged
 
-                if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+                if ismember(model.(ctrl).controlPolicy, {'CCCV', 'CCCVrest'})
                     % we check for the constraints
 
                     [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);

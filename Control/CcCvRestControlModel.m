@@ -47,7 +47,8 @@ classdef CcCvRestControlModel < ControlModel
             tolerances = struct('CC_charge1'   , 1e-3, ...
                                 'CV_charge2'   , 1e-3, ...
                                 'CC_discharge1', 1e-3, ...
-                                'Rest'         , 1*minute);
+                                'CV_discharge2', 1e-3, ...
+                                'Rest'         , 1e-3);
             
             model.tolerances = tolerances;
             
@@ -63,20 +64,19 @@ classdef CcCvRestControlModel < ControlModel
             % - CV_charge2
             % - Rest
             % - CC_discharge1
+            % - CV_discharge2
+            % - Stop
             varnames{end + 1} = 'ctrlType';
             varnames{end + 1} = 'restTime';
 
             model = model.registerVarNames(varnames);
+
+            model = model.setAsStaticVarName('restTime');
             
             % Register the functions
             fn = @CcCvRestControlModel.updateControlEquation;
-            model = model.registerPropFunction({'controlEquation', fn, {'restTime', 'ctrlType', 'E', 'I'}});
+            model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
 
-            % Register the functions
-            fn = @CcCvRestControlModel.updateRestTime;
-            fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
-            model = model.registerPropFunction({'restTime', fn, {'ctrlType'}});
-            
         end
 
         function state = updateRestTime(model, state, state0, dt)
@@ -103,26 +103,26 @@ classdef CcCvRestControlModel < ControlModel
                     % do nothing
                 end
                 
-              case 'CC_discharge1'
+              case {'CC_discharge1', 'CV_discharge2', 'Stop'}
                 
                 % do nothing
                 
               otherwise
                 error('ctrlType not recognized');
+                
             end
-
 
         end
             
         function state = updateControlState(model, state, state0, dt)
+        % Called after each Newton iteration
 
+            state = updateControlState@ControlModel(model, state, state0, dt);
             
             if ~isfield(state, 'ctrlType')
                 return
             end
 
-            state = model.updateRestTime(state, state0, dt);
-            
             ctrlType  = state.ctrlType;
             ctrlType0 = state0.ctrlType;
             
@@ -145,7 +145,9 @@ classdef CcCvRestControlModel < ControlModel
 
             ImaxC = model.ImaxCharge;
             ImaxD = model.ImaxDischarge;
-
+            Emax  = model.upperCutoffVoltage;
+            Emin  = model.lowerCutoffVoltage;
+            
             switch state.ctrlType
                 
               case 'CC_charge1'
@@ -160,10 +162,18 @@ classdef CcCvRestControlModel < ControlModel
 
                 state.I = 0;
 
-              case 'CC_discharge'
+              case 'CC_discharge1'
 
                 state.I = ImaxD;
 
+              case 'CV_discharge2'
+
+                state.E = Emin;
+
+              case 'Stop'
+
+                % do nothing
+                
               otherwise
                 
                 error('ctrlType not recognized.')
@@ -175,8 +185,9 @@ classdef CcCvRestControlModel < ControlModel
         function state = updateControlEquation(model, state)
             
             ImaxC = model.ImaxCharge;
-            Emax  = model.upperCutoffVoltage;
             ImaxD = model.ImaxDischarge;
+            Emin  = model.lowerCutoffVoltage;
+            Emax  = model.upperCutoffVoltage;
             
             E = state.E;
             I = state.I;            
@@ -190,8 +201,10 @@ classdef CcCvRestControlModel < ControlModel
                 ctrleq = (E - Emax)*1e5;
               case 'Rest'
                 ctrleq = I;
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 ctrleq = I - ImaxD;
+              case 'CV_discharge2'
+                ctrleq = (E - Emin)*1e5;
               otherwise
                 error('ctrlType not recognized');
             end
@@ -203,6 +216,7 @@ classdef CcCvRestControlModel < ControlModel
         function cleanState = addStaticVariables(model, cleanState, state)
 
             cleanState.ctrlType = state.ctrlType;
+            cleanState.restTime = state.restTime;
             
         end
         
@@ -224,6 +238,11 @@ classdef CcCvRestControlModel < ControlModel
                 state = model.updateValueFromControl(state);
 
             end
+
+            if strcmp(ctrlType, 'CV_discharge2')
+                arefulfilled = true;
+                state.ctrlType = 'Stop';
+            end
                 
         end
         
@@ -231,14 +250,14 @@ classdef CcCvRestControlModel < ControlModel
 
             Emin       = model.lowerCutoffVoltage;
             Emax       = model.upperCutoffVoltage;
-            ImaxC      = model.ImaxCharge;
+            Ilimit     = model.Ilimit; % positive value
             totaltRest = model.totalRestTime;
             
             tols    = model.tolerances;
             
             E     = state.E;
             I     = state.I;
-            trest = state.restTime;
+            tRest = state.restTime;
 
             switch ctrlType
                 
@@ -249,37 +268,50 @@ classdef CcCvRestControlModel < ControlModel
 
               case 'CV_charge2'
 
-                before = (I - ImaxC)/ImaxC < -tols.(ctrlType);
-                after  = (I - ImaxC)/ImaxC > tols.(ctrlType);
+                % Recall that in charge phase, I is negative by convention
+                before = (-I - Ilimit)/Ilimit > tols.(ctrlType);
+                after  = (-I - Ilimit)/Ilimit < -tols.(ctrlType);
 
               case 'Rest'
 
-                before = (tRest - totaltRest) < -tols.(ctrlType);
-                after  = (tRest - totaltRest) < tols.(ctrlType);
+                before = (tRest - totaltRest)/totaltRest < -tols.(ctrlType);
+                after  = (tRest - totaltRest)/totaltRest > tols.(ctrlType);
                 
-              case 'CC_discharge'
+              case 'CC_discharge1'
 
+                before = (E - Emin)/Emin > tols.(ctrlType);
+                after  = (E - Emin)/Emin < -tols.(ctrlType);
+
+              case 'CV_discharge2'
+                                
                 before = (E - Emin)/Emin > tols.(ctrlType);
                 after  = (E - Emin)/Emin < -tols.(ctrlType);
                 
               otherwise
 
+                error('control type not recognized');
             end
 
             rsf = struct('beforeSwitchRegion', before, ...
                          'afterSwitchRegion' , after);
             
         end
-        
+
+        function state = updateControlAfterConvergence(model, state, state0, dt)
+
+            state = updateControlAfterConvergence@ControlModel(model, state, state0, dt);
+            state = model.updateRestTime(state, state0, dt);
+            state = model.updateControlState(state, state0, dt);
+            
+        end        
         
         function func = setupStopFunction(model)
 
             function dostop = stopfunction(mainModel, state, state_prev)
 
-                Emin = model.lowerCutoffVoltage;
                 dostop = false;
 
-                if strcmp(state.Control.ctrlType, 'CC_discharge') && state.Control.E <= Emin
+                if strcmp(state.Control.ctrlType, 'Stop') 
                     dostop = true;
                 end
                 
@@ -311,7 +343,7 @@ classdef CcCvRestControlModel < ControlModel
             trest   = model.totalRestTime;
             
             if isempty(params.totalTime) 
-                totalTime = 1*hour/CRate + 1*hour/DRate + trest;
+                totalTime = 1.5*(1*hour/CRate + 1*hour/DRate + trest);
             end
 
             if ~isempty(params.timeStepDuration)
@@ -361,11 +393,15 @@ classdef CcCvRestControlModel < ControlModel
 
               case 'Rest'
 
-                nextCtrlType = 'CC_discharge';
+                nextCtrlType = 'CC_discharge1';
                 
-              case 'CC_discharge'
+              case 'CC_discharge1'
                 
-                nextCtrlType = 'stop';
+                nextCtrlType = 'CV_discharge2';
+
+              case 'CV_discharge2'
+                
+                nextCtrlType = 'Stop';
 
               otherwise
 

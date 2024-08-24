@@ -301,12 +301,12 @@ classdef Battery < GenericBattery
             ctrltype = state.Control.ctrlType;
             switch ctrltype
 
-              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge', 'rest'}
+              case {'constantCurrent', 'CC_discharge1', 'CC_discharge2', 'CC_charge1', 'charge', 'discharge', 'Rest'}
 
                 eqname = Battery.varToStr({'ctrl', 'EIequation'});
                 types{ei.(eqname)} = 'cell';
 
-              case {'constantVoltage', 'CV_charge2'}
+              case {'constantVoltage', 'CV_charge2', 'CV_discharge2'}
 
                 eieqname = Battery.varToStr({'ctrl', 'EIequation'});
                 cteqname = Battery.varToStr({'ctrl', 'controlEquation'});
