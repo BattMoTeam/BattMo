@@ -65,7 +65,6 @@ classdef CcCvRestControlModel < ControlModel
             % - Rest
             % - CC_discharge1
             % - CV_discharge2
-            % - Stop
             varnames{end + 1} = 'ctrlType';
             varnames{end + 1} = 'restTime';
 
@@ -103,7 +102,7 @@ classdef CcCvRestControlModel < ControlModel
                     % do nothing
                 end
                 
-              case {'CC_discharge1', 'CV_discharge2', 'Stop'}
+              case {'CC_discharge1', 'CV_discharge2'}
                 
                 % do nothing
                 
@@ -113,30 +112,68 @@ classdef CcCvRestControlModel < ControlModel
             end
 
         end
-            
+
+        
         function state = updateControlState(model, state, state0, dt)
         % Called after each Newton iteration
 
             state = updateControlState@ControlModel(model, state, state0, dt);
-            
-            if ~isfield(state, 'ctrlType')
-                return
-            end
 
-            ctrlType  = state.ctrlType;
-            ctrlType0 = state0.ctrlType;
+            % A new state has been computed with a given control type (stored in state.ctrlType). In this function we find
+            % the new control type that is the best candidate. We use an overall conservative approach
             
-            nextCtrlType = model.getNextCtrlType(ctrlType0);
+            currentCtrlType = state.ctrlType;
+            ctrlType0       = state0.ctrlType; 
 
-            rsw  = model.setupRegionSwitchFlags(state, ctrlType0);
-            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
+            nextCtrlType0 = model.getNextCtrlType(ctrlType0);
             
-            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion && ~rsw0.beforeSwitchRegion
+            rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
+            
+            switch currentCtrlType
+
+              case nextCtrlType0
                 
-                state.ctrlType = nextCtrlType;
+                % We are in the situation where the control has switched: The current control is the next one after the
+                % previous control type. We want to determine if we switch back. 
+                
+                if  rsw0.beforeSwitchRegion
+                    
+                    % We switch back because we are before the beginning of the switching region
+                    ctrlType = ctrlType0;
+
+                else
+
+                    % We keep the control type as it is
+                    ctrlType = nextCtrlType0;
+
+                end
+
+              case ctrlType0
+
+                % The control has not changed from previous and we want to determine if we should change it. 
+
+                if rsw0.afterSwitchRegion
+
+                    % We switch to a new control because we are no longer in the acceptable region for the current
+                    % control
+                    ctrlType = nextCtrlType0;
+                    
+                else
+
+                    ctrlType = ctrlType0;
+
+                end
+
+              otherwise
+
+                error('control type not recognized');
 
             end
 
+            fprintf('control type : %s\n', ctrlType);
+            
+            state.ctrlType = ctrlType;
+            
             state = model.updateValueFromControl(state);
 
         end
@@ -170,10 +207,6 @@ classdef CcCvRestControlModel < ControlModel
 
                 state.E = Emin;
 
-              case 'Stop'
-
-                % do nothing
-                
               otherwise
                 
                 error('ctrlType not recognized.')
@@ -237,11 +270,6 @@ classdef CcCvRestControlModel < ControlModel
                 state.ctrlType = nextCtrlType;
                 state = model.updateValueFromControl(state);
 
-            end
-
-            if strcmp(ctrlType, 'CV_discharge2')
-                arefulfilled = true;
-                state.ctrlType = 'Stop';
             end
                 
         end
@@ -311,7 +339,7 @@ classdef CcCvRestControlModel < ControlModel
 
                 dostop = false;
 
-                if strcmp(state.Control.ctrlType, 'Stop') 
+                if strcmp(state.Control.ctrlType, 'CV_discharge2') 
                     dostop = true;
                 end
                 
@@ -401,7 +429,7 @@ classdef CcCvRestControlModel < ControlModel
 
               case 'CV_discharge2'
                 
-                nextCtrlType = 'Stop';
+                nextCtrlType = 'CV_discharge2';
 
               otherwise
 
