@@ -170,8 +170,6 @@ classdef CcCvRestControlModel < ControlModel
 
             end
 
-            fprintf('control type : %s\n', ctrlType);
-            
             state.ctrlType = ctrlType;
             
             state = model.updateValueFromControl(state);
