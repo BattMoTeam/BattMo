@@ -67,10 +67,11 @@ classdef CcCvRestControlModel < ControlModel
             % - CV_discharge2
             varnames{end + 1} = 'ctrlType';
             varnames{end + 1} = 'restTime';
-
+            varnames{end + 1} = 'ctrlTime';
+            
             model = model.registerVarNames(varnames);
 
-            model = model.setAsStaticVarName('restTime');
+            model = model.setAsStaticVarNames({'restTime', 'ctrlTime'});
             
             % Register the functions
             fn = @CcCvRestControlModel.updateControlEquation;
@@ -78,6 +79,32 @@ classdef CcCvRestControlModel < ControlModel
 
         end
 
+        function state = updateControlTime(model, state, state0, dt)
+
+            if strcmp(state.ctrlType, state0.ctrlType)
+
+                state.ctrlTime = state0.ctrlTime + dt;
+                
+            else
+                
+                state.ctrlTime = dt;
+
+            end
+            
+        end
+
+        function state = prepareStepControl(model, state, state0, dt)
+
+            nextCtrlType = model.getNextCtrlType(state.ctrlType);
+            rswN = model.setupRegionSwitchFlags(state, nextCtrlType);
+
+            if ~rswN.beforeSwitchRegion && ~rswN.afterSwitchRegion
+                % We have entered the switching region for the next control
+                state.ctrlType = nexttCtrlType;
+            end
+            
+        end
+        
         function state = updateRestTime(model, state, state0, dt)
 
             switch state0.ctrlType
@@ -244,6 +271,43 @@ classdef CcCvRestControlModel < ControlModel
             
         end
 
+        function dt = computeTimestep(model, state, dt)
+
+            T = 1*second; % Period after control switch where we split time step.
+            N = 2;        % We split time step in power of 2 such that (mdt + 2*mdt + 2^2*mdt + ... + 2^N*mdt) = T
+            
+            ct = state.ctrlTime;
+
+            if ct > T
+                
+                % We do not split time and use the given dt.
+                return
+                
+            else
+
+                % we find the new dt, which we call cdt, which corresponds to the splitting in power of two defined
+                % above.
+
+                mdt = T / (2^(N + 1) - 1);
+
+                if ct < mdt
+
+                    cdt = mdt;
+
+                else
+
+                    n = floor(1 + log(ct/mdt)/log(2));
+                    tn = mdt*2^n;
+                    cdt = ct - tn;
+                    
+                end
+
+                dt = min(cdt, dt);
+                
+            end
+            
+        end
+        
         function cleanState = addStaticVariables(model, cleanState, state)
 
             cleanState.ctrlType = state.ctrlType;
@@ -327,6 +391,7 @@ classdef CcCvRestControlModel < ControlModel
 
             state = updateControlAfterConvergence@ControlModel(model, state, state0, dt);
             state = model.updateRestTime(state, state0, dt);
+            state = model.updateControlTime(state, state0, dt);
             state = model.updateControlState(state, state0, dt);
             
         end        

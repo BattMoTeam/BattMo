@@ -921,7 +921,8 @@ classdef GenericBattery < BaseModel
 
                 initstate.(ctrl).ctrlType = 'CC_charge1';
                 initstate.(ctrl).restTime = 0;
-                initstate.(ctrl).I = -model.(ctrl).ImaxCharge;
+                initstate.(ctrl).ctrlTime = 0;
+                initstate.(ctrl).I        = -model.(ctrl).ImaxCharge;
 
               case 'CC'
 
