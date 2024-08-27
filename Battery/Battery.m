@@ -215,6 +215,7 @@ classdef Battery < GenericBattery
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
+            cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             am1     = 'ActiveMaterial1';
             am2     = 'ActiveMaterial2';
@@ -275,6 +276,10 @@ classdef Battery < GenericBattery
                 end
             end
 
+            if model.include_current_collectors
+                state.(pe).(cc).chargeCons = 1e-1*state.(pe).(cc).chargeCons;
+            end
+            
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
