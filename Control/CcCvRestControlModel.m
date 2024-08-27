@@ -100,7 +100,7 @@ classdef CcCvRestControlModel < ControlModel
 
             if ~rswN.beforeSwitchRegion && ~rswN.afterSwitchRegion
                 % We have entered the switching region for the next control
-                state.ctrlType = nexttCtrlType;
+                state.ctrlType = nextCtrlType;
             end
             
         end
