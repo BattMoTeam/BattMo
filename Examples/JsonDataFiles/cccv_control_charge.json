@@ -7,5 +7,5 @@
   "upperCutoffVoltage": 4.1,
   "dIdtLimit": 0.01,
   "dEdtLimit": 0.01},
-"SOC":0.4}
+"SOC":0.0}
 
