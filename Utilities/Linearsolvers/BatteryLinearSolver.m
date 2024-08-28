@@ -284,8 +284,10 @@ classdef BatteryLinearSolver < handle
                         varinds = [];
                         for ivar = 1 : numel(variables)
                             addvarinds = solver.getVarIndex(problem, variables{ivar});
-                            assert(~isempty(addvarinds), 'For one of the preconditioners (given in the separate-variable-gmres setup), some of the variables cannot be found, check their description');
-                            varinds = [varinds, addvarinds];
+                            % assert(~isempty(addvarinds), 'For one of the preconditioners (given in the separate-variable-gmres setup), some of the variables cannot be found, check their description');
+                            if ~isempty(addvarinds)
+                                varinds = [varinds, addvarinds];
+                            end
                         end
 
                         ind = solver.getIndex(problem, varinds);
