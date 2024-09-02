@@ -38,6 +38,8 @@ classdef Electrolyte < BaseModel
         effectiveThermalConductivity    % (account for volume fraction)
         effectiveVolumetricHeatCapacity % (account for volume fraction and density)
 
+        %
+        dmudcRegValue = 10 % Value used as regularization parameter in the computation of dmudc
         %%  helper properties
 
         constants
@@ -320,13 +322,14 @@ classdef Electrolyte < BaseModel
 
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             % In the case of a binary electrolyte, we could have simplified those expressions.
-            R = model.constants.R;
-
+            R  = model.constants.R;
+            rv = model.dmudcRegValue;
+            
             % We consider only binary electrolytes with two components.
             ncomp = 2;
             dmudcs = cell(ncomp, 1);
             for ind = 1 : ncomp
-                dmudcs{ind} = R .* T ./ c;
+                dmudcs{ind} = R .* T ./ (c + rv);
             end
 
             state.dmudcs = dmudcs;
