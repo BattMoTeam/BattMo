@@ -1827,7 +1827,7 @@ classdef GenericBattery < BaseModel
 
             end
 
-            model.cmin = 1e-5*max(cmaxs{1}, cmaxs{2});
+            model.cmin = 0;
 
 
         end
