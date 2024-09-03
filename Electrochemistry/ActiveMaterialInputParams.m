@@ -49,12 +49,9 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             
             jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
             diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
 
-            if isUnAssigned(diffusionModelType)
-                jsonstruct.diffusionModelType = 'full';
-            end
-            
             switch diffusionModelType
                 
               case 'simple'
