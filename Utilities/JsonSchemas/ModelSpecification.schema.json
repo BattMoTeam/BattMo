@@ -16,14 +16,14 @@
       "type": "object",
       "properties" : {
         "use_normed_current_collector" : {
-          "type" : "boolean"
+          "type" : "boolean",
           "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
         }}},
     "NegativeElectrode" : {
       "type": "object",
       "properties" : {
         "use_normed_current_collector" : {
-          "type" : "boolean"
+          "type" : "boolean",
           "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
         }}}
   },
