@@ -54,7 +54,7 @@ classdef ControlModel < BaseModel
         % Base class behaviour is do nothing.
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
         % Attach to state the values necessary for the control. This is run only once at the beginning of a time step
         % Base class behaviour is do nothing.
         end
@@ -68,6 +68,7 @@ classdef ControlModel < BaseModel
         function state = updateControlState(model, state, state0, dt)
         % Implemented by child model.
         % Base class behaviour is do nothing.
+        % Called after each Newton iteration
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)

@@ -47,7 +47,7 @@ classdef seiCcCvControlModel < ControlModel
             
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
             state.ctrlType = state0.nextCtrlType;
         end
         

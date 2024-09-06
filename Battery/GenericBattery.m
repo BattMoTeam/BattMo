@@ -1799,6 +1799,8 @@ classdef GenericBattery < BaseModel
 
             ctrl = 'Control';
 
+            state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt);
+            
             if strcmp(model.(ctrl).controlPolicy, 'powerControl')
                 state.(ctrl).time = state.time;
             end
