@@ -257,12 +257,11 @@ classdef Coating < ElectronicComponent
                 %% We setup the thermal conductivities
 
                 if isempty(model.thermalConductivity)
-                    bg = model.bruggemanCoefficient;
                     thermalConductivity = 0;
                     for icomp = 1 : numel(compnames)
                         compname = compnames{icomp};
                         if ~isempty(model.(compname).thermalConductivity)
-                            thermalConductivity = thermalConductivity + (model.volumeFractions(icomp))^bg*inputparams.(compname).thermalConductivity;
+                            thermalConductivity = thermalConductivity + model.volumeFractions(icomp)*inputparams.(compname).thermalConductivity;
                         end
                     end
                     model.thermalConductivity = thermalConductivity;
