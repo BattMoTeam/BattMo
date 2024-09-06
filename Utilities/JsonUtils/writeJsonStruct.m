@@ -1,10 +1,15 @@
-function is_valid = validateJsonStruct(jsonstruct)
+function filename = writeJsonStruct(jsonstruct, filename)
 
-    % Write the json struct to a temporary file
-    tempfilename = writeJsonStruct(jsonstruct);
+    if nargin == 1
+        filename = [tempname(), '.json'];
+        prettyprint = false;
+    else
+        prettyprint = true;
+    end
 
-    % Validate
-    is_valid = validateJsonFiles({tempfilename});
+    fid = fopen(filename, 'w');
+    fprintf(fid, jsonencode(jsonstruct, 'PrettyPrint', prettyprint));
+    fclose(fid);
 
 end
 

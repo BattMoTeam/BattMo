@@ -438,6 +438,11 @@ function runtime = try_find_julia_runtime()
     try
         if isunix
             [st, res] = system('which julia');
+            if st == 1
+                % Try juliaup directory
+                home = getenv('HOME');
+                runtime = [strtrim(home), '/.juliaup/bin/julia']
+            end
         elseif ispc
             [st, res] = system('where julia');
         else
