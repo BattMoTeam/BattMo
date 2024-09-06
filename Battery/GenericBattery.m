@@ -1641,25 +1641,11 @@ classdef GenericBattery < BaseModel
             forces = getValidDrivingForces@PhysicalModel(model);
 
             forces.src = [];
+
             ctrl = 'Control';
-            switch model.(ctrl).controlPolicy
-              case 'CCCV'
-                forces.CCCV = true;
-              case 'CCDischarge'
-                forces.CCDischarge = true;
-              case 'CCCharge'
-                forces.CCCharge = true;
-              case 'powerControl'
-                forces.powerControl = true;
-              case 'CC'
-                forces.CC = true;
-              case 'timeControl'
-                forces.timeControl = true;
-              case 'None'
-                % used only in addVariables
-              otherwise
-                error('Error controlPolicy not recognized');
-            end
+            ctrlpol = model.(ctrl).controlPolicy;
+            forces.(ctrlpol) = true;
+
             % TODO this is a hack to get thing go
             forces.Imax = [];
 
@@ -1875,7 +1861,7 @@ classdef GenericBattery < BaseModel
             
             if report.Converged
 
-                if strcmp(model.(ctrl).controlPolicy, 'CCCV')
+                if ismember(model.(ctrl).controlPolicy, {'CCCV'})
                     % we check for the constraints
 
                     [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
