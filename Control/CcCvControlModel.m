@@ -375,7 +375,7 @@ classdef CcCvControlModel < ControlModel
             if ~isempty(params.timeStepDuration)
                 dt = params.timeStepDuration;
             else
-                if ~isempty(params.numberOfTimeSteps) 
+                if isempty(params.numberOfTimeSteps) 
                     error('No timeStepDuration and numberOfTimeSteps are given');
                 end
                 n  = params.numberOfTimeSteps;
