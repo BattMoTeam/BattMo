@@ -15,6 +15,18 @@ classdef Electrolyte < BaseModel
         diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)
         bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
 
+        %
+        % Region support for bruggeman coefficient
+        %
+        useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
+                                       % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
+        regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
+                                    % - NegativeElectrode 
+                                    % - PositiveElectrode 
+                                    % - Separator 
+        regionTags % Tags that identifies each grid cell for the electrolyte (negative and positive electrodes,
+                   % separator). It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor.
+
         thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity % Specific Heat capacity of the electrolyte
         
@@ -48,6 +60,9 @@ classdef Electrolyte < BaseModel
                        'ionicConductivity'                    , ...
                        'diffusionCoefficient'                 , ...
                        'bruggemanCoefficient'                 , ...
+                       'useRegionBruggemanCoefficients'       , ... 
+                       'regionBruggemanCoefficients'          , ... 
+                       'regionTags'                           , ... 
                        'thermalConductivity'                  , ...
                        'specificHeatCapacity'                 , ...
                        'volumeFraction'                       , ...
@@ -58,6 +73,20 @@ classdef Electrolyte < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
+            if model.useRegionBruggemanCoefficients
+
+                nc    = model.G.getNumberOfCells();
+                tags  = model.regionTags;
+                bvals = model.regionBruggemanCoefficients;
+
+                b = NaN(nc, 1);
+                b(tags == 1) = bvals.NegativeElectrode;
+                b(tags == 2) = bvals.PositiveElectrode;
+                b(tags == 3) = bvals.Separator;
+
+                model.bruggemanCoefficient = b;
+            end
+            
             model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionname);
             model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionname);
 

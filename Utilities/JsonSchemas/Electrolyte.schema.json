@@ -57,6 +57,20 @@
       "description": "the coefficient for determining effective transport parameters in porous media",
       "symbol": "beta"
     },
+    "useRegionBruggemanCoefficients" : {
+      "type" : "boolean",
+      "description" : "Set to true if the electrolye region for each component should get a specific Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false"},
+    "regionBruggemanCoefficients" : {
+      "type" : "object",
+      "description" : "Bruggeman coefficients for each region"
+      "NegativeElectrode" : {
+        "$ref": "PhysicalQuantity.schema.json"},
+      "PositiveElectrode" : {
+        "$ref": "PhysicalQuantity.schema.json"},
+      "Separator" : {
+        "$ref": "PhysicalQuantity.schema.json"}},
+    "regionTags" :  {"type" : "array",
+                     "description" : "Numerical tags that identifies each grid cell for the electrolyte. The conventions is 1 for negative electrode, 2 for positive electrodes, 3 for separator. It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor."}},
     "thermalConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the intrinsic Thermal conductivity of the active component",
