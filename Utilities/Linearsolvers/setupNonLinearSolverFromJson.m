@@ -18,6 +18,7 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
+    nls.continueOnFailure = false;
     nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
