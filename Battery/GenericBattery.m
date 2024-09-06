@@ -1180,7 +1180,9 @@ classdef GenericBattery < BaseModel
                     state.(ctrl).ctrlType = ctrltype;
 
                 else
+                    
                     ctrlVal = drivingForces.src(time, Imax);
+                    
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
@@ -1225,15 +1227,16 @@ classdef GenericBattery < BaseModel
                 elde = eldes{ind};
 
                 if model.include_current_collectors
+
                     cc_model = model.(elde).(cc);
                     cc_map   = cc_model.G.mappings.cellmap;
                     cc_j     = state.(elde).(cc).jFace;
                     cc_econd = cc_model.effectiveElectronicConductivity;
                     cc_vols  = cc_model.G.getVolumes();
                     cc_jsq   = cc_model.G.getCellFluxNorm(cc_j);
-                    state.(elde).(cc).jsq = cc_jsq;  % store square of current density
+
                     src = subsetPlus(src, cc_vols .* cc_jsq ./ cc_econd, cc_map);
-                    %                    src(cc_map) = src(cc_map) + cc_vols.*cc_jsq./cc_econd;
+                    
                 end
 
                 co_model = model.(elde).(co);
@@ -1242,26 +1245,24 @@ classdef GenericBattery < BaseModel
                 co_econd = co_model.effectiveElectronicConductivity;
                 co_vols  = co_model.G.getVolumes();
                 co_jsq   = co_model.G.getCellFluxNorm(co_j);
-                state.(elde).(co).jsq = co_jsq;
 
-                %src(co_map) = src(co_map) + co_vols.*co_jsq./co_econd;
                 src = subsetPlus(src, co_vols.*co_jsq./co_econd, co_map);
+
             end
 
             % Electrolyte
-            elyte_model    = model.(elyte);
-            elyte_map      = elyte_model.G.mappings.cellmap;
-            elyte_vf       = elyte_model.volumeFraction;
-            elyte_j        = state.(elyte).jFace;
-            elyte_bruggman = elyte_model.bruggemanCoefficient;
-            elyte_cond     = state.(elyte).conductivity;
-            elyte_econd    = elyte_cond.*elyte_vf.^elyte_bruggman;
-            elyte_vols     = elyte_model.G.getVolumes();
-            elyte_jsq      = elyte_model.G.getCellFluxNorm(elyte_j);
-            state.(elyte).jsq = elyte_jsq; %store square of current density
+            elyte_model     = model.(elyte);
+            elyte_map       = elyte_model.G.mappings.cellmap;
+            elyte_vf        = elyte_model.volumeFraction;
+            elyte_j         = state.(elyte).jFace;
+            elyte_bruggeman = elyte_model.bruggemanCoefficient;
+            elyte_cond      = state.(elyte).conductivity;
+            elyte_econd     = elyte_cond.*elyte_vf.^elyte_bruggeman;
+            elyte_vols      = elyte_model.G.getVolumes();
+            elyte_jsq       = elyte_model.G.getCellFluxNorm(elyte_j);
 
-            %src(elyte_map) = src(elyte_map) + elyte_vols.*elyte_jsq./elyte_econd;
             src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
+
             state.(thermal).jHeatOhmSource = src;
 
         end
@@ -1273,29 +1274,23 @@ classdef GenericBattery < BaseModel
             thermal = 'ThermalModel';
 
             % prepare term
-            nc = model.G.getNumberOfCells();
-            src = zeros(nc, 1);
-            T = state.(thermal).T;
-            phi = state.(elyte).phi;
-            nf = model.(elyte).G.getNumberOfFaces();
+            nc       = model.G.getNumberOfCells();
+            T        = state.(thermal).T;
+            nf       = model.(elyte).G.getNumberOfFaces();
             intfaces = model.(elyte).G.getIntFaces;
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                zeroFace = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
-                locstate = state;
-            else
-                locstate = value(state);
-                zeroFace = zeros(nf, 1);
-            end
+
+            phi = state.(elyte).phi;
+
+            zeroFace = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
+
+            src = zeros(nc, 1);
 
             % Compute chemical heat source in electrolyte
-            dmudcs = locstate.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
-            D      = locstate.(elyte).D;        % Effective diffusion coefficient
-            Dgradc = locstate.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
+            dmudcs = state.(elyte).dmudcs;   % Derivative of chemical potential with respect to concentration
+            D      = state.(elyte).D;        % Effective diffusion coefficient
+            Dgradc = state.(elyte).diffFlux; % Diffusion flux (-D*grad(c))
             DFaceGradc = zeroFace;
-            DFaceGradc(intfaces) = Dgradc;
+            DFaceGradc = subsetPlus(DFaceGradc, Dgradc, intfaces);
 
             % Compute norm of square norm of diffusion flux
             elyte_model   = model.(elyte);
@@ -1308,7 +1303,7 @@ classdef GenericBattery < BaseModel
             elyte_src = dmudcs{1}.*elyte_src;
 
             % map to source term at battery level
-            src(elyte_map) = src(elyte_map) + elyte_src;
+            src = subsetPlus(src, elyte_src, elyte_map);
 
             state.(thermal).jHeatChemicalSource = src;
 
@@ -1332,14 +1327,6 @@ classdef GenericBattery < BaseModel
             src = zeros(nc, 1);
 
             T = state.(thermal).T;
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                locstate = state;
-            else
-               locstate = value(state);
-            end
 
             for ind = 1 : numel(eldes)
 
@@ -1351,14 +1338,13 @@ classdef GenericBattery < BaseModel
                 vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
                 vols   = model.(elde).(co).G.getVolumes();
 
-                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
-                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
-                eta  = locstate.(elde).(co).(am).(itf).eta;
+                Rvol = state.(elde).(co).(am).(sd).Rvol;
+                dUdT = state.(elde).(co).(am).(itf).dUdT;
+                eta  = state.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*eta;
 
-                src(co_map) = src(co_map) + itf_src;
-
+                src = subsetPlus(src, itf_src, co_map);
 
             end
 
@@ -1381,17 +1367,9 @@ classdef GenericBattery < BaseModel
 
             nc = model.G.getNumberOfCells();
 
-            src = zeros(nc, 1);
-
             T = state.(thermal).T;
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                locstate = state;
-            else
-               locstate = value(state);
-            end
+            
+            src = zeros(nc, 1);
 
             for ind = 1 : numel(eldes)
 
@@ -1403,13 +1381,13 @@ classdef GenericBattery < BaseModel
                 vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
                 vols   = model.(elde).(co).G.getVolumes();
 
-                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
-                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
-                eta  = locstate.(elde).(co).(am).(itf).eta;
+                Rvol = state.(elde).(co).(am).(sd).Rvol;
+                dUdT = state.(elde).(co).(am).(itf).dUdT;
+                eta  = state.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
 
-                src(co_map) = src(co_map) + itf_src;
+                src = subsetPlus(src, itf_src, co_map);
 
             end
 
@@ -1437,15 +1415,6 @@ classdef GenericBattery < BaseModel
 
             T = state.(thermal).T;
 
-            if isa(T, 'ADI')
-                adsample = getSampleAD(T);
-                adbackend = model.AutoDiffBackend;
-                src = adbackend.convertToAD(src, adsample);
-                locstate = state;
-            else
-               locstate = value(state);
-            end
-
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1456,13 +1425,14 @@ classdef GenericBattery < BaseModel
                 vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
                 vols   = model.(elde).(co).G.getVolumes();
 
-                Rvol = locstate.(elde).(co).(am).(sd).Rvol;
-                dUdT = locstate.(elde).(co).(am).(itf).dUdT;
-                eta  = locstate.(elde).(co).(am).(itf).eta;
+                Rvol = state.(elde).(co).(am).(sd).Rvol;
+                dUdT = state.(elde).(co).(am).(itf).dUdT;
+                eta  = state.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
-
-                src(co_map) = src(co_map) + itf_src;
+                % itf_src = n*F*vols.*Rvol.*eta;
+                
+                src = subsetPlus(src, itf_src, co_map);
 
             end
 
