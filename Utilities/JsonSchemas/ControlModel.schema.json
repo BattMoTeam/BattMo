@@ -42,7 +42,7 @@
           "description" : "discharge rate"},
         "rampupTime" : {
           "type" : "number",
-          "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
+          "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time"},
         "lowerCutoffVoltage" : {
           "type" : "number"},
         "useCVswitch" : {
