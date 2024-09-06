@@ -1,5 +1,5 @@
 {
-  "description" : "Data from @article{Xu_2015, title={A pseudo three-dimensional electrochemical–thermal model of a prismatic LiFePO 4 battery during discharge process}, volume={80}, ISSN={0360-5442}, url={http://dx.doi.org/10.1016/j.energy.2014.11.073}, DOI={10.1016/j.energy.2014.11.073}, journal={Energy}, publisher={Elsevier BV}, author={Xu, Meng and Zhang, Zhuqian and Wang, Xia and Jia, Li and Yang, Lixin}, year={2015}, month=feb, pages={303–317} }"
+  "description" : "Data from @article{Xu_2015, title={A pseudo three-dimensional electrochemical–thermal model of a prismatic LiFePO 4 battery during discharge process}, volume={80}, ISSN={0360-5442}, url={http://dx.doi.org/10.1016/j.energy.2014.11.073}, DOI={10.1016/j.energy.2014.11.073}, journal={Energy}, publisher={Elsevier BV}, author={Xu, Meng and Zhang, Zhuqian and Wang, Xia and Jia, Li and Yang, Lixin}, year={2015}, month=feb, pages={303–317} }",
   "saturationConcentration": 31540,
   "volumetricSurfaceArea": 142372, 
   "density": 1852,
