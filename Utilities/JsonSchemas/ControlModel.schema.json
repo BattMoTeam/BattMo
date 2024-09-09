@@ -81,7 +81,21 @@
         "dIdtLimit" : {"type" : "number"},
         "numberOfCycles" : {"type" : "number"},
         "initialControl" : {"type" : "string",
-                            "enum" : ["discharging", "charging"]}
+                            "enum" : ["discharging", "charging"]},
+        "switchTolerances" : {
+          "type" : "object",
+          "description" : "tolerances for the computation of the control switching (relative tolerances)",
+          "properties" : {
+            "CC_discharge1" : { "type" : "number",
+                                "description" : "control corresponding to constant current discharge until lower cutoff voltage is reached, default value : 1e-2"},
+            "CC_discharge2" : { "type" : "number",
+                                "description" :  "control corresponding to zero current until dEdtLimit is reached. Default value : 0.9"},
+            "CC_charge1" : { "type" : "number",
+                             "description" :  "control corresponding to constant current charge until upper cutoff voltage is reached. Default value : 1e-2"},
+            "CV_charge2" : { "type" : "number",
+                             "description" :  "control corresponding to constant voltage until dIdtLimit is reached. Default value : 0.9"}
+          }
+        }
       }},
 
     "powerControl": {

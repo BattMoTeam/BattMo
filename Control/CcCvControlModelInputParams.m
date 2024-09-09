@@ -32,15 +32,30 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
         % Number of cycles
         numberOfCycles
 
+        % Tolerances for the control switching (relative tolerances)
+        % struct with one value for each switch phase
+        % - CC_discharge1 (constant current discharge until lower cutoff voltage is reached)
+        % - CC_discharge2 (zero current until dEdtLimit is reached)
+        % - CC_charge1    (constant current charge until upper cutoff voltage is reached) 
+        % - CV_charge2    (constant voltage until dIdtLimit is reached) 
+        switchTolerances
     end
     
     methods
 
         function inputparams = CcCvControlModelInputParams(jsonstruct)
+
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'switchTolerances', 'CC_discharge1'}, 1e-2);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'switchTolerances', 'CC_discharge2'}, 0.9);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'switchTolerances', 'CC_charge1'}, 1e-2);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'switchTolerances', 'CV_charge2'}, 0.9);
+
+
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
             inputparams.controlPolicy = 'CCCV';
-            
+
         end
 
     end

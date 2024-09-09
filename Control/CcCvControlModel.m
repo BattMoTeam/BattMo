@@ -29,7 +29,7 @@ classdef CcCvControlModel < ControlModel
         ImaxDischarge
         
         %
-        tolerances
+        switchTolerances
     end
     
     
@@ -46,7 +46,8 @@ classdef CcCvControlModel < ControlModel
                        'dEdtLimit'         , ...
                        'dIdtLimit'         , ...
                        'numberOfCycles'    , ...
-                       'initialControl'};
+                       'initialControl'    , ...
+                       'switchTolerances'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -55,14 +56,6 @@ classdef CcCvControlModel < ControlModel
                 model.numberOfCycles = 1;
             end
 
-            % values of these relative tolerances should be smaller than 1
-            tolerances = struct('CC_discharge1', 1e-3, ...
-                                'CC_discharge2', 0.9, ...
-                                'CC_charge1'   , 1e-3, ...
-                                'CV_charge2'   , 0.9);
-            
-            model.tolerances = tolerances;
-            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -301,7 +294,7 @@ classdef CcCvControlModel < ControlModel
             Emax    = model.upperCutoffVoltage;
             dIdtMin = model.dIdtLimit;
             dEdtMin = model.dEdtLimit;
-            tols    = model.tolerances;
+            tols    = model.switchTolerances;
             
             E    = state.E;
             I    = state.I;
