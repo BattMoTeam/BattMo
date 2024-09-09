@@ -57,8 +57,8 @@ classdef CcCvControlModel < ControlModel
 
             % values of these relative tolerances should be smaller than 1
             tolerances = struct('CC_discharge1', 1e-3, ...
-                                'CC_discharge2', 0.9 , ...
-                                'CC_charge1'   , 1e-3 , ...
+                                'CC_discharge2', 0.9, ...
+                                'CC_charge1'   , 1e-3, ...
                                 'CV_charge2'   , 0.9);
             
             model.tolerances = tolerances;
@@ -121,9 +121,21 @@ classdef CcCvControlModel < ControlModel
         end
 
         
+
+        function state = prepareStepControl(model, state, state0, dt)
+
+            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
+
+            if ~rsw0.beforeSwitchRegion && ~rsw0.afterSwitchRegion
+                state.ctrlType = model.getNextCtrlType(state0.ctrlType);
+            end
+            
+        end
+
         
         function state = updateControlState(model, state, state0, dt)
 
+            state = updateControlState@ControlModel(model, state, state0, dt);
             
             state = model.updateDerivatives(state, state0, dt);
             
@@ -131,17 +143,63 @@ classdef CcCvControlModel < ControlModel
                 return
             end
 
-            ctrlType  = state.ctrlType;
+            rsw0      = model.setupRegionSwitchFlags(state0, state0.ctrlType);
             ctrlType0 = state0.ctrlType;
-            
-            nextCtrlType = model.getNextCtrlType(ctrlType0);
 
-            rsw  = model.setupRegionSwitchFlags(state, ctrlType0);
-            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
-            
-            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion && ~rsw0.beforeSwitchRegion
+            if rsw0.beforeSwitchRegion
+                % We have not entered the switching region in the previous iteration. We are not going to change control
+                % in this step
+                ctrlType = ctrlType0;
+
+            else
+
+                currentCtrlType = state.ctrlType;
                 
-                state.ctrlType = nextCtrlType;
+                nextCtrlType0 = model.getNextCtrlType(ctrlType0);
+
+                rsw0  = model.setupRegionSwitchFlags(state, ctrlType0);
+                rsw00 = model.setupRegionSwitchFlags(state0, ctrlType0);
+                
+                switch currentCtrlType
+
+                  case nextCtrlType0
+                    
+                    % We are in the situation where the control has switched: The current control is the next one after the
+                    % previous control type. We want to determine if we switch back. 
+                    
+                    if  (rsw0.beforeSwitchRegion) && (~rsw00.beforeSwitchRegion && ~rsw00.afterSwitchRegion)
+
+                        % We switch back because we are before the beginning of the switching region but we do not switch back if we were already in the switching region for state0
+                        ctrlType = ctrlType0;
+
+                    else
+                        
+                        % We keep the control type as it is
+                        ctrlType = nextCtrlType0;
+
+                    end
+
+                  case ctrlType0
+
+                    % The control has not changed from previous and we want to determine if we should change it. 
+
+                    if rsw0.afterSwitchRegion
+
+                        % We switch to a new control because we are no longer in the acceptable region for the current
+                        % control
+                        ctrlType = nextCtrlType0;
+                        
+                    else
+
+                        ctrlType = ctrlType0;
+
+                    end
+
+                  otherwise
+
+                    error('control type not recognized');
+
+                end
 
             end
 
@@ -230,10 +288,8 @@ classdef CcCvControlModel < ControlModel
             rsw = model.setupRegionSwitchFlags(state, state.ctrlType);
 
             if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
-                
+
                 arefulfilled = false;
-                state.ctrlType = nextCtrlType;
-                state = model.updateValueFromControl(state);
 
             end
                 

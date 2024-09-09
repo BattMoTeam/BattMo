@@ -1838,6 +1838,7 @@ classdef GenericBattery < BaseModel
 
                     if ~arefulfilled
                         report.Converged = false;
+                        report.Failure   = true;
                     end
 
                 end
