@@ -114,17 +114,6 @@ classdef CcCvControlModel < ControlModel
         end
 
         
-
-        function state = prepareStepControl(model, state, state0, dt)
-
-            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
-
-            if ~rsw0.beforeSwitchRegion && ~rsw0.afterSwitchRegion
-                state.ctrlType = model.getNextCtrlType(state0.ctrlType);
-            end
-            
-        end
-
         
         function state = updateControlState(model, state, state0, dt)
 
@@ -136,45 +125,29 @@ classdef CcCvControlModel < ControlModel
                 return
             end
 
-            rsw0      = model.setupRegionSwitchFlags(state0, state0.ctrlType);
+            rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
             ctrlType0 = state0.ctrlType;
 
-            if rsw0.beforeSwitchRegion
-                % We have not entered the switching region in the previous iteration. We are not going to change control
-                % in this step
+            if rsw00.beforeSwitchRegion
+                
+                % We have not entered the switching region in the time step. We are not going to change control
+                % in this step.
                 ctrlType = ctrlType0;
 
             else
 
-                currentCtrlType = state.ctrlType;
+                % We entered the switch region in previous time step.
                 
-                nextCtrlType0 = model.getNextCtrlType(ctrlType0);
+                currentCtrlType = state.ctrlType; % current control in the the Newton iteration
+                nextCtrlType0   = model.getNextCtrlType(ctrlType0); % next control that can occur afte the previous time step control (if it changes)
 
-                rsw0  = model.setupRegionSwitchFlags(state, ctrlType0);
-                rsw00 = model.setupRegionSwitchFlags(state0, ctrlType0);
+                rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
                 
                 switch currentCtrlType
 
-                  case nextCtrlType0
-                    
-                    % We are in the situation where the control has switched: The current control is the next one after the
-                    % previous control type. We want to determine if we switch back. 
-                    
-                    if  (rsw0.beforeSwitchRegion) && (~rsw00.beforeSwitchRegion && ~rsw00.afterSwitchRegion)
-
-                        % We switch back because we are before the beginning of the switching region but we do not switch back if we were already in the switching region for state0
-                        ctrlType = ctrlType0;
-
-                    else
-                        
-                        % We keep the control type as it is
-                        ctrlType = nextCtrlType0;
-
-                    end
-
                   case ctrlType0
 
-                    % The control has not changed from previous and we want to determine if we should change it. 
+                    % The control has not changed from previous time step and we want to determine if we should change it. 
 
                     if rsw0.afterSwitchRegion
 
@@ -188,6 +161,13 @@ classdef CcCvControlModel < ControlModel
 
                     end
 
+                  case nextCtrlType0
+
+                    % We do not switch back to avoid oscillation. We are anyway within the given tolerance for the
+                    % control so that we keep the control as it is.
+
+                    ctrlType = nextCtrlType0;
+
                   otherwise
 
                     error('control type not recognized');
@@ -196,6 +176,7 @@ classdef CcCvControlModel < ControlModel
 
             end
 
+            state.ctrlType = ctrlType;
             state = model.updateValueFromControl(state);
 
         end
@@ -278,12 +259,13 @@ classdef CcCvControlModel < ControlModel
 
             arefulfilled = true;
             
-            rsw = model.setupRegionSwitchFlags(state, state.ctrlType);
-
-            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
-
+            rsw  = model.setupRegionSwitchFlags(state, state.ctrlType);
+            rswN = model.setupRegionSwitchFlags(state, nextCtrlType);
+            
+            if (strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion) || (strcmp(ctrlType, nextCtrlType) && ~rswN.beforeSwitchRegion)
+                
                 arefulfilled = false;
-
+                
             end
                 
         end
@@ -303,15 +285,15 @@ classdef CcCvControlModel < ControlModel
 
               case 'CC_discharge1'
 
-                before = (E - Emin)/Emin > tols.(ctrlType);
-                after  = (E - Emin)/Emin < -tols.(ctrlType);
+                before = E > Emin*(1 + tols.(ctrlType));
+                after  = E < Emin*(1 - tols.(ctrlType));
                 
               case 'CC_discharge2'
 
                 if isfield(state, 'dEdt')
                     dEdt = state.dEdt;
-                    before = (abs(dEdt) - dEdtMin)/dEdtMin > tols.(ctrlType);
-                    after  = (abs(dEdt) - dEdtMin)/dEdtMin < -tols.(ctrlType);
+                    before = abs(dEdt) > dEdtMin*(1 + tols.(ctrlType));
+                    after  = abs(dEdt) < dEdtMin*(1 - tols.(ctrlType));
                 else
                     before = false;
                     after  = false;
@@ -319,21 +301,23 @@ classdef CcCvControlModel < ControlModel
                 
               case 'CC_charge1'
                 
-                before = (E - Emax)/Emax < -tols.(ctrlType);
-                after  = (E - Emax)/Emax > tols.(ctrlType);
+                before = E < Emax*(1 - tols.(ctrlType));
+                after  = E > Emax*(1 + tols.(ctrlType));
 
               case 'CV_charge2'
 
                 if isfield(state, 'dIdt')
                     dIdt = state.dIdt;
-                    before = (abs(dIdt) - dIdtMin)/dIdtMin > tols.(ctrlType);
-                    after  = (abs(dIdt) - dIdtMin)/dIdtMin < -tols.(ctrlType);
+                    before = abs(dIdt) > dIdtMin*(1 + tols.(ctrlType));
+                    after  = abs(dIdt) < dIdtMin*(1 - tols.(ctrlType));
                 else
                     before = false;
                     after  = false;
                 end
                 
               otherwise
+
+                error('control type not recognized');
 
             end
 
