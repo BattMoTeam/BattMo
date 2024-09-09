@@ -5,6 +5,7 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
 
     % setup default values
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxIterations'},  10);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxTimestepCuts'},  6);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'nonlinearTolerance'},  []);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'verbose'},  false);
 
@@ -13,8 +14,9 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'}, linearSolverSetup_default);
     linearSolverSetup = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'});
     
-    nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
-    nls.verbose = jsonstruct.NonLinearSolver.verbose;
+    nls.maxIterations   = jsonstruct.NonLinearSolver.maxIterations;
+    nls.maxTimestepCuts = jsonstruct.NonLinearSolver.maxTimestepCuts;
+    nls.verbose         = jsonstruct.NonLinearSolver.verbose;
     
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
