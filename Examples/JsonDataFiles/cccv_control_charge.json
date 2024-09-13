@@ -4,8 +4,8 @@
   "CRate": 1,
    "numberOfCycles": 1,
   "lowerCutoffVoltage": 2.6,
-  "upperCutoffVoltage": 4.1,
-  "dIdtLimit": 0.01,
-  "dEdtLimit": 0.01},
+  "upperCutoffVoltage": 4.2,
+  "dIdtLimit": 0.00001,
+  "dEdtLimit": 0.00001},
 "SOC":0.0}
 
