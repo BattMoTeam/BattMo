@@ -4,7 +4,7 @@ classdef FlatJsonViewer
 
         flatjson
         columnnames
-        
+
     end
 
     methods
@@ -27,30 +27,30 @@ classdef FlatJsonViewer
                     end
                 end
             end
-            
+
             fjv.columnnames = columnnames;
-            
+
         end
 
 
-        function print(fjv, varargin)
+        function T = print(fjv, varargin)
 
             opt = struct('filter', [], ...
                          'filename', []);
 
             opt = merge_options(opt, varargin{:});
-            
+
             if ~isempty(opt.filter)
                 fjv = fjv.filter(opt.filter);
             end
-            
+
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
             disp(T);
 
             if ~isempty(opt.filename)
                 writetable(T, opt.filename);
             end
-            
+
         end
 
 
@@ -64,7 +64,7 @@ classdef FlatJsonViewer
             if ischar(orderdesc)
                 orderdesc = {orderdesc};
             end
-            
+
             for iorder = numel(orderdesc) : -1 : 1
 
                 r = regexprep(orderdesc{iorder}, ' +', '.*');
@@ -73,10 +73,10 @@ classdef FlatJsonViewer
                 ind = find(ind);
 
                 assert(numel(ind) == 1, 'regexp given is return too many match for column name');
-                       
+
                 [~, ia] = sort(flatjson(:, ind));
                 flatjson = flatjson(ia, :);
-                       
+
             end
 
             fjv.flatjson = flatjson;
@@ -112,14 +112,14 @@ classdef FlatJsonViewer
                     res = false;
                 end
             end
-            
+
             rowvals = flatjson(:, ind);
-            
+
             if ischar(filterval)
                 r = regexprep(filterval, ' +', '.*');
                 filterval = @(str) strmatch(str);
             end
-            
+
             ind = cellfun(@(res) filterval(res), rowvals);
             ind = find(ind);
 
@@ -152,7 +152,7 @@ classdef FlatJsonViewer
 
         end
     end
-    
+
 end
 
 
