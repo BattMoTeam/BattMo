@@ -41,19 +41,23 @@ will therefore have to launch the server themselves. This can be done in the fol
 ## Example
 
 ```matlab
-   
     man = ServerManager();
    
-    inputFileName = fullfile(battmoDir()    , ...
-                             'Examples'     , ...
-                             'JsonDataFiles', ...
-                             'p2d_40_jl.json')
+    fn = fullfile(battmoDir()    , ...
+                  'Examples'     , ...
+                  'JsonDataFiles', ...
+                  'p2d_40.json')
+    jsonstruct = parseBattmoJson(fn)
 
-    man.load('inputType'    , 'JSON', ...
-             'inputFileName', inputFileName);
-            
-    result = man.run();
+    man.runBatteryJson(jsonstruct)
 ```
+
+For 1D model you can use directly json input (should be alsofaster)
+
+```matlab
+    man.runBatteryJson(jsonstruct, 'useDirectJsonInput', true)
+```
+
 
 see more in the [online documentation](https://battmoteam.github.io/BattMo/juliabridge.html ) 
 
@@ -116,8 +120,8 @@ With arguments:
 <ul>
     <li> <b>port</b>: The id of the server, default 3000</li>
     <li> <b>shared</b>: If true, variables will be shared across calls to the server</li>
-    <li> <b> call_stack </b>: Displays entire call stack if the Julia code fails to execute</li>
-    <li> <b> async </b>: Allows running clients in parallel </li>
+    <li> <b>call_stack</b>: Displays entire call stack if the Julia code fails to execute</li>
+    <li> <b>async</b>: Allows running clients in parallel </li>
 </ul>
 
 #### Running a script
