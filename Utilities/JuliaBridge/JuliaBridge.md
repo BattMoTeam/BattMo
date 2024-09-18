@@ -52,7 +52,7 @@ will therefore have to launch the server themselves. This can be done in the fol
     man.runBatteryJson(jsonstruct)
 ```
 
-For 1D model you can use directly json input (should be alsofaster)
+For 1D model you can use directly json input (should be also faster)
 
 ```matlab
     man.runBatteryJson(jsonstruct, 'useDirectJsonInput', true)
