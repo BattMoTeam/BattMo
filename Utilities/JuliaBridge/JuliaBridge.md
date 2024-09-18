@@ -16,20 +16,15 @@ The purpose of JuliaBridge is to act as an interface between BattMo Matlab and B
 
 ## How to use JuliaBridge
 
-In order for JuliaBridge to work properly, the following must be done:
-<ul>
-    <li> The RunFromMatlab project must be instantiated in Julia</li>
-    <li> The GenerateModel and JuliaInterface folders must be on the Matlab path </li>
-</ul>
+The interaction with Julia is managed by a _server manager_ . Such object is created as an instance of the
+`ServerManager` class. Then, the inputs are sent to this object which also then run the simulation. See the example
+below.
 
-The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point is also
-automatically taken care of by the setup script <code>statupBattMo</code>
+For specific use cases please see the files provided in the Examples folder. 
 
-For specific use cases please the files provided in the Examples folder. Julia uses just-in-time compilation. It means
-that the first time you run a simulation, the code is going to be compiled and it will take relatively a lot of
-time. However, we use a persistent server model so that this is done only once on the server. The subsequent simulations
-will not suffer from this compilation slow-down.
-
+**Warning** : Julia uses just-in-time compilation. It means that the first time you run a simulation, the code is going
+to be compiled and it will take relatively a lot of time. However, we use a persistent server model so that this is done
+only once on the server. The subsequent simulations will not suffer from this compilation slow-down.
 
 ### Additional steps for Windows users:
 
@@ -65,12 +60,26 @@ see more in the [online documentation](https://battmoteam.github.io/BattMo/julia
 
 ## How JuliaBridge works
 
+### Installation ###
+
+In order for JuliaBridge to work properly, the following has to be done
+
+<ul>
+    <li> The `RunFromMatlab` project must be instantiated in Julia</li>
+    <li> The `GenerateModel` and `JuliaInterface` folders must be on the Matlab path </li>
+</ul>
+
+The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point is also
+automatically taken care of by the setup script <code>statupBattMo</code>
+
+I means that no special installation steps are required. We just provide this section to explain how the julia bridge works.
+
 ### Matlab &harr; Julia communication
- 
+
 In concrete terms JuliaBridge communicates between Matlab and Julia in the following way:
 
 1. Generate a model, initial state and parameters (and optionally a reference solution) in Matlab. This data is written in a file
-2. Launch a DaemonMode server
+2. Launch a `DaemonMode` server
 3. Call Julia scripts contained in RunFromMatlab/api/DaemonHandler.jl on the DaemonMode server
 4. The Julia code reads the file containing data from Matlab and performs a simulation. The output of this simulation is saved to a file.
 5. The contents of the file created by Julia is read in Matlab for post processing.
@@ -94,9 +103,9 @@ The <code>ServerManager</code> class in Matlab has two main roles:
 
 ### DeamonMode
 
-Source: https://github.com/dmolina/DaemonMode.jl
+Source: [https://github.com/dmolina/DaemonMode.jl](https://github.com/dmolina/DaemonMode.jl)
 
-Below we summarize the two main features of DaemonMode used by JuliaBridge-
+Below we summarize the two main features of `DaemonMode` used by JuliaBridge
 
 #### Launching the server
 
