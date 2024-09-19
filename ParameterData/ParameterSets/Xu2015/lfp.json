@@ -15,12 +15,12 @@
   },
   "NegativeElectrode": {
     "Coating": {
-      "BruggemanCoefficient": 1.5,
+      "bruggemanCoefficient": 1.5,
       "volumeFraction": 0.7,
       "ActiveMaterial": {
         "specificHeatCapacity": 1435.0,
         "thermalConductivity": 1.04,
-        "electricalConductivity": 2,
+        "electronicConductivity": 2,
         "Interface": {
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/Graphite/LiC6_Xu.json"
@@ -41,12 +41,12 @@
   },
   "PositiveElectrode": {
     "Coating": {
-      "BruggemanCoefficient": 1.5,
+      "bruggemanCoefficient": 1.5,
       "volumeFraction": 0.72,
       "ActiveMaterial": {
         "specificHeatCapacity": 1348.0,
         "thermalConductivity": 1.48,
-        "electricalConductivity": 0.01,
+        "electronicConductivity": 0.01,
         "Interface": {
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/LFP/LFP.json"

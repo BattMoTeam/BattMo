@@ -1859,6 +1859,8 @@ classdef GenericBattery < BaseModel
 
                     if ~arefulfilled
                         report.Converged = false;
+                        report.Failure   = true;
+                        report.FailureMsg = 'The current time step converged but for a control that is no longer valid.';
                     end
 
                 end

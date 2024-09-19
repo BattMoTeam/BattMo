@@ -29,7 +29,7 @@ classdef CcCvControlModel < ControlModel
         ImaxDischarge
         
         %
-        tolerances
+        switchTolerances
     end
     
     
@@ -46,7 +46,8 @@ classdef CcCvControlModel < ControlModel
                        'dEdtLimit'         , ...
                        'dIdtLimit'         , ...
                        'numberOfCycles'    , ...
-                       'initialControl'};
+                       'initialControl'    , ...
+                       'switchTolerances'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -55,14 +56,6 @@ classdef CcCvControlModel < ControlModel
                 model.numberOfCycles = 1;
             end
 
-            % values of these relative tolerances should be smaller than 1
-            tolerances = struct('CC_discharge1', 1e-3, ...
-                                'CC_discharge2', 0.9 , ...
-                                'CC_charge1'   , 1e-3 , ...
-                                'CV_charge2'   , 0.9);
-            
-            model.tolerances = tolerances;
-            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -124,6 +117,7 @@ classdef CcCvControlModel < ControlModel
         
         function state = updateControlState(model, state, state0, dt)
 
+            state = updateControlState@ControlModel(model, state, state0, dt);
             
             state = model.updateDerivatives(state, state0, dt);
             
@@ -131,20 +125,58 @@ classdef CcCvControlModel < ControlModel
                 return
             end
 
-            ctrlType  = state.ctrlType;
+            rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
             ctrlType0 = state0.ctrlType;
-            
-            nextCtrlType = model.getNextCtrlType(ctrlType0);
 
-            rsw  = model.setupRegionSwitchFlags(state, ctrlType0);
-            rsw0 = model.setupRegionSwitchFlags(state0, state0.ctrlType);
-            
-            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion && ~rsw0.beforeSwitchRegion
+            if rsw00.beforeSwitchRegion
                 
-                state.ctrlType = nextCtrlType;
+                % We have not entered the switching region in the time step. We are not going to change control
+                % in this step.
+                ctrlType = ctrlType0;
+
+            else
+
+                % We entered the switch region in previous time step.
+                
+                currentCtrlType = state.ctrlType; % current control in the the Newton iteration
+                nextCtrlType0   = model.getNextCtrlType(ctrlType0); % next control that can occur afte the previous time step control (if it changes)
+
+                rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
+                
+                switch currentCtrlType
+
+                  case ctrlType0
+
+                    % The control has not changed from previous time step and we want to determine if we should change it. 
+
+                    if rsw0.afterSwitchRegion
+
+                        % We switch to a new control because we are no longer in the acceptable region for the current
+                        % control
+                        ctrlType = nextCtrlType0;
+                        
+                    else
+
+                        ctrlType = ctrlType0;
+
+                    end
+
+                  case nextCtrlType0
+
+                    % We do not switch back to avoid oscillation. We are anyway within the given tolerance for the
+                    % control so that we keep the control as it is.
+
+                    ctrlType = nextCtrlType0;
+
+                  otherwise
+
+                    error('control type not recognized');
+
+                end
 
             end
 
+            state.ctrlType = ctrlType;
             state = model.updateValueFromControl(state);
 
         end
@@ -227,14 +259,13 @@ classdef CcCvControlModel < ControlModel
 
             arefulfilled = true;
             
-            rsw = model.setupRegionSwitchFlags(state, state.ctrlType);
-
-            if strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion
+            rsw  = model.setupRegionSwitchFlags(state, state.ctrlType);
+            rswN = model.setupRegionSwitchFlags(state, nextCtrlType);
+            
+            if (strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion) || (strcmp(ctrlType, nextCtrlType) && ~rswN.beforeSwitchRegion)
                 
                 arefulfilled = false;
-                state.ctrlType = nextCtrlType;
-                state = model.updateValueFromControl(state);
-
+                
             end
                 
         end
@@ -245,7 +276,7 @@ classdef CcCvControlModel < ControlModel
             Emax    = model.upperCutoffVoltage;
             dIdtMin = model.dIdtLimit;
             dEdtMin = model.dEdtLimit;
-            tols    = model.tolerances;
+            tols    = model.switchTolerances;
             
             E    = state.E;
             I    = state.I;
@@ -254,15 +285,15 @@ classdef CcCvControlModel < ControlModel
 
               case 'CC_discharge1'
 
-                before = (E - Emin)/Emin > tols.(ctrlType);
-                after  = (E - Emin)/Emin < -tols.(ctrlType);
+                before = E > Emin*(1 + tols.(ctrlType));
+                after  = E < Emin*(1 - tols.(ctrlType));
                 
               case 'CC_discharge2'
 
                 if isfield(state, 'dEdt')
                     dEdt = state.dEdt;
-                    before = (abs(dEdt) - dEdtMin)/dEdtMin > tols.(ctrlType);
-                    after  = (abs(dEdt) - dEdtMin)/dEdtMin < -tols.(ctrlType);
+                    before = abs(dEdt) > dEdtMin*(1 + tols.(ctrlType));
+                    after  = abs(dEdt) < dEdtMin*(1 - tols.(ctrlType));
                 else
                     before = false;
                     after  = false;
@@ -270,21 +301,23 @@ classdef CcCvControlModel < ControlModel
                 
               case 'CC_charge1'
                 
-                before = (E - Emax)/Emax < -tols.(ctrlType);
-                after  = (E - Emax)/Emax > tols.(ctrlType);
+                before = E < Emax*(1 - tols.(ctrlType));
+                after  = E > Emax*(1 + tols.(ctrlType));
 
               case 'CV_charge2'
 
                 if isfield(state, 'dIdt')
                     dIdt = state.dIdt;
-                    before = (abs(dIdt) - dIdtMin)/dIdtMin > tols.(ctrlType);
-                    after  = (abs(dIdt) - dIdtMin)/dIdtMin < -tols.(ctrlType);
+                    before = abs(dIdt) > dIdtMin*(1 + tols.(ctrlType));
+                    after  = abs(dIdt) < dIdtMin*(1 - tols.(ctrlType));
                 else
                     before = false;
                     after  = false;
                 end
                 
               otherwise
+
+                error('control type not recognized');
 
             end
 
@@ -375,7 +408,7 @@ classdef CcCvControlModel < ControlModel
             if ~isempty(params.timeStepDuration)
                 dt = params.timeStepDuration;
             else
-                if ~isempty(params.numberOfTimeSteps) 
+                if isempty(params.numberOfTimeSteps) 
                     error('No timeStepDuration and numberOfTimeSteps are given');
                 end
                 n  = params.numberOfTimeSteps;

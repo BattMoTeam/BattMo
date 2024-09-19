@@ -2,7 +2,7 @@
   "$id": "file://./Solver.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "description" : "Setting that can be given to the solver (only parts of those are avaible through json interface)",
+  "description" : "Setting that can be given to the solver. Only parts of those are avaible through json interface but many more options are available if you use the nonlinear solver object",
 
   "properties" : {
     "NonLinearSolver" : {
@@ -11,7 +11,10 @@
       "properties" : {
         "maxIterations" : {
           "type" : "number",
-          "description" : "maximum number of Newton iterations"},
+          "description" : "maximum number of Newton iterations. Default value is 10"},
+        "maxTimestepCuts" : {
+          "type" : "number",
+          "description" : "When a Newton iteration fails to converge, we cut the time step. If it fails again, we cut again until we have reached a number of time equal maxTimeStepCuts. Then, we consider the simulation has failed. The default value is 6"},          
         "nonlinearTolerance" : {
           "type" : "number",
           "description" : "tolerance value for the nonlinear iteration"},

@@ -6,16 +6,14 @@ man = ServerManager('debug', true, ...
                     'gc', true);
 
 % Set up keyword arguments to be sent to julia solver. See run_battery for details
-kwargs = struct('use_p2d'     , true , ...
-                'extra_timing', false, ...
+kwargs = struct('extra_timing', false, ...
                 'general_ad'  , true);
 
 %% Pick source JSON files for generating model
 
 %JSON file cases
-casenames = {'p1d_40', ...
-             'p2d_40'};
-casenames = casenames{2};
+casenames = {'p2d_40'};
+casenames = casenames{1};
 
 % casenames = {'3d_demo_case'};
 % casenames = {'4680_case'};
@@ -27,7 +25,7 @@ jsonfolder    = fullfile(battmo_folder, 'Examples', 'JsonDataFiles');
 
 %% Setup model from Matlab
 
-testCase = 'JSON';
+testCase = 'Matlab';
 
 switch testCase
 
