@@ -2,10 +2,10 @@
   "controlPolicy": "CCCV",
    "initialControl" : "charging",
   "CRate": 1,
-   "numberOfCycles": 1,
-  "lowerCutoffVoltage": 2.6,
+   "numberOfCycles": 2,
+  "lowerCutoffVoltage": 3.0,
   "upperCutoffVoltage": 4.2,
-  "dIdtLimit": 0.00001,
+  "dIdtLimit": 1e-06,
   "dEdtLimit": 0.00001},
 "SOC":0.0}
 
