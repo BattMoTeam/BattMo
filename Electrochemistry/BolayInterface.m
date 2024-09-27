@@ -6,7 +6,7 @@ classdef BolayInterface < Interface
         SEIionicConductivity
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
-        SEIstochiometricCoeffcient
+        SEIstoichiometricCoefficient
         SEIlengthInitial
         
         SEIlengthRef
@@ -24,7 +24,7 @@ classdef BolayInterface < Interface
                        'SEIionicConductivity'             , ...
                        'SEIelectronicDiffusionCoefficient', ...        
                        'SEIintersticialConcentration'     , ...
-                       'SEIstochiometricCoeffcient'       , ...
+                       'SEIstoichiometricCoefficient'       , ...
                        'SEIlengthInitial'};
             
             model = dispatchParams(model, inputparams, fdnames);
@@ -98,7 +98,7 @@ classdef BolayInterface < Interface
         function state = updateSEIconcentration(model, state)
             
             vsa     = model.volumetricSurfaceArea;
-	    scoef   = model.SEIstochiometricCoeffcient;
+	    scoef   = model.SEIstoichiometricCoefficient;
 	    seimvol = model.SEImolarVolume;
 
             l = state.SEIlength;
@@ -141,7 +141,7 @@ classdef BolayInterface < Interface
         
         function state = updateSEImassCons(model, state, state0, dt)
 
-            s = model.SEIstochiometricCoeffcient;
+            s = model.SEIstoichiometricCoefficient;
             V = model.SEImolarVolume;
 
             L0 = state0.SEIlength;

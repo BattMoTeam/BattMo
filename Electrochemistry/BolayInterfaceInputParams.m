@@ -5,7 +5,7 @@ classdef BolayInterfaceInputParams < InterfaceInputParams
 
         SEImolarVolume
         SEIionicConductivity
-        SEIstochiometricCoeffcient
+        SEIstoichiometricCoefficient
         SEIelectronicDiffusionCoefficient
         SEIintersticialConcentration
         SEIlengthInitial
