@@ -1,8 +1,6 @@
 function flux = assembleUpwindFlux(model, flux, coefficient)
 
-    error('not up to date with subgrid setup')
-    op = model.operators;
-    flux = op.faceUpstr(flux > 0, coefficient).*flux;
+    flux = model.G.getFaceUpstreamValue(flux > 0, coefficient).*flux;
     
 end
 

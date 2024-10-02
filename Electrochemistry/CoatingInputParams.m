@@ -10,16 +10,24 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         Binder
         ConductingAdditive
 
-        % The two following models are instantiated only when active_material_type == 'composite' and, in this case,
-        % ActiveMaterial model will remain empty. If active_material_type == 'default', then the two models remains empty
+        % The two following models are instantiated only when activeMaterialModelSetup.composite is true and, in this case,
+        % ActiveMaterial model will remain empty. If activeMaterialModelSetup.composite is false, then the two models remains empty
         ActiveMaterial1
         ActiveMaterial2
 
         %% Standard parameters
 
-        effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed in wet or calendared state (meaning including the volume of the pores)
+        effectiveDensity % the mass density of the material (symbol: rho). Important : the density is computed in wet or
+                         % calendared state (meaning including the volume of the pores)
+
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        active_material_type % 'default' (only one particle type) or 'composite' (two different particles)
+        
+        activeMaterialModelSetup % instance of ActiveMaterialModelSetupInputParams. Contains fields
+                                 % - 'composite' : boolean (default is false)
+                                 % - 'SEImodel' : string with one of
+                                 %                 "none" (default)
+                                 %                 "Safari"
+                                 %                 "Bolay"
 
         %% Advanced parameters
 
@@ -40,34 +48,66 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
         function inputparams = CoatingInputParams(jsonstruct)
 
-            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            
+            [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+                                                                   {'activeMaterialModelSetup', 'SEImodel'}, ...
+                                                                   {'ActiveMaterial', 'SEImodel'});
 
-            pick = @(fd) pickField(jsonstruct, fd);
+            if bothUnAssigned
+                % We set up the default value for SEI model, which is 'none'
+                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
+                [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+                                                                       {'activeMaterialModelSetup', 'SEImodel'}, ...
+                                                                       {'ActiveMaterial', 'SEImodel'});
 
-            if isempty(inputparams.active_material_type)
-                inputparams.active_material_type = 'default';
             end
 
-            switch inputparams.active_material_type
-              case 'default'
-
-                am = 'ActiveMaterial';
-                inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
-
-              case 'composite'
-
+            isComposite = getJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'});
+            
+            if isComposite
+                % if active material is composite, we do not support SEI for the moment
+                errorMessage = 'For a composite material, we do no support SEI layer';
+                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+            end
+            
+            inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
+            
+            pick = @(fd) pickField(jsonstruct, fd);
+            
+            if jsonstruct.activeMaterialModelSetup.composite
+                
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
                 inputparams.(am1) = ActiveMaterialInputParams(jsonstruct.(am1));
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
-              otherwise
-                error('active_material_type not recognized');
+            else
+                
+                am = 'ActiveMaterial';
+
+                switch jsonstruct.activeMaterialModelSetup.SEImodel
+
+                  case {'none', 'Bolay'}
+
+                    inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                    
+                  case 'Safari'
+
+                    inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
+
+                  otherwise
+                    
+                    error('active material modelSEI layer model not recognized');
+                    
+                end
             end
+            
             inputparams.Binder             = BinderInputParams(pick('Binder'));
             inputparams.ConductingAdditive = ConductingAdditiveInputParams(pick('ConductingAdditive'));
-
-            inputparams = inputparams.validateInputParams();
 
         end
 

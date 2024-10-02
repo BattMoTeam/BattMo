@@ -381,7 +381,7 @@ classdef SeaWaterElectrolyteNoPrecipitation < ElectronicComponent
                         migcoef_n = migcoef_n + C(indqp, indsp).*transNums{indsol}./(species(indsp).z.*F);
                     end
                 end
-                qpMigFluxes{indqp} = (model.G.getFaceUpstream(j > 0, migcoef_p) + model.G.getFaceUpstream(j < 0, migcoef_n)).*j;
+                qpMigFluxes{indqp} = (model.G.getFaceUpstreamValue(j > 0, migcoef_p) + model.G.getFaceUpstreamValue(j < 0, migcoef_n)).*j;
             end
 
             state.qpMigFluxes = qpMigFluxes;

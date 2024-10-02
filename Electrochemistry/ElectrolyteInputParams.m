@@ -12,10 +12,22 @@ classdef ElectrolyteInputParams < ComponentInputParams
         ionicConductivity    % a function to determine the ionic conductivity of the electrolyte under given conditions (symbol: kappa)
         diffusionCoefficient % a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions (symbol: D)        
         bruggemanCoefficient % the coefficient for determining effective transport parameters in porous media (symbol: beta)
-
+        
+        % Region support for bruggeman coefficient
+        useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
+                                       % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
+        regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
+                                    % - NegativeElectrode 
+                                    % - PositiveElectrode 
+                                    % - Separator 
+        regionTags % Tags that identifies each grid cell for the electrolyte (negative and positive electrodes,
+                   % separator). It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor.
+        
         thermalConductivity  % Intrinsic Thermal conductivity of the electrolyte
         specificHeatCapacity % Specific Heat capacity of the electrolyte
 
+        nominalEthyleneCarbonateConcentration % only used if a SEI layer is included in the model
+        
         %% Advanced parameters
 
         volumeFraction
@@ -30,6 +42,8 @@ classdef ElectrolyteInputParams < ComponentInputParams
 
         function inputparams = ElectrolyteInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useRegionBruggemanCoefficients', false);
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
         end

@@ -68,7 +68,7 @@
                     },
                     "openCircuitPotential": {
                         "type": "function",
-                        "functionname": "computeOCP_graphite",
+                        "functionname": "computeOCP_Graphite_Torchio",
                         "argumentlist": [
                             "concentration",
                             "temperature",
@@ -229,7 +229,7 @@
                     },
                     "openCircuitPotential": {
                         "type": "function",
-                        "functionname": "computeOCP_nmc111",
+                        "functionname": "computeOCP_NMC111",
                         "argumentlist": [
                             "concentration",
                             "temperature",
@@ -400,7 +400,7 @@
     "Control": {
         "controlPolicy": "CCDischarge",
         "initialControl": "discharging",
-        "CRate": 1,
+        "DRate": 1,
         "lowerCutoffVoltage": 2.4,
         "upperCutoffVoltage": 4.1,
         "dIdtLimit": 0.01,

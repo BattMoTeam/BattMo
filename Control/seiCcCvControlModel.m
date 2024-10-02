@@ -47,7 +47,7 @@ classdef seiCcCvControlModel < ControlModel
             
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
             state.ctrlType = state0.nextCtrlType;
         end
         
@@ -80,7 +80,7 @@ classdef seiCcCvControlModel < ControlModel
             
         end
 
-        function state = updateControlState(model, state)
+        function state = updateControlState(model, state, state0,dt)
             
             Emin = model.lowerCutoffVoltage;
             Imax = model.Imax;

@@ -24,6 +24,12 @@ classdef ActiveMaterial < BaseModel
 
         diffusionModelType     % either 'full' or 'simple'
 
+        %% SEI layer model choice
+        SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
+                  % - 'none' (default)
+                  % - 'Bolay'
+                  % - 'Safari'
+
         % Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
@@ -46,12 +52,20 @@ classdef ActiveMaterial < BaseModel
                        'volumeFraction'        , ... 
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
+                       'SEImodel'              , ...
                        'isRootSimulationModel'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Interface = Interface(inputparams.Interface);
-
+            switch model.SEImodel
+              case {'none', 'Safari'}
+                model.Interface = Interface(inputparams.Interface);
+              case 'Bolay'
+                model.Interface = BolayInterface(inputparams.Interface);
+              otherwise
+                error('SEI model not recognized');
+            end
+            
             diffusionModelType = model.diffusionModelType;
 
             switch model.diffusionModelType
@@ -151,6 +165,24 @@ classdef ActiveMaterial < BaseModel
 
         end
 
+        function jsonstruct = exportParams(model)
+
+            jsonstruct = exportParams@BaseModel(model);
+
+            fdnames = {'electronicConductivity', ... 
+                       'density'               , ...                
+                       'massFraction'          , ...           
+                       'thermalConductivity'   , ...    
+                       'specificHeatCapacity'  , ...   
+                       'diffusionModelType'};
+            
+            for ifd = 1 : numel(fdnames)
+                fdname = fdnames{ifd};
+                jsonstruct.(fdname) = model.(fdname);
+            end
+
+        end
+        
         function forces = getValidDrivingForces(model)
 
             forces = getValidDrivingForces@PhysicalModel(model);
@@ -195,13 +227,15 @@ classdef ActiveMaterial < BaseModel
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            n    = model.(itf).numberOfElectronsTransferred;
-            F    = model.(itf).constants.F;
-            
+            n  = model.(itf).numberOfElectronsTransferred;
+            F  = model.(itf).constants.F;
+            rp = model.(sd).particleRadius;
+            vp = 4/3*pi*rp^3;
+
             I = state.I;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I - Rvol*n*F;
+            state.chargeCons = I -  vp* Rvol*n*F;
 
         end
         

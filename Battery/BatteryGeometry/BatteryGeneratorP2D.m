@@ -31,7 +31,7 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         use_thermal
 
         % Face area in the transversal direction (default = 1)
-        faceArea = 2*1.6387e-04;
+        faceArea = 1;
 
     end
 
@@ -192,17 +192,6 @@ classdef BatteryGeneratorP2D < BatteryGenerator
             params.couplingfaces = [];
             params.couplingcells = (1 : gen.parentGrid.getNumberOfCells())';
             inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
-
-        end
-
-
-        function G = adjustGridToFaceArea(gen, G)
-
-            fa = gen.faceArea;
-
-            G.faces.areas   = fa*G.faces.areas;
-            G.faces.normals = fa*G.faces.normals;
-            G.cells.volumes = fa*G.getVolumes();
 
         end
 

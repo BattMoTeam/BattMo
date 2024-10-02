@@ -6,11 +6,6 @@ classdef ControlModelInputParams < InputParams
     properties
 
         %
-        % C Rate
-        %
-        CRate
-
-        %
         % Control policy (sring). It can take following values
         %
         % - 'CCDischarge'
@@ -24,7 +19,7 @@ classdef ControlModelInputParams < InputParams
     
     methods
 
-        function inputparams = ControlModelInputParams(jsonstruct);
+        function inputparams = ControlModelInputParams(jsonstruct)
             
             inputparams = inputparams@InputParams(jsonstruct);
             

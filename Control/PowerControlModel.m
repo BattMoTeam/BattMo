@@ -64,7 +64,7 @@ classdef PowerControlModel < ControlModel
             
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
 
             cT = model.chargingTime;
             dT = model.dischargingTime;

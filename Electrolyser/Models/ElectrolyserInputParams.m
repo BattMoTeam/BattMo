@@ -27,7 +27,6 @@ classdef ElectrolyserInputParams < InputParams
             inputparams.HydrogenEvolutionElectrode = EvolutionElectrodeInputParams(pick('HydrogenEvolutionElectrode'));
             inputparams.OxygenEvolutionElectrode = EvolutionElectrodeInputParams(pick('OxygenEvolutionElectrode'));
 
-            inputparams = inputparams.validateInputParams();
         end
 
         function inputparams = validateInputParams(inputparams)

@@ -1,0 +1,197 @@
+{
+  "Control": {
+    "DRate": 1,
+    "controlPolicy": "CCDischarge",
+    "lowerCutoffVoltage": 3.6,
+    "rampupTime": 0.1,
+    "useCVswitch": true
+  },
+  "Electrolyte": {
+    "bruggemanCoefficient": 1.5,
+    "density": 1200,
+    "diffusionCoefficient": {
+      "argumentlist": [
+        "concentration",
+        "temperature"
+      ],
+      "functionname": "computeDiffusionCoefficient_default",
+      "type": "function"
+    },
+    "initialConcentration": {
+      "unit": "mol/litre",
+      "value": 1
+    },
+    "ionicConductivity": {
+      "argumentlist": [
+        "concentration",
+        "temperature"
+      ],
+      "functionname": "computeElectrolyteConductivity_default",
+      "type": "function"
+    },
+    "species": {
+      "chargeNumber": 1,
+      "nominalConcentration": 1000,
+      "transferenceNumber": 0.2594
+    },
+    "specificHeatCapacity": 2055,
+    "thermalConductivity": 0.6,
+    "use_thermal": false
+  },
+  "Geometry": {
+    "case": "1D",
+    "faceArea": 0.208
+  },
+  "NegativeElectrode": {
+    "Coating": {
+      "ActiveMaterial": {
+        "Interface": {
+          "activationEnergyOfReaction": 35000,
+          "chargeTransferCoefficient": 0.5,
+          "guestStoichiometry0": 0.15,
+          "guestStoichiometry100": 0.88,
+          "numberOfElectronsTransferred": 1,
+          "openCircuitPotential": {
+            "argumentlist": [
+              "concentration",
+              "temperature",
+              "cmax"
+            ],
+            "functionname": "computeOCP_Graphite_SiOx_Chen2020",
+            "type": "function"
+          },
+          "reactionRateConstant": 6.716e-12,
+          "saturationConcentration": 33133,
+          "volumetricSurfaceArea": 121431
+        },
+        "SolidDiffusion": {
+          "N": 10,
+          "activationEnergyOfDiffusion": 0,
+          "particleRadius": 1.63e-05,
+          "referenceDiffusionCoefficient": 5.248e-14,
+          "useDFunc": false,
+          "volumeFraction": 0.5989189649118067,
+          "volumetricSurfaceArea": 121431
+        },
+        "comment": "to be checked.",
+        "density": 2240,
+        "diffusionModelType": "full",
+        "electronicConductivity": 215,
+        "massFraction": 0.94
+      },
+      "Binder": {
+        "comment": " data",
+        "density": 1100,
+        "electronicConductivity": 100,
+        "massFraction": 0.03
+      },
+      "ConductingAdditive": {
+        "comment": " data",
+        "density": 1950,
+        "electronicConductivity": 100,
+        "massFraction": 0.03
+      },
+      "N": 300,
+      "bruggemanCoefficient": 1.5,
+      "effectiveDensity": 1427.2111504281352,
+      "effectiveElectronicConductivity": 109.54067227961187,
+      "electronicConductivity": 204.3887253180627,
+      "thickness": 8e-05,
+      "use_thermal": false,
+      "volumeFraction": 0.6597999999999999,
+      "volumeFractions": [
+        0.9077280462440236,
+        0.058993544204640605,
+        0.03327840955133572
+      ]
+    },
+    "include_current_collectors": false,
+    "use_thermal": false
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "ActiveMaterial": {
+        "Interface": {
+          "chargeTransferCoefficient": 0.5,
+          "description": "Data from  @article{Pron_2019, title={Electrochemical Characterization and Solid Electrolyte Interface Modeling of LiNi0.5Mn1.5O4-Graphite Cells}, volume={166}, ISSN={1945-7111}, url={http://dx.doi.org/10.1149/2.0941910jes}, DOI={10.1149/2.0941910jes}, number={10}, journal={Journal of The Electrochemical Society}, publisher={The Electrochemical Society}, author={Pron, Vittorio Giai and Versaci, Daniele and Amici, Julia and Francia, Carlotta and Santarelli, Massimo and Bodoardo, Silvia}, year={2019}, pages={A2255–A2263} }",
+          "exchangeCurrentDensity": {
+            "argumentlist": [
+              "cElectrodeSurface",
+              "cmax"
+            ],
+            "functionname": "computeLNMOexchangeCurrentDensity",
+            "type": "function"
+          },
+          "guestStoichiometry0": 0.9811,
+          "guestStoichiometry100": 0.00014001,
+          "numberOfElectronsTransferred": 1,
+          "openCircuitPotential": {
+            "argumentlist": [
+              "concentration",
+              "temperature",
+              "maximum concentration"
+            ],
+            "functionname": "computeOCP_LNMO_Pron",
+            "type": "function"
+          },
+          "saturationConcentration": 24358,
+          "volumetricSurfaceArea": 221476
+        },
+        "SolidDiffusion": {
+          "N": 10,
+          "activationEnergyOfDiffusion": 0,
+          "particleRadius": 8.94e-06,
+          "referenceDiffusionCoefficient": 6.876e-15,
+          "useDFunc": false,
+          "volumeFraction": 0.5839916667744982,
+          "volumetricSurfaceArea": 221476
+        },
+        "density": 4450,
+        "diffusionModelType": "full",
+        "electronicConductivity": 0.18,
+        "massFraction": 0.95
+      },
+      "Binder": {
+        "comment": " data",
+        "density": 1770,
+        "electronicConductivity": 100,
+        "massFraction": 0.025
+      },
+      "ConductingAdditive": {
+        "comment": " data",
+        "density": 1830,
+        "electronicConductivity": 100,
+        "massFraction": 0.025
+      },
+      "N": 300,
+      "bruggemanCoefficient": 1.5,
+      "effectiveDensity": 2735.5399127858072,
+      "effectiveElectronicConductivity": 6.260344855082977,
+      "electronicConductivity": 11.675684579650884,
+      "thickness": 8e-05,
+      "use_thermal": false,
+      "volumeFraction": 0.6599999999999999,
+      "volumeFractions": [
+        0.8848358587492398,
+        0.058541771802469784,
+        0.05662236944829044
+      ]
+    },
+    "include_current_collectors": false,
+    "use_thermal": false
+  },
+  "SOC": 0.99,
+  "Separator": {
+    "N": 200,
+    "bruggemanCoefficient": 1.5,
+    "density": 946,
+    "porosity": 0.48,
+    "specificHeatCapacity": 1978,
+    "thermalConductivity": 0.334,
+    "thickness": 1.2e-05,
+    "use_thermal": false
+  },
+  "include_current_collectors": false,
+  "initT": 298.15,
+  "use_thermal": false
+}

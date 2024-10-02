@@ -9,6 +9,13 @@
     },
     {
       "properties": {
+        "activeMaterialModelSetup": {
+          "type" : "object",
+          "properties" : {
+            "composite" : {"type" : "boolean",
+                           "description" : "default is false. It true, setup a composite material with two active materials, using fields ActiveMaterial1 and ActiveMaterial2"},
+            "SEImodel" : {"type" : "string",
+                          "enum" : ["none", "Safari", "Bolay"]}}},
         "ActiveMaterial": {
           "$ref": "ActiveMaterial.schema.json"
         },
@@ -34,12 +41,25 @@
           "description": "the Bruggeman coefficient for effective transport in porous media",
           "symbol": "beta"
         },
-        "active_material_type": {
-          "type": "string",
-          "enum": [
-            "default",
-            "composite"
-          ]
+        "volumeFraction" : {
+          "type": "number",
+          "description": "Volume fraction of the coating. This value is, in the default setup, computed from the other parameters (the mass fractions and the densities of the components, and the effictive density). If the value is passed here using this property, it overrides the default setup.",
+          "symbol": "vf"
+        },
+        "volumeFractions" : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Volume fractions for each of the component (active material, binder, conducting additive). As the volume fraction, this value , in the default setup, computed from the other parameters (the mass fractions and the densities of the components, and the effictive density). If the value is passed here using this property, it overrides the default setup. If none of the specific volumes of the components can be computed, then we assume that the volume fraction of the active material is equal to one."
+        },
+        "effectiveVolumetricHeatCapacity" : {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the effective volumetric heat capacity, which take into account the volume fraction. This value is in the default setup computed, but the value given here will overwrite the default computed value."
+        },
+        "effectiveThermalConductivity" : {
+          "$ref": "PhysicalQuantity.schema.json",
+          "description": "the effective thermal conductivity, which take into account the volume fraction and the bruggeman coefficient. This value is in the default setup computed, but the value given here will overwrite the default computed value."
         }
       }
     },

@@ -94,15 +94,22 @@ classdef ComputationalGraphTool
             extraVarNames = cgt.model.extraVarNameList;
             extraVarNameInds = [];
             for ivar = 1 : numel(extraVarNames);
-                extraVarNameInds(end + 1) = cgt.getVarNameIndex(extraVarNames{ivar});
+                extraVarName = extraVarNames{ivar};
+                extraVarName_s = extraVarName.resolveIndex();
+                for iivar = 1 : numel(extraVarName_s)
+                    extraVarNameInds(end + 1) = cgt.getVarNameIndex(extraVarName_s{iivar});
+                end
             end
             cgt.extraVarNameInds = extraVarNameInds;
 
             cgt.isok = true;
         end
 
-        function [varnames, varnameinds, propfuncinds, distance] = getDependencyList(cgt, varname)
-
+        function [varnames, varnameinds, propfuncinds, levels] = getDependencyList(cgt, varname, direction)
+        % dependency direction can be
+        % - 'upwards' for upwards in the graph
+        % - 'downwards' for downwards in the graph
+            
             A = cgt.adjencyMatrix;
 
             % for cell-valued variable pick-up a valid index
@@ -114,51 +121,82 @@ classdef ComputationalGraphTool
 
             varnameind = cgt.getVarNameIndex(varname);
 
-            distance = dfs(A, varnameind);
-
-            varnameinds = find(distance >= 0);
-            distance    = distance(distance >= 0);
-            [distance, ia] = sort(distance);
-            varnameinds = varnameinds(ia);
-
-            propfuncinds = max(A(:, varnameinds), [], 1);
-
-            varnames = cgt.varNameList(varnameinds);
+            switch direction
+              case 'upwards'
+                [depvarnameinds, propfuncinds, propvarnameinds, propdeplevels, rootinds, rootdeplevels] = getDependencyVarNameInds(varnameind, A);
+              case 'downwards'
+                [depvarnameinds, propfuncinds, propvarnameinds, propdeplevels, rootinds, rootdeplevels] = getDependencyVarNameInds(varnameind, A');
+              otherwise
+                error('direction not recognized')
+            end
+            
+            varnameinds = depvarnameinds;
+            levels      = [rootdeplevels; propdeplevels];
+            varnames    = cgt.varNameList(varnameinds);
 
         end
 
-        function printDependencyList(cgt, varname)
-        % input varname is either
-        %     - a VarName instance
-        %     - a cell which then uses shortcuts for VarName (see implementation below)
-        %     - a string giving a regexp. It will be used to select varnames by the string name
+        function printChildDependencyList(cgt, varname)
+            
+            cgt.printDependencyList(varname, 'downwards');
+            
+        end
+        
+        function printParentDependencyList(cgt, varname)
+            
+            cgt.printDependencyList(varname, 'upwards');
+
+        end
+
+        function varnameind = findVarName(cgt, varname)
 
             nodenames = cgt.nodenames;
 
             if isa(varname, 'VarName')
-                % ok
+                nodename = ComputationalGraphTool.getNodeName(varname);
+                varnameind = findVarName(nodename);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
+                varnameind = findVarName(varname);
             elseif isa(varname, 'char')
-                varnameind = regexpSelect(cgt.nodenames, varname);
-                if numel(varnameind) > 1
+                varnameinds = regexpSelect(cgt.nodenames, varname);
+                if numel(varnameinds) > 1
                     fprintf('Several variables found:\n\n')
-                    for ivar = 1 : numel(varnameind)
-                        fprintf('%s\n', nodenames{varnameind(ivar)});
+                    for ivar = 1 : numel(varnameinds)
+                        fprintf('%d : %s\n', ivar, nodenames{varnameinds(ivar)});
                     end
-                    fprintf('\npick a single one\n')
-                    return
+                    ivar = input('Pick one:');
+                    varnameind = varnameinds(ivar);
+                else
+                    varnameind = varnameinds;
                 end
-                varname = cgt.varNameList{varnameind};
             else
                 error('input varname not recognized');
             end
 
-            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname);
+        end
+        
+        function printDependencyList(cgt, varname, direction)
+        % input varname is either
+        %  - a VarName instance
+        %  - a cell which then uses shortcuts for VarName (see implementation below)
+        %  - a string giving a regexp. It will be used to select varnames by the string name
+        %
+        % dependency direction can be
+        % - 'upwards' for upwards in the graph
+        % - 'downwards' for downwards in the graph
+        %
+        % Prints the dependency list of the variable given by varname
+            
+
+            varnameind = cgt.findVarName(varname);
+            varname = cgt.varNameList{varnameind};
+            
+            [varnames, varnameinds, propfuncinds, distance] = cgt.getDependencyList(varname, direction);
 
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
-                fprintf('%s (%d)\n', nodenames{varnameind}, distance(ivar));
+                fprintf('%s (%d)\n', cgt.nodenames{varnameind}, distance(ivar));
             end
 
         end
@@ -182,13 +220,15 @@ classdef ComputationalGraphTool
 
             varnameind = cgt.getVarNameIndex(varname);
 
-            [~, propfuncinds, propvarnameinds, staticinds] = getDependencyVarNameInds(varnameind, A);
+            [~, propfuncinds, propvarnameinds, ~, rootinds, ~] = getDependencyVarNameInds(varnameind, A);
 
-            [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
+            [rootinds, rootpropinds] = cgt.findStaticVarNameInds(rootinds);
 
-            if ~isempty(staticinds)
-                propfuncinds = [staticpropinds; propfuncinds];
-                varnameinds  = [staticinds; propvarnameinds];
+            if ~isempty(rootinds)
+                propfuncinds = [rootpropinds; propfuncinds];
+                varnameinds  = [rootinds; propvarnameinds];
+            else
+                varnameinds = propvarnameinds;
             end
 
             propfuncs = cgt.model.propertyFunctionList(propfuncinds);
@@ -202,14 +242,14 @@ classdef ComputationalGraphTool
 
             staticprops = cgt.staticprops;
 
-            allstaticinds     = cellfun(@(staticprop) staticprop.varnameind, staticprops);
-            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops);
+            allstaticinds     = cellfun(@(staticprop) staticprop.varnameind, staticprops)';
+            allstaticpropinds = cellfun(@(staticprop) staticprop.propind, staticprops)';
 
             [isok, ia] = ismember(varnameinds, allstaticinds);
 
             if any(isok)
-                staticpropinds = allstaticpropinds(ia(isok))';
-                staticinds = allstaticinds(ia(isok))'; %
+                staticpropinds = allstaticpropinds(ia(isok), 1);
+                staticinds     = allstaticinds(ia(isok), 1);
             else
                 staticpropinds = {};
                 staticinds = {};
@@ -361,7 +401,7 @@ classdef ComputationalGraphTool
                 varnameinds = cgt.getVarNameIndex(varname);
             elseif isa(varname, 'cell')
                 varname = VarName(varname(1 : end - 1), varname{end});
-                propfuncs = cgt.findPropFunction(varname);
+                [propfuncs, propfuncinds] = cgt.findPropFunction(varname);
                 return
             elseif isa(varname, 'char')
                 selectednodenames = varname;
@@ -370,16 +410,18 @@ classdef ComputationalGraphTool
                 error('input type not recognized');
             end
 
-            propfuncinds = max(A(:, varnameinds), [], 1);
+            propfuncinds = max(A(:, varnameinds), [], 1)';
             staticinds = varnameinds(propfuncinds == 0);
             propfuncinds = propfuncinds(propfuncinds > 0); % remove the zero elements
 
             [staticinds, staticpropinds] = cgt.findStaticVarNameInds(staticinds);
 
             if ~isempty(staticinds)
-                propfuncinds = [staticpropinds, propfuncinds];
+                propfuncinds = [staticpropinds; propfuncinds];
             end
 
+            propfuncinds = unique(propfuncinds);
+            
             propfuncs = model.propertyFunctionList(propfuncinds);
 
             if numel(propfuncs) == 1
@@ -393,7 +435,7 @@ classdef ComputationalGraphTool
         % Open in editor the place where the variable that matches the regexp nodename is updated. The regexp nodename
         % should return a unique match
 
-            propfunc = cgt.findPropFunction(nodename);
+            [propfunc, propfuncinds] = cgt.findPropFunction(nodename);
 
             if isempty(propfunc)
                 fprintf('No property matching regexp has been found\n');
@@ -402,24 +444,35 @@ classdef ComputationalGraphTool
 
             if numel(propfunc) > 1
                 fprintf('Several property functions are matching\n\n');
-                cgt.printPropFunction(nodename);
-                return
+                for iprop = 1 : numel(propfunc)
+                    varname = propfunc{iprop}.varname;
+                    nodenames = ComputationalGraphTool.getNodeName(varname);
+                    for inode = 1 : numel(nodenames)
+                        fprintf('%d : %s\n', iprop, nodenames{inode});
+                    end
+                end
+                iprop = input('Pick one:');
+                propfunc = propfunc{iprop};
             end
 
-            fn = propfunc.fn;
+            % Initialise variable state with empty structure. In this way calling the property function will raise an error that
+            % we will catch (see call passed in eval below)
             mn = propfunc.modelnamespace;
-            mn = strjoin(mn, '.');
-            fnname = func2str(fn);
-            fnname = regexp(fnname, "\.(.*)", 'tokens');
-            fnname = fnname{1}{1};
-            fnname = sprintf('%s([])', fnname);
-            fnname = strjoin({mn, fnname}, '.');
-            fnname = sprintf('cgt.model.%s', fnname);
+            
+            state         = ComputationalGraphTool.setupState([], mn);
+            state0        = state; % may be needed in case of accumulation term
+            dt            = 0;     % may be needed in case of accumulation term
+            drivingForces = [];    % may be needed in case of update of driving force term
+            model         = cgt.model; % needed in function call passed in eval
+            
+            fncallstr = propfunc.functionCallSetupFn(propfunc);
 
             try
-                eval(fnname)
+                % fn = @(model,state)ProtonicMembraneGasSupply.updateDensity(model,state);
+                % state.GasSupplyBc = fn(model.GasSupplyBc, state.GasSupplyBc);
+                eval(fncallstr);
             catch ME
-                fprintf('%s\n', fnname);
+                fprintf('%s\n', fncallstr);
                 stack = ME.stack;
                 file = stack.file;
                 lineNum = stack.line;
@@ -580,14 +633,21 @@ classdef ComputationalGraphTool
             rootnames = nodenames(all(A == 0, 1));
             staticnames = cgt.getStaticVarNames();
 
-            fprintf('Root variables \n');
-
             ind = ismember(rootnames, staticnames);
-            rootnames(~ind)
+            rootind = find(~ind);
+
+            cgt.printHeader('Root Variables', numel(rootind));
+
+            for irind = 1 : numel(rootind)
+                fprintf('%s\n', rootnames{rootind(irind)});
+            end
 
             if nnz(ind)
-                fprintf('static variables \n');
-                rootnames(ind)
+                staticind = find(ind);
+                cgt.printHeader('Static Variables', numel(staticind));
+                for isind = 1 : numel(staticind)
+                    fprintf('%s\n', rootnames{staticind(isind)});
+                end
             end
 
         end
@@ -608,12 +668,17 @@ classdef ComputationalGraphTool
                 tailinds = intersect(inds, tailinds);
             end
 
-            fprintf('Tail variables \n');
-            nodenames(tailinds)
+            cgt.printHeader('Tail Variables', numel(tailinds));
+            
+            for itail = 1 : numel(tailinds)
+                fprintf('%s\n', nodenames{tailinds(itail)});
+            end
 
             if nargin == 1
-                fprintf('Extra Variables (do not enter in residual evaluation)\n')
-                nodenames(extravarnameinds)
+                cgt.printHeader('Extra Variables (do not enter in residual evaluation)', numel(extravarnameinds));
+                for ievar = 1 : numel(extravarnameinds)
+                    fprintf('%s\n', nodenames{extravarnameinds(ievar)});
+                end
             end
 
         end
@@ -628,8 +693,11 @@ classdef ComputationalGraphTool
             fprintf('Detached variables \n');
             ind1 = all(A == 0, 1);
             ind2 = all(A' == 0, 1);
-            nodenames(ind1&ind2)
+            detached_nodenames = nodenames(ind1&ind2);
 
+            for idnodename = 1 : numel(detached_nodenames)
+                fprintf('%s\n', detached_nodenames(idnodename));
+            end
         end
 
         function primvarnames = getPrimaryVariableNames(cgt)
@@ -760,7 +828,16 @@ classdef ComputationalGraphTool
 
     methods (Static)
 
+        function state = setupState(state, modelspace)
 
+            if isempty(modelspace)
+                state = [];
+            else
+                state.(modelspace{1}) = ComputationalGraphTool.setupState(state, modelspace(2 : end));
+            end
+            
+        end
+            
         function nodenames = getNodeName(varname)
         % convert variable names to graph node names
         % TODO : we should enforce that the same function is used in setupGraph (important!)
@@ -784,10 +861,13 @@ classdef ComputationalGraphTool
 
         end
 
+        function printHeader(headertxt, n)
+        % Minor utility function used in this class to print a header with a number
+            str = sprintf('\n%d %s', n, headertxt);
+            fprintf('%s:\n', str);
+            fprintf('%s\n', repmat('-', length(str), 1));
+        end
     end
-
-
-
 
 end
 

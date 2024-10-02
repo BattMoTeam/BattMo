@@ -34,14 +34,14 @@
 %         # param['Negative electrode diffusivity [m2.s-1]'] = 1e1
 %         # param['Positive electrode diffusivity [m2.s-1]'] = 1e1
 %         
-%         CRate = 1
-%         param['Current function [A]'] = 5 * CRate
+%         DRate = 1
+%         param['Current function [A]'] = 5 * DRate
 %         
 %         model = pybamm.lithium_ion.DFN()
 %         sim = pybamm.Simulation(model, parameter_values=param)
 %         
 %         n = 100
-%         t_eval = np.linspace(0, 3600 / CRate, n)
+%         t_eval = np.linspace(0, 3600 / DRate, n)
 %         t_eval = np.concatenate([t_eval, [0.1]])
 %         t_eval = np.sort(t_eval)
 %         

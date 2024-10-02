@@ -20,10 +20,10 @@ listed in the directory :battmofile:`ParameterSets<ParameterData/ParameterSets>`
      - 2009
      - :cite:`Safari_2009`
      - :battmofile:`Safari2009<ParameterData/ParameterSets/Safari2009>`
-   * - Lin et al
+   * - Xu et al
      - 2015
      - :cite:`LIN2015633`
-     - :battmofile:`Lin2015<ParameterData/ParameterSets/Lin2015>`
+     - :battmofile:`Xu2015<ParameterData/ParameterSets/Xu2015>`
 
 
 Otherwise, separate input json files corresponding to different part of a battery model are included in the directory

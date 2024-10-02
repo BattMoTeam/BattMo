@@ -1,7 +1,6 @@
 function json = updateJson(json, params, varargin)
 
-    opt = struct('validate', true, ...
-                 'tempfilename', []);
+    opt = struct('validate', true);
     opt = merge_options(opt, varargin{:});
 
     assert(size(params,1) == 1 || size(params,2) == 1, 'params should be a cell array with one column or one row');

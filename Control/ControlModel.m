@@ -6,17 +6,13 @@ classdef ControlModel < BaseModel
     properties
 
         %
-        % C Rate
-        %
-        CRate
-
-        %
         % Control policy (string). It can take following values
         %
         % - 'CCDischarge'
         % - 'CCCharge'
         % - 'CC'
         % - 'CCCV'
+        % - 'timecontrol'
         %
         controlPolicy
         
@@ -29,8 +25,7 @@ classdef ControlModel < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'controlPolicy', ...
-                       'CRate'};
+            fdnames = {'controlPolicy'};
             model = dispatchParams(model, inputparams, fdnames);
             
         end
@@ -59,7 +54,7 @@ classdef ControlModel < BaseModel
         % Base class behaviour is do nothing.
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
         % Attach to state the values necessary for the control. This is run only once at the beginning of a time step
         % Base class behaviour is do nothing.
         end
@@ -70,9 +65,10 @@ classdef ControlModel < BaseModel
             state.controlEquation = [];
         end
         
-        function state = updateControlState(model, state)
+        function state = updateControlState(model, state, state0, dt)
         % Implemented by child model.
         % Base class behaviour is do nothing.
+        % Called after each Newton iteration
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
@@ -129,13 +125,31 @@ classdef ControlModel < BaseModel
             
         end
 
+        function schedule = setupSchedule(model, jsonstruct)
+        % Convenience function to setup schedule from main jsonstruct with property TimeStepping
+            
+            if isfield(jsonstruct, 'TimeStepping')
+                timeSteppingParams = jsonstruct.TimeStepping;
+            else
+                timeSteppingParams = [];
+            end
+
+            step    = model.setupScheduleStep(timeSteppingParams);
+            control = model.setupScheduleControl();
+
+            schedule = struct('step', step, ...
+                              'control', control);
+            
+        end
         
     end
     
     methods(Static)
 
         function params = parseTimeSteppingStruct(params)
-
+        % Parser for TimeStepping structure (see schema :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`)
+        % which defines default values if not given
+            
             paramstemplate = struct('totalTime'          , []   , ...
                                     'numberOfTimeSteps'  , 100  , ...
                                     'timeStepDuration'   , []   , ...

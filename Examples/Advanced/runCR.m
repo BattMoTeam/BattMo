@@ -87,14 +87,14 @@ inputparams = gen.updateBatteryInputParams(inputparams, params);
 %%  Initialize the battery model.
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.
 % This value is then combined with the user-defined C-Rate to set the cell
 % operational current.
 C = computeCellCapacity(model);
-CRate = 1;
+DRate = 1;
 
 % Compute masses
 [mass, masses] = computeCellMass(model);
@@ -111,7 +111,7 @@ fprintf('Battery mass %f g\n', mass / gram);
 n         = 24 / 4;
 dt        = [];
 dt        = [dt; repmat(0.5e-4, n, 1).*1.5.^(1 : n)'];
-totalTime = 2.0*hour/CRate;
+totalTime = 2.0*hour/DRate;
 n         = 20;
 dt        = [dt; repmat(totalTime/n, n, 1)];
 times     = [0; cumsum(dt)];

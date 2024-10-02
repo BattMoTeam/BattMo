@@ -1,44 +1,44 @@
-function [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct)
+function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct)
 
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();
 
-    % load from json file or use default value. 
-    if ~isfield(jsonstruct, 'NonLinearSolver')
-        
-        % setup default values
-        jsonstruct.NonLinearSolver.maxIterations = 10;
-        jsonstruct.NonLinearSolver.nonlinearTolerance = [];
-        jsonstruct.NonLinearSolver.verbose = false;
-        
-        linearSolverSetup.library = "matlab";
-        linearSolverSetup.method = "direct";
+    % setup default values
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxIterations'},  10);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxTimestepCuts'},  6);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'nonlinearTolerance'},  []);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'verbose'},  false);
 
-    else
-
-        linearSolverSetup = jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup;
-        
-    end
+    linearSolverSetup_default.library = 'matlab';
+    linearSolverSetup_default.method  = 'direct';
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'}, linearSolverSetup_default);
+    linearSolverSetup = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'});
     
-    nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
-    if isfield(jsonstruct.NonLinearSolver, 'verbose')
-        nls.verbose = jsonstruct.NonLinearSolver.verbose;
-    else
-        nls.verbose = false;
-    end
+    nls.maxIterations   = jsonstruct.NonLinearSolver.maxIterations;
+    nls.maxTimestepCuts = jsonstruct.NonLinearSolver.maxTimestepCuts;
+    nls.verbose         = jsonstruct.NonLinearSolver.verbose;
     
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
+    nls.continueOnFailure = false;
     nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
     
     % Change default tolerance for nonlinear solver
     % For the moment, this is hard-coded here
+    if isprop(model.Control, 'Imax')
+        ImaxRef = model.Control.Imax;
+    elseif isprop(model.Control, 'ImaxDischarge')
+        ImaxRef = model.Control.ImaxDischarge;
+    else
+        ImaxRef = [];
+    end
+        
     if isfield(jsonstruct.NonLinearSolver, 'nonlinearTolerance') && ~isempty(jsonstruct.NonLinearSolver.nonlinearTolerance)
         model.nonlinearTolerance = jsonstruct.NonLinearSolver.nonlinearTolerance;
-    elseif ~isempty(model.Control.Imax)
-        model.nonlinearTolerance = 1e-3*model.Control.Imax;
+    elseif ~isempty(ImaxRef)
+        model.nonlinearTolerance = 1e-3*ImaxRef;
     else
         % some default value
         model.nonlinearTolerance = 1e-5;

@@ -39,16 +39,18 @@ jsonstruct.include_current_collectors = false;
 
 inputparams = BatteryInputParams(jsonstruct);
 
-use_cccv = false;
+use_cccv = true;
 if use_cccv
-    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                         'initialControl'    , 'discharging', ...
-                         'numberOfCycles'    , 1            , ...
-                         'CRate'             , 1            , ...
-                         'lowerCutoffVoltage', 2.4          , ...
-                         'upperCutoffVoltage', 4.1          , ...
-                         'dIdtLimit'         , 0.01         , ...
-                         'dEdtLimit'         , 0.01);
+    inputparams.SOC = 0;
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
+                         'initialControl'    , 'charging', ...
+                         'numberOfCycles'    , 2            , ...
+                         'CRate'             , 1.5          , ...
+                         'DRate'             , 1            , ...
+                         'lowerCutoffVoltage', 3            , ...
+                         'upperCutoffVoltage', 4            , ...
+                         'dIdtLimit'         , 1e-2         , ...
+                         'dEdtLimit'         , 1e-4);
     cccvinputparams = CcCvControlModelInputParams(cccvstruct);
     inputparams.Control = cccvinputparams;
 end
@@ -67,7 +69,7 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 %%  Initialize the battery model.
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
@@ -75,17 +77,11 @@ if inspectgraph
     return
 end
 
-%% Compute the nominal cell capacity and choose a C-Rate
-% The nominal capacity of the cell is calculated from the active materials.
-% This value is then combined with the user-defined C-Rate to set the cell
-% operational current.
-
-CRate = model.Control.CRate;
 
 %% Setup the schedule
 %
 
-timestep.numberOfTimeSteps = 20;
+timestep.timeStepDuration = 100;
 
 step    = model.Control.setupScheduleStep(timestep);
 control = model.Control.setupScheduleControl();
@@ -126,9 +122,16 @@ end
 nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+% nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 % Change default tolerance for nonlinear solver
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+nls.maxTimestepCuts = 6;
+
+if use_cccv
+    Imax = (model.(ctrl).ImaxDischarge + model.(ctrl).ImaxCharge);
+else
+    Imax = model.(ctrl).Imax;
+end
+model.nonlinearTolerance = 1e-6*Imax;
 % Set verbosity
 model.verbose = true;
 
@@ -146,10 +149,16 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 time = cellfun(@(x) x.time, states);
 
 figure
-plot(time/hour, E);
+plot(time/hour, E, '*-');
 grid on
 xlabel 'time  / h';
 ylabel 'potential  / V';
+
+figure
+plot(time/hour, I, '*-');
+grid on
+xlabel 'time  / h';
+ylabel 'Current  / A';
 
 writeh5 = false;
 if writeh5

@@ -11,8 +11,6 @@ classdef SEIActiveMaterial < ActiveMaterial
 
         function model = SEIActiveMaterial(inputparams)
 
-            inputparams = inputparams.validateInputParams();
-
             model = model@ActiveMaterial(inputparams);
 
             model.SideReaction = SideReaction(inputparams.SideReaction);
@@ -39,9 +37,10 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             model = model.registerVarNames(varnames);
 
+            model = model.setAsStaticVarName({sei, 'cExternal'});
+            
             if model.isRootSimulationModel
-                model = model.setAsStaticVarNames({{sei, 'cExternal'}, ...
-                                                   {sr, 'phiElectrolyte'}});
+                model = model.setAsStaticVarName({sr, 'phiElectrolyte'});
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
@@ -58,7 +57,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             fn = @SEIActiveMaterial.Interface.updateEtaWithEx;
             % Comment about the syntax used below : Here we use the more cumbersome syntax (using VarName)
-            % because we use a different model thant the current model in the definition of the propfunction. The
+            % because we use a different model than the current model in the definition of the propfunction. The
             % handy-syntax could have been implemented here too (but this has not been done...)
             varname = VarName({itf}, 'eta');
             inputvarnames = {VarName({itf}, 'phiElectrolyte'), ...
@@ -235,9 +234,10 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
+            cleanState.(sei).cExternal     = state.(sei).cExternal;
+
             if model.isRootSimulationModel
                 
-                cleanState.(sei).cExternal     = state.(sei).cExternal;
                 cleanState.(sr).phiElectrolyte = state.(sr).phiElectrolyte;
 
             end

@@ -102,91 +102,109 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                                             'Verbose'        , opt.Verbose        , ...
                                             extra{:});
 
-    objValues = objFunc(setupNew.model, states, setupNew.schedule);
-    objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
+    failure = false;
+    try
+        objValues = objFunc(setupNew.model, states, setupNew.schedule);
+        objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
+    catch
+        objValue = NaN;
+        failure = true;
+    end
+        
+    
 
     if nargout > 1
 
-        switch opt.gradientMethod
+        if failure
 
-          case 'None'
-
-            if nargout > 2
-                [varargout{2:3}] = deal(wellSols, states);
-            end
+            varargout = cell(nargout, 1);
             return
+            
+        else
 
-          case 'AdjointAD'
+            switch opt.gradientMethod
 
-            objh = @(tstep, model, state, computeStatePartial) objFunc(model, states, setupNew.schedule, ...
-                                                                       'ComputePartials', computeStatePartial , ...
-                                                                       'tStep'          , tstep, ...
-                                                                       'state'          , state);
-            nms = applyFunction(@(x) x.name, parameters);
+              case 'None'
 
-            sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
-                                                       'LinearSolver', opt.AdjointLinearSolver);
+                if nargout > 2
+                    [varargout{2:3}] = deal(wellSols, states);
+                end
+                return
 
-            gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
+              case 'AdjointAD'
 
-            % do scaling of gradient
-            scaledGradient = cell(numel(nms), 1);
-            for k = 1 : numel(nms)
-                scaledGradient{k} = parameters{k}.scaleGradient(gradient{k}, pval{k});
-            end
+                objh = @(tstep, model, state, computeStatePartial) objFunc(model, states, setupNew.schedule, ...
+                                                                           'ComputePartials', computeStatePartial , ...
+                                                                           'tStep'          , tstep, ...
+                                                                           'state'          , state);
+                nms = applyFunction(@(x) x.name, parameters);
 
-            varargout{1} = vertcat(scaledGradient{:})/opt.objScaling;
+                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
+                                                           'LinearSolver', opt.AdjointLinearSolver);
 
-          case 'PerturbationADNUM'
-            % Do manual perturbation of the defined control variables
+                gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
 
-            pertsize = opt.PerturbationSize;
-            if isempty(pertsize)
-                pertsize = repmat({1e-7}, numel(parameters), 1);
-            elseif ~iscell(pertsize) && numel(pertsize) == 1 % scalar value
-                pertsize = repmat({pertsize}, numel(parameters), 1);
-            end
-
-            scaledGradient = cell(numel(parameters), 1);
-
-            parfor iparam = 1 : numel(parameters)
-
-                eps_pert = pertsize{iparam};
-                np = numel(pvec{iparam});
-                val = nan(np, 1);
-
-                for i = 1 : np
-                    pert_pvec = perturb(pvec, iparam, i, eps_pert);
-
-                    val(i) = evalObjectiveBattmo(pert_pvec, objFunc, setupNew, parameters, ...
-                                                 'gradientMethod' , 'None'             , ...
-                                                 'NonlinearSolver', opt.NonlinearSolver, ...
-                                                 'objScaling'     , opt.objScaling     , ...
-                                                 'enforceBounds'  , false);
+                % do scaling of gradient
+                scaledGradient = cell(numel(nms), 1);
+                for k = 1 : numel(nms)
+                    scaledGradient{k} = parameters{k}.scaleGradient(gradient{k}, pval{k});
                 end
 
-                scaledGradient{iparam} = (val - objValue)./eps_pert;
+                varargout{1} = vertcat(scaledGradient{:})/opt.objScaling;
+
+              case 'PerturbationADNUM'
+                % Do manual perturbation of the defined control variables
+
+                pertsize = opt.PerturbationSize;
+                if isempty(pertsize)
+                    pertsize = repmat({1e-7}, numel(parameters), 1);
+                elseif ~iscell(pertsize) && numel(pertsize) == 1 % scalar value
+                    pertsize = repmat({pertsize}, numel(parameters), 1);
+                end
+
+                scaledGradient = cell(numel(parameters), 1);
+
+                parfor iparam = 1 : numel(parameters)
+
+                    eps_pert = pertsize{iparam};
+                    np = numel(pvec{iparam});
+                    val = nan(np, 1);
+
+                    for i = 1 : np
+                        pert_pvec = perturb(pvec, iparam, i, eps_pert);
+
+                        val(i) = evalObjectiveBattmo(pert_pvec, objFunc, setupNew, parameters, ...
+                                                     'gradientMethod' , 'None'             , ...
+                                                     'NonlinearSolver', opt.NonlinearSolver, ...
+                                                     'objScaling'     , opt.objScaling     , ...
+                                                     'enforceBounds'  , false);
+                    end
+
+                    scaledGradient{iparam} = (val - objValue)./eps_pert;
+
+                end
+
+                varargout{1} = vertcat(scaledGradient{:});
+
+              otherwise
+
+                error('Gradient method %s is not implemented', opt.gradientMethod);
 
             end
 
-            varargout{1} = vertcat(scaledGradient{:});
-
-          otherwise
-
-            error('Greadient method %s is not implemented',opt.gradientMethod);
 
         end
 
+        if nargout > 2
+            [varargout{2:3}] = deal(wellSols, states);
+        end
+
+        if nargout > 4
+            varargout{4} =  setupNew;
+        end
 
     end
-
-    if nargout > 2
-        [varargout{2:3}] = deal(wellSols, states);
-    end
-
-    if nargout > 4
-        varargout{4} =  setupNew;
-    end
+    
 end
 
 

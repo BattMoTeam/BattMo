@@ -1,17 +1,12 @@
 function is_valid = validateJsonStruct(jsonstruct)
 
     % Write the json struct to a temporary file
-    tempfilename = [tempname, '.json'];
-    fid = fopen(tempfilename, 'w');
-    fprintf(fid, '%s', jsonencode(jsonstruct));
-    fclose(fid);
+    tempfilename = writeJsonStruct(jsonstruct);
 
     % Validate
     is_valid = validateJsonFiles({tempfilename});
-    
+
 end
-
-
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

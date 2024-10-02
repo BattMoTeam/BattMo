@@ -16,22 +16,21 @@ The purpose of JuliaBridge is to act as an interface between BattMo Matlab and B
 
 ## How to use JuliaBridge
 
-**Please Note**: JuliaBridge does currently **not work with Matlab 2023a** due to an issue with the <code>system</code> command in Matlab. (We recommend Matlab 2022a)
+The interaction with Julia is managed by a _server manager_ . Such object is created as an instance of the
+`ServerManager` class. Then, the inputs are sent to this object which also then run the simulation. See the example
+below.
 
-In order for JuliaBridge to work properly, the following must be done:
-<ul>
-    <li> The RunFromMatlab project must be instantiated in Julia</li>
-    <li> The GenerateModel and JuliaInterface folders must be on the Matlab path </li>
-</ul>
+For specific use cases please see the files provided in the Examples folder. 
 
-The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point is also automatically taken care of by the setup script <code>statupBattMo</code>
-
-For specific use cases please the files provided in the Examples folder. Julia uses just-in-time compilation. It means that the first time you run a simulation, the code is going to be compiled and it will take relatively a lot of time. However, we use a persistent server model so that this is done only once on the server. The subsequent simulations will not suffer from this compilation slow-down. 
-
+**Warning** : Julia uses just-in-time compilation. It means that the first time you run a simulation, the code is going
+to be compiled and it will take relatively a lot of time. However, we use a persistent server model so that this is done
+only once on the server. The subsequent simulations will not suffer from this compilation slow-down.
 
 ### Additional steps for Windows users:
 
-JuliaBridge uses <code>DeamonMode.jl</code> to launch a persistent Julia server running in the background using the <code>system</code> command in Matlab. Launching a background process in this manner does not work on Windows. The user will therefore have to launch the server themselves. This can be done in the following way:
+JuliaBridge uses <code>DeamonMode.jl</code> to launch a persistent Julia server running in the background using the
+<code>system</code> command in Matlab. Launching a background process in this manner does not work on Windows. The user
+will therefore have to launch the server themselves. This can be done in the following way:
 
 1. Launch a command prompt window in Windows (NOT the powershell)
 1.5. (Recommended) Use the <code>cd</code> command to move to current directory to the place where RunFromMatlab is stored
@@ -39,14 +38,52 @@ JuliaBridge uses <code>DeamonMode.jl</code> to launch a persistent Julia server 
 <code> julia --startup-file=no --project=. -e "using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)" </code>
 3. Running this command will block the command prompt. The server will remain active until the window is closed or it is deactivated in any other way. Calls to the server can now be made using the <code>ServerManager</code> class.
 
+## Example
+
+```matlab
+    man = ServerManager();
+   
+    fn = fullfile(battmoDir()    , ...
+                  'Examples'     , ...
+                  'JsonDataFiles', ...
+                  'p2d_40.json')
+    jsonstruct = parseBattmoJson(fn)
+
+    man.runBatteryJson(jsonstruct)
+```
+
+For 1D model you can use directly json input (should be also faster)
+
+```matlab
+    man.runBatteryJson(jsonstruct, 'useDirectJsonInput', true)
+```
+
+
+see more in the [online documentation](https://battmoteam.github.io/BattMo/juliabridge.html ) 
+
+
 ## How JuliaBridge works
 
+### Installation ###
+
+In order for JuliaBridge to work properly, the following has to be done
+
+<ul>
+    <li> The `RunFromMatlab` project must be instantiated in Julia</li>
+    <li> The `GenerateModel` and `JuliaInterface` folders must be on the Matlab path </li>
+</ul>
+
+The first point will be automatically done by the <code>ServerManager</code> constructor, while the second point is also
+automatically taken care of by the setup script <code>statupBattMo</code>
+
+I means that no special installation steps are required. We just provide this section to explain how the julia bridge works.
+
 ### Matlab &harr; Julia communication
- 
+
 In concrete terms JuliaBridge communicates between Matlab and Julia in the following way:
 
 1. Generate a model, initial state and parameters (and optionally a reference solution) in Matlab. This data is written in a file
-2. Launch a DaemonMode server
+2. Launch a `DaemonMode` server
 3. Call Julia scripts contained in RunFromMatlab/api/DaemonHandler.jl on the DaemonMode server
 4. The Julia code reads the file containing data from Matlab and performs a simulation. The output of this simulation is saved to a file.
 5. The contents of the file created by Julia is read in Matlab for post processing.
@@ -70,9 +107,9 @@ The <code>ServerManager</code> class in Matlab has two main roles:
 
 ### DeamonMode
 
-Source: https://github.com/dmolina/DaemonMode.jl
+Source: [https://github.com/dmolina/DaemonMode.jl](https://github.com/dmolina/DaemonMode.jl)
 
-Below we summarize the two main features of DaemonMode used by JuliaBridge-
+Below we summarize the two main features of `DaemonMode` used by JuliaBridge
 
 #### Launching the server
 
@@ -83,8 +120,8 @@ With arguments:
 <ul>
     <li> <b>port</b>: The id of the server, default 3000</li>
     <li> <b>shared</b>: If true, variables will be shared across calls to the server</li>
-    <li> <b> call_stack </b>: Displays entire call stack if the Julia code fails to execute</li>
-    <li> <b> async </b>: Allows running clients in parallel </li>
+    <li> <b>call_stack</b>: Displays entire call stack if the Julia code fails to execute</li>
+    <li> <b>async</b>: Allows running clients in parallel </li>
 </ul>
 
 #### Running a script
