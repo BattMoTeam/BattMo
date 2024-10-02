@@ -40,6 +40,7 @@ extensions = ['sphinxcontrib.globalsubs',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
               'sphinx.ext.autosectionlabel',
+              'sphinx.ext.mathjax',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
               'sphinx_design']
