@@ -410,8 +410,6 @@ classdef GenericBattery < BaseModel
                 
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
-                scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
-
                 if model.include_current_collectors
                     % We use the same scaling as for the coating multiplied by the conductivity ration
                     coef = condRef.(elde).(cc)/condRef.(elde).(co);
