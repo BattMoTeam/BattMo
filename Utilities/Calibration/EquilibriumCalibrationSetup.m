@@ -75,6 +75,7 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function ecs = setupCalibrationCase(ecs, calibrationCase, varargin)
 
             opt = struct('verbose', true);
@@ -112,78 +113,42 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function ecs = setupDefaultVariableBounds(ecs, varargin)
 
-            opt = struct('verbose', true);
+            opt = struct('verbose', true, ...
+                         'lower', 1e-3, ...
+                         'upper', 1);
             opt = merge_options(opt, varargin{:});
 
-            data = ecs.calibrationParameters;
+            N = numel(ecs.getDefaultValue());
 
-            switch ecs.calibrationCase
+            lower = opt.lower * ones(N, 1);
+            upper = opt.upper * ones(N, 1);
 
-              case 1
-
-                % X(1) : theta100 anode
-                % X(2) : volume fraction anode
-                % X(3) : theta100 cathode
-                % X(4) : volume fraction cathode
-
-                % we use a non-zero default value to avoid problem
-                bounds.lower = [0.01, 0.01, 0.01, 0.01]';
-                bounds.upper = [1, 1, 1, 1]';
-
-              case 2
-
-                %% recall : ordering of parameters
-                %
-                % X(1) : theta100 anode
-                % X(2) : volume fraction anode
-                % X(3) : volume fraction cathode
-
-                bounds.lower = [0.1, 0.1, 0.1]';
-                bounds.upper = [1, 1, 1]';
-
-              case 3
-
-                % X(1) : theta100 anode
-                % X(2) : theta0 anode
-                % X(3) : volume fraction anode
-                % X(4) : theta100 cathode
-                % X(5) : theta0 cathode
-                % X(6) : volume fraction cathode
-
-                % we use a non-zero default value to avoid problem
-                bounds.lower = 0.01*ones(6, 1);
-                bounds.upper = ones(6, 1);
-
-              otherwise
-
-                error('ecs.calibrationCase not recognized');
-
-            end
+            ecs.bounds = struct('lower', lower, ...
+                                'upper', upper);
 
             if opt.verbose
                 fprintf('The variable bounds are\n');
                 fprintf('lower\n')
-                display(bounds.lower);
+                display(ecs.bounds.lower);
                 fprintf('upper\n')
-                display(bounds.upper);
+                display(ecs.bounds.upper);
             end
 
-            ecs.bounds = bounds;
-
         end
+
 
         function linIneq = setupIneqConstraints(ecs)
 
-            bounds = ecs.bounds;
-
-            n = size(bounds.lower, 1);
+            n = size(ecs.bounds.lower, 1);
 
             linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [bounds.lower; bounds.upper];
+            linIneq.b = [ecs.bounds.lower; ecs.bounds.upper];
 
         end
+
 
         function params = setupOptimParams(ecs)
         % For unitBoxBFGS
@@ -201,8 +166,6 @@ classdef EquilibriumCalibrationSetup
 
         function X = getDefaultValue(ecs)
 
-            model = ecs.model;
-
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             co  = 'Coating';
@@ -216,10 +179,11 @@ classdef EquilibriumCalibrationSetup
               case 1
 
                 for ielde = 1 : numel(eldes)
-                    elde = eldes{ielde};
-                    compInds = model.(elde).(co).compInds;
-                    vals.(elde).theta100       = model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).volumeFraction = model.(elde).(co).volumeFraction*model.(elde).(co).volumeFractions(compInds.(am));
+                    elde     = eldes{ielde};
+                    compInds = ecs.model.(elde).(co).compInds;
+
+                    vals.(elde).theta100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
+                    vals.(elde).volumeFraction = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
                 end
 
               case 2
@@ -231,12 +195,12 @@ classdef EquilibriumCalibrationSetup
                 % X(3) : volume fraction cathode
 
 
-                compInds = model.(ne).(co).compInds;
-                vals.(ne).theta100       = model.(ne).(co).(am).(itf).guestStoichiometry100;
-                vals.(ne).volumeFraction = model.(ne).(co).volumeFraction*model.(ne).(co).volumeFractions(compInds.(am));
+                compInds = ecs.model.(ne).(co).compInds;
+                vals.(ne).theta100       = ecs.model.(ne).(co).(am).(itf).guestStoichiometry100;
+                vals.(ne).volumeFraction = ecs.model.(ne).(co).volumeFraction*ecs.model.(ne).(co).volumeFractions(compInds.(am));
 
-                compInds = model.(pe).(co).compInds;
-                vals.(pe).volumeFraction = model.(pe).(co).volumeFraction*model.(pe).(co).volumeFractions(compInds.(am));
+                compInds = ecs.model.(pe).(co).compInds;
+                vals.(pe).volumeFraction = ecs.model.(pe).(co).volumeFraction*ecs.model.(pe).(co).volumeFractions(compInds.(am));
 
               case 3
 
@@ -248,11 +212,12 @@ classdef EquilibriumCalibrationSetup
                 % X(6) : volume fraction cathode
 
                 for ielde = 1 : numel(eldes)
-                    elde = eldes{ielde}
-                    compInds = model.(elde).(co).compInds;
-                    vals.(elde).theta100       = model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).theta0         = model.(elde).(co).(am).(itf).guestStoichiometry0;
-                    vals.(elde).volumeFraction = model.(elde).(co).volumeFraction*model.(elde).(co).volumeFractions(compInds.(am));
+                    elde     = eldes{ielde};
+                    compInds = ecs.model.(elde).(co).compInds;
+
+                    vals.(elde).theta100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
+                    vals.(elde).theta0         = ecs.model.(elde).(co).(am).(itf).guestStoichiometry0;
+                    vals.(elde).volumeFraction = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
                 end
 
               otherwise
@@ -262,6 +227,7 @@ classdef EquilibriumCalibrationSetup
             X = ecs.assignToX(vals);
 
         end
+
 
         function printVariableChoice(ecs)
 
@@ -281,9 +247,8 @@ classdef EquilibriumCalibrationSetup
 
         end
 
-        function X = assignToX(ecs, vals)
 
-            model = ecs.model;
+        function X = assignToX(ecs, vals)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -349,9 +314,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function vals = setupAlphas(ecs, vals);
-
-            model = ecs.model;
+        function vals = setupAlphas(ecs, vals)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -365,8 +328,8 @@ classdef EquilibriumCalibrationSetup
 
                 elde = eldes{ielde};
 
-                vol  = sum(model.(elde).(co).G.getVolumes());
-                cmax = model.(elde).(co).(am).(itf).saturationConcentration;
+                vol  = sum(ecs.model.(elde).(co).G.getVolumes());
+                cmax = ecs.model.(elde).(co).(am).(itf).saturationConcentration;
 
                 vals.(elde).alpha = vals.(elde).volumeFraction*vol*cmax;
                 vals.(elde).cmax  = cmax;
@@ -374,6 +337,7 @@ classdef EquilibriumCalibrationSetup
             end
 
         end
+
 
         function vals = assignFromX(ecs, X)
 
@@ -459,7 +423,6 @@ classdef EquilibriumCalibrationSetup
             pe      = 'PositiveElectrode';
 
             I = ecs.expI;
-            F = ecs.F;
             T = ecs.totalTime;
 
             switch elde
@@ -469,9 +432,10 @@ classdef EquilibriumCalibrationSetup
                 sgn = 1;
             end
 
-            theta = theta_tf + (t - tf*T)*((sgn*I)./(F*alpha));
+            theta = theta_tf + (t - tf*T)*((sgn*I) ./ (ecs.F*alpha));
 
         end
+
 
         function f = computeF(ecs, t, X)
 
@@ -487,8 +451,6 @@ classdef EquilibriumCalibrationSetup
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            I     = ecs.expI;
-            model = ecs.model;
             T     = ecs.Temperature;
 
             vals = ecs.updateThetas(X, 'includeTheta0', false);
@@ -498,18 +460,19 @@ classdef EquilibriumCalibrationSetup
 
             theta = ecs.computeTheta(t, pe, 0, theta100, alpha);
             cmax = vals.(pe).cmax;
-            f = model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            f = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             theta100 = vals.(ne).theta100;
             alpha    = vals.(ne).alpha;
 
             theta = ecs.computeTheta(t, ne, 0, theta100, alpha);
             cmax = vals.(ne).cmax;
-            f = f - model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            f = f - ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
         end
 
-        function f = experimentalF(ecs, t);
+
+        function f = experimentalF(ecs, t)
 
             time = ecs.exptime; % in second
             U    = ecs.expU;
@@ -517,6 +480,7 @@ classdef EquilibriumCalibrationSetup
             f = interp1(time, U, t, 'linear', 'extrap');
 
         end
+
 
         function [z, dz] = objective(ecs, X)
 
@@ -534,12 +498,14 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function z = objective_func(ecs, X)
         % for ipopt api
 
             z = ecs.objective(X);
 
         end
+
 
         function dz = gradient_func(ecs, X)
         % for ipopt api
@@ -560,6 +526,7 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function y = constraints_func(ecs, X)
         % for ipopt api
 
@@ -570,7 +537,6 @@ classdef EquilibriumCalibrationSetup
                 % We enforce that theta at total time is between 0 and 1
 
                 I = ecs.expI;
-                F = ecs.F;
                 T = ecs.totalTime;
 
                 vals = ecs.assignFromX(X);
@@ -597,7 +563,7 @@ classdef EquilibriumCalibrationSetup
                         sgn = 1;
                     end
 
-                    theta = theta100 + T*((sgn*I)./(F*alpha));
+                    theta = theta100 + T*((sgn*I)./(ecs.F*alpha));
 
                     y{end + 1} = theta;
                     y{end + 1} = 1 - theta;
@@ -613,10 +579,6 @@ classdef EquilibriumCalibrationSetup
               case 3
 
                 data = ecs.calibrationParameters;
-
-                ne  = 'NegativeElectrode';
-                pe  = 'PositiveElectrode';
-
                 np_ratio = ecs.computeNPratio(X);
 
                 y = np_ratio./data.np_ratio - 1;
@@ -628,6 +590,7 @@ classdef EquilibriumCalibrationSetup
             end
         end
 
+
         function dy = jacobian_constraints_func(ecs, X)
         % for ipopt api
 
@@ -636,6 +599,7 @@ classdef EquilibriumCalibrationSetup
             dy = y.jac{1};
 
         end
+
 
         function y = jacobian_constraints_structure_func(ecs)
         % we do not bother here and setup as full
@@ -660,6 +624,7 @@ classdef EquilibriumCalibrationSetup
 
             end
         end
+
 
         function vals = updateThetas(ecs, X, varargin)
 
@@ -720,10 +685,8 @@ classdef EquilibriumCalibrationSetup
 
         end
 
-        function vals = computeCapacitiesFromVals(ecs, vals)
 
-            model = ecs.model;
-            F     = ecs.F;
+        function vals = computeCapacitiesFromVals(ecs, vals)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -737,7 +700,7 @@ classdef EquilibriumCalibrationSetup
 
                 elde = eldes{ielde};
 
-                cmax  = model.(elde).(co).(am).(itf).saturationConcentration;
+                cmax  = ecs.model.(elde).(co).(am).(itf).saturationConcentration;
 
                 theta0   = vals.(elde).theta0;
                 theta100 = vals.(elde).theta100;
@@ -752,7 +715,7 @@ classdef EquilibriumCalibrationSetup
                     cm = theta100*cmax;
                 end
 
-                cap = (cM - cm)/cmax*alpha*F;
+                cap = (cM - cm)/cmax*alpha*ecs.F;
 
                 vals.(elde).cmax = cmax;
                 vals.(elde).cap  = cap;
@@ -761,6 +724,7 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function vals = computeCapacities(ecs, X)
 
             vals = ecs.updateThetas(X, 'includeTheta0', true);
@@ -768,9 +732,9 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function props = computeProperties(ecs, X)
 
-            model = ecs.model;
             T     = ecs.Temperature;
 
             props = ecs.computeCapacities(X);
@@ -802,13 +766,12 @@ classdef EquilibriumCalibrationSetup
 
                 s = smax.*linspace(0, 1, N + 1)';
                 c = (1 - s).*c0 + s.*cT;
-                f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, cmax);
 
-                props.(elde).dischargeFunc = @(s) model.(elde).(co).(am).(itf).computeOCPFunc((1 - s).*c0 + s.*cT, T, cmax);
+                props.(elde).dischargeFunc = @(s) ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c, T, cmax);
 
                 energies.(elde) = cap*smax/N*sum(props.(elde).dischargeFunc(s));
 
-                props.(elde).U = model.(elde).(co).(am).(itf).computeOCPFunc(c0, T, cmax);
+                props.(elde).U = ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c0, T, cmax);
 
             end
 
@@ -823,22 +786,20 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function mass = getMass(ecs)
 
-            model       = ecs.model;
-            packingMass = ecs.packingMass;
-            if isempty(packingMass)
+            if isempty(ecs.packingMass)
                 fprintf('Packing Mass is not given, we set it equal to zero\n');
-                packingMass = 0;
+                ecs.packingMass = 0;
             end
-            mass = computeCellMass(model, 'packingMass', packingMass);
+
+            mass = computeCellMass(ecs.model, 'packingMass', ecs.packingMass);
 
         end
 
 
         function [Xopt, hist] = runUnitBoxBFGS(ecs, X0)
-
-            [fexp, fcomp] = ecs.setupfunction();
 
             if nargin < 2
                 X0 = ecs.getDefaultValue();
@@ -852,9 +813,8 @@ classdef EquilibriumCalibrationSetup
 
         end
 
-        function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
-            [fexp, fcomp] = ecs.setupfunction();
+        function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
             X0 = ecs.getDefaultValue();
 
@@ -866,7 +826,6 @@ classdef EquilibriumCalibrationSetup
 
             options.lb = ecs.bounds.lower;
             options.ub = ecs.bounds.upper;
-
 
             switch ecs.calibrationCase
 
@@ -899,14 +858,13 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function printParameters(ecs, X)
 
             vals = ecs.assignFromX(X);
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
-
-            eldes = {ne, pe};
 
             switch ecs.calibrationCase
               case 1
@@ -930,11 +888,10 @@ classdef EquilibriumCalibrationSetup
 
         end
 
+
         function printProperties(ecs, X)
 
             props = ecs.computeProperties(X);
-
-            mass = ecs.getMass();
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
