@@ -784,7 +784,7 @@ classdef EquilibriumCalibrationSetup
 
             n = size(ecs.bounds.lower, 1);
             linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [ecs.bounds.lower; ecs.bounds.upper];
+            linIneq.b = [-ecs.bounds.lower; ecs.bounds.upper];
 
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
