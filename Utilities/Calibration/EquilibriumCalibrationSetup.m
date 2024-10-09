@@ -140,30 +140,6 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function linIneq = setupIneqConstraints(ecs)
-
-            n = size(ecs.bounds.lower, 1);
-
-            linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [ecs.bounds.lower; ecs.bounds.upper];
-
-        end
-
-
-        function params = setupOptimParams(ecs)
-        % For unitBoxBFGS
-            linIneq = ecs.setupIneqConstraints();
-            params = {'objChangeTol'    , 1e-12, ...
-                      'maximize'        , false, ...
-                      'maxit'           , 1000 , ...
-                      'maxInitialUpdate', 1e-6 , ...
-                      'enforceFeasible' , true , ...
-                      'lineSearchMaxIt' , 10   , ...
-                      'wolfe2'          , 0.99 , ...
-                      'linIneq'         , linIneq};
-        end
-
-
         function X = getDefaultValue(ecs)
 
             ne  = 'NegativeElectrode';
@@ -799,17 +775,28 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function [Xopt, hist] = runUnitBoxBFGS(ecs, X0)
+        function [Xopt, hist] = runUnitBoxBFGS(ecs, varargin)
 
-            if nargin < 2
-                X0 = ecs.getDefaultValue();
-            end
+            opt = struct('X0', ecs.getDefaultValue());
+            [opt, extra] = merge_options(opt, varargin{:});
 
             f = @(X) ecs.objective(X);
 
-            params = ecs.setupOptimParams();
+            n = size(ecs.bounds.lower, 1);
+            linIneq.A = [-eye(n); eye(n)];
+            linIneq.b = [ecs.bounds.lower; ecs.bounds.upper];
 
-            [~, Xopt, hist] = unitBoxBFGS(X0, f, params{:});
+            params = {'objChangeTol'    , 1e-12, ...
+                      'maximize'        , false, ...
+                      'maxit'           , 1000 , ...
+                      'maxInitialUpdate', 1e-6 , ...
+                      'enforceFeasible' , true , ...
+                      'lineSearchMaxIt' , 10   , ...
+                      'wolfe2'          , 0.99 , ...
+                      'linIneq'         , linIneq};
+
+            % NB: will prefer options in extra over params
+            [~, Xopt, hist] = unitBoxBFGS(opt.X0, f, params{:}, extra{:});
 
         end
 
