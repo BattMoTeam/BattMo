@@ -413,7 +413,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function f = computeF(ecs, t, X)
+        function [f, fpe, fne] = computeF(ecs, t, X)
 
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -436,14 +436,16 @@ classdef EquilibriumCalibrationSetup
 
             theta = ecs.computeTheta(t, pe, 0, theta100, alpha);
             cmax = vals.(pe).cmax;
-            f = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             theta100 = vals.(ne).theta100;
             alpha    = vals.(ne).alpha;
 
             theta = ecs.computeTheta(t, ne, 0, theta100, alpha);
             cmax = vals.(ne).cmax;
-            f = f - ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+
+            f = fpe - fne;
 
         end
 
