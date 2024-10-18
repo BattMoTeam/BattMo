@@ -2,7 +2,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     opt = struct('runSimulation'       , true , ...
                  'includeGridGenerator', false, ...
-                 'validateJson'        , false);
+                 'validateJson'        , false, ...
+                 'verbose'             , true);
     opt = merge_options(opt, varargin{:});
 
     mrstModule add ad-core mrst-gui mpfa
@@ -78,6 +79,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct);
 
+    model.verbose = opt.verbose;
+
     %% Run the simulation
     %
 
@@ -123,7 +126,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     ind = cellfun(@(x) not(isempty(x)), states);
     states   = states(ind);
     globvars = globvars(ind);
-    
+
     E    = cellfun(@(state) state.Control.E, states);
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states);
@@ -139,7 +142,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     output.globvars = globvars;
     output.states   = states;
-    
+
     if isAssigned(jsonstruct, {'Output', 'variables'}) ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
 
