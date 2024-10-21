@@ -4,30 +4,54 @@
   "description": "Specification of the CatalystLayer input parameters",
   "type": "object",
 
-  "properties" : {"j0" : {"type" : "number"},
-                  "E0" : {"type" : "number",
-                          "description" : "standard equilibrium potential"},
-                  "Eref" : {"type" : "number",
-                            "description" : "referance potential"},
-                  "sp" : {"type" : "object",
-                          "description" : " species struct ",
-                          "properties" : {"OH" : {"type" : "object",
-                                                  "properties" :
-                                                  { "z" : {"type" : "number",
-                                                           "description" : "Charge number"},
-                                                    "c0" : {"type" : "number",
-                                                            "description" : "reference concentration"}}}}},
-                  "n" : {"type" : "number",
-                         "description" : "Number of electron transfer"},
-                  "alpha" : {"type" : "number",
-                             "description" : "Coefficient in the exponent in Butler-Volmer equation"},
-                  "Xinmr" : {"type" : "number",
-                             "description" : "Fraction of specific area that is coversed with ionomer"},
-                  "volumetricSurfaceArea0" : {"type" : "number",
-                                             "description" : "volumetric surface area (or initial if it is changing)"},
-                  "tortuosity" : {"type" : "number",
-                                  "description" : "tortuosity"},
-                  "includeDissolution" : {"type" : "boolean",
-                                          "description" : "true if dissolution model is included"}
-                 }
-}
+  "properties" : {
+    "referenceExchangeCurrentDensity" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Reference exchange current density",
+      "symbol" : "j0"},
+    "standardEquilibriumPotential" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "standard equilibrium potential",
+      "symbol" : "E0"},
+    "referencePotential" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "referance potential",
+      "symbol" : "Eref"},
+    "species" : {
+      "type" : "object",
+      "description" : "description of the species",
+      "properties" : {
+        "OH" : {
+          "type" : "object",
+          "properties" :
+          {
+            "chargeNumber" : {
+            "$ref": "PhysicalQuantity.schema.json",
+            "description" : "Charge number",
+            "symbol" : "z"},
+            "referenceConcentration" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "reference concentration",
+              "symbol" : "c0"}}}}},
+    "numberOfElectronsTransferred" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Number of electron transfer",
+      "symbol" : "n"},
+    "chargeTransferCoefficient" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Coefficient in the exponent in Butler-Volmer equation",
+      "symbol": "alpha"},
+    "ionomerFractionArea" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Fraction of specific area that is covered with ionomer",
+      "symbol" : "Xinmr"},
+    "volumetricSurfaceArea" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "volumetric surface area (or initial if it is changing)"},
+    "tortuosity" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "tortuosity",
+      "symbol" : "tau"},
+    "includeDissolution" : {
+      "type" : "boolean",
+      "description" : "set to true if dissolution model is included"}}}

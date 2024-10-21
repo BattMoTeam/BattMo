@@ -4,19 +4,26 @@
   "description": "A standard electrolyser",
   "type": "object",
   
-
   "properties" : {
 
-    "Eref" : {"type" : "number",
-              "description" : "Reference potential"},
-    "IonomerMembrane": {"$ref": "IonomerMembrane"},
-
-    "HydrogenEvolutionElectrode": {"$ref": "EvolutionElectrode"},
+    "referencePotential" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Reference potential",
+      "symbol" : "Eref"},
     
-    "OxygenEvolutionElectrode": {"$ref": "EvolutionElectrode"},
+    "IonomerMembrane": {
+      "$ref": "IonomerMembrane"},
 
-    "controlI" : {"type" : "number",
-                  "description" : "control current"}
+    "HydrogenEvolutionElectrode": {
+      "$ref": "EvolutionElectrode"},
+    
+    "OxygenEvolutionElectrode": {
+      "$ref": "EvolutionElectrode"},
+
+    "controlCurrent" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "control current",
+      "symbol" : "controlI"}
   }
 
 }
