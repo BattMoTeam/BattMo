@@ -2,12 +2,12 @@
   "CatalystLayer" : {
     "include_dissolution": true,
     "DissolutionModel" : {
-      "E0" : 2.057,
-      "c0" : 1000,
-      "j0" : 1e-20,
-      "MW" : 0.22422,
-      "rho" : 11660,
-      "volumeFraction0" : 0.14
+      "standardEquilibriumPotential" : 2.057,
+      "referenceConcentration" : 1000,
+      "referenceExchangeCurrentDensity" : 1e-20,
+      "molecularWeight" : 0.22422,
+      "density" : 11660,
+      "referenceVolumeFraction" : 0.14
     }}}}
 
 

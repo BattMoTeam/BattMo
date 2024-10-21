@@ -277,7 +277,7 @@ classdef Electrolyser < BaseModel
                 dm = 'DissolutionModel';
                 nc = model.(oer).(ctl).(dm).G.getNumberOfCells();
                 
-                state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).volumeFraction0*ones(nc, 1);
+                state.(oer).(ctl).(dm).volumeFraction = model.(oer).(ctl).(dm).referenceVolumeFraction*ones(nc, 1);
                 
             end
             
@@ -303,7 +303,8 @@ classdef Electrolyser < BaseModel
             inm = 'IonomerMembrane';
             her = 'HydrogenEvolutionElectrode';
             oer = 'OxygenEvolutionElectrode';
-
+            dm  = 'DissolutionModel';
+            
             ctl = 'CatalystLayer';
             exr = 'ExchangeReaction';
             ptl = 'PorousTransportLayer';

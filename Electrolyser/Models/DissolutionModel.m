@@ -2,17 +2,20 @@ classdef DissolutionModel < BaseModel
 
     properties
 
-        standardEquilibriumPotential                     % Standard electrical potential for the dissolution reaction [V]
-        c0                     % Reference concentration [mol/m^3]
-        referenceExchangeCurrentDensity                     % Reference exchange current density for the dissolution reaction [A/m^2]
-        molecularWeight                     % Molar mass
-        rho                    % Density
-        volumeFraction0        % Initial volume fraction
-        referenceVolumetricSurfaceArea % Initial volumetric surface area
-        
-        molarVolume % Molar volume [m^3/mol]
-        Np          % Number of particles [-]
+        standardEquilibriumPotential    % Standard electrical potential for the dissolution reaction [V]
+        referenceConcentration          % Reference concentration [mol/m^3]
+        referenceExchangeCurrentDensity % Reference exchange current density for the dissolution reaction [A/m^2]
+        molecularWeight                 % Molar mass
+        density                         % Density
+        referenceVolumeFraction         % Reference or initial volume fraction
+        referenceVolumetricSurfaceArea  % Reference or initial volumetric surface area
+
         constants   % physical constants
+
+        %% updated values at initialization
+        
+        molarVolume       % Molar volume [m^3/mol]
+        numberOfParticles % Number of particles [-]
         
     end
 
@@ -22,13 +25,13 @@ classdef DissolutionModel < BaseModel
             
             model = model@BaseModel();
             
-            fdnames = {'G'              , ...
-                       'standardEquilibriumPotential'             , ...
-                       'c0'             , ...
-                       'referenceExchangeCurrentDensity'             , ...
-                       'molecularWeight'             , ...
-                       'rho'            , ...
-                       'volumeFraction0', ...
+            fdnames = {'G'                              , ...
+                       'standardEquilibriumPotential'   , ...
+                       'referenceConcentration'                             , ...
+                       'referenceExchangeCurrentDensity', ...
+                       'molecularWeight'                , ...
+                       'density'                            , ...
+                       'referenceVolumeFraction'                , ...
                        'referenceVolumetricSurfaceArea'};
 
             model = dispatchParams(model, inputparams, fdnames);
@@ -37,11 +40,11 @@ classdef DissolutionModel < BaseModel
 
             % setup particule number
             vsa = model.referenceVolumetricSurfaceArea;
-            vf  = model.volumeFraction0;
-            model.Np = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
+            vf  = model.referenceVolumeFraction;
+            model.numberOfParticles = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
 
             % setup molar volume
-            model.molarVolume  = model.molecularWeight/model.rho;
+            model.molarVolume  = model.molecularWeight/model.density;
             
         end
 
@@ -115,7 +118,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateVolumetricSurfaceArea(model, state)
 
-                Np = model.Np;
+                Np = model.numberOfParticles;
 
                 vf = state.volumeFraction;
 
