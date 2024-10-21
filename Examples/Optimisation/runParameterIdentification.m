@@ -24,6 +24,8 @@ jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_
 
 json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
 
+json.use_thermal = false;
+
 json.Control.useCVswitch = true;
 
 % % Test finer time discretization
