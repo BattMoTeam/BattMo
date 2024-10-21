@@ -20,7 +20,8 @@
           "description" : "diffusion coefficient for water"},
         "partialMolarVolume" : {
           "$ref": "PhysicalQuantity.schema.json",
-          "description" : "partial molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}
+          "description" : "partial molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)",
+          "symbol" : "V0"}
       }},
     "OH" :  {
       "type" : "object",
@@ -28,7 +29,8 @@
       "properties" : {
         "occupationNumber" : {
           "$ref": "PhysicalQuantity.schema.json",
-          "description" : "OH occupation, typical notation xi"},
+          "description" : "OH occupation",
+          "symbol" : "xi"},
         "chargeNumber" : {
           "type" : "number",
           "description" : "charge number"}, 
@@ -38,7 +40,8 @@
       }},
     "totalChargedGroupConcentration" : {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Total concentration of charged group"},
+      "description" : "Total concentration of charged group",
+      "symbol" : "cT"},
     "molarVolume" : {
       "$ref": "PhysicalQuantity.schema.json",
       "description" : "molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)"}}}
