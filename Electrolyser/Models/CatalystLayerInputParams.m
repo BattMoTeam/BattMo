@@ -3,7 +3,7 @@ classdef CatalystLayerInputParams < ComponentInputParams
     properties
 
         referenceExchangeCurrentDensity    % Exchange current density
-        standardElectricalPotential    % Standard equilibrium potential
+        standardEquilibriumPotential    % Standard equilibrium potential
         referencePotential  % Reference potential
 
         species % species struct with field

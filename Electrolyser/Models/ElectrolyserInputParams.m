@@ -34,8 +34,8 @@ classdef ElectrolyserInputParams < InputParams
             assert(strcmp(inputparams.OxygenEvolutionElectrode.porousTransportLayerType, 'Oxygen'), 'Expected porous transport layer is oxygen');
 
             inputparams = mergeParameters(inputparams, {{'referencePotential'}                                               , ...
-                                                  {'HydrogenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}, ...
-                                                  {'OxygenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}});
+                                                        {'HydrogenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}, ...
+                                                        {'OxygenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}});
             
             inputparams = validateInputParams@InputParams(inputparams);
             

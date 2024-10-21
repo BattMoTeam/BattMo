@@ -16,7 +16,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         totalChargedGroupConcentration % Total concentration of charged groups (one value per cell)
 
-        V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not
+        molarVolume % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not
           % for assembly, and also for activity computation)
 
         tortuosity
@@ -33,13 +33,13 @@ classdef IonomerMembrane < ElectronicComponent
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
-                       'V'             , ...
+                       'molarVolume'             , ...
                        'tortuosity'};
             model = dispatchParams(model, inputparams, fdnames);
 
             cT = inputparams.totalChargedGroupConcentration;
             nc = model.G.getNumberOfCells();
-            model.cT = cT*ones(nc, 1);
+            model.totalChargedGroupConcentration = cT*ones(nc, 1);
 
             model.constants = PhysicalConstants();
 
@@ -181,7 +181,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updateActivityEquation(model, state)
 
-            V  = model.V;
+            V  = model.molarVolume;
             V0 = model.H2O.partialMolarVolume;
 
             c  = state.H2Oc;
@@ -340,7 +340,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         function cH2O = groupHydration(model, aw, T)
 
-            V = model.V;
+            V = model.molarVolume;
             V0 = model.H2O.partialMolarVolume;
 
             aw(aw > 1) = 1;

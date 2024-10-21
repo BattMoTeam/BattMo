@@ -2,17 +2,17 @@ classdef DissolutionModel < BaseModel
 
     properties
 
-        standardElectricalPotential                     % Standard electrical potential for the dissolution reaction [V]
+        standardEquilibriumPotential                     % Standard electrical potential for the dissolution reaction [V]
         c0                     % Reference concentration [mol/m^3]
         referenceExchangeCurrentDensity                     % Reference exchange current density for the dissolution reaction [A/m^2]
-        MW                     % Molar mass
+        molecularWeight                     % Molar mass
         rho                    % Density
         volumeFraction0        % Initial volume fraction
         referenceVolumetricSurfaceArea % Initial volumetric surface area
         
-        V         % Molar volume [m^3/mol]
-        Np        % Number of particles [-]
-        constants % physical constants
+        molarVolume % Molar volume [m^3/mol]
+        Np          % Number of particles [-]
+        constants   % physical constants
         
     end
 
@@ -23,10 +23,10 @@ classdef DissolutionModel < BaseModel
             model = model@BaseModel();
             
             fdnames = {'G'              , ...
-                       'standardElectricalPotential'             , ...
+                       'standardEquilibriumPotential'             , ...
                        'c0'             , ...
                        'referenceExchangeCurrentDensity'             , ...
-                       'MW'             , ...
+                       'molecularWeight'             , ...
                        'rho'            , ...
                        'volumeFraction0', ...
                        'referenceVolumetricSurfaceArea'};
@@ -41,7 +41,7 @@ classdef DissolutionModel < BaseModel
             model.Np = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
 
             % setup molar volume
-            model.V  = model.molecularWeight/model.rho;
+            model.molarVolume  = model.molecularWeight/model.rho;
             
         end
 
@@ -153,7 +153,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateE(model, state)
 
-                E0 = model.standardElectricalPotential;
+                E0 = model.standardEquilibriumPotential;
                 c0 = model.referenceConcentration;
                 R  = model.constants.R;
                 F  = model.constants.F;
@@ -180,7 +180,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateMassSource(model, state)
 
-                V    = model.V;
+                V    = model.molarVolume;
                 F    = model.constants.F;
                 vols = model.G.getVolumes();
                 

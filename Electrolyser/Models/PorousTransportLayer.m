@@ -13,7 +13,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
         solidVolumeFraction  % Solid volume fraction (should correspond to total ionomer + inactive part)
         leverettCoefficients % coefficients for the Leverett function definition, see method updateLiquidPressure and function leverett.m
-        theta                % water contact angle
+        waterContactAngle                % water contact angle
         permeability         % Permeability [Darcy]
         tortuosity           % Tortuosity
 
@@ -37,7 +37,7 @@ classdef PorousTransportLayer < ElectronicComponent
         Vs
 
         % helper structures (those are not given as input but initialized with the model)
-        MW    % molecular weight of KOH solution
+        molecularWeight    % molecular weight of KOH solution
         gasMW % Molecular weight of the active gas (H2 og O2). It will be initialized by the child class (HydrogenPorousTransportLayer or OxygenPorousTransportLayer).
 
     end
@@ -54,11 +54,11 @@ classdef PorousTransportLayer < ElectronicComponent
             fdnames = {'G'                   , ...
                        'solidVolumeFraction' , ...
                        'leverettCoefficients', ...
-                       'theta'               , ...
+                       'waterContactAngle'               , ...
                        'tortuosity'          , ...
                        'permeability'        , ...
                        'species'                  , ...
-                       'MW'                  , ...
+                       'molecularWeight'                  , ...
                        'externalCouplingTerm'};
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -734,7 +734,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             K        = model.permeability;
             levcoefs = model.leverettCoefficients;
-            theta    = model.theta;
+            theta    = model.waterContactAngle;
 
             pgas = state.phasePressures{model.phaseInd.gas};
 
