@@ -189,12 +189,12 @@ nls.errorOnFailure = false;
 dopack = false;
 if dopack
     dataFolder = 'BattMo';
-    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonlinearSolver', nls);
+    problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonLinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true;
     simulatePackedProblem(problem);
     [globvars, states, report] = getPackedSimulatorOutput(problem);
 else
-    [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonlinearSolver', nls);
+    [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 end
 
 %% Process output and recover the output voltage and current from the output states.
