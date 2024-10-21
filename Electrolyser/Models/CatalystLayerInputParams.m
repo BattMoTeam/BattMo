@@ -14,7 +14,7 @@ classdef CatalystLayerInputParams < ComponentInputParams
         
         chargeTransferCoefficient                  % coefficient in the exponent in Butler-Volmer equation [-]
         ionomerFractionArea                  % Fraction of specific area that is coversed with ionomer [-]
-        volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
+        referenceVolumetricSurfaceArea % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
 
@@ -45,7 +45,7 @@ classdef CatalystLayerInputParams < ComponentInputParams
             dm = 'DissolutionModel';
 
             if inputparams.include_dissolution
-                inputparams = mergeParameters(inputparams, {{'volumetricSurfaceArea0'}, {dm, 'volumetricSurfaceArea0'}});
+                inputparams = mergeParameters(inputparams, {{'referenceVolumetricSurfaceArea'}, {dm, 'referenceVolumetricSurfaceArea'}});
                 inputparams.(dm) = inputparams.(dm).validateInputParams();
             end
             

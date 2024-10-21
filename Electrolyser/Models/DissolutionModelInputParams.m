@@ -8,7 +8,7 @@ classdef DissolutionModelInputParams < ComponentInputParams
         MW                     % Molar mass
         rho                    % Density
         volumeFraction0        % Initial volume fraction
-        volumetricSurfaceArea0 % Initial volumetric surface area
+        referenceVolumetricSurfaceArea % Initial volumetric surface area
         
     end
 

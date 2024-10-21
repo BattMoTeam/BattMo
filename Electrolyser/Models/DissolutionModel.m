@@ -8,7 +8,7 @@ classdef DissolutionModel < BaseModel
         MW                     % Molar mass
         rho                    % Density
         volumeFraction0        % Initial volume fraction
-        volumetricSurfaceArea0 % Initial volumetric surface area
+        referenceVolumetricSurfaceArea % Initial volumetric surface area
         
         V         % Molar volume [m^3/mol]
         Np        % Number of particles [-]
@@ -29,14 +29,14 @@ classdef DissolutionModel < BaseModel
                        'MW'             , ...
                        'rho'            , ...
                        'volumeFraction0', ...
-                       'volumetricSurfaceArea0'};
+                       'referenceVolumetricSurfaceArea'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants();
 
             % setup particule number
-            vsa = model.volumetricSurfaceArea0;
+            vsa = model.referenceVolumetricSurfaceArea;
             vf  = model.volumeFraction0;
             model.Np = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
 
