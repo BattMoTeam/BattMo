@@ -18,12 +18,5 @@
       "$ref": "EvolutionElectrode"},
     
     "OxygenEvolutionElectrode": {
-      "$ref": "EvolutionElectrode"},
-
-    "controlCurrent" : {
-      "$ref": "PhysicalQuantity.schema.json",
-      "description" : "control current",
-      "symbol" : "controlI"}
-  }
-
-}
+      "$ref": "EvolutionElectrode"}}}
+  
