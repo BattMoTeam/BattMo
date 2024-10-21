@@ -12,7 +12,6 @@ classdef ElectrolyserInputParams < InputParams
                 
         couplingTerms
         
-        controlI % given value for galvanistic control
     end
     
     methods
