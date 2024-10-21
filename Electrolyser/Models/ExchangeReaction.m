@@ -101,7 +101,7 @@ classdef ExchangeReaction < BaseModel
 
             
             kxch = model.kxch;
-            z = model.OH.z;
+            z = model.OH.chargeNumber;
             F = model.constants.F;
             R = model.constants.R;
             

@@ -11,7 +11,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         OH % with fields
         % OH.xi : OH occupation
-        % OH.z  : charge number
+        % OH.chargeNumber  : charge number
         % OH.t  : transference number
 
         cT % Total concentration of charged groups (one value per cell)
@@ -243,7 +243,7 @@ classdef IonomerMembrane < ElectronicComponent
         function state = updatejchem(model, state)
 
             xi  = model.OH.xi;
-            z   = model.OH.z;
+            z   = model.OH.chargeNumber;
             F   = model.constants.F;
 
             kappaeff = state.conductivity;
@@ -289,7 +289,7 @@ classdef IonomerMembrane < ElectronicComponent
             j = state.j;
 
             xi = model.OH.xi;
-            z  = model.OH.z;
+            z  = model.OH.chargeNumber;
             t  = model.OH.t;
             F  = model.constants.F;
 
@@ -315,7 +315,7 @@ classdef IonomerMembrane < ElectronicComponent
         function state = updateEsource(model, state)
 
             F = model.constants.F;
-            z = model.OH.z;
+            z = model.OH.chargeNumber;
 
             state.eSource = z*F*state.OHsource;
 

@@ -166,7 +166,7 @@ classdef Electrolyser < BaseModel
                 state = model.evalVarName(state, {elde, ptl, 'vaporPressure'});
 
                 H2Ovp = state.(elde).(ptl).vaporPressure;
-                H2Ogrho = H2Ovp*model.(elde).(ptl).sp.H2O.MW./(con.R*T);
+                H2Ogrho = H2Ovp*model.(elde).(ptl).sp.H2O.molecularWeight./(con.R*T);
                 gvf = (1 - lvf - model.(elde).(ptl).solidVolumeFraction); % Gas volume fraction
 
                 state.(elde).(ptl).H2Ogasrhoeps = H2Ogrho.*gvf;
@@ -176,13 +176,13 @@ classdef Electrolyser < BaseModel
                   case her
 
                     H2p = pGas;
-                    H2rho = H2p.*model.(elde).(ptl).sp.H2.MW / (con.R * T);
+                    H2rho = H2p.*model.(elde).(ptl).sp.H2.molecularWeight / (con.R * T);
                     state.(elde).(ptl).H2rhoeps = H2rho*gvf;
 
                   case oer
 
                     O2p = pGas;
-                    O2rho = O2p.*model.(elde).(ptl).sp.O2.MW / (con.R * T);
+                    O2rho = O2p.*model.(elde).(ptl).sp.O2.molecularWeight / (con.R * T);
                     state.(elde).(ptl).O2rhoeps = O2rho*gvf;
 
                   otherwise

@@ -11,16 +11,16 @@ classdef CatalystLayer < BaseModel
 
         referenceExchangeCurrentDensity % Exchange current density
         standardElectricalPotential
-        Eref
+        referencePotential
         E0eff
         species % species struct with field
-        % - OH.z  : Charge
-        % - OH.c0 : OH reference concentration
+        % - OH.chargeNumber  : Charge
+        % - OH.referenceConcentration : OH reference concentration
 
-        n % Number of electron transfer
+        numberOfElectronsTransferred % Number of electron transfer
         
-        alpha                 % coefficient in the exponent in Butler-Volmer equation [-]
-        Xinmr                 % Fraction of specific area that is coversed with ionomer [-]
+        chargeTransferCoefficient                 % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea                 % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
@@ -39,11 +39,11 @@ classdef CatalystLayer < BaseModel
             fdnames = { 'G'                     , ...
                         'referenceExchangeCurrentDensity'                    , ...
                         'standardElectricalPotential'                    , ...
-                        'Eref'                  , ...
+                        'referencePotential'                  , ...
                         'species'                    , ...
-                        'n'                     , ...
-                        'alpha'                 , ...
-                        'Xinmr'                 , ...
+                        'numberOfElectronsTransferred'                     , ...
+                        'chargeTransferCoefficient'                 , ...
+                        'ionomerFractionArea'                 , ...
                         'volumetricSurfaceArea0', ...
                         'include_dissolution'   , ...
                         'tortuosity'};
@@ -56,7 +56,7 @@ classdef CatalystLayer < BaseModel
                 model.subModelNameList = {};
             end
             
-            model.E0eff = model.standardElectricalPotential - model.Eref;
+            model.E0eff = model.standardElectricalPotential - model.referencePotential;
             model.constants = PhysicalConstants();
             
         end
@@ -224,9 +224,9 @@ classdef CatalystLayer < BaseModel
             
         function state = updateReactionRates(model, state)
 
-            Xinmr = model.Xinmr;
-            alpha = model.alpha;
-            n     = model.n;
+            Xinmr = model.ionomerFractionArea;
+            alpha = model.chargeTransferCoefficient;
+            n     = model.numberOfElectronsTransferred;
 
             vsa      = state.volumetricSurfaceArea;
             etaElyte = state.etaElyte;

@@ -4,16 +4,16 @@ classdef CatalystLayerInputParams < ComponentInputParams
 
         referenceExchangeCurrentDensity    % Exchange current density
         standardElectricalPotential    % Standard equilibrium potential
-        Eref  % Reference potential
+        referencePotential  % Reference potential
 
         species % species struct with field
-        % - OH.z  : Charge
-        % - OH.c0 : OH reference concentration
+        % - OH.chargeNumber  : Charge number
+        % - OH.referenceConcentration : OH reference concentration
 
-        n % Number of electron transfer
+        numberOfElectronsTransferred % Number of electron transfer
         
-        alpha                  % coefficient in the exponent in Butler-Volmer equation [-]
-        Xinmr                  % Fraction of specific area that is coversed with ionomer [-]
+        chargeTransferCoefficient                  % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea                  % Fraction of specific area that is coversed with ionomer [-]
         volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]

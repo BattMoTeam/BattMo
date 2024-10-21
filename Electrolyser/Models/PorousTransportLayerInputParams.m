@@ -8,14 +8,14 @@ classdef PorousTransportLayerInputParams < ElectronicComponentInputParams
         permeability         % Permeability [Darcy]
         tortuosity % Tortuosity
         species % species struct 
-        % species.OH.MW    : Molecular weight of OH [kg mol^-1]
+        % species.OH.molecularWeight    : Molecular weight of OH [kg mol^-1]
         % species.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
         % species.OH.D     : Diffusion coefficient [m^2 s^-1]
         % species.OH.t     : Transference coefficient [-]
-        % species.OH.z     : Charge number [-]
-        % species.K.MW     : Molecular weight of K [kg mol^-1]
+        % species.OH.chargeNumber     : Charge number [-]
+        % species.K.molecularWeight     : Molecular weight of K [kg mol^-1]
         % species.K.V0     : Partial molar volume of K [m^3 mol^-1]
-        % species.H2O.MW   : Molecular weight of H2O [kg mol^-1]
+        % species.H2O.molecularWeight   : Molecular weight of H2O [kg mol^-1]
         % species.H2O.kLV  : Liquid-vapor exchange rate
         % species.H2O.mu0  : Standard chemical potential
         % species.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]

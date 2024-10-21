@@ -18,14 +18,14 @@ classdef PorousTransportLayer < ElectronicComponent
         tortuosity           % Tortuosity
 
         species % species struct
-        % species.OH.MW    : Molecular weight of OH [kg mol^-1]
+        % species.OH.molecularWeight    : Molecular weight of OH [kg mol^-1]
         % species.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
         % species.OH.D     : Diffusion coefficient [m^2 s^-1]
         % species.OH.t     : Transference coefficient [-]
-        % species.OH.z     : Charge number [-]
-        % species.K.MW     : Molecular weight of K [kg mol^-1]
+        % species.OH.chargeNumber     : Charge number [-]
+        % species.K.molecularWeight     : Molecular weight of K [kg mol^-1]
         % species.K.V0     : Partial molar volume of K [m^3 mol^-1]
-        % species.H2O.MW   : Molecular weight of H2O [kg mol^-1]
+        % species.H2O.molecularWeight   : Molecular weight of H2O [kg mol^-1]
         % species.H2O.kLV  : Liquid-vapor exchange rate
         % species.H2O.mu0  : Standard chemical potential
         % species.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]
@@ -114,7 +114,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % initialize helping structures
             sp = model.species;
-            model.MW = sp.OH.MW + sp.K.MW;
+            model.molecularWeight = sp.OH.molecularWeight + sp.K.molecularWeight;
 
         end
 
@@ -510,7 +510,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % R     = model.constants.R;
             % F     = model.constants.F;
             % t     = model.species.OH.t;
-            % z     = model.species.OH.z;
+            % z     = model.species.OH.chargeNumber;
             % coef  = (conductivity./F).*(t/z).*dmudc;
 
             % tc = op.harmFaceBC(coef, bcfaces);
@@ -702,7 +702,7 @@ classdef PorousTransportLayer < ElectronicComponent
             R = model.constants.R;
             F = model.constants.F;
             t = model.species.OH.t;
-            z = model.species.OH.z;
+            z = model.species.OH.chargeNumber;
 
             cOH   = state.concentrations{model.liquidInd.OH};
             kappa = state.conductivity;
@@ -803,7 +803,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             %% assemble evaporation term
             psat = model.species.H2O;
-            MW   = model.species.H2O.MW;
+            MW   = model.species.H2O.molecularWeight;
             kLV  = model.species.H2O.kLV;
             R    = model.constants.R;
 
@@ -885,7 +885,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % assemble OH migration flux
             F = model.constants.F;
             t = model.species.OH.t;
-            z = model.species.OH.z;
+            z = model.species.OH.chargeNumber;
 
             j = state.j;
 
@@ -926,7 +926,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
         function state = updateMolality(model, state)
 
-            MW = model.MW;
+            MW = model.molecularWeight;
 
             rho = state.liqrho;
             cOH = state.concentrations{model.liquidInd.OH};
@@ -940,7 +940,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % Assemble charge source
 
             F = model.constants.F;
-            z = model.species.OH.z;
+            z = model.species.OH.chargeNumber;
 
             OHsrc = state.OHsource;
 
@@ -968,7 +968,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % OHsource                   : [mol/s]
             % H2OliquidSource            : [mol/s]
 
-            state.liquidSource = state.OHsource.*(model.species.OH.MW + model.species.K.MW) + state.H2OliquidSource.*model.species.H2O.MW;
+            state.liquidSource = state.OHsource.*(model.species.OH.molecularWeight + model.species.K.molecularWeight) + state.H2OliquidSource.*model.species.H2O.molecularWeight;
 
         end
 
@@ -976,7 +976,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vols = model.G.getVolumes();
 
-            state.compGasSources{model.gasInd.H2O} = model.species.H2O.MW*vols.*state.H2OvaporLiquidExchangeRate;
+            state.compGasSources{model.gasInd.H2O} = model.species.H2O.molecularWeight*vols.*state.H2OvaporLiquidExchangeRate;
 
         end
 
@@ -1046,7 +1046,7 @@ classdef PorousTransportLayer < ElectronicComponent
             liqrho = state.liqrho;
 
             cK   = cOH;
-            cH2O = (liqrho - cOH.*sp.OH.MW - cK.*sp.K.MW)./sp.H2O.MW;
+            cH2O = (liqrho - cOH.*sp.OH.molecularWeight - cK.*sp.K.molecularWeight)./sp.H2O.molecularWeight;
             % cH   = 1e3.*(10.^-sp.H2O.beta .* (1e-3.*cOH).^-1);
 
             liquidInd = model.liquidInd;
@@ -1143,9 +1143,9 @@ classdef PorousTransportLayer < ElectronicComponent
 
             Vs(lind.OH)  = pmv.*abs(sp.OH.V0)./(abs(sp.OH.V0) + abs(sp.K.V0));
             Vs(lind.K)   = pmv.*abs(sp.K.V0)./(abs(sp.OH.V0) + abs(sp.K.V0));
-            Vs(lind.H2O) = sp.H2O.MW.* (1./rho +...
-                                        mOH.*(sp.OH.MW./rho - Vs(lind.OH)) +...
-                                        mK.*(sp.K.MW ./rho - Vs(lind.K)));
+            Vs(lind.H2O) = sp.H2O.molecularWeight.* (1./rho +...
+                                        mOH.*(sp.OH.molecularWeight./rho - Vs(lind.OH)) +...
+                                        mK.*(sp.K.molecularWeight ./rho - Vs(lind.K)));
 
             cH2O = (1 - cOH.*Vs(lind.OH) - cK.*Vs(lind.K))./Vs(lind.H2O);
 

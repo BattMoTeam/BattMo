@@ -41,7 +41,7 @@ classdef DissolutionModel < BaseModel
             model.Np = 1/(4*pi)*(vsa^3)/(3^2*vf^2);
 
             % setup molar volume
-            model.V  = model.MW/model.rho;
+            model.V  = model.molecularWeight/model.rho;
             
         end
 
