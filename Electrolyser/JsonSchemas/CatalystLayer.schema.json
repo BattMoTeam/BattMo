@@ -45,9 +45,9 @@
       "$ref": "PhysicalQuantity.schema.json",
       "description" : "Fraction of specific area that is covered with ionomer",
       "symbol" : "Xinmr"},
-    "volumetricSurfaceArea" : {
+    "referenceVolumetricSurfaceArea" : {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "volumetric surface area (or initial if it is changing)"},
+      "description" : "reference volumetric surface area (typically initial value when we use the dissolution model)"},
     "tortuosity" : {
       "$ref": "PhysicalQuantity.schema.json",
       "description" : "tortuosity",
