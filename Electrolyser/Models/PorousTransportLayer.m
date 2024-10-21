@@ -17,18 +17,18 @@ classdef PorousTransportLayer < ElectronicComponent
         permeability         % Permeability [Darcy]
         tortuosity           % Tortuosity
 
-        sp % species struct
-        % sp.OH.MW    : Molecular weight of OH [kg mol^-1]
-        % sp.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
-        % sp.OH.D     : Diffusion coefficient [m^2 s^-1]
-        % sp.OH.t     : Transference coefficient [-]
-        % sp.OH.z     : Charge number [-]
-        % sp.K.MW     : Molecular weight of K [kg mol^-1]
-        % sp.K.V0     : Partial molar volume of K [m^3 mol^-1]
-        % sp.H2O.MW   : Molecular weight of H2O [kg mol^-1]
-        % sp.H2O.kLV  : Liquid-vapor exchange rate
-        % sp.H2O.mu0  : Standard chemical potential
-        % sp.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]
+        species % species struct
+        % species.OH.MW    : Molecular weight of OH [kg mol^-1]
+        % species.OH.V0    : Partial molar volume of OH [m^3 mol^-1]
+        % species.OH.D     : Diffusion coefficient [m^2 s^-1]
+        % species.OH.t     : Transference coefficient [-]
+        % species.OH.z     : Charge number [-]
+        % species.K.MW     : Molecular weight of K [kg mol^-1]
+        % species.K.V0     : Partial molar volume of K [m^3 mol^-1]
+        % species.H2O.MW   : Molecular weight of H2O [kg mol^-1]
+        % species.H2O.kLV  : Liquid-vapor exchange rate
+        % species.H2O.mu0  : Standard chemical potential
+        % species.H2O.V0   : Partial molar volume of H2O [m^3 mol^-1]
 
         externalCouplingTerm
 
@@ -57,7 +57,7 @@ classdef PorousTransportLayer < ElectronicComponent
                        'theta'               , ...
                        'tortuosity'          , ...
                        'permeability'        , ...
-                       'sp'                  , ...
+                       'species'                  , ...
                        'MW'                  , ...
                        'externalCouplingTerm'};
             model = dispatchParams(model, inputparams, fdnames);
@@ -113,7 +113,7 @@ classdef PorousTransportLayer < ElectronicComponent
             model.Boundary = PorousTransportLayerBoundary(inputparams.Boundary);
 
             % initialize helping structures
-            sp = model.sp;
+            sp = model.species;
             model.MW = sp.OH.MW + sp.K.MW;
 
         end
@@ -509,8 +509,8 @@ classdef PorousTransportLayer < ElectronicComponent
             % dmudc = R.*T./cOH;
             % R     = model.constants.R;
             % F     = model.constants.F;
-            % t     = model.sp.OH.t;
-            % z     = model.sp.OH.z;
+            % t     = model.species.OH.t;
+            % z     = model.species.OH.z;
             % coef  = (conductivity./F).*(t/z).*dmudc;
 
             % tc = op.harmFaceBC(coef, bcfaces);
@@ -527,7 +527,7 @@ classdef PorousTransportLayer < ElectronicComponent
             cOHbc = state.(bd).cOH;
 
             vf = state.volumeFractions{phInd.liquid};
-            D  = model.sp.OH.D;
+            D  = model.species.OH.D;
             tc = model.G.getTransBcHarmFace((vf.^tau).*D, bcfaces);
             diffOHbcFlux = tc.*(cOHbc - cOH(bccells));
 
@@ -701,8 +701,8 @@ classdef PorousTransportLayer < ElectronicComponent
 
             R = model.constants.R;
             F = model.constants.F;
-            t = model.sp.OH.t;
-            z = model.sp.OH.z;
+            t = model.species.OH.t;
+            z = model.species.OH.z;
 
             cOH   = state.concentrations{model.liquidInd.OH};
             kappa = state.conductivity;
@@ -802,9 +802,9 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateEvaporationTerm(model, state)
 
             %% assemble evaporation term
-            psat = model.sp.H2O;
-            MW   = model.sp.H2O.MW;
-            kLV  = model.sp.H2O.kLV;
+            psat = model.species.H2O;
+            MW   = model.species.H2O.MW;
+            kLV  = model.species.H2O.kLV;
             R    = model.constants.R;
 
             pH2Ovap = state.vaporPressure;
@@ -871,7 +871,7 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateOHDiffusionFlux(model, state)
         % assemble OH diffusion flux
 
-            D   = model.sp.OH.D;
+            D   = model.species.OH.D;
             tau = model.tortuosity;
 
             cOH = state.concentrations{model.liquidInd.OH};
@@ -884,8 +884,8 @@ classdef PorousTransportLayer < ElectronicComponent
         function state = updateOHMigrationFlux(model, state)
         % assemble OH migration flux
             F = model.constants.F;
-            t = model.sp.OH.t;
-            z = model.sp.OH.z;
+            t = model.species.OH.t;
+            z = model.species.OH.z;
 
             j = state.j;
 
@@ -940,7 +940,7 @@ classdef PorousTransportLayer < ElectronicComponent
         % Assemble charge source
 
             F = model.constants.F;
-            z = model.sp.OH.z;
+            z = model.species.OH.z;
 
             OHsrc = state.OHsource;
 
@@ -968,7 +968,7 @@ classdef PorousTransportLayer < ElectronicComponent
             % OHsource                   : [mol/s]
             % H2OliquidSource            : [mol/s]
 
-            state.liquidSource = state.OHsource.*(model.sp.OH.MW + model.sp.K.MW) + state.H2OliquidSource.*model.sp.H2O.MW;
+            state.liquidSource = state.OHsource.*(model.species.OH.MW + model.species.K.MW) + state.H2OliquidSource.*model.species.H2O.MW;
 
         end
 
@@ -976,7 +976,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vols = model.G.getVolumes();
 
-            state.compGasSources{model.gasInd.H2O} = model.sp.H2O.MW*vols.*state.H2OvaporLiquidExchangeRate;
+            state.compGasSources{model.gasInd.H2O} = model.species.H2O.MW*vols.*state.H2OvaporLiquidExchangeRate;
 
         end
 
@@ -1007,8 +1007,8 @@ classdef PorousTransportLayer < ElectronicComponent
 
             error('Not used in the current implementation');
 
-            OH = model.sp.OH;
-            K = model.sp.K;
+            OH = model.species.OH;
+            K = model.species.K;
 
             m   = state.OHmolality;
             rho = state.rhoLiquid;
@@ -1040,7 +1040,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
         function state = updateConcentrations(model, state)
 
-            sp = model.sp;
+            sp = model.species;
 
             cOH = state.concentrations{model.liquidInd.OH};
             liqrho = state.liqrho;
@@ -1109,7 +1109,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             MW = 0.0561056;  % Molecular Weight of KOH [kg mol^-1]
 
-            sp = model.sp;
+            sp = model.species;
             lind = model.liquidInd;
 
             % Calculate molal concentration

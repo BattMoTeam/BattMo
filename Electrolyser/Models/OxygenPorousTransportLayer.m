@@ -3,8 +3,8 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
 
     properties
         
-        % The sp structure should now include
-        % sp.O2.MW : Molecular weight of H2 [kg/mol]
+        % The species structure should now include
+        % species.O2.MW : Molecular weight of H2 [kg/mol]
         
     end
     
@@ -18,7 +18,7 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
             model.compInd.O2 = model.compInd.activeGas;
             model.gasInd.O2  = model.gasInd.activeGas;
 
-            model.gasMW = model.sp.O2.MW;
+            model.gasMW = model.species.O2.MW;
             
         end
 
@@ -70,8 +70,8 @@ classdef OxygenPorousTransportLayer < PorousTransportLayer
 
             gasInd   = model.gasInd;
             phaseInd = model.phaseInd;
-            MWH2O    = model.sp.H2O.MW;
-            MWO2     = model.sp.O2.MW;
+            MWH2O    = model.species.H2O.MW;
+            MWO2     = model.species.O2.MW;
             R        = model.constants.R;
             
             mO2  = state.O2rhoeps;

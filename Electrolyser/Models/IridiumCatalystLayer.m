@@ -43,8 +43,8 @@ classdef IridiumCatalystLayer < CatalystLayer
 
         function state = updateReactionRateConstants(model, state)
             
-            j0   = model.j0;
-            cOH0 = model.sp.OH.c0;
+            j0   = model.referenceExchangeCurrentDensity;
+            cOH0 = model.species.OH.c0;
             th   = 1e-2; % regularization parameter for the square root
             
             cOH = state.cOHelyte;

@@ -2,9 +2,9 @@ classdef DissolutionModel < BaseModel
 
     properties
 
-        E0                     % Standard electrical potential for the dissolution reaction [V]
+        standardElectricalPotential                     % Standard electrical potential for the dissolution reaction [V]
         c0                     % Reference concentration [mol/m^3]
-        j0                     % Reference exchange current density for the dissolution reaction [A/m^2]
+        referenceExchangeCurrentDensity                     % Reference exchange current density for the dissolution reaction [A/m^2]
         MW                     % Molar mass
         rho                    % Density
         volumeFraction0        % Initial volume fraction
@@ -23,9 +23,9 @@ classdef DissolutionModel < BaseModel
             model = model@BaseModel();
             
             fdnames = {'G'              , ...
-                       'E0'             , ...
+                       'standardElectricalPotential'             , ...
                        'c0'             , ...
-                       'j0'             , ...
+                       'referenceExchangeCurrentDensity'             , ...
                        'MW'             , ...
                        'rho'            , ...
                        'volumeFraction0', ...
@@ -140,7 +140,7 @@ classdef DissolutionModel < BaseModel
             % Reaction : IrO2 + 2 H2O <->> IrO4^2- + 4H+ + 2e-
             % (Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate)
                 
-                j0 = model.j0;
+                j0 = model.referenceExchangeCurrentDensity;
 
                 vsa = state.volumetricSurfaceArea;
                 eta = state.eta;
@@ -153,7 +153,7 @@ classdef DissolutionModel < BaseModel
 
             function state = updateE(model, state)
 
-                E0 = model.E0;
+                E0 = model.standardElectricalPotential;
                 c0 = model.c0;
                 R  = model.constants.R;
                 F  = model.constants.F;

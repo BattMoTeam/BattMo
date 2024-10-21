@@ -2,8 +2,8 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
 
     properties
 
-        % The sp structure should now include
-        % sp.H2.MW : Molecular weight of H2 [kg/mol]
+        % The species structure should now include
+        % species.H2.MW : Molecular weight of H2 [kg/mol]
         
     end
     
@@ -17,7 +17,7 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
             model.compInd.H2 = model.compInd.activeGas;
             model.gasInd.H2  = model.gasInd.activeGas;
             
-            model.gasMW = model.sp.H2.MW;
+            model.gasMW = model.species.H2.MW;
             
         end
         
@@ -68,8 +68,8 @@ classdef HydrogenPorousTransportLayer < PorousTransportLayer
 
             gasInd   = model.gasInd;
             phaseInd = model.phaseInd;
-            MWH2O    = model.sp.H2O.MW;
-            MWH2     = model.sp.H2.MW;
+            MWH2O    = model.species.H2O.MW;
+            MWH2     = model.species.H2.MW;
             R        = model.constants.R;
             
             mH2  = state.H2rhoeps;

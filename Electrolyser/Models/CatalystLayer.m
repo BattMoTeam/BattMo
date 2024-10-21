@@ -9,11 +9,11 @@ classdef CatalystLayer < BaseModel
         liquidInd % mapping structure for component indices
         gasInd    % mapping structure for component indices
 
-        j0 % Exchange current density
-        E0
+        referenceExchangeCurrentDensity % Exchange current density
+        standardElectricalPotential
         Eref
         E0eff
-        sp % species struct with field
+        species % species struct with field
         % - OH.z  : Charge
         % - OH.c0 : OH reference concentration
 
@@ -37,10 +37,10 @@ classdef CatalystLayer < BaseModel
             model = model@BaseModel();
             
             fdnames = { 'G'                     , ...
-                        'j0'                    , ...
-                        'E0'                    , ...
+                        'referenceExchangeCurrentDensity'                    , ...
+                        'standardElectricalPotential'                    , ...
                         'Eref'                  , ...
-                        'sp'                    , ...
+                        'species'                    , ...
                         'n'                     , ...
                         'alpha'                 , ...
                         'Xinmr'                 , ...
@@ -56,7 +56,7 @@ classdef CatalystLayer < BaseModel
                 model.subModelNameList = {};
             end
             
-            model.E0eff = model.E0 - model.Eref;
+            model.E0eff = model.standardElectricalPotential - model.Eref;
             model.constants = PhysicalConstants();
             
         end
