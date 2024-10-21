@@ -205,7 +205,7 @@ classdef Electrolyser < BaseModel
             aw = state.(oer).(ptl).H2Oa(1);
             state.(inm).H2Oa = aw*ones(nc_inm, 1);
             cH2O = IonomerMembrane.groupHydration(model.(inm), aw, T);
-            model.(inm).H2O.c0 = cH2O/aw;
+            model.(inm).H2O.referenceConcentration = cH2O/aw;
 
             state.(inm).H2Oceps = cH2O.*model.(inm).volumeFraction;
 

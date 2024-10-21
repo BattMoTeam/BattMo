@@ -5,17 +5,17 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
         volumeFraction
         
         H2O % with fields
-        % H2O.c0 : Reference concentration
-        % H2O.D : diffusion coefficient for water
+        % H2O.referenceConcentration : Reference concentration
+        % H2O.diffusionCoefficient : diffusion coefficient for water
         % H2O.molecularWeight : Molar mass (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
 
         
         OH % with fields
-        % OH.xi : OH occupation
+        % OH.occupationNumber : OH occupation
         % OH.chargeNumber : Charge number
-        % OH.t : Transference number
+        % OH.transference : Transference number
 
-        cT % Total concentration of charged group (one scalar value)
+        totalChargedGroupConcentration % Total concentration of charged group (one scalar value)
         
         V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
 

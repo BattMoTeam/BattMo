@@ -5,16 +5,16 @@ classdef IonomerMembrane < ElectronicComponent
         volumeFraction
 
         H2O % with fields
-        % H2O.c0 : Reference concentration (value is overwritten at initialization in current implementation)
-        % H2O.D  : diffusion coefficient for water
-        % H2O.V0 : Molar mass (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
+        % H2O.referenceConcentration : Reference concentration (value is overwritten at initialization in current implementation)
+        % H2O.diffusionCoefficient   : diffusion coefficient for water
+        % H2O.partialMolarVolume     : Molar mass (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
 
         OH % with fields
-        % OH.xi : OH occupation
-        % OH.chargeNumber  : charge number
-        % OH.t  : transference number
+        % OH.occupationNumber           : OH occupation
+        % OH.chargeNumber : charge number
+        % OH.transference : transference number
 
-        cT % Total concentration of charged groups (one value per cell)
+        totalChargedGroupConcentration % Total concentration of charged groups (one value per cell)
 
         V % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not
           % for assembly, and also for activity computation)
@@ -37,7 +37,7 @@ classdef IonomerMembrane < ElectronicComponent
                        'tortuosity'};
             model = dispatchParams(model, inputparams, fdnames);
 
-            cT = inputparams.cT;
+            cT = inputparams.totalChargedGroupConcentration;
             nc = model.G.getNumberOfCells();
             model.cT = cT*ones(nc, 1);
 
@@ -175,14 +175,14 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = setupOHconcentration(model, state)
 
-            state.cOH = model.cT;
+            state.cOH = model.totalChargedGroupConcentration;
 
         end
 
         function state = updateActivityEquation(model, state)
 
             V  = model.V;
-            V0 = model.H2O.V0;
+            V0 = model.H2O.partialMolarVolume;
 
             c  = state.H2Oc;
             aw = state.H2Oa;
@@ -242,7 +242,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updatejchem(model, state)
 
-            xi  = model.OH.xi;
+            xi  = model.OH.occupationNumber;
             z   = model.OH.chargeNumber;
             F   = model.constants.F;
 
@@ -271,7 +271,7 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updateH2OdiffFlux(model, state)
 
-            D   = model.H2O.D;
+            D   = model.H2O.diffusionCoefficient;
             vf  = model.volumeFraction;
             tau = model.tortuosity;
 
@@ -288,9 +288,9 @@ classdef IonomerMembrane < ElectronicComponent
 
             j = state.j;
 
-            xi = model.OH.xi;
+            xi = model.OH.occupationNumber;
             z  = model.OH.chargeNumber;
-            t  = model.OH.t;
+            t  = model.OH.transference;
             F  = model.constants.F;
 
             %% todo : check expression, not same as in paper
@@ -341,7 +341,7 @@ classdef IonomerMembrane < ElectronicComponent
         function cH2O = groupHydration(model, aw, T)
 
             V = model.V;
-            V0 = model.H2O.V0;
+            V0 = model.H2O.partialMolarVolume;
 
             aw(aw > 1) = 1;
             %   lambda corresponds to the number of water molecules per charged

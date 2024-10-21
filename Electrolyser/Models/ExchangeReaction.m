@@ -4,10 +4,10 @@ classdef ExchangeReaction < BaseModel
 
         constants % physical constants
 
-        kxch % Exchange rate
+        exchangeReactionRate % Exchange rate
         OH   % structure with field
              % - z : number of charge
-        kML  % Ionomer sorption coefficient
+        ionomerSorptionCoefficient  % Ionomer sorption coefficient
 
     end
 
@@ -17,9 +17,9 @@ classdef ExchangeReaction < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'kxch', ...
-                       'OH'  , ...
-                       'kML' };
+            fdnames = {'exchangeReactionRate', ...
+                       'OH'                  , ...
+                       'ionomerSorptionCoefficient' };
             model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants;
@@ -79,7 +79,7 @@ classdef ExchangeReaction < BaseModel
 
         function state = updateSorption(model, state)
 
-            kML = model.kML;
+            kML = model.ionomerSorptionCoefficient;
             con = model.constants;
 
             H2OaElyte = state.H2OaElyte;
@@ -96,11 +96,11 @@ classdef ExchangeReaction < BaseModel
         %   Follows an approach from Stanislaw, Gerhardt, and Weber ECS Trans 2019,
         %   as well as Jiangjin Liu et al JES 2021.
         %   The equation for R approaches the equation for Donnan equilibrium if
-        %   kxch is large or R approaches zero. So using a large kxch value should
+        %   exchangeReactionRate is large or R approaches zero. So using a large exchangeReactionRate value should
         %   enforce Donnan equilibrium.
 
             
-            kxch = model.kxch;
+            kxch = model.exchangeReactionRate;
             z = model.OH.chargeNumber;
             F = model.constants.F;
             R = model.constants.R;

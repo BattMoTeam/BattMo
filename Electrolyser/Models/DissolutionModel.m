@@ -154,7 +154,7 @@ classdef DissolutionModel < BaseModel
             function state = updateE(model, state)
 
                 E0 = model.standardElectricalPotential;
-                c0 = model.c0;
+                c0 = model.referenceConcentration;
                 R  = model.constants.R;
                 F  = model.constants.F;
                 
