@@ -3,55 +3,70 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the CatalystLayer input parameters",
   "type": "object",
-
-  "properties" : {
-    "referenceExchangeCurrentDensity" : {
+  "properties": {
+    "referenceExchangeCurrentDensity": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Reference exchange current density",
-      "symbol" : "j0"},
-    "standardEquilibriumPotential" : {
+      "description": "Reference exchange current density",
+      "symbol": "j0"
+    },
+    "standardEquilibriumPotential": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "standard equilibrium potential",
-      "symbol" : "E0"},
-    "referencePotential" : {
+      "description": "standard equilibrium potential",
+      "symbol": "E0"
+    },
+    "referencePotential": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "referance potential",
-      "symbol" : "Eref"},
-    "species" : {
-      "type" : "object",
-      "description" : "description of the species",
-      "properties" : {
-        "OH" : {
-          "type" : "object",
-          "properties" :
-          {
-            "chargeNumber" : {
-            "$ref": "PhysicalQuantity.schema.json",
-            "description" : "Charge number",
-            "symbol" : "z"},
-            "referenceConcentration" : {
+      "description": "referance potential",
+      "symbol": "Eref"
+    },
+    "species": {
+      "type": "object",
+      "description": "description of the species",
+      "properties": {
+        "OH": {
+          "type": "object",
+          "properties": {
+            "chargeNumber": {
               "$ref": "PhysicalQuantity.schema.json",
-              "description" : "reference concentration",
-              "symbol" : "c0"}}}}},
-    "numberOfElectronsTransferred" : {
+              "description": "Charge number",
+              "symbol": "z"
+            },
+            "referenceConcentration": {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description": "reference concentration",
+              "symbol": "c0"
+            }
+          }
+        }
+      }
+    },
+    "numberOfElectronsTransferred": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Number of electron transfer",
-      "symbol" : "n"},
-    "chargeTransferCoefficient" : {
+      "description": "Number of electron transfer",
+      "symbol": "n"
+    },
+    "chargeTransferCoefficient": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Coefficient in the exponent in Butler-Volmer equation",
-      "symbol": "alpha"},
-    "ionomerFractionArea" : {
+      "description": "Coefficient in the exponent in Butler-Volmer equation",
+      "symbol": "alpha"
+    },
+    "ionomerFractionArea": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Fraction of specific area that is covered with ionomer",
-      "symbol" : "Xinmr"},
-    "referenceVolumetricSurfaceArea" : {
+      "description": "Fraction of specific area that is covered with ionomer",
+      "symbol": "Xinmr"
+    },
+    "referenceVolumetricSurfaceArea": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "reference volumetric surface area (typically initial value when we use the dissolution model)"},
-    "tortuosity" : {
+      "description": "reference volumetric surface area (typically initial value when we use the dissolution model)"
+    },
+    "tortuosity": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "tortuosity",
-      "symbol" : "tau"},
-    "includeDissolution" : {
-      "type" : "boolean",
-      "description" : "set to true if dissolution model is included"}}}
+      "description": "tortuosity",
+      "symbol": "tau"
+    },
+    "includeDissolution": {
+      "type": "boolean",
+      "description": "set to true if dissolution model is included"
+    }
+  }
+}

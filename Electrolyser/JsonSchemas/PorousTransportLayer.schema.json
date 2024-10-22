@@ -27,7 +27,7 @@
       "properties" : {
         "OH" : {
           "type" : "object",
-          "description" : "properties of OH- ion"
+          "description" : "properties of OH- ion",
           "properties" : {
             "molecularWeight" : {
               "$ref": "PhysicalQuantity.schema.json",
@@ -48,10 +48,10 @@
             "chargeNumber" : {
               "$ref": "PhysicalQuantity.schema.json",
               "description" : "Charge number",
-              "symbol" : "z"},}},
+              "symbol" : "z"}}},
         "K" : {
           "type" : "object",
-          "description" : "properties of K+ ion"
+          "description" : "properties of K+ ion",
           "properties" : {
             "molecularWeight" : {
               "$ref": "PhysicalQuantity.schema.json",
@@ -62,7 +62,7 @@
         },
         "H2O" : {
           "type" : "object",
-          "description" : "properties of K+ ion"
+          "description" : "properties of K+ ion",
           "properties" : {
             "molecularWeight"   : {
               "$ref": "PhysicalQuantity.schema.json",

@@ -3,21 +3,27 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the ExchangeReaction input parameters",
   "type": "object",
-
-  "properties" : {
-    "OH" : {
-      "type" : "object",
-      "description" : {"Properties of the OH ion for the exchange rate reactions"}
-      "properties" : {
-        "chargeNumber" : {
-          "type" : "integer",
-          "description" : "charge number",
-          "symbol" : "z"}}},
-    "exchangeReactionRate" : {
+  "properties": {
+    "OH": {
+      "type": "object",
+      "description": "Properties of the OH ion for the exchange rate reactions",
+      "properties": {
+        "chargeNumber": {
+          "type": "integer",
+          "description": "charge number",
+          "symbol": "z"
+        }
+      }
+    },
+    "exchangeReactionRate": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "Exchange rate",
-      "symbol" : "kxch"},
-    "ionomerSorptionCoefficient" : {
+      "description": "Exchange rate",
+      "symbol": "kxch"
+    },
+    "ionomerSorptionCoefficient": {
       "$ref": "PhysicalQuantity.schema.json",
-      "description" : "ionomer sorption coefficient",
-      "symbol" : "kML"}}}
+      "description": "ionomer sorption coefficient",
+      "symbol": "kML"
+    }
+  }
+}
