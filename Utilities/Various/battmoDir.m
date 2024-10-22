@@ -1,6 +1,6 @@
 function dir = battmoDir()
     dir = fileparts(mfilename('fullpath'));
-    dir = fullfile(dir, '..');
+    dir = fullfile(dir, '..', '..');
 end
 
 
