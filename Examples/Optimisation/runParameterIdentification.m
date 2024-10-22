@@ -218,6 +218,8 @@ for k = 1:numel(params)
     fprintf('%g %s\n', pOpt(k), hit);
 end
 
+pExp = cellfun(@(p) p.getParameter(expSimSetup), params)';
+
 fprintf('\nExperimental values:\n');
 fprintf('%g\n', pExp);
 
