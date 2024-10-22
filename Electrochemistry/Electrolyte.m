@@ -44,6 +44,8 @@ classdef Electrolyte < BaseModel
         computeConductivityFunc
         computeDiffusionCoefficientFunc
         use_thermal
+        
+        regularisationConstant = 0 % can be useed in update of dmudcs to avoid singular value
 
     end
 
@@ -321,12 +323,13 @@ classdef Electrolyte < BaseModel
             % calculate the concentration derivative of the chemical potential for each species in the electrolyte
             % In the case of a binary electrolyte, we could have simplified those expressions.
             R = model.constants.R;
-
+            r = model.regularisationConstant;
+            
             % We consider only binary electrolytes with two components.
             ncomp = 2;
             dmudcs = cell(ncomp, 1);
             for ind = 1 : ncomp
-                dmudcs{ind} = R .* T ./ c;
+                dmudcs{ind} = R .* T ./ (c + r);
             end
 
             state.dmudcs = dmudcs;
