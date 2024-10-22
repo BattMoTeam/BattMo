@@ -128,7 +128,7 @@ classdef ControlModel < BaseModel
         function schedule = setupSchedule(model, jsonstruct)
         % Convenience function to setup schedule from main jsonstruct with property TimeStepping
             
-            if isfield(jsonstruct, 'TimeStepping')
+            if nargin > 1 && isfield(jsonstruct, 'TimeStepping')
                 timeSteppingParams = jsonstruct.TimeStepping;
             else
                 timeSteppingParams = [];
