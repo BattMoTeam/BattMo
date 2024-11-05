@@ -112,11 +112,6 @@ classdef MaxwellStefanDiffusion < BaseModel
             outputvarname = VarName({}, 'massFractions', ncomp, ncomp);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
-            fn = @MaxwellStefanDiffusion.updateDensity;
-            inputvarnames = {VarName({}, 'massFractions', ncomp), ...
-                             'pressure'};
-            model = model.registerPropFunction({'density', fn, inputvarnames});
-            
             for icomp = 1 : ncomp
                 
                 fn = @MaxwellStefanDiffusion.updateDiffusionForces;
