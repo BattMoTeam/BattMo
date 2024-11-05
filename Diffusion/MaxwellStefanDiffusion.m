@@ -26,6 +26,9 @@ classdef MaxwellStefanDiffusion < BaseModel
         numberOfComponents
         % Molecular weights (array with N values, where N is the number of components)
         molecularWeights
+
+        % Boundary sub-model
+        Boundary
         
     end
     
@@ -45,6 +48,8 @@ classdef MaxwellStefanDiffusion < BaseModel
 
             model.numberOfComponents = numel(model.compNames);
 
+            model.subModelNameList = {'Boundary'};
+            
             ncomp = model.numberOfComponents;
             
             for icomp = 1 : ncomp
@@ -66,6 +71,7 @@ classdef MaxwellStefanDiffusion < BaseModel
 
             ncomp = model.numberOfComponents;
 
+            % Define first variables that also exists for the boundary
             varnames = {};
             % Chemical potential
             varnames{end + 1} = VarName({}, 'chemicalPotentials', ncomp);
@@ -83,6 +89,23 @@ classdef MaxwellStefanDiffusion < BaseModel
             varnames{end + 1} = 'density';            
             % Concentration
             varnames{end + 1} = 'concentration';
+
+            % Register the variables for the model and the boundary
+            model = model.registerVarNames(varnames);
+
+            for ivar = 1 : numel(varnames)
+                varname = varnames{ivar};
+                if ~isa(varname, 'VarName')
+                    varname = VarName({'Boundary'}, varname)
+                else
+                    varname.namespace = {'Boundary'};
+                end
+                varnames{ivar} = varname;
+            end
+            % Register the variables for the boundary
+            model = model.registerVarNames(varnames);
+            
+            varnames = {};
             % Mass accumulation terms
             varnames{end + 1} = VarName({}, 'massAccums', ncomp);
             % Mass source terms
@@ -92,7 +115,6 @@ classdef MaxwellStefanDiffusion < BaseModel
             % Mass conservation equations
             varnames{end + 1} = VarName({}, 'massConses', ncomp);
             
-            model = model.registerVarNames(varnames);
 
             model = model.setAsStaticVarName('temperature');
             
