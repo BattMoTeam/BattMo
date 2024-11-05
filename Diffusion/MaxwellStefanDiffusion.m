@@ -81,8 +81,16 @@ classdef MaxwellStefanDiffusion < BaseModel
             varnames{end + 1} = 'temperature';
             % Total density
             varnames{end + 1} = 'density';            
-            % concentration
+            % Concentration
             varnames{end + 1} = 'concentration';
+            % Mass accumulation terms
+            varnames{end + 1} = VarName({}, 'massAccums', ncomp);
+            % Mass source terms
+            varnames{end + 1} = VarName({}, 'sources', ncomp);
+            % Boundary mass source terms
+            varnames{end + 1} = VarName({}, 'boundarySources', ncomp);
+            % Mass conservation equations
+            varnames{end + 1} = VarName({}, 'massConses', ncomp);
             
             model = model.registerVarNames(varnames);
 
@@ -99,8 +107,19 @@ classdef MaxwellStefanDiffusion < BaseModel
             outputvarnames = VarName({}, 'diffusionFluxes', ncomp);
             model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
 
-            fn = @MaxwellStefanDiffusion.updateDiffusionForces;
+            fn = @MaxwellStefanDiffusion.updateLastMassFraction;
+            inputvarnames = {VarName({}, 'massFractions', ncomp, (1 : ncomp - 1))}
+            outputvarname = VarName({}, 'massFractions', ncomp, ncomp);
+            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            
+            fn = @MaxwellStefanDiffusion.updateDensity;
+            inputvarnames = {VarName({}, 'massFractions', ncomp), ...
+                             'pressure'};
+            model = model.registerPropFunction({'density', fn, inputvarnames});
+            
             for icomp = 1 : ncomp
+                
+                fn = @MaxwellStefanDiffusion.updateDiffusionForces;
                 outputvarname = VarName({}, 'diffusionForces', ncomp, icomp);
                 inputvarnames  = {'temperature'                                  , ...
                                   'pressure'                                     , ...
@@ -109,6 +128,21 @@ classdef MaxwellStefanDiffusion < BaseModel
                                   VarName({}, 'chemicalPotentials', ncomp, icomp), ...
                                   VarName({}, 'massFractions', ncomp, icomp)};
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+                fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
+                outputvarname = VarName({}, 'massAccums', ncomp, icomp);
+                inputvarnames  = { 'density', ...
+                                   VarName({}, 'massFractions', ncomp, icomp)};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+
+                fn = @MaxwellStefanDiffusion.updateMassConses;
+                outputvarname = VarName({}, 'massConses', ncomp, icomp);
+                inputvarnames  = {VarName({}, 'massAccums', ncomp, icomp)     , ...
+                                  VarName({}, 'diffusionFluxes', ncomp, icomp), ...
+                                  VarName({}, 'sources', ncomp, icomp)        , ...
+                                  VarName({}, 'boundarySources', ncomp, icomp)};
+                model = model.registerPropFunction({outputvarname, fn, inputvarnames});                
+                
             end
             
         end

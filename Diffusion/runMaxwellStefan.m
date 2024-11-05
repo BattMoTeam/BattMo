@@ -8,6 +8,7 @@ cgp = model.cgp;
 cgt = model.cgt;
 
 cgt.printRootVariables;
+cgt.printTailVariables;
 
 return
 
