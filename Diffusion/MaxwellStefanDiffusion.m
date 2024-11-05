@@ -96,7 +96,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             for ivar = 1 : numel(varnames)
                 varname = varnames{ivar};
                 if ~isa(varname, 'VarName')
-                    varname = VarName({'Boundary'}, varname)
+                    varname = VarName({'Boundary'}, varname);
                 else
                     varname.namespace = {'Boundary'};
                 end
@@ -115,7 +115,8 @@ classdef MaxwellStefanDiffusion < BaseModel
             % Mass conservation equations
             varnames{end + 1} = VarName({}, 'massConses', ncomp);
             
-
+            model = model.registerVarNames(varnames);
+            
             model = model.setAsStaticVarName('temperature');
             
             fn = @MaxwellStefanDiffusion.updateConcentration;
