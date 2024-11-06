@@ -30,7 +30,10 @@ classdef MaxwellStefanDiffusion < BaseModel
         % Boundary sub-model
         Boundary
 
-        externalCouplingTerm % Instance of couplingTerm
+        externalCouplingTerms % Cell array with external coupling terms
+
+        % helpers
+        bcfaces % Boundary faces that are included. For the boundary faces that are not included we have no flux boundary conditions
         
     end
     
@@ -44,7 +47,7 @@ classdef MaxwellStefanDiffusion < BaseModel
                        'diffusionMatrix' , ...
                        'compNames'       , ...
                        'molecularWeights', ...
-                       'externalCouplingTerm'};
+                       'externalCouplingTerms'};
             
             model = dispatchParams(model, inputparams, fdnames);
 

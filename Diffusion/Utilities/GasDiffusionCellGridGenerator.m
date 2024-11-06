@@ -21,7 +21,6 @@ classdef GasDiffusionCellGridGenerator
 
             [inputparams, gen] = gen.setupGrid(inputparams, params);
             inputparams = gen.setupExternalCoupling(inputparams, params);
-            inputparams = gen.setupControl(inputparams, params);
             
         end
 
@@ -29,18 +28,21 @@ classdef GasDiffusionCellGridGenerator
             error('virtual function');
         end
         
-        function inputparams = setupControl(gen, inputparams, params)
-            error('virtual function');            
-        end
 
         function inputparams = setupExternalCoupling(gen, inputparams, params)
 
-            coupTerm = couplingTerm('boundary', {'boundary'});
+            ncontrols = params.nControls;
 
-            coupTerm.couplingfaces = params.bcfaces;
-            coupTerm.couplingcells = params.bccells;
+            for icontrol = 1 : ncontrols
+                
+                coupTerm = couplingTerm(sprintf('controlElement-%d', icontrol), {'boundary'});
+                
+                coupTerm.couplingfaces = params.bcfaces{icontrol};
+                coupTerm.couplingcells = params.bccells{icontrol};
 
-            inputparams.externalCouplingTerm = coupTerm;
+                inputparams.externalCouplingTerms{icontrol} = coupTerm;
+
+            end
             
         end
 

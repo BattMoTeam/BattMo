@@ -47,21 +47,16 @@ classdef GasDiffusionCellGridGenerator1D < GasDiffusionCellGridGenerator
 
         end
 
-        function inputparams = setupControl(gen, inputparams, ~)
-
-            N = gen.N;
-            
-            inputparams.Control.controlElements{1}.bcfaces = 1;
-            inputparams.Control.controlElements{2}.bcfaces = N + 1;
-            
-        end
         
         function inputparams = setupExternalCoupling(gen, inputparams, params)
 
             N = gen.N;
-            
-            params.bcfaces = [1; N + 1];
-            params.bccells = [1; N];
+
+            params.nControls = 2;
+            params.bcfaces = {[1], ...
+                              [N + 1]};
+            params.bccells = {[1], ...
+                              [N]};
 
             inputparams = setupExternalCoupling@GasDiffusionCellGridGenerator(gen, inputparams, params);
             
