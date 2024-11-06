@@ -17,7 +17,11 @@ classdef GasDiffusionCellControl < BaseModel
                         % - massFractions : mass fraction values for each component (should sum to one)
         
         nControls % number of control elements (equal to size of controlElements);
-        
+
+        mappings % structure with following fields
+                 % - ctrlToBc : mapping from control values to boundary values (control values are vector with nControls values)
+                 % - bcToCtrl : mapping from boundary values to control values. It is the transpose of the ctrlToBc and
+                 %              will sum up the boundary values that belong to the same control element
     end
     
     methods
