@@ -2,7 +2,7 @@ filename = fullfile(battmoDir(), 'Diffusion', 'maxwellstefan.json');
 jsonstruct = parseBattmoJson(filename);
 inputparams = MaxwellStefanDiffusionInputParams(jsonstruct);
 
-model = MaxwellStefanDiffusion(inputparams);
+model = MaxwellStefanGasDiffusion(inputparams);
 
 cgp = model.cgp;
 cgt = model.cgt;
