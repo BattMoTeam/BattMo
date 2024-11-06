@@ -1,3 +1,11 @@
 {
-  "compNames" : ["H2O", "CO2"]
-}
+  "compNames" : ["H2O", "CO2"],
+  "Control" : {
+    "controlElements" : [
+      {"type" : 2,
+       "values" : 1,
+       "massFractions" : [0.5, 0.5]},
+      {"type" : 1,
+       "value" : {"unit" : "barsa",
+                  "value" : 1},
+       "massFractions" : [0.5, 0.5]}]}}

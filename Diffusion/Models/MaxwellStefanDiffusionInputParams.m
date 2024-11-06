@@ -1,4 +1,4 @@
-classdef MaxwellStefanDiffusionInputParams < InputParams
+classdef MaxwellStefanDiffusionInputParams < ComponentInputParams
 
     properties
         
@@ -11,13 +11,15 @@ classdef MaxwellStefanDiffusionInputParams < InputParams
         % Molecular weights (array with N values, where N is the number of components)
         molecularWeights
         
+        externalCouplingTerm % Instance of couplingTerm
+
     end
     
     methods
 
         function inputparams = MaxwellStefanDiffusionInputParams(jsonstruct)
             
-            inputparams = inputparams@InputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         

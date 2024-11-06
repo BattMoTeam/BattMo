@@ -10,7 +10,13 @@ classdef GasDiffusionCellControl < BaseModel
         % Number of components
         numberOfComponents
 
-        controlValues
+        controlElements % cell array containing struct with field
+                        % - bcfaces       : index of faces which belong to same control element (indexing from GasDiffusionCell)
+                        % - type          : control type (type = 1 : pressure, type = 2 : flux)
+                        % - values        : value for the given control type (flux value if type = 1, pressure value if type = 2)
+                        % - massFractions : mass fraction values for each component (should sum to one)
+        
+        nControls % number of control elements (equal to size of controlElements);
         
     end
     
@@ -20,12 +26,14 @@ classdef GasDiffusionCellControl < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'compNames'};
+            fdnames = {'compNames', ...
+                       'controlElements'};
 
             model = dispatchParams(model, inputparams, fdnames);
             
             model.numberOfComponents = numel(model.compNames);
-
+            model.nControls          = numel(model.controlElements);
+            
             ncomp = model.numberOfComponents;
             
             for icomp = 1 : ncomp
@@ -47,23 +55,23 @@ classdef GasDiffusionCellControl < BaseModel
             ncomp = model.numberOfComponents;
 
             varnames = {};
-            % Total flux : one for each control boundary
+            % Total flux : one for each control boundary element
             varnames{end + 1} = 'flux';
-            % Pressure : one value for each control boundary
+            % Pressure : one value for each control boundary element
             varnames{end + 1} = 'pressure';
-            % Mass Fraction : one value for each control boundary
+            % Mass Fraction : one value for each control boundary element
             varnames{end + 1} = VarName({}, 'massFractions', ncomp);
-            % Control value : one value for each control boundary
+            % Control value : one value for each control boundary element
             varnames{end + 1} = 'value';            
-            % Control flux equations : one value per component, for each control boundary
+            % Control flux equations : one value per component, for each control boundary element
             varnames{end + 1} = VarName({}, 'fluxBoundaryEquations', ncomp);
-            % Control pressure equation : one valuefor each control boundary
+            % Control pressure equation : one valuefor each control boundary element
             varnames{end + 1} = 'pressureBoundaryEquation';
-            % Control types : one value for each control boundary. Two types
+            % Control types : one value for each control boundary element. Two types
             % - pressure control : type = 1
             % - flux control : type = 1
             varnames{end + 1} = 'type';
-            % Control value equations : one value for each control boundary
+            % Control value equations : one value for each control boundary element
             % The flux or pressure variables are set to the value, depending on the type
             varnames{end + 1} = 'valueEquation';
 
