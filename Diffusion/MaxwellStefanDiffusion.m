@@ -29,6 +29,8 @@ classdef MaxwellStefanDiffusion < BaseModel
 
         % Boundary sub-model
         Boundary
+
+        externalCouplingTerm % Instance of couplingTerm
         
     end
     
@@ -41,7 +43,6 @@ classdef MaxwellStefanDiffusion < BaseModel
             fdnames = {'G'                 , ...
                        'diffusionMatrix'   , ...
                        'compNames'         , ...
-                       'numberOfComponents', ...
                        'molecularWeights'};
             
             model = dispatchParams(model, inputparams, fdnames);
@@ -81,6 +82,8 @@ classdef MaxwellStefanDiffusion < BaseModel
             varnames{end + 1} = VarName({}, 'diffusionFluxes', ncomp);
             % Mass fractions
             varnames{end + 1} = VarName({}, 'massFractions', ncomp);
+            % Mass fraction equation. The mass fractions sum to one.
+            varnames{end + 1} = 'massFractionEquation';
             % Pressure
             varnames{end + 1} = 'pressure';
             % Temperature
@@ -129,12 +132,12 @@ classdef MaxwellStefanDiffusion < BaseModel
             
             fn = @MaxwellStefanDiffusion.updateConcentration;
             inputvarnames = {'density', VarName({}, 'massFractions', ncomp)};
-            outputvarname = VarName({}, 'concentration')
+            outputvarname = VarName({}, 'concentration');
             model = model.registerPropFunction({'concentration', fn, inputvarnames});
             
             inputvarnames = {VarName({'Boundary'}, 'density'), ...
                              VarName({'Boundary'}, 'massFractions', ncomp)};
-            outputvarname = VarName({'Boundary'}, 'concentration')
+            outputvarname = VarName({'Boundary'}, 'concentration');
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
             fn = @MaxwellStefanDiffusion.updateDiffusionFluxes;
@@ -151,14 +154,13 @@ classdef MaxwellStefanDiffusion < BaseModel
             outputvarnames = VarName({'Boundary'}, 'diffusionFluxes', ncomp);
             model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
             
-            fn = @MaxwellStefanDiffusion.updateLastMassFraction;
-            inputvarnames = {VarName({}, 'massFractions', ncomp, (1 : ncomp - 1))}
-            outputvarname = VarName({}, 'massFractions', ncomp, ncomp);
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            fn = @MaxwellStefanDiffusion.updateMassFractionEquation;
+            inputvarnames = {VarName({}, 'massFractions', ncomp)};
+            model = model.registerPropFunction({'massFractionEquation', fn, inputvarnames});
 
-            fn = @MaxwellStefanDiffusion.updateLastMassFraction;
-            inputvarnames = {VarName({'Boundary'}, 'massFractions', ncomp, (1 : ncomp - 1))}
-            outputvarname = VarName({'Boundary'}, 'massFractions', ncomp, ncomp);
+            fn = @MaxwellStefanDiffusion.updateMassFractionEquation;
+            inputvarnames = {VarName({'Boundary'}, 'massFractions', ncomp)};
+            outputvarname = VarName({'Boundary'}, 'massFractionEquation');
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                         
             for icomp = 1 : ncomp

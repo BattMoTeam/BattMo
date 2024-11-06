@@ -1,6 +1,7 @@
 classdef MaxwellStefanDiffusionInputParams < InputParams
 
     properties
+        
         % Diffusion maxtrix coefficients of dimension NxN (where N is the number of components)
         diffusionMatrix
         % Cell array with the component names

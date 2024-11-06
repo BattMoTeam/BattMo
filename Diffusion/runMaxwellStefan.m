@@ -1,11 +1,11 @@
-filename = fullfile(battmoDir(), 'Diffusion', 'maxwellstefan.json');
+filename = fullfile(battmoDir(), 'Diffusion', 'gasdiffusioncell.json');
 jsonstruct = parseBattmoJson(filename);
-inputparams = MaxwellStefanDiffusionInputParams(jsonstruct);
+inputparams = GasDiffusionCellInputParams(jsonstruct);
 
-model = MaxwellStefanGasDiffusion(inputparams);
+model = GasDiffusionCell(inputparams);
 
-cgp = model.cgp;
 cgt = model.cgt;
+cgp = model.cgp;
 
 cgt.printRootVariables;
 cgt.printTailVariables;
