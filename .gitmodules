@@ -1,23 +1,3 @@
-[submodule "mrst-solvers"]
-	path = Externals/mrst/mrst-solvers
-	url = https://bitbucket.org/mrst/mrst-solvers.git
-	branch = battmo
-[submodule "mrst-core"]
-	path = Externals/mrst/mrst-core
-	url = https://bitbucket.org/mrst/mrst-core.git
-        branch = battmo
-[submodule "mrst-autodiff"]
-	path = Externals/mrst/mrst-autodiff
-	url = https://bitbucket.org/mrst/mrst-autodiff.git
-        branch = battmo
-[submodule "mrst-model-io"]
-	path = Externals/mrst/mrst-model-io
-	url = https://bitbucket.org/mrst/mrst-model-io.git
-        branch = master
-[submodule "mrst-visualization"]
-	path = Externals/mrst/mrst-visualization
-	url = https://bitbucket.org/mrst/mrst-visualization.git
-        branch = master
 [submodule "agmg"]
 	path = Externals/agmg
 	url = https://github.com/BattMoTeam/agmg.git
