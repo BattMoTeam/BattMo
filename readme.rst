@@ -47,12 +47,10 @@ You can check that that your installation is setup correctly by running one of t
 Update
 ------
 
-To update you code after you installed it as described above, use the standard :code:`git pull` command. If your installation has been done before November 7th 2024, you will need to update also the submodule setup and run
+To update you code after you installed it as described above, use the standard :code:`git pull` command.
 
-``git submodule update --init --recursive``
-
-If you encounter problems, you can simply install again the code (the installation steps above does not take long anyway).
-
+If your initial installation has been done before November 7th 2024, we recommend to start the installation all over
+again.
 
 Iterative solvers
 -----------------
