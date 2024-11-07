@@ -2,7 +2,7 @@ function [bp, simlist] = setupSimList(directory)
 
     mrstModule add   mpfa
 
-    dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+    dataDirectory =  fullfile(battmoDir,'Externals','mrst', 'core','output', directory);
     dataFolderObjs = dir(dataDirectory);
     dataFolderObjs = dataFolderObjs(3 : end);
     dataFolders = {};
