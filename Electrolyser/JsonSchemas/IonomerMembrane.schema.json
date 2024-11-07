@@ -11,7 +11,7 @@
     
     "H2O" : {
       "type" : "object",
-      "description" : "Characteristic properties for the H2O molecule"
+      "description" : "Characteristic properties for the H2O molecule",
       "properties" : {
         "referenceConcentration" : {
           "$ref": "PhysicalQuantity.schema.json",
