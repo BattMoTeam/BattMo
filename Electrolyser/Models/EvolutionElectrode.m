@@ -110,7 +110,7 @@ classdef EvolutionElectrode < BaseModel
 
             ctl = 'CatalystLayer';
 
-            state.(ctl).volumetricSurfaceArea = model.(ctl).volumetricSurfaceArea0;
+            state.(ctl).volumetricSurfaceArea = model.(ctl).referenceVolumetricSurfaceArea;
 
         end
 

@@ -33,8 +33,6 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
             
             inputparams.couplingTerms = {};
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)

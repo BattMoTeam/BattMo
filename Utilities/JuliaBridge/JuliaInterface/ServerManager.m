@@ -78,7 +78,7 @@ classdef ServerManager < handle
                 fprintf('Setting up Battmo Julia server (may take 1 minute) ... ');
                 setup_battmojl_call = [''''                                      , ...
                                        'using Pkg;'                              , ...
-                                       'Pkg.add(name = "BattMo", rev = "dev");'  , ...
+                                       'Pkg.add(name = "BattMo", rev = "main");'  , ...
                                        'Pkg.add(name = "Jutul", rev = "battmo");', ...
                                        'Pkg.update();'                           , ...
                                        ''''];
@@ -438,6 +438,11 @@ function runtime = try_find_julia_runtime()
     try
         if isunix
             [st, res] = system('which julia');
+            if st == 1
+                % Try juliaup directory
+                home = getenv('HOME');
+                runtime = [strtrim(home), '/.juliaup/bin/julia']
+            end
         elseif ispc
             [st, res] = system('where julia');
         else

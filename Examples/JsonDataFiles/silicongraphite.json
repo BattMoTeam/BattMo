@@ -3,9 +3,9 @@
  "FirstMaterial" : {"specificHeatCapacity": 632.0,
                "heatCapacity": 632000.0,
                "thermalConductivity": 1.04,
-               "electricalConductivity": 100,
+               "electronicConductivity": 100,
                "activeMaterialFraction" : 0.3,
-               "BruggemanCoefficient": 1.5,
+               "bruggemanCoefficient": 1.5,
                "Interface": {
                  "isFile": true,
                  "filename": "ParameterData/MaterialProperties/Graphite/graphite.json"
@@ -21,9 +21,9 @@
  "SecondMaterial" : {"specificHeatCapacity": 632.0,
               "heatCapacity": 632000.0,
               "thermalConductivity": 1.04,
-              "electricalConductivity": 100,
+              "electronicConductivity": 100,
               "activeMaterialFraction" : 0.3,
-              "BruggemanCoefficient": 1.5,
+              "bruggemanCoefficient": 1.5,
               "Interface": {
                 "isFile": true,
                 "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"

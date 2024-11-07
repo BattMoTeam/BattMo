@@ -74,7 +74,7 @@ inputparams.(ctrl).useCVswitch = true;
 %%  Initialize the battery model.
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Plot
 plotBatteryGrid(model, 'setstyle', false);

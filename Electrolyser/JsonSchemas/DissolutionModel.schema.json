@@ -1,0 +1,34 @@
+{
+  "$id": "file://battmo/schemas/DissolutionModel",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the DissolutionModel input parameters",
+  "type": "object",
+  "properties" : {
+    "standardEquilibriumPotential" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "standard equilibrium potential",
+      "symbol" : "E0"},
+    "referenceConcentration" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "reference concentration",
+      "symbol" : "c0"},
+    "referenceExchangeCurrentDensity" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Reference exchange current density",
+      "symbol" : "j0"},
+    "molecularWeight" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Molecular weight [kg mol^-1]",
+      "symbol" : "MW"},
+    "density": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "Density",
+      "symbol" : "rho"},
+    "referenceVolumeFraction" :{
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "reference volume fraction",
+      "symbol" : "vf"},
+    "referenceVolumetricSurfaceArea" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : "reference volumetric surface area",
+      "symbol" : "vsa"}}}

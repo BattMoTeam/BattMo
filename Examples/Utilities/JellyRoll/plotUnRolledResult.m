@@ -5,8 +5,8 @@ catch
 end
 
 clear
-dataSintefDirectory =  '/home/xavier/Sintef-Computer/Matlab/mrst-bitbucket/mrst-core/output/JellyRole';
-dataDirectory =  '/home/xavier/Matlab/mrst-bitbucket/mrst-core/output/JellyRole';
+dataSintefDirectory = fullfile(battmoDir(), 'mrst/core/output/JellyRole');
+dataDirectory       = fullfile(battmoDir(), 'mrst/core/output/JellyRole');
 
 tabcases = {true, false};
 

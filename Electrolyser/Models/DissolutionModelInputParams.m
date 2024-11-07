@@ -2,13 +2,13 @@ classdef DissolutionModelInputParams < ComponentInputParams
 
     properties
 
-        E0                     % Standard electrical potential for the dissolution reaction [V]
-        c0                     % Reference concentration [mol/m^3]
-        j0                     % Reference exchange current density for the dissolution reaction [A/m^2]
-        MW                     % Molar mass
-        rho                    % Density
-        volumeFraction0        % Initial volume fraction
-        volumetricSurfaceArea0 % Initial volumetric surface area
+        standardEquilibriumPotential    % Standard electrical potential for the dissolution reaction [V]
+        referenceConcentration          % Reference concentration [mol/m^3]
+        referenceExchangeCurrentDensity % Reference exchange current density for the dissolution reaction [A/m^2]
+        molecularWeight                 % Molar mass
+        density                         % Density
+        referenceVolumeFraction         % Reference or initial volume fraction
+        referenceVolumetricSurfaceArea  % Reference or initial volumetric surface area
         
     end
 

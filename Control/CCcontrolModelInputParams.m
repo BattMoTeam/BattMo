@@ -4,10 +4,11 @@ classdef CCcontrolModelInputParams < ControlModelInputParams
 %
     methods
 
-        function inputparams = CCcontrolModelInputParams(jsonstruct);
+        function inputparams = CCcontrolModelInputParams(jsonstruct)
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'controlPolicy', 'CC');
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
-            inputparams.controlPolicy = 'CC';
             
         end
 

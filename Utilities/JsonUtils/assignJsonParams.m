@@ -8,8 +8,6 @@ function inputparams = assignJsonParams(inputparams, jsonstruct)
         if isfield(jsonstruct, fd)
 
             val = jsonstruct.(fd);
-            % convert from given unit to SI, if format is appropriate, see convertUnitBattMo function
-            val = convertUnitBattMo(val);
             inputparams.(fd) = val;
 
         end

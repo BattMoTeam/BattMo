@@ -87,7 +87,7 @@ inputparams = gen.updateBatteryInputParams(inputparams, params);
 %%  Initialize the battery model.
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Compute the nominal cell capacity and choose a C-Rate
 % The nominal capacity of the cell is calculated from the active materials.

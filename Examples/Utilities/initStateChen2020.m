@@ -98,11 +98,9 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         switch model.(ctrl).initialControl
           case 'discharging'
             initstate.(ctrl).ctrlType     = 'CC_discharge1';
-            initstate.(ctrl).nextCtrlType = 'CC_discharge1';
             initstate.(ctrl).I            = model.(ctrl).ImaxDischarge;
           case 'charging'
             initstate.(ctrl).ctrlType     = 'CC_charge1';
-            initstate.(ctrl).nextCtrlType = 'CC_charge1';
             initstate.(ctrl).I            = - model.(ctrl).ImaxCharge;
           otherwise
             error('initialControl not recognized');
@@ -136,6 +134,19 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         end
       otherwise
         error('control policy not recognized');
+    end
+
+    eldes = {ne, pe};
+    
+    for ielde = 1 : numel(eldes)
+        elde = eldes{ielde};
+        if model.(elde).(co).(am).(itf).useDoubleLayerCapacity
+            nc = model.(elde).(co).G.getNumberOfCells();
+            initstate.(elde).(co).(am).(itf).capacityR = zeros(nc, 1);
+            initstate = model.evalVarName(initstate, {elde, co, am, itf, 'cElectrolyte'});
+            initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrode'});
+            initstate = model.evalVarName(initstate, {elde, co, am, itf, 'phiElectrolyte'});
+        end
     end
     
 end

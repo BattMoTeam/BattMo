@@ -22,7 +22,6 @@ jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 
 jsonstruct.include_current_collectors = false;
 inputparams = BatteryInputParams(jsonstruct);
 
-
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';

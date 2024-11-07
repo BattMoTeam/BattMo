@@ -3,71 +3,69 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the geometry for the electrolyser including the discretization parameters and volume fractions",
   "type": "object",
-  
   "properties" : {
     "Geometry" : {
       "type" : "object",
+      "description" : "Global parameter for the geometry",
       "properties" : {
         "case" : {
           "type" : "string",
+          "description" : "Type of the geometry. For the moment, there is only one choice 1D. This could be changed in the future.",
           "enum" : ["1D"],
-          "comment" : "only 1D is implemented now"}
-      }},
-
+          "comment" : "For the moment we only have implemented support of 1D model"}}},
     "IonomerMembrane" :  {
       "allOf" : [
-        {"$ref" : "#/$defs/dim"},
-        {"properties" : {
-          "widths" : {
-            "type" : "object",
-            "properties" : {
-              "oxygenCatalystSide" : {
-                "type" : "number",
-                "description" : "volume fraction occipied by ionomer on the oxygen electrode side"},
-              "hydrogenCatalystSide" : {
-                "type" : "number",
-                "description" : "volume fraction occipied by ionomer on the hydrogen electrode side"}}}}}]},
-
-    "OxygenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"},
-
-    "HydrogenEvolutionElectrode" : {"$ref" : "#/$defs/EvolutionElectrode"}},
-  
-
+        {
+          "$ref" : "#/$defs/dim"},
+        {
+          "properties" : {
+            "widthFractions" : {
+              "type" : "object",
+              "description" : "widths of the different component of in the ionomer membrane. For a 1D model, they will corresponds to a volume fraction",
+              "properties" : {
+                "oxygenCatalystSide" : {
+                  "$ref": "PhysicalQuantity.schema.json",
+                  "description" : "volume fraction occipied by ionomer on the oxygen electrode side"},
+                "hydrogenCatalystSide" : {
+                  "$ref": "PhysicalQuantity.schema.json",
+                  "description" : "volume fraction occipied by ionomer on the hydrogen electrode side"}}}}}]},
+    "OxygenEvolutionElectrode" : {
+      "$ref" : "#/$defs/EvolutionElectrode"},
+    "HydrogenEvolutionElectrode" : {
+      "$ref" : "#/$defs/EvolutionElectrode"}},
   "$defs" : {
-
-
     "dim" : {
       "type" : "object",
+      "description" : "Generic description of the dimension of a component (length and discretization level)",
       "properties" : {
         "length" : {
-          "type" : "number"},
+          "$ref": "PhysicalQuantity.schema.json",
+          "description" : "Length of the component"},
         "cellsize" : {
-          "type" : "number",
-          "description" : "size of the finite volume cell"}}},
-
-
+          "$ref": "PhysicalQuantity.schema.json",
+          "description" : "Size of the finite volume cell"}}},
     "EvolutionElectrode" : {
       "type" : "object",
+      "description" : "Geometrical characterisation of an evolution electrode, which is given component-wise.",
       "properties" : {
         "PorousTransportLayer" : {
           "allOf" : [
             {
-            "$ref" : "#/$defs/dim"},
+              "$ref" : "#/$defs/dim"},
             {
               "properties" : {
                 "widthFraction" : {
-                  "type" : "number",
-                  "description" : "volume fraction occupied by porous transport layer"}}}],
-          "description" : "the dimension of the porous transport layer apply only for the part not including the catalyst layer"
-          },
+                  "$ref": "PhysicalQuantity.schema.json",
+                  "description" : "volume fraction occupied by the solid part of porous transport layer - outside catalyst layer part. In the catalyst region, the solid part is made of a mix of ionomer and catalyst layer"}}}]
+        },
         "CatalystLayer" : {
           "allOf" : [
             {
-            "$ref" : "#/$defs/dim"},
+              "$ref" : "#/$defs/dim"},
             {
               "properties" : {
                 "widthFraction" : {
-                  "type" : "number",
+                  "$ref": "PhysicalQuantity.schema.json",
                   "description" : "volume fraction occupied by catalyst layer transport layer"}}}]
         }
       }

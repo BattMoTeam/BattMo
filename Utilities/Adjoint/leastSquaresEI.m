@@ -31,18 +31,23 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
                  'tStep'          , []   , ...
                  'state'          , []   , ...
                  'from_states'    , true , ...
-                 'relTol'         , 1e-10);
+                 'relTol'         , 1e-10, ...
+                 'scaling'        , []   , ...
+                 'findState'      , false, ...
+                 'includeI'       , false);
+
     opt = merge_options(opt, varargin{:});
 
     dts = schedule.step.val;
 
-    if isempty(opt.tStep) %do all
-        time     = cumsum(dts);
+    if isempty(opt.tStep) % do all
         numSteps = numel(dts);
+        time     = cumsum(dts);
+        tSteps   = (1:numSteps)';
     else
-        time     = sum(dts(1:(opt.tStep)));
         numSteps = 1;
         dts      = dts(opt.tStep);
+        tSteps   = opt.tStep;
     end
 
     obj = repmat({[]}, numSteps, 1);
@@ -51,12 +56,18 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
 
     for k = 1 : numSteps
 
-        t  = time(k);
         dt = dts(k);
+        tStep = tSteps(k);
 
-        % Find states for time t (given by schedule)
-        state    = findState(t, states, dt, relTol);
-        stateRef = findState(t, refStates, dt, relTol);
+        if opt.findState
+            % Find states for time t (given by schedule)
+            t        = time(k);
+            state    = findState(t, states, dt, relTol);
+            stateRef = findState(t, refStates, dt, relTol);
+        else
+            state    = states{tStep};
+            stateRef = refStates{tStep};
+        end
 
         if opt.ComputePartials
             if opt.from_states
@@ -66,14 +77,20 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
             end
         end
 
-        E = state.Control.E;
-        I = state.Control.I;
+        E      = state.Control.E;
+        Eref   = stateRef.Control.E;
+        obj{k} = (E - Eref)^2 * dt;
 
-        Eref = stateRef.Control.E;
-        Iref = stateRef.Control.I;
+        if opt.includeI
+            I      = state.Control.I;
+            Iref   = stateRef.Control.I;
+            obj{k} = obj{k} + (I - Iref)^2 * dt;
+        end
 
-        obj{k} = (E - Eref)^2 * dt + (I - Iref)^2 * dt;
+    end
 
+    if ~isempty(opt.scaling)
+        obj = applyFunction(@(x) x/opt.scaling, obj);
     end
 
 end

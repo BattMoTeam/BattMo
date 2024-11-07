@@ -25,7 +25,7 @@ function [energy, extras] = computeCellEnergy(model, varargin)
 
     if isempty(opt.DRate)
 
-        if strcmp(model.(ne).(co).active_material_type, 'composite') || strcmp(model.(pe).(co).active_material_type, 'composite')
+        if model.(ne).(co).activeMaterialModelSetup.composite || model.(pe).(co).activeMaterialModelSetup.composite
 
             [energy, extras] = advancedComputeCellEnergy(model);
             return

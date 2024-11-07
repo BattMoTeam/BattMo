@@ -2,19 +2,19 @@ classdef CatalystLayerInputParams < ComponentInputParams
     
     properties
 
-        j0    % Exchange current density
-        E0    % Standard equilibrium potential
-        Eref  % Reference potential
+        referenceExchangeCurrentDensity    % Exchange current density
+        standardEquilibriumPotential    % Standard equilibrium potential
+        referencePotential  % Reference potential
 
-        sp % species struct with field
-        % - OH.z  : Charge
-        % - OH.c0 : OH reference concentration
+        species % species struct with field
+        % - OH.chargeNumber  : Charge number
+        % - OH.referenceConcentration : OH reference concentration
 
-        n % Number of electron transfer
+        numberOfElectronsTransferred % Number of electron transfer
         
-        alpha                  % coefficient in the exponent in Butler-Volmer equation [-]
-        Xinmr                  % Fraction of specific area that is coversed with ionomer [-]
-        volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
+        chargeTransferCoefficient                  % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea                  % Fraction of specific area that is coversed with ionomer [-]
+        referenceVolumetricSurfaceArea % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
 
@@ -36,8 +36,6 @@ classdef CatalystLayerInputParams < ComponentInputParams
                 inputparams.DissolutionModel = DissolutionModelInputParams(jsonstruct.DissolutionModel);
             end
 
-            inputparams = inputparams.validateInputParams();
-            
         end
 
         function inputparams = validateInputParams(inputparams)
@@ -47,7 +45,7 @@ classdef CatalystLayerInputParams < ComponentInputParams
             dm = 'DissolutionModel';
 
             if inputparams.include_dissolution
-                inputparams = mergeParameters(inputparams, {{'volumetricSurfaceArea0'}, {dm, 'volumetricSurfaceArea0'}});
+                inputparams = mergeParameters(inputparams, {{'referenceVolumetricSurfaceArea'}, {dm, 'referenceVolumetricSurfaceArea'}});
                 inputparams.(dm) = inputparams.(dm).validateInputParams();
             end
             

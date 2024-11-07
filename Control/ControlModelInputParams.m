@@ -19,7 +19,7 @@ classdef ControlModelInputParams < InputParams
     
     methods
 
-        function inputparams = ControlModelInputParams(jsonstruct);
+        function inputparams = ControlModelInputParams(jsonstruct)
             
             inputparams = inputparams@InputParams(jsonstruct);
             

@@ -5,11 +5,27 @@
   "type": "object",
   "properties": {
     "include_current_collectors": {
-      "type": "boolean"
+      "type": "boolean",
+      "description" : "include current collector. Default it false"
     },
     "use_thermal": {
-      "type": "boolean"
-    }
+      "type": "boolean",
+      "description": "include thermal effects. Default is false"
+    },
+    "PositiveElectrode" : {
+      "type": "object",
+      "properties" : {
+        "use_normed_current_collector" : {
+          "type" : "boolean",
+          "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
+        }}},
+    "NegativeElectrode" : {
+      "type": "object",
+      "properties" : {
+        "use_normed_current_collector" : {
+          "type" : "boolean",
+          "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
+        }}}
   },
   "allOf": [
     {

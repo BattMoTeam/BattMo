@@ -1,36 +1,42 @@
 #+TITLE: Documentation generation for BattMo
 * Requirements
-** sphinx
-   installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
-   #+begin_src
-     pip install sphinx
+** Installation
+   Run from the Documentation directory where the ~requirements.txt~ file is
+   #+begin_src 
+     pip install -r requirements.txt
    #+end_src
-** install sphinx rtd theme
-   https://pypi.org/project/sphinx-rtd-theme/
-   #+begin_src
-     pip install sphinx-rtd-theme
-   #+end_src
-** bibtex extension
-   https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
-   #+begin_src
-     pip install sphinxcontrib-bibtex
-   #+end_src
-** globabsubs extension
-   #+begin_src
-     pip install sphinxcontrib-globalsubs
-   #+end_src
-** youtube
-   #+begin_src shell
-     pip install sphinxcontrib-youtube
-   #+end_src
-** collapse
-   #+begin_src shell
-     python -m pip install sphinx_collapse
-   #+end_src   
-** autosectionlabel
-   - part of default distribution
-   - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
-     name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
+** Overview of the package used in sphinx
+*** sphinx
+    installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
+    #+begin_src
+      pip install sphinx
+    #+end_src
+*** install sphinx rtd theme
+    https://pypi.org/project/sphinx-rtd-theme/
+    #+begin_src
+      pip install sphinx-rtd-theme
+    #+end_src
+*** bibtex extension
+    https://sphinxcontrib-bibtex.readthedocs.io/en/latest/quickstart.html#installation
+    #+begin_src
+      pip install sphinxcontrib-bibtex
+    #+end_src
+*** globabsubs extension
+    #+begin_src
+      pip install sphinxcontrib-globalsubs
+    #+end_src
+*** youtube
+    #+begin_src shell
+      pip install sphinxcontrib-youtube
+    #+end_src
+*** collapse
+    #+begin_src shell
+      python -m pip install sphinx_collapse
+    #+end_src   
+*** autosectionlabel
+    - part of default distribution
+    - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
+      name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
    
 * Workflow for editing
 
@@ -41,15 +47,14 @@
 
   The command generates all the files for a static website and writes them in ~Documentation/_build/html~
 
-  All the files in this directory must then be copied to the ~BattMo-doc~ [[https://github.com/BattMoTeam/BattMo-doc][repo]]. From there, make a *force* push. We do
-  not keep track of the history of the ouput files (html), but we of course keep track of the documentation source, directly in the
-  main repo ~BattMo~.
+  When the changes are pushed, the documentation is also automatically compiled on github using github actions
 
-  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo-doc/actions][github pages section]]
+
+  The deployment of the webpage can be followed from the [[https://github.com/BattMoTeam/BattMo/actions][github page section]]
 
   The result can be view at
 
-  https://battmoteam.github.io/BattMo-doc/
+  https://battmoteam.github.io/BattMo/
 
 * Special workflow for example scripts
 ** Compilation

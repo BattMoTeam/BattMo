@@ -2,10 +2,10 @@ classdef ExchangeReactionInputParams < ComponentInputParams
     
     properties
         
-        kxch % Exchange rate
-        OH   % structure with field
-             % - z : number of charge
-        kML  % Ionomer sorption coefficient
+        exchangeReactionRate       % Exchange rate
+        OH                         % structure with field
+                                   % - z : number of charge
+        ionomerSorptionCoefficient % Ionomer sorption coefficient
         
     end
     

@@ -10,29 +10,26 @@ classdef CCChargeControlModelInputParams < CCcontrolModelInputParams
         rampupTime
         useCVswitch
         upperCutoffVoltage
+
+        % Advanced variable
+        Imax % If given this values is used instead of CRate
         
     end
     
 
     methods
 
-        function inputparams = CCChargeControlModelInputParams(jsonstruct);
+        function inputparams = CCChargeControlModelInputParams(jsonstruct)
+            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useCVswitch', false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'rampupTime', 0);
+            
+            jsonstruct = setJsonStructField(jsonstruct, 'controlPolicy', 'CCCharge');
             
             inputparams = inputparams@CCcontrolModelInputParams(jsonstruct);
-            inputparams.controlPolicy = 'CCCharge';
             
         end
 
-        function inputparams = validateInputParams(inputparams)
-
-            if isempty(inputparams.useCVswitch)
-                % Default value is false
-                inputparams.useCVswitch = true;
-            end
-            
-            inputparams = validateInputParams@CCcontrolModelInputParams(inputparams);
-            
-        end
     end
     
 end

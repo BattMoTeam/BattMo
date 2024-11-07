@@ -60,13 +60,10 @@ classdef Battery < GenericBattery
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).active_material_type
-                  case {'default', 'sei'}
-                    ams = {am};
-                  case 'composite'
+                if model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
                 end
 
                 for iam = 1 : numel(ams)
@@ -193,9 +190,9 @@ classdef Battery < GenericBattery
 
             time = state0.time + dt;
 
-            if(not(opts.ResOnly) && not(opts.reverseMode))
+            if (not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
-            elseif(opts.reverseMode)
+            elseif opts.reverseMode
                dispif(mrstVerbose, 'No AD initialization in equation old style')
                state0 = model.initStateAD(state0);
             else
@@ -218,6 +215,7 @@ classdef Battery < GenericBattery
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
             co      = 'Coating';
+            cc      = 'CurrentCollector';
             am      = 'ActiveMaterial';
             am1     = 'ActiveMaterial1';
             am2     = 'ActiveMaterial2';
@@ -238,13 +236,10 @@ classdef Battery < GenericBattery
 
                 elde = eldes{ielde};
 
-                switch model.(elde).(co).active_material_type
-                  case 'default'
-                    ams = {am};
-                  case 'composite'
+                if model.(elde).(co).activeMaterialModelSetup.composite
                     ams = {am1, am2};
-                  otherwise
-                    error('active_material_type not recognized');
+                else
+                    ams = {am};
                 end
 
                 for iam = 1 : numel(ams)
@@ -264,11 +259,11 @@ classdef Battery < GenericBattery
                         F    = model.con.F;
                         vol  = model.(elde).(co).G.getVolumes();
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
-                        vsf  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
+                        vsa  = model.(elde).(co).(amc).(sd).volumetricSurfaceArea;
 
                         surfp = 4*pi*rp^2;
 
-                        scalingcoef = (vsf*vol(1)*n*F)/surfp;
+                        scalingcoef = (vsa*vol(1)*n*F)/surfp;
 
                         state.(elde).(co).(amc).(sd).massCons         = scalingcoef.*state.(elde).(co).(amc).(sd).massCons;
                         state.(elde).(co).(amc).(sd).solidDiffusionEq = scalingcoef.*state.(elde).(co).(amc).(sd).solidDiffusionEq;
@@ -312,7 +307,7 @@ classdef Battery < GenericBattery
                 eqname = Battery.varToStr({'ctrl', 'EIequation'});
                 types{ei.(eqname)} = 'cell';
 
-              case {'constantVoltage', 'CV_charge2'}
+              case {'constantVoltage', 'CV_charge2', 'CV_discharge2'}
 
                 eieqname = Battery.varToStr({'ctrl', 'EIequation'});
                 cteqname = Battery.varToStr({'ctrl', 'controlEquation'});

@@ -173,7 +173,7 @@ the :code:`jsonstruct` that is obtained is equivalent to the one where we would 
              "guestStoichiometry0": 0.1429,
              "chargeTransferCoefficient": 0.5,
              "openCircuitPotential" : {"type": "function",
-             "functionname" : "computeOCP_graphite",
+             "functionname" : "computeOCP_Graphite_Torchio",
              "argumentlist" : ["cElectrode", "T", "cmax"]
              }}},          
 

@@ -38,7 +38,7 @@ val = NaN(nf, 1);
 val(extfaceind) = model.ThermalModel.externalHeatTransferCoefficient;
 
 figure
-plotFaceData(G, val, 'edgecolor', 'black');
+plotFaceData(model.ThermalModel.grid, val, 'edgecolor', 'black');
 axis equal
 view([50, 20]);
 title('External Heat Transfer Coefficient / W/s/m^2')
@@ -108,7 +108,7 @@ ylabel('Temperature / C');
 
 legend show
 
-%% plot final temperature disctribution
+%% plot final temperature distribution
 
 state = states{end}
 figure

@@ -17,7 +17,7 @@
   },
   "NegativeElectrode": {
     "Coating": {
-      "active_material_type" : "sei",
+      "activeMaterialModelSetup" : {"SEImodel" : "Safari"},
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {

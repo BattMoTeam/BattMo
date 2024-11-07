@@ -45,7 +45,7 @@ inputparams.(pe).(cc).effectiveElectronicConductivity = 1e5;
 
 %%  Initialize the battery model.
 
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Plot the grid
 

@@ -15,6 +15,7 @@ function output = spiralGrid(params)
     % - L         : length of the battery
     % - nas       : number of cells in the angular direction
     % - nL        : number of discretization cells in the longitudonal
+    % - refLcoef  : coefficient use in refinement at top/bottom (if empty, no refinement)
     % - tabparams : structure with two fields
     %     - NegativeElectrode : for the negative current collector
     %     - PositiveElectrode : for the positive current collector
@@ -378,6 +379,15 @@ function output = spiralGrid(params)
 
     % Extrude battery in z-direction
     zwidths = (L/nL)*ones(nL, 1);
+
+    % apply refinement if given
+    if (isa(params, 'BatteryGenerator') | isfield(params, 'refLcoef')) && ~isempty(params.refLcoef)
+        alpha = params.refLcoef;
+        z = [0; cumsum(zwidths)];
+        z = L*0.5*(atan(alpha*(z/L - 1/2))/atan(alpha/2) + 1);
+        zwidths = diff(z);
+    end
+    
     G = makeLayeredGrid(G, zwidths);
     G = computeGeometry(G);
 

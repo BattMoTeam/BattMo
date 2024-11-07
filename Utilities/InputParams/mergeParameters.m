@@ -1,6 +1,6 @@
 function inputparams = mergeParameters(inputparams, paramnames, varargin)
 
-% paramnames is a list of parameter names. The function assign all empty values to the given non-empty ones
+% paramnames is a list of parameter names. The function assign all empty values to the given non-empty ones. The parameter names are given as a list of fields/property names which will allow us to retrieve the parameter, see getParam method in InputParams
 
 % If all parameter valus are empty, nothing is done
     

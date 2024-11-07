@@ -11,38 +11,36 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
 % If the vargout cartvalues is given, the function also sets a cell-array cartvalues where cartvalues{i} is a structure field names
 % given by the varargin name (we use function inputname). For a combination given by the index i, cartvalues{i} gives the
 % *values* of the (cell-)array sent in vararing
-%     
+%
 % The following example should help to understand the explanations above. Run and inspect the output
 %
 %    a = {true, false};
 %    b = [1; 2; 3];
 %    c = {'a', 'b'};
-%    
+%
 %    [cartind, cartvalues] = cartesianProduct(a, b, c);
-    
+
 
     genInputs = (nargout > 1);
 
     for iarg = 1 : nargin
         inds{iarg} = 1 : numel(varargin{iarg});
-        if genInputs
-            names{iarg} = inputname(iarg);
-        end
     end
 
     [inds{:}] = ndgrid(inds{:});
 
     for iinds = 1 : numel(inds)
-        
         cartinds(:, iinds) = reshape(inds{iinds}, [], 1);
-
     end
 
     if genInputs
 
+        for iarg = 1 : nargin
+            names{iarg} = inputname(iarg);
+        end
+
         for icomb = 1 : size(cartinds, 1)
-            
-            clear cartvalue
+
             for iarg = 1 : nargin
                 ind = cartinds(icomb, iarg);
                 if iscell(varargin{iarg})
@@ -50,11 +48,11 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
                 else
                     val = varargin{iarg}(ind);
                 end
-                cartvalue.(names{iarg}) = val;
+                cartvalues{icomb}.(names{iarg}) = val;
             end
-            cartvalues{icomb} = cartvalue;
+
         end
-        
+
     end
-    
+
 end

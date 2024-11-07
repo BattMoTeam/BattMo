@@ -4,16 +4,24 @@
   "description": "Specification of the EvolutionElectrode input parameters",
   "type": "object",
 
-  "properties" : {"porousTransportLayerType" : {"type" : "string",
-                                                "enum"  : ["Hydrogen", "Oxygen"]},
-                  "PorousTransportLayer" : {"type" : "object",
-                                            "$ref" : "PorousTransportLayer",
-                                            "description" : " input parameters for the porous transport layer"},
-                  "catalystLayerType" : {"type" : "string",
-                                         "enum"  : ["Iridium", "Platinium"]},
-                  "CatalystLayer" : {"type" : "object",
-                                     "$ref" : "CatalystLayer",
-                                     "description" : " input parameters for the catalyst layer"},
-                  "ExchangeReaction" : {"type" : "object",
-                                     "$ref" : "ExchangeReaction",
-                                     "description" : " input parameters for the exchange reaction"}}}
+  "properties" : {
+    "porousTransportLayerType" : {
+      "type" : "string",
+      "description" : "Type of evolution electrode, either hydrogen or oxygen",
+      "enum"  : ["Hydrogen", "Oxygen"]},
+    "PorousTransportLayer" : {
+      "type" : "object",
+      "$ref" : "PorousTransportLayer",
+      "description" : " input parameters for the porous transport layer"},
+    "catalystLayerType" : {
+      "type" : "string",
+      "description" : "Type of the catalyst layer, either iridium or platinium",
+      "enum"  : ["Iridium", "Platinium"]},
+    "CatalystLayer" : {
+      "type" : "object",
+      "$ref" : "CatalystLayer",
+      "description" : " input parameters for the catalyst layer"},
+    "ExchangeReaction" : {
+      "type" : "object",
+      "$ref" : "ExchangeReaction",
+      "description" : " input parameters for the exchange reaction"}}}

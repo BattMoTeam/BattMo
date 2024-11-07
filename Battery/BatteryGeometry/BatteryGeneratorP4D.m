@@ -287,7 +287,7 @@ classdef BatteryGeneratorP4D < BatteryGenerator
             end
 
             params.bcfaces = find(abs(yf - myf) < eps*1000);
-            params.bccells = sum(G.parentGrid.topology.faces.neighbors(params.bcfaces, :), 2);
+            params.bccells = sum(G.topology.faces.neighbors(params.bcfaces, :), 2);
 
             inputparams = setupCurrentCollectorBcCoupTerm@BatteryGenerator(gen, inputparams, params);
 

@@ -38,9 +38,10 @@ else
         inputFileName = dat["inputFileName"]
 
         if inputType == "Matlab"
-            inputobj = BattMo.MatlabFile(inputFileName, dat["data"], use_state_ref = dat["use_state_ref"])
+            juliaBridgeMatlabInput = MAT.matread(inputFileName)
+            inputobj = BattMo.MatlabInputParams(juliaBridgeMatlabInput["data"])
         elseif inputType == "JSON"
-            inputobj = BattMo.JSONFile(inputFileName)
+            inputobj = BattMo.readBattMoJsonInputFile(inputFileName)
         else
             println("Invalid input type. Input data could not be read correctly")
         end

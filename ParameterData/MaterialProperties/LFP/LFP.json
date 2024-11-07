@@ -1,7 +1,7 @@
 {
     "saturationConcentration": 26390,
     "volumetricSurfaceArea": 1878260,
-    "density": 991,
+    "density": 3450,
     "numberOfElectronsTransferred" : 1,
     "activationEnergyOfReaction": 4000,
     "reactionRateConstant": 3.626e-11,
@@ -9,7 +9,7 @@
     "guestStoichiometry0": 0.999,
     "chargeTransferCoefficient": 0.5,
     "openCircuitPotential": {"type": "function",
-                             "functionname": "computeOCPFunc_LFP_Lin",
+                             "functionname": "computeOCP_LFP_Xu2015",
                              "argumentlist" : ["concentration", "temperature", "cmax"]
                             }
 }

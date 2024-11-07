@@ -170,6 +170,12 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         nL     = jsonstruct.Geometry.nL;
         nas    = jsonstruct.Geometry.nas;
 
+        if isfield(jsonstruct.Geometry, 'refLcoef')
+            refLcoef = jsonstruct.Geometry.refLcoef;
+        else
+            refLcoef = [];
+        end
+        
         nrDict = containers.Map();
         nrDict('Separator')                = jsonstruct.Separator.N;
         nrDict('NegativeCoating')          = jsonstruct.NegativeElectrode.Coating.N;
@@ -197,7 +203,8 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                         'nrDict'   , nrDict   , ...
                         'nas'      , nas      , ...
                         'L'        , L        , ...
-                        'nL'       , nL       );
+                        'nL'       , nL       , ...
+                        'refLcoef' , refLcoef);
 
         switch jsonstruct.Geometry.case
 

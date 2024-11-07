@@ -9,6 +9,8 @@ function output = setupSimulationForJuliaBridge(jsonstruct, varargin)
     schedule  = output.schedule;
 
     if opt.runSimulation
+
+        output.use_state_ref = true;
         
         states   = output.states;
 
@@ -19,6 +21,9 @@ function output = setupSimulationForJuliaBridge(jsonstruct, varargin)
         end
 
         output.states = states;
+    else
+
+        output.use_state_ref = false;        
         
     end
 
@@ -29,7 +34,5 @@ function output = setupSimulationForJuliaBridge(jsonstruct, varargin)
 
     output.model    = model;
     output.schedule = schedule;
-
-
     
 end

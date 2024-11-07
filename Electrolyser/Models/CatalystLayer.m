@@ -9,19 +9,19 @@ classdef CatalystLayer < BaseModel
         liquidInd % mapping structure for component indices
         gasInd    % mapping structure for component indices
 
-        j0 % Exchange current density
-        E0
-        Eref
+        referenceExchangeCurrentDensity % Exchange current density
+        standardEquilibriumPotential
+        referencePotential
         E0eff
-        sp % species struct with field
-        % - OH.z  : Charge
-        % - OH.c0 : OH reference concentration
+        species % species struct with field
+        % - OH.chargeNumber           : Charge number
+        % - OH.referenceConcentration : OH reference concentration
 
-        n % Number of electron transfer
+        numberOfElectronsTransferred % Number of electron transfer
         
-        alpha                 % coefficient in the exponent in Butler-Volmer equation [-]
-        Xinmr                 % Fraction of specific area that is coversed with ionomer [-]
-        volumetricSurfaceArea0 % Volumetric surface area [m^ -1]
+        chargeTransferCoefficient % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea       % Fraction of specific area that is coversed with ionomer [-]
+        referenceVolumetricSurfaceArea    % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
 
@@ -36,16 +36,16 @@ classdef CatalystLayer < BaseModel
             
             model = model@BaseModel();
             
-            fdnames = { 'G'                     , ...
-                        'j0'                    , ...
-                        'E0'                    , ...
-                        'Eref'                  , ...
-                        'sp'                    , ...
-                        'n'                     , ...
-                        'alpha'                 , ...
-                        'Xinmr'                 , ...
-                        'volumetricSurfaceArea0', ...
-                        'include_dissolution'   , ...
+            fdnames = { 'G'                              , ...
+                        'referenceExchangeCurrentDensity', ...
+                        'standardEquilibriumPotential'    , ...
+                        'referencePotential'             , ...
+                        'species'                        , ...
+                        'numberOfElectronsTransferred'   , ...
+                        'chargeTransferCoefficient'      , ...
+                        'ionomerFractionArea'            , ...
+                        'referenceVolumetricSurfaceArea' , ...
+                        'include_dissolution'            , ...
                         'tortuosity'};
             
             model = dispatchParams(model, inputparams, fdnames);
@@ -56,7 +56,7 @@ classdef CatalystLayer < BaseModel
                 model.subModelNameList = {};
             end
             
-            model.E0eff = model.E0 - model.Eref;
+            model.E0eff = model.standardEquilibriumPotential - model.referencePotential;
             model.constants = PhysicalConstants();
             
         end
@@ -224,9 +224,9 @@ classdef CatalystLayer < BaseModel
             
         function state = updateReactionRates(model, state)
 
-            Xinmr = model.Xinmr;
-            alpha = model.alpha;
-            n     = model.n;
+            Xinmr = model.ionomerFractionArea;
+            alpha = model.chargeTransferCoefficient;
+            n     = model.numberOfElectronsTransferred;
 
             vsa      = state.volumetricSurfaceArea;
             etaElyte = state.etaElyte;

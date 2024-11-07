@@ -1,6 +1,4 @@
-function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity)
-
-    coupterm = model.externalCouplingTerm;
+function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity, coupterm)
 
     jExternal = phi*0.0; %NB hack to initialize zero ad
 

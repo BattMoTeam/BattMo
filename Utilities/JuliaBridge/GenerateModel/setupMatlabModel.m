@@ -10,10 +10,6 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
     json_filename = fullfile(jsonfolder, json_filename);
 
     jsonstruct = parseBattmoJson(json_filename);
-
-    CRate = jsonstruct.Control.CRate;
-    jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-    jsonstruct.TimeStepping.numberOfTimeSteps = 100;
     
     %% To run the simulation, you need to install matlab battmo
 

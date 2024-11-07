@@ -23,6 +23,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         L            % length of the battery
         nas          % number of cells in the angular direction
         nL           % number of discretization cells in the longitudonal
+        refLcoef     % coefficient use in refinement at top/bottom
         angleuniform
 
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
@@ -71,6 +72,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.nas          = params.nas;
             gen.L            = params.L;
             gen.nL           = params.nL;
+            gen.refLcoef     = params.refLcoef;
             gen.tabparams    = params.tabparams;
             gen.angleuniform = params.angleuniform;
 

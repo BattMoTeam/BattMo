@@ -1,0 +1,9 @@
+{
+  "Interface" : {
+    "SEImolarVolume" : 95.86e-6,
+    "SEIionicConductivity" : 1e-5,
+    "SEIelectronicDiffusionCoefficient" : 1.6e-12,
+    "SEIstoichiometricCoefficient" : 2,
+    "SEIintersticialConcentration" : 1.5e-2,
+    "SEIlengthInitial" : 10e-9},
+  "SEImodel" : "Bolay"}

@@ -44,6 +44,14 @@ You can check that that your installation is setup correctly by running one of t
 
 ``runBatteryP2D``
 
+Update
+------
+
+To update you code after you installed it as described above, use the standard :code:`git pull` command.
+
+If your initial installation has been done before November 7th 2024, we recommend to start the installation all over
+again.
+
 Iterative solvers
 -----------------
 
@@ -65,4 +73,5 @@ BattMo has received funding from the European Union’s Horizon 2020 innovation 
 * 875527 HYDRA
 * 957189 BIG-MAP
 * 101104013 BATMAX
-* 101103997 DigiBatt
+* 101103997 DigiBatt 
+* 101069765 IntelLiGent

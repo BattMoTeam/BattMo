@@ -60,7 +60,7 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCP_graphite",
+            "functionname": "computeOCP_Graphite_Torchio",
             "type": "function"
           },
           "reactionRateConstant": 5.031e-11,
@@ -94,7 +94,7 @@
               "temperature",
               "cmax"
             ],
-            "functionname": "computeOCPSiliconLi2012",
+            "functionname": "computeOCP_Silicon_Li2012",
             "type": "function"
           },
           "reactionRateConstant": 5.031e-11,
@@ -168,7 +168,7 @@
               "temperature",
               "maximum concentration"
             ],
-            "functionname": "updateOCPFunc_LNMO_Pron",
+            "functionname": "computeOCP_LNMO_Pron",
             "type": "function"
           },
           "reactionRateConstant": 2.33e-11,

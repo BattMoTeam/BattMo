@@ -399,13 +399,31 @@ classdef BatchProcessor
     end
 
     methods(Static)
-        
-        function [bp, simlist] = mergeSimLists(simlist, simlist_to_merge)
+
+        function [bp, simlist] = mergeSimList(simlist, simlist_to_merge)
+            
             bp = BatchProcessor(simlist);
             for isim = 1 : numel(simlist_to_merge)
                 elt = simlist_to_merge{isim};
                 [bp, simlist] = bp.addElement(simlist, elt);
             end
+
+        end
+        
+        function [bp, simlist] = mergeSimLists(simlists)
+
+            simlist = simlists{1};
+            simlists = simlists(2 : end);
+
+            while numel(simlists) > 0
+
+                simlist_to_merge = simlists{1};
+                simlists = simlists(2 : end);
+                
+                [bp, simlist] = BatchProcessor.mergeSimList(simlist, simlist_to_merge);
+                
+            end
+            
         end
         
     end

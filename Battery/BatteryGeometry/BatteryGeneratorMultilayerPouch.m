@@ -90,6 +90,7 @@ y (height)
         function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
             assert(inputparams.include_current_collectors, 'This geometry must include current collectors');
+
             gen.use_thermal = inputparams.use_thermal;
             [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
 
