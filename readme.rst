@@ -65,4 +65,5 @@ BattMo has received funding from the European Union’s Horizon 2020 innovation 
 * 875527 HYDRA
 * 957189 BIG-MAP
 * 101104013 BATMAX
-* 101103997 DigiBatt
+* 101103997 DigiBatt 
+* 101069765 IntelLiGent
