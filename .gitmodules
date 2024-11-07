@@ -4,3 +4,6 @@
 [submodule "upr"]
 	path = Externals/upr
 	url = https://github.com/rbe051/UPR.git
+[submodule "mrst"]
+	path = Externals/mrst
+	url = https://github.com/SINTEF-AppliedCompSci/MRST.git
