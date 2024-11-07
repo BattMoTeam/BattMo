@@ -2,6 +2,8 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
 
     properties
 
+        externalCouplingTerms % Cell array with external coupling terms
+
         Control
         
     end
@@ -11,12 +13,16 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
         function model = GasDiffusionCell(inputparams)
 
             model = model@MaxwellStefanGasDiffusion(inputparams);
+    
+            fdnames = {'externalCouplingTerms'};
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.Control = GasDiffusionCellControl(inputparams.Control);
 
             model.subModelNameList{end + 1} = 'Control';
 
             model = model.setupControlMappings();
+            
         end
 
         function model = setupControlMappings(model)
@@ -55,7 +61,7 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             mappings = struct('ctrlToBc', ctrlToBc, ...
                               'bcToCtrl', bcToCtrl);
             
-            model.bcfaces          = bcfacectrltbl.get('faces');
+            model.boundaryFaces    = bcfacectrltbl.get('faces');
             model.Control.mappings = mappings;
             
         end

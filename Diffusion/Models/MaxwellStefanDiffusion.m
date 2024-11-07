@@ -30,11 +30,15 @@ classdef MaxwellStefanDiffusion < BaseModel
         % Boundary sub-model
         Boundary
 
-        externalCouplingTerms % Cell array with external coupling terms
-
         % helpers
-        bcfaces % Boundary faces that are included. For the boundary faces that are not included we have no flux boundary conditions
-        
+        boundaryFaces % Boundary faces that are included with their own degrees of freedom. For the boundary faces that are
+                      % not included we have no flux boundary conditions
+
+        mappings % Mappings given by the followings fields
+                 % - mapToBc   : injection mapping from domain cell value (dimension model.grid.cells.num) to boundary face values
+                 %             (dimension numel(boundaryFaces))
+                 % - mapFromBc : injection mapping from boundary face values
+                 %             (dimension numel(boundaryFaces))to domain cell value (dimension model.grid.cells.num) to
     end
     
     methods
@@ -46,8 +50,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             fdnames = {'G'               , ...
                        'diffusionMatrix' , ...
                        'compNames'       , ...
-                       'molecularWeights', ...
-                       'externalCouplingTerms'};
+                       'molecularWeights'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -68,6 +71,44 @@ classdef MaxwellStefanDiffusion < BaseModel
             
             % Check symmetry and the properties 2.8 in main reference
 
+            % model = model.setupMappings();
+
+        end
+
+        function model = setupMappings(model)
+
+        %  boundaryFaces gives the indexing of the boundary faces
+
+            bcfacetbl.faces = model.boundaryFaces;
+            bcfacetbl = IndexArray(bcfacetbl);
+            bcfacetbl = bcfacetbl.addLocInd('ind'); % add local indexing (used below)
+           
+            tbls = setupTables(model.grid);
+
+            bccellfacetbl = crossIndexArray(bcfacetbl, tbls.cellfacetbl, {'faces'});
+            bccellfacetbl = sortIndexArray(bccellfacetbl, {'ind'}, 'keepAllFields', true);
+
+            celltbl = tbls.celltbl;
+
+            map = TensorMap();
+            map.fromTbl  = bccellfacetbl;
+            map.toTbl    = celltbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapFromBc = map.setupMatrix();
+
+            map = TensorMap();
+            map.fromTbl  = celltbl;
+            map.toTbl    = bccellfacetbl;
+            map.mergefds = {'cells'};
+            map = map.setup();
+
+            mapToBc = map.setupMatrix();
+
+            model.mappings = struct('mapFromBc', mapFromBc, ...
+                                    'mapToBc'  , mapToBc);
+            
         end
         
         function model = registerVarAndPropfuncNames(model)

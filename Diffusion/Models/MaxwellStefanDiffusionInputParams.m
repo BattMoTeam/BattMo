@@ -11,8 +11,6 @@ classdef MaxwellStefanDiffusionInputParams < ComponentInputParams
         % Molecular weights (array with N values, where N is the number of components)
         molecularWeights
         
-        externalCouplingTerms % Cell array with external coupling terms
-
     end
     
     methods

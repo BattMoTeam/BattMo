@@ -3,6 +3,8 @@ classdef GasDiffusionCellInputParams < MaxwellStefanGasDiffusionInputParams
     properties
 
         Control
+
+        externalCouplingTerms % Cell array with external coupling terms
         
     end
     
