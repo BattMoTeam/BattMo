@@ -63,6 +63,8 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             
             model.boundaryFaces    = bcfacectrltbl.get('faces');
             model.Control.mappings = mappings;
+
+            model = model.setupMappings();
             
         end
         
@@ -84,10 +86,12 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             outputvarnames = VarName({'Control'}, 'fluxBoundaryEquations', ncomp);
             model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
 
-            fn = @GasDiffusionCell.updateBoundaryMassFractions;
-            inputvarnames = {VarName({'Control'}, 'massFractions', ncomp)};
-            outputvarnames = VarName({'Boundary'}, 'massFractions', ncomp);
-            model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+            for icomp = 1 : ncomp
+                fn = @GasDiffusionCell.updateBoundaryMassFractions;
+                inputvarnames = {VarName({'Control'}, 'massFractions', ncomp, icomp)};
+                outputvarnames = VarName({'Boundary'}, 'massFractions', ncomp, icomp);
+                model = model.registerPropFunction({outputvarnames, fn, inputvarnames});
+            end
             
             fn = @GasDiffusionCell.updateControlBoundaryPressureEquation;
             inputvarnames = {{'Control', 'pressure'}, ...
@@ -96,6 +100,40 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
         end
+
+        function state = updateControlValue(model, state)
+
+            ctrlelts = model.Control.controlElements
+
+            state.Control.values = cellfun(@(elt) elt.value, ctrlelts);
+            
+        end
+
+        function state = updateControlBoundaryPressureEquation(model, state)
+
+            ctrlToBc = model.Control.mappings;
+
+            pbc = state.Boundary.pressure;
+            pc  = state.Control.pressure;
+            
+            state.Control.pressureBoundaryEquation = ctrlToBc*pc - pbc;
+            
+        end
+
+        function state = updateBoundaryMassFractions(model, state)
+
+            ncomp = model.numberOfComponents;
+
+            ctrlToBc = model.Control.mappings.ctrlToBc;
+
+            for icomp = 1 : ncomp
+
+                state.Boundary.massFractions{icomp} = ctrlToBc*state.Control.massFractions{icomp};
+
+            end
+            
+        end
+        
         
     end
 

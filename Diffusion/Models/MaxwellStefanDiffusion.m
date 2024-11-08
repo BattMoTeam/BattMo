@@ -69,9 +69,6 @@ classdef MaxwellStefanDiffusion < BaseModel
 
             model.compInds = compInds;
             
-            % Check symmetry and the properties 2.8 in main reference
-
-            % model = model.setupMappings();
 
         end
 
@@ -96,7 +93,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapFromBc = map.setupMatrix();
+            mapFromBc = map.getMatrix();
 
             map = TensorMap();
             map.fromTbl  = celltbl;
@@ -104,7 +101,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapToBc = map.setupMatrix();
+            mapToBc = map.getMatrix();
 
             model.mappings = struct('mapFromBc', mapFromBc, ...
                                     'mapToBc'  , mapToBc);
@@ -129,14 +126,16 @@ classdef MaxwellStefanDiffusion < BaseModel
             varnames{end + 1} = VarName({}, 'massFractions', ncomp);
             % Mass fraction equation. The mass fractions sum to one.
             varnames{end + 1} = 'massFractionEquation';
-            % Pressure
+            % Pressure / Pa
             varnames{end + 1} = 'pressure';
-            % Temperature
+            % Temperature / K
             varnames{end + 1} = 'temperature';
-            % Total density
+            % Total density / kg/m^3
             varnames{end + 1} = 'density';            
-            % Concentration
+            % Concentration / mol/m^3
             varnames{end + 1} = 'concentration';
+            % Total molecular weight / kg/mol
+            varnames{end + 1} = 'molarWeight';
             
             model = model.registerVarNames(varnames);
             
@@ -174,16 +173,19 @@ classdef MaxwellStefanDiffusion < BaseModel
             
             model = model.setAsStaticVarName('temperature');
             model = model.setAsStaticVarName({'Boundary', 'temperature'});
+
+
+            fn = @MaxwellStefanGasDiffusion.updateMolarWeight;
+            inputvarnames = {VarName({}, 'massFractions', ncomp)};
+            model = model.registerPropFunction({'molarWeight', fn, inputvarnames});
+
+            fn = @MaxwellStefanGasDiffusion.updateMolarWeight;
+            inputvarnames = {VarName({'Boundary'}, 'massFractions', ncomp)};
+            model = model.registerPropFunction({{'Boundary', 'molarWeight'}, fn, inputvarnames});
             
             fn = @MaxwellStefanDiffusion.updateConcentration;
-            inputvarnames = {'density', VarName({}, 'massFractions', ncomp)};
-            outputvarname = VarName({}, 'concentration');
-            model = model.registerPropFunction({'concentration', fn, inputvarnames});
-            
-            inputvarnames = {VarName({'Boundary'}, 'density'), ...
-                             VarName({'Boundary'}, 'massFractions', ncomp)};
-            outputvarname = VarName({'Boundary'}, 'concentration');
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});
+            model = model.registerPropFunction({'concentration', fn, {'density', 'molarWeight'}});
+            model = model.registerPropFunction({{'Boundary', 'concentration'}, fn, {{'Boundary', 'density'}, {'Boundary', 'molarWeight'}}});
             
             fn = @MaxwellStefanDiffusion.updateDiffusionFluxes;
             inputvarnames = {'density'                          , ...
@@ -214,7 +216,7 @@ classdef MaxwellStefanDiffusion < BaseModel
                 outputvarname = VarName({}, 'diffusionForces', ncomp, icomp);
                 inputvarnames  = {'temperature'                                  , ...
                                   'pressure'                                     , ...
-                                  'density'                                      , ...
+                                  'molarWeight'                                  , ...
                                   'concentration'                                , ...
                                   VarName({}, 'chemicalPotentials', ncomp, icomp), ...
                                   VarName({}, 'massFractions', ncomp, icomp)};
@@ -260,8 +262,101 @@ classdef MaxwellStefanDiffusion < BaseModel
             end
             
         end
+
+        function state = updateMassAccums(model, state, state0, dt)
+
+            ncomp = model.numberOfComponents;
+
+            for icomp = 1 : ncomp
+
+                state.massAccums{icomp} = 1/dt*(state.density.*state.massFractions{icomp} - ...
+                                                state0.density.*state0.massFractions{icomp});
+            end
+            
+        end
         
+        function state = updateMassFractionEquation(model, state)
+
+            ncomp = model.numberOfComponents;
+            
+            state.massFractionEquation          = 1;
+            state.Boundary.massFractionEquation = 1;
+
+            for icomp = 1 : ncomp
+                state.massFractionEquation          = state.massFractionEquation          - state.massFractions{icomp};
+                state.Boundary.massFractionEquation = state.Boundary.massFractionEquation - state.Boundary.massFractions{icomp};
+            end
+            
+        end
+
+        function state = updateMolarWeight(model, state)
+
+            state.molarWeight          = model.computeMolarWeight(state.massFractions);
+            state.Boundary.molarWeight = model.computeMolarWeight(state.Boundary.massFractions);
+            
+        end
+
+        function molarWeight = computeMolarWeight(model, massFractions)
+
+            ncomp = model.numberOfComponents;
+            mws   = model.molecularWeights;
+            
+            mw = 0*mfs{1}; % (useful?) trick to make sure we have AD instantiation when needed.
+
+            for icomp = 1 : ncomp
+
+                mw = mw + massFractions{icomp}/mws(icomp);
+                
+            end
+            
+            molarWeight = 1./mw;
+            
+        end
+
+        function state = updateConcentration(model, state)
+
+            state.concentration          = state.density./state.molarWeight;
+            state.Boundary.concentration = state.Boundary.density./state.Boundary.molarWeight;
+            
+        end
+
+        function state = updateDiffusionForces(model, state)
+        % Equation 1.9 in main reference (Curtiss and Bird, 1999)
+
+            R = PhysicalConstants.R;
+            
+            mws = model.molecularWeights;
+            
+            mw  = state.molarWeight;
+            T   = state.T;
+            c   = state.concentration;
+            mfs = state.massFractions;
+            p   = state.pressure;
+            mus = state.chemicalPotentials;
+            
+            for icomp = 1 : ncomp
+
+                potential        = 1./T.*mus{icomp}/mws(icomp);
+                fluxCoeffficient = mfs{icomp}.*mw/R;
+
+                % Note minus sign, because in there is already a minus sign in the assembleFlux function
+                dcomp = - assembleFlux(potential, fluxCoefficient);
+
+                potential        = p;
+                fluxCoeffficient = mfs{icomp}./(R*c.*T);
+                
+                dcomp = dcomp + assembleFlux(potential, fluxCoefficient);
+
+                state.diffusionForces{icomp} = dcomp;
+                
+            end
+
+        end
+
+
     end
+
+
     
 end
 
