@@ -143,10 +143,10 @@ classdef ConductorBlock < BaseModel
             couplingTerms = model.couplingTerms;
 
             coupterm = couplingTerms{couplingInd.input};
-            [jInput, jFaceInput] = setupExternalCoupling(model.(el), phi, E, conductivity, coupterm);
+            [jInput, jFaceInput] = assembleBoundarySource(model.(el), phi, E, conductivity, coupterm);
 
             coupterm = couplingTerms{couplingInd.output};
-            [jOutput, jFaceOutput] = setupExternalCoupling(model.(el), phi, 0, conductivity, coupterm);
+            [jOutput, jFaceOutput] = assembleBoundarySource(model.(el), phi, 0, conductivity, coupterm);
 
             state.(el).jBcSource = jInput + jOutput;
 

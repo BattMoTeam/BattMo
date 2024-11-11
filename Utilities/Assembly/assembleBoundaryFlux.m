@@ -1,5 +1,5 @@
-function [jExternal, jFaceExternal] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm)
-% Compute the flux a boundary. Returns a 
+function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm)
+% Compute and returns the flux a boundary. 
 %
 % The boundary is described by coupterm which is an instance of couplingTerm
 %
@@ -12,23 +12,24 @@ function [jExternal, jFaceExternal] = assembleBoundaryFlux(model, potential, bou
 % - n                  : normal pointing towards the exterior
 % - \int_{face} ... ds : integrale over a boundary face
 % Note the minus sign (same convention as in assembleFlux)
-
-    jExternal = potential*0.0; % NB hack to initialize zero ad (could be improved)
+%
+% Additional output in variable extra is returned, to be used in assembleBoundarySource
 
     faces = coupterm.couplingfaces;
-    
     bcval = boundary_potential;
+    
     % Retrieve the half-transmissibilities at the boundary faces
-    [t, cells, sgn] = model.G.getBcTrans(faces);
-    current = fluxCoefficient.*t.*(bcval - potential(cells));
-    jExternal = subsetPlus(jExternal, current, cells);
-    G = model.G;
-    nf = G.topology.faces.num;
-    zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), potential);
-    jFaceExternal = zeroFaceAD;
-    jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn.*current);
+    [halftrans, cells, sgn] = model.G.getBcTrans(faces);
 
-    %assert(~any(isnan(sgn(faces))));
+    val = potential(cells);
+    
+    % Compute boundary flux
+    boundaryFlux = fluxCoefficient.*halftrans.*(bcval - val);
+
+    if nargout > 1
+        extra = struct('sgn'  , sgn, ...
+                       'cells', cells);
+    end
 
 end
 
