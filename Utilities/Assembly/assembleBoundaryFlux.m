@@ -1,9 +1,24 @@
 function [jExternal, jFaceExternal] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm)
+% Compute the flux a boundary. Returns a 
+%
+% The boundary is described by coupterm which is an instance of couplingTerm
+%
+% The sign of the flux is oriented in the exterior direction
+%
+% The flux corresponds to the discretization of  $ - \int_{face} D\nabla(p)\cdot n ds$, where
+% - D                  : flux coefficient
+% - p                  : potential
+% - \nable             : gradient operator
+% - n                  : normal pointing towards the exterior
+% - \int_{face} ... ds : integrale over a boundary face
+% Note the minus sign (same convention as in assembleFlux)
 
-    jExternal = potential*0.0; %NB hack to initialize zero ad
+    jExternal = potential*0.0; % NB hack to initialize zero ad (could be improved)
 
     faces = coupterm.couplingfaces;
+    
     bcval = boundary_potential;
+    % Retrieve the half-transmissibilities at the boundary faces
     [t, cells, sgn] = model.G.getBcTrans(faces);
     current = fluxCoefficient.*t.*(bcval - potential(cells));
     jExternal = subsetPlus(jExternal, current, cells);
