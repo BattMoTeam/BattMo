@@ -1,15 +1,15 @@
-function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity, coupterm)
+function [jExternal, jFaceExternal] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm)
 
-    jExternal = phi*0.0; %NB hack to initialize zero ad
+    jExternal = potential*0.0; %NB hack to initialize zero ad
 
     faces = coupterm.couplingfaces;
-    bcval = phiExternal;
+    bcval = boundary_potential;
     [t, cells, sgn] = model.G.getBcTrans(faces);
-    current = conductivity.*t.*(bcval - phi(cells));
+    current = fluxCoefficient.*t.*(bcval - potential(cells));
     jExternal = subsetPlus(jExternal, current, cells);
     G = model.G;
     nf = G.topology.faces.num;
-    zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
+    zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), potential);
     jFaceExternal = zeroFaceAD;
     jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn.*current);
 
