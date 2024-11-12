@@ -58,16 +58,13 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             ctrlToBc = map.getMatrix();
             bcToCtrl = ctrlToBc';
 
-            mappings = struct('ctrlToBc', ctrlToBc, ...
-                              'bcToCtrl', bcToCtrl);
+            model.boundaryFaces = bcfacectrltbl.get('faces');
+            model.Control.mappings.ctrlToBc = ctrlToBc;
+            model.Control.mappings.bcToCtrl = bcToCtrl;
             
-            model.boundaryFaces    = bcfacectrltbl.get('faces');
-            model.Control.mappings = mappings;
-
             model = model.setupMappings();
             
         end
-        
         
         function model = registerVarAndPropfuncNames(model)
 
