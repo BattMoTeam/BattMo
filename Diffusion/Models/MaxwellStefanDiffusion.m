@@ -38,7 +38,7 @@ classdef MaxwellStefanDiffusion < BaseModel
                  % - mapToBc   : injection mapping from domain cell value (dimension model.grid.cells.num) to boundary face values
                  %             (dimension numel(boundaryFaces))
                  % - mapFromBc : injection mapping from boundary face values
-                 %             (dimension numel(boundaryFaces))to domain cell value (dimension model.grid.cells.num) to
+                 %             (dimension numel(boundaryFaces)) to domain cell value (dimension model.grid.cells.num)
     end
     
     methods
@@ -340,12 +340,12 @@ classdef MaxwellStefanDiffusion < BaseModel
                 fluxCoeffficient = mfs{icomp}.*mw/R;
 
                 % Note minus sign, because in there is already a minus sign in the assembleFlux function
-                dcomp = - assembleFlux(potential, fluxCoefficient);
+                dcomp = - assembleFlux(model, potential, fluxCoefficient);
 
                 potential        = p;
                 fluxCoeffficient = mfs{icomp}./(R*c.*T);
                 
-                dcomp = dcomp + assembleFlux(potential, fluxCoefficient);
+                dcomp = dcomp + assembleFlux(model, potential, fluxCoefficient);
 
                 state.diffusionForces{icomp} = dcomp;
                 
@@ -353,10 +353,69 @@ classdef MaxwellStefanDiffusion < BaseModel
 
         end
 
+        function state = updateBoundaryDiffusionForcesEquations(model, state)
 
+        % We set the diffustionForces at the boundary as an equation. Otherwise, the implementation is consistent with
+        % updateDiffusionForces in the interior of the domain
+            
+            R = PhysicalConstants.R;
+
+            ncomp   = model.numberOfComponents;
+            bcfaces = model.boundaryFaces;
+            
+            mws = model.molecularWeights;
+
+            % short names for variables (interior)
+            mw  = state.molarWeight;
+            T   = state.T;
+            c   = state.concentration;
+            mfs = state.massFractions;
+            p   = state.pressure;
+            mus = state.chemicalPotentials;
+            
+            % short names for variables (boundary)
+            bd_T   = state.Boundary.T;
+            bd_mus = state.Boundary.chemicalPotentials;            
+            bd_mfs = state.Boundary.massFractions;
+            
+            for icomp = 1 : ncomp
+                
+                dfeqs{icomp} = - state.Boundary.diffusionForces{icomp} 
+
+                potential        = 1./T.*mus{icomp}/mws(icomp);
+                bd_potential     = 1./bd_T.*bd_mus{icomp}/mws(icomp);
+                fluxCoeffficient = mfs{icomp}.*mw/R;
+
+                % Note minus sign, because in there is already a minus sign in the assembleBoundaryFlux function
+                dfeqs{icomp} = dfeqs{icomp} - assembleBoundaryFlux(potential, bd_potential, fluxCoefficient, bcfaces);
+
+                potential        = p;
+                bd_potential     = bd_p;
+                fluxCoeffficient = mfs{icomp}./(R*c.*T);
+                
+                dfeqs{icomp} = dfeqs{icomp} + assembleBoundaryFlux(potential, bd_potential, fluxCoefficient, bcfaces);
+
+            end
+            
+            state.diffusionForceEquations = dfeqs;
+
+        end
+
+        function state = updateBoundarySources(model, state)
+
+            mapFromBc = model.mappings.mapFromBc;
+            ncomp     = model.numberOfComponents;
+            
+            for icomp = 1 : ncomp
+
+                % note the minus sign as the boundary flux are computed outwards (from interior to outer), see function assembleBoundaryFlux.
+                state.boundaryForces{icomp} = - mapFromBc*state.Boundary.diffusionFluxes{icomp};
+
+            end
+            
+        end
+        
     end
 
-
-    
 end
 
