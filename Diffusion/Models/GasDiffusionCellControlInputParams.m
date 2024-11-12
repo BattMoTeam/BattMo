@@ -3,7 +3,7 @@ classdef GasDiffusionCellControlInputParams < InputParams
     properties
         
         % Cell array with the component names
-        compNames
+        componentNames
 
         controlElements % cell array containing struct with field
                         % - type          : control type (type = 1 : pressure, type = 2 : flux)

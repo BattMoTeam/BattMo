@@ -3,7 +3,7 @@ classdef GasDiffusionCellControl < BaseModel
     properties
         
         % Cell array with the component names
-        compNames
+        componentNames
         % Struct which maps a component name (provided as a struct field name) to component index (value returned by the
         % struct)
         compInds
@@ -34,12 +34,12 @@ classdef GasDiffusionCellControl < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'compNames', ...
+            fdnames = {'componentNames', ...
                        'controlElements'};
 
             model = dispatchParams(model, inputparams, fdnames);
             
-            model.numberOfComponents = numel(model.compNames);
+            model.numberOfComponents = numel(model.componentNames);
             model.nControls          = numel(model.controlElements);
 
             model = model.setupValueMappings();
@@ -48,7 +48,7 @@ classdef GasDiffusionCellControl < BaseModel
             
             for icomp = 1 : ncomp
 
-                name = model.compNames{icomp};
+                name = model.componentNames{icomp};
                 compInds.(name) = icomp;
                 
             end

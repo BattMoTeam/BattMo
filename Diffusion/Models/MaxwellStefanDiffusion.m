@@ -18,7 +18,7 @@ classdef MaxwellStefanDiffusion < BaseModel
         % Diffusion maxtrix coefficients of dimension NxN (where N is the number of components)
         diffusionMatrix
         % Cell array with the component names
-        compNames
+        componentNames
         % Struct which maps a component name (provided as a struct field name) to component index (value returned by the
         % struct)
         compInds
@@ -49,12 +49,12 @@ classdef MaxwellStefanDiffusion < BaseModel
             
             fdnames = {'G'               , ...
                        'diffusionMatrix' , ...
-                       'compNames'       , ...
+                       'componentNames'       , ...
                        'molecularWeights'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.numberOfComponents = numel(model.compNames);
+            model.numberOfComponents = numel(model.componentNames);
 
             model.subModelNameList = {'Boundary'};
             
@@ -62,7 +62,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             
             for icomp = 1 : ncomp
 
-                name = model.compNames{icomp};
+                name = model.componentNames{icomp};
                 compInds.(name) = icomp;
                 
             end

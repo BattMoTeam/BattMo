@@ -1,5 +1,5 @@
 {
-  "compNames" : ["H2O", "CO2"],
+  "compontentNames" : ["H2O", "CO2"],
   "Control" : {
     "controlElements" : [
       {"type" : 2,

@@ -12,7 +12,7 @@ classdef GasDiffusionCellInputParams < MaxwellStefanGasDiffusionInputParams
 
         function inputparams = GasDiffusionCellInputParams(jsonstruct)
 
-            jsonstruct = equalizeJsonStructFields(jsonstruct, {'compNames', {'Control', 'compNames'}});
+            jsonstruct = equalizeJsonStructFields(jsonstruct, {'componentNames', {'Control', 'componentNames'}});
             
             inputparams = inputparams@MaxwellStefanGasDiffusionInputParams(jsonstruct);
 
