@@ -1,4 +1,4 @@
-function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm)
+function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, boundaryFaces)
 % Compute and returns the flux a boundary. 
 %
 % The boundary is described by coupterm which is an instance of couplingTerm
@@ -15,20 +15,19 @@ function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary
 %
 % Additional output in variable extra is returned, to be used in assembleBoundarySource
 
-    faces = coupterm.couplingfaces;
     bcval = boundary_potential;
     
     % Retrieve the half-transmissibilities at the boundary faces
-    [halftrans, cells, sgn] = model.G.getBcTrans(faces);
+    [halftrans, boundaryCells, sgn] = model.G.getBcTrans(boundaryFaces);
 
-    val = potential(cells);
+    val = potential(boundaryCells);
     
     % Compute boundary flux
     boundaryFlux = fluxCoefficient.*halftrans.*(bcval - val);
 
     if nargout > 1
-        extra = struct('sgn'  , sgn, ...
-                       'cells', cells);
+        extra = struct('sgn', sgn, ...
+                       'boundaryCells', boundaryCells);
     end
 
 end

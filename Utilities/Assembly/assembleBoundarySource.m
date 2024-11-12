@@ -1,24 +1,21 @@
-function [jExternal, jFaceExternal] = assembleBoundarySource(model, potential, boundary_potential, fluxCoefficient, coupterm)
+function [jExternal, jFaceExternal] = assembleBoundarySource(model, potential, boundary_potential, fluxCoefficient, boundaryFaces)
 % Returns a the source term (in fact a "sink") which correponds to the flux that leaves the domain at the boundary
 %
 % See function assembleBoundaryFlux
 %
-
-    [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, coupterm);
+    [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary_potential, fluxCoefficient, boundaryFaces);
     
-    faces = coupterm.couplingfaces;
-
     G = model.G;
     nc = G.topology.cells.num;
     zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nc, 1), potential);    
     jExternal = zeroFaceAD;
-    jExternal = subsetPlus(jExternal, boundaryFlux, extra.cells);
+    jExternal = subsetPlus(jExternal, boundaryFlux, extra.boundaryCells);
 
     if nargout > 1
         nf = G.topology.faces.num;
         zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), potential);
         jFaceExternal = zeroFaceAD;
-        jFaceExternal = subsasgnAD(jFaceExternal, faces, - extra.sgn.*boundaryFlux);
+        jFaceExternal = subsasgnAD(jFaceExternal, boundaryFaces, - extra.sgn.*boundaryFlux);
     end
 
 end

@@ -143,10 +143,12 @@ classdef ConductorBlock < BaseModel
             couplingTerms = model.couplingTerms;
 
             coupterm = couplingTerms{couplingInd.input};
-            [jInput, jFaceInput] = assembleBoundarySource(model.(el), phi, E, conductivity, coupterm);
+            bcfaces = coupterm.couplingfaces;
+            [jInput, jFaceInput] = assembleBoundarySource(model.(el), phi, E, conductivity, bcfaces);
 
             coupterm = couplingTerms{couplingInd.output};
-            [jOutput, jFaceOutput] = assembleBoundarySource(model.(el), phi, 0, conductivity, coupterm);
+            bcfaces = coupterm.couplingfaces;
+            [jOutput, jFaceOutput] = assembleBoundarySource(model.(el), phi, 0, conductivity, bcfaces);
 
             state.(el).jBcSource = jInput + jOutput;
 
