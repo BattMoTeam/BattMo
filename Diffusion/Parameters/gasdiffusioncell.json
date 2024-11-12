@@ -1,5 +1,10 @@
 {
-  "compontentNames" : ["H2O", "CO2"],
+  "componentNames" : ["H2O", "O2"],
+  "molarWeights" : {"unit" : "gram/mol",
+                    "value" : [18, 32]},
+  "initialPressures" : {"unit" : "atm",
+                        "value" : [1, 1]},
+  "temperature" : 298,
   "Control" : {
     "controlElements" : [
       {"type" : 2,
