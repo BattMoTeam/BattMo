@@ -13,7 +13,8 @@ function [val, isConverted] = convertUnitBattMo(val)
             isConverted = true;
             % This is a numerical parameter that requires a unit conversion
             if ~isempty(val.unit)
-                str = sprintf('val = %g*%s;', val.value, val.unit);
+                numValue = val.value;
+                str = sprintf('val = numValue*%s;', val.unit);
                 eval(str);
             else
                 % Empty unit. Assume value is given in SI units
