@@ -101,6 +101,44 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
 
         end
 
+        function initstate = setupInitialState(model, jsonstruct)
+
+            nc    = model.G.getNumberOfCells();
+            nbf   = numel(model.boundaryFaces);
+            nctrl = model.Control.nControls;
+            
+            ncomp = model.numberOfComponents;
+            mws   = model.molarWeights;
+            
+            ps = jsonstruct.initialPressures;
+
+            % Setup initial pressure
+            initstate.pressure = sum(ps)*ones(nc, 1);
+            initstate.Boundary.pressure = sum(ps)*ones(nbf, 1);
+            
+            % compute mass fractions
+            mfs = 1/sum(mws.*ps)*(mws.*ps);
+
+            % Setup mass fraction
+            for icomp = 1 : ncomp
+                initstate.massFractions{icomp}            = mfs(icomp)*ones(nc, 1);
+                initstate.Boundary.massFractions{icomp}   = mfs(icomp)*ones(nbf, 1);
+                initstate.Boundary.diffusionForces{icomp} = zeros(nbf, 1);
+            end
+
+            initstate.Control.pressure = sum(ps)*ones(nctrl, 1);
+            initstate.Control.flux     = zeros(nctrl, 1);
+
+            ctrlelts = model.Control.controlElements;
+
+            type  = cellfun(@(ctrlelt) ctrlelt.type, ctrlelts);
+            value = cellfun(@(ctrlelt) ctrlelt.type, ctrlelts);
+
+            initstate.Control.pressure(type == 1) = value(type == 1);
+            initstate.Control.flux(type == 2)     = value(type == 2);
+            
+        end
+        
         function state = updateControlValue(model, state)
 
             ctrlelts = model.Control.controlElements
