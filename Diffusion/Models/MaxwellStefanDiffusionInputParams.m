@@ -9,7 +9,7 @@ classdef MaxwellStefanDiffusionInputParams < ComponentInputParams
         % Struct which maps a component name (provided as a struct field name) to component index (value returned by the
         % struct)
         % Molecular weights (array with N values, where N is the number of components)
-        molecularWeights
+        molarWeights
         
     end
     

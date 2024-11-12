@@ -24,8 +24,8 @@ classdef MaxwellStefanDiffusion < BaseModel
         compInds
         % Number of components
         numberOfComponents
-        % Molecular weights (array with N values, where N is the number of components)
-        molecularWeights
+        % Molar weights (array with N values, where N is the number of components)
+        molarWeights
 
         % Boundary sub-model
         Boundary
@@ -50,7 +50,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             fdnames = {'G'               , ...
                        'diffusionMatrix' , ...
                        'componentNames'       , ...
-                       'molecularWeights'};
+                       'molarWeights'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -299,7 +299,7 @@ classdef MaxwellStefanDiffusion < BaseModel
         function molarWeight = computeMolarWeight(model, massFractions)
 
             ncomp = model.numberOfComponents;
-            mws   = model.molecularWeights;
+            mws   = model.molarWeights;
             
             mw = 0*mfs{1}; % (useful?) trick to make sure we have AD instantiation when needed.
 
@@ -325,7 +325,7 @@ classdef MaxwellStefanDiffusion < BaseModel
 
             R = PhysicalConstants.R;
             
-            mws = model.molecularWeights;
+            mws = model.molarWeights;
             
             mw  = state.molarWeight;
             T   = state.T;
@@ -363,7 +363,7 @@ classdef MaxwellStefanDiffusion < BaseModel
             ncomp   = model.numberOfComponents;
             bcfaces = model.boundaryFaces;
             
-            mws = model.molecularWeights;
+            mws = model.molarWeights;
 
             % short names for variables (interior)
             mw  = state.molarWeight;

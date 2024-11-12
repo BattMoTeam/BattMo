@@ -94,7 +94,7 @@ classdef MaxwellStefanGasDiffusion < MaxwellStefanDiffusion
             R = PhysicalConstants.R;
             
             p0    = model.referencePressure;
-            mws   = model.molecularWeights;
+            mws   = model.molarWeights;
             ncomp = model.numberOfComponents;
 
             for icomp = 1 : ncomp
