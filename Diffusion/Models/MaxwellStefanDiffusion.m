@@ -122,6 +122,14 @@ classdef MaxwellStefanDiffusion < BaseModel
             varnames{end + 1} = VarName({}, 'diffusionForces', ncomp);            
             % Diffusion fluxes
             varnames{end + 1} = VarName({}, 'diffusionFluxes', ncomp);
+            % Convection fluxes
+            varnames{end + 1} = VarName({}, 'convectionFluxes', ncomp);
+            % Mass fluxes (sum over all fluxes)
+            varnames{end + 1} = VarName({}, 'massFluxes', ncomp);
+            % Maxwell Stefan equation. They relate the driving forces with the diffusion fluxes
+            varnames{end + 1} = VarName({}, 'maxwellStefanEquations', ncomp);
+            % Mass average velocity vector
+            varnames{end + 1} = 'velocity';
             % Mass fractions
             varnames{end + 1} = VarName({}, 'massFractions', ncomp);
             % Mass fraction equation. The mass fractions sum to one.
@@ -320,6 +328,12 @@ classdef MaxwellStefanDiffusion < BaseModel
             
         end
 
+        function state = updateDiffusionFluxes(model, state)
+
+            
+            
+        end
+        
         function state = updateDiffusionForces(model, state)
         % Equation 1.9 in main reference (Curtiss and Bird, 1999)
 

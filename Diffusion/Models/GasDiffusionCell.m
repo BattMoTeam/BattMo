@@ -22,7 +22,7 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             model.subModelNameList{end + 1} = 'Control';
 
             model = model.setupControlMappings();
-            
+
         end
 
         function model = setupControlMappings(model)
@@ -33,7 +33,6 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             ctrl  = [];
             
             for ictrl = 1 : nctrl
-
                 coupbcfaces = model.externalCouplingTerms{ictrl}.couplingfaces;
 
                 faces = vertcat(faces, coupbcfaces);
@@ -169,6 +168,12 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             
         end
         
+        function forces = getValidDrivingForces(model)
+
+            forces = getValidDrivingForces@PhysicalModel(model);
+            forces.src = [];
+            
+        end
         
     end
 
