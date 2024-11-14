@@ -16,10 +16,17 @@ cgt.printTailVariables;
 
 % cgp = model.cgp;
 
+%% Setup initial state
+
+initstate = model.setupInitialState(jsonstruct);
+
+%% Setup control
 nsteps   = 10;
 stepsize = 1*second;
 
-step        = stepsize*ones(nsteps, 1);
+clear step
+step.val     = stepsize*ones(nsteps, 1);
+step.control = ones(nsteps, 1);
 control.src = [];
 
 schedule = struct('control', control, 'step', step);
@@ -32,6 +39,6 @@ model.nonlinearTolerance = 1e-2;
 %% Run simulation
 
 model.verbose = true;
-[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 
