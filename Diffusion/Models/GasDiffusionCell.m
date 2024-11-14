@@ -43,7 +43,6 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             bcfacectrltbl.faces = faces;
             bcfacectrltbl.ctrl  = ctrl;
             bcfacectrltbl = IndexArray(bcfacectrltbl);
-
             
             ctrltbl.ctrl = (1 : nctrl)';
             ctrltbl = IndexArray(ctrltbl);
@@ -77,7 +76,7 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             model = model.registerPropFunction({{'Control', 'value'}, fn, {{'Control', 'type'}}});
 
             fn = @GasDiffusionCell.updateControlFluxBoundaryEquation;
-            inputvarnames = {VarName({'Boundary'}, 'diffusionFluxes', ncomp), ...
+            inputvarnames = {VarName({'Boundary'}, 'massFluxes', ncomp), ...
                              VarName({'Control'}, 'flux')};
             outputvarnames = VarName({'Control'}, 'fluxBoundaryEquations', ncomp);
             model = model.registerPropFunction({outputvarnames, fn, inputvarnames});

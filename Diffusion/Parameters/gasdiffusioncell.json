@@ -4,6 +4,16 @@
                     "value" : [18, 32]},
   "initialPressures" : {"unit" : "atm",
                         "value" : [1, 1]},
+  "diffusionCoefficients" : { "values" : [["H2O", "O2", 0.357]
+                                         ],
+                              "unit" : "(centi*meter)^2/second",
+                              "comment" : "The values of the diffution matrix are taken from book Transport phenomena, table 17.1.1 (https://www.wiley.com/en-us/Transport+Phenomena%2C+Revised+2nd+Edition-p-9780470606926)"},
+  "permeability" : {"value" : 40e-12,
+                    "unit" : "meter^2",
+                    "doi" : "https://doi.org/10.1038/s41598-024-68681-4"},
+  "viscosity" : {"value" :1.995e-5,
+                 "unit" : "meter^2/second",
+                 "doi" : "https://doi.org/10.1038/s41598-024-68681-4"},
   "temperature" : 298,
   "Control" : {
     "controlElements" : [
