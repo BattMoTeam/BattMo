@@ -502,8 +502,10 @@ classdef BaseModel < PhysicalModel
                     if ~isfield(cleanState, submodelname)
                         cleanState.(submodelname) = [];
                     end
-                    
-                    cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+
+                    if isa(model.(submodelname), 'BaseModel')
+                        cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+                    end 
                 end
 
             end
