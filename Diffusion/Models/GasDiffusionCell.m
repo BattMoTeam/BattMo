@@ -108,7 +108,7 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             ps = jsonstruct.initialPressures;
 
             % Setup initial pressure
-            initstate.pressure = sum(ps)*ones(nc, 1);
+            initstate.pressure          = sum(ps)*ones(nc, 1);
             initstate.Boundary.pressure = sum(ps)*ones(nbf, 1);
             
             % compute mass fractions
@@ -117,8 +117,9 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             % Setup mass fraction
             for icomp = 1 : ncomp
                 initstate.massFractions{icomp}            = mfs(icomp)*ones(nc, 1);
+                initstate.diffusionFluxes{icomp}          = mfs(icomp)*ones(nc, 1);
                 initstate.Boundary.massFractions{icomp}   = mfs(icomp)*ones(nbf, 1);
-                initstate.Boundary.diffusionForces{icomp} = zeros(nbf, 1);
+                initstate.Boundary.diffusionFluxes{icomp} = mfs(icomp)*ones(nbf, 1);
             end
 
             initstate.Control.pressure = sum(ps)*ones(nctrl, 1);
@@ -129,8 +130,15 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
             type  = arrayfun(@(ctrlelt) ctrlelt.type, ctrlelts);
             value = arrayfun(@(ctrlelt) ctrlelt.type, ctrlelts);
 
+
+            mfs = cell(1, ncomp);
+            for icomp = 1 : ncomp
+                mfs{icomp} = arrayfun(@(elt) elt.massFractions(icomp), ctrlelts)';
+            end
+            
             initstate.Control.pressure(type == 1) = value(type == 1);
             initstate.Control.flux(type == 2)     = value(type == 2);
+            initstate.Control.massFractions       = mfs;
             
         end
         
