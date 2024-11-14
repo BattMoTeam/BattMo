@@ -1,0 +1,28 @@
+{
+  "componentNames" : ["H2O", "O2", "N2"],
+  "molarWeights" : {"unit" : "gram/mol",
+                    "value" : [18, 32, 28]},
+  "initialPressures" : {"unit" : "atm",
+                        "value" : [1, 1, 1]},
+  "diffusionCoefficients" : { "values" : [["H2O", "O2", 0.357],
+                                          ["O2", "N2", 0.181], 
+                                          ["H2O", "N2", 0.259]
+                                         ],
+                              "unit" : "(centi*meter)^2/second",
+                              "comment" : "The values of the diffution matrix are taken from book Transport phenomena, table 17.1.1 (https://www.wiley.com/en-us/Transport+Phenomena%2C+Revised+2nd+Edition-p-9780470606926)"},
+  "permeability" : {"value" : 40e-12,
+                    "unit" : "meter^2",
+                    "doi" : "https://doi.org/10.1038/s41598-024-68681-4"},
+  "viscosity" : {"value" :1.995e-5,
+                 "unit" : "meter^2/second",
+                 "doi" : "https://doi.org/10.1038/s41598-024-68681-4"},
+  "temperature" : 298,
+  "Control" : {
+    "controlElements" : [
+      {"type" : 2,
+       "values" : 1,
+       "massFractions" : [0.4, 0.4, 0.2]},
+      {"type" : 1,
+       "value" : {"unit" : "barsa",
+                  "value" : 1},
+       "massFractions" : [0.4, 0.4, 0.2]}]}}
