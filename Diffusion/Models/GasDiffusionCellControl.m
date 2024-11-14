@@ -61,7 +61,7 @@ classdef GasDiffusionCellControl < BaseModel
         function model = setupValueMappings(model)
         % We setup the mappings fluxToValue and pressureToValue
 
-            typetbl.type = cellfun(@(elt) elt.type, model.controlElements);
+            typetbl.type = arrayfun(@(elt) elt.type, model.controlElements);
             typetbl = IndexArray(typetbl);
 
             fluxtbl.type = 2;

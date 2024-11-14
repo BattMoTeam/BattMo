@@ -126,8 +126,8 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
 
             ctrlelts = model.Control.controlElements;
 
-            type  = cellfun(@(ctrlelt) ctrlelt.type, ctrlelts);
-            value = cellfun(@(ctrlelt) ctrlelt.type, ctrlelts);
+            type  = arrayfun(@(ctrlelt) ctrlelt.type, ctrlelts);
+            value = arrayfun(@(ctrlelt) ctrlelt.type, ctrlelts);
 
             initstate.Control.pressure(type == 1) = value(type == 1);
             initstate.Control.flux(type == 2)     = value(type == 2);
@@ -136,9 +136,8 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
         
         function state = updateControlValue(model, state)
 
-            ctrlelts = model.Control.controlElements
-
-            state.Control.values = cellfun(@(elt) elt.value, ctrlelts);
+            ctrlelts = model.Control.controlElements;
+            state.Control.values = arrayfun(@(elt) elt.value, ctrlelts)';
             
         end
 

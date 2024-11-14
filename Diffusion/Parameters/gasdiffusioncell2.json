@@ -20,7 +20,7 @@
   "Control" : {
     "controlElements" : [
       {"type" : 2,
-       "values" : 1,
+       "value" : 1,
        "massFractions" : [0.4, 0.4, 0.2]},
       {"type" : 1,
        "value" : {"unit" : "barsa",
