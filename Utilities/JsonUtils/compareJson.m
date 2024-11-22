@@ -1,11 +1,16 @@
-function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
+function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2, name1, name2)
+
+    if nargin == 2
+        name1 = 'jsonstruct1';
+        name2 = 'jsonstruct2';
+    end
 
     flatjsonviewer1 = flattenJsonStruct(jsonstruct1);
     flatjsonviewer2 = flattenJsonStruct(jsonstruct2);
 
     flatjson1 = flatjsonviewer1.flatjson;
     flatjson2 = flatjsonviewer2.flatjson;
-    
+
     fd1 = flatjson1(:, 1);
     fd2 = flatjson2(:, 1);
 
@@ -14,7 +19,7 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
     flatjsondifferent = {};
     flatjsoncommon    = {};
     flatjsonmissing   = {};
-    
+
     for ii = 1 : numel(ia)
         val1 = flatjson1{ia(ii), 2};
         val2 = flatjson2{ib(ii), 2};
@@ -25,7 +30,7 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
         else
             flatjsondifferent{end + 1} = entry;
         end
-        
+
     end
 
     ismissing1 = true(numel(fd2), 1);
@@ -35,7 +40,7 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
         entry = {flatjson2{ismissing1(ii), 1}, NaN, flatjson2{ismissing1(ii), 2}};
         flatjsonmissing{end + 1} = entry;
     end
-    
+
     ismissing2 = true(numel(fd1), 1);
     ismissing2(ia) = false;
     ismissing2 = find(ismissing2);
@@ -43,7 +48,7 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
         entry = {flatjson1{ismissing2(ii), 1}, flatjson1{ismissing2(ii), 2}, NaN};
         flatjsonmissing{end + 1} = entry;
     end
-    
+
     flatjsoncommon    = vertcat(flatjsoncommon{:});
     flatjsondifferent = vertcat(flatjsondifferent{:});
     flatjsonmissing   = vertcat(flatjsonmissing{:});
@@ -54,16 +59,16 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2)
     flatjsondifferent = horzcat(flatjsondifferent, repmat({'different'}, n, 1));
     n                 = size(flatjsonmissing, 1);
     flatjsonmissing   = horzcat(flatjsonmissing, repmat({'missing'}, n, 1));
-    
+
     flatjsonboth = vertcat(flatjsoncommon, flatjsondifferent, flatjsonmissing);
 
-    flatjsonviewer = FlatJsonViewer(flatjsonboth);
-    
+    flatjsonviewer = FlatJsonViewer(flatjsonboth, {'parameter name', name1, name2, 'comparison'});
+
 end
 
 
 function isequal = compareValue(val1, val2)
-    
+
     if isstruct(val1) && isstruct(val2)
         % val1 and val2 are structs
         fds1 = fieldnames(val1);
@@ -86,7 +91,7 @@ function isequal = compareValue(val1, val2)
         end
         return;
     end
-    
+
     if iscell(val1) && iscell(val2)
         % val2 and val2 are cells
         if numel(val1) == numel(val2)
@@ -104,7 +109,7 @@ function isequal = compareValue(val1, val2)
         end
         return
     end
-    
+
     try
         isequal = eq(val1, val2);
     catch
@@ -120,13 +125,13 @@ function printFunction_(cellarray, varargin)
                  'columnorder', []);
 
     opt = merge_options(opt, varargin{:});
-    
+
     nrow = size(cellarray, 1);
     ncol = size(cellarray, 2);
 
     strs = cell(nrow, ncol);
     ls   = zeros(ncol, 1);
-    
+
     for ijson = 1 : nrow
         for col = 1 : ncol
             str = formattedDisplayText(cellarray{ijson, col});
@@ -153,18 +158,18 @@ function printFunction_(cellarray, varargin)
         inds = [ind1, ind2];
         strs = strs(:, inds);
     end
-    
+
     formatstr = sprintf('%%-%ds', ls(1));
     for icol = 2 : ncol
         formatstr = sprintf('%s, %%-%ds', formatstr, ls(icol));
     end
-    formatstr = sprintf('%s\\n', formatstr);    
-    
+    formatstr = sprintf('%s\\n', formatstr);
+
     for ijson = 1 : nrow
         str = strs(ijson, :);
         fprintf(formatstr, str{:});
     end
-        
+
 end
 
 
