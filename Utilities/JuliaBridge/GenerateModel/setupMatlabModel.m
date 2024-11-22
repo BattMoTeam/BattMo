@@ -1,4 +1,4 @@
-function export = setupMatlabModel(casename, jsonfolder, generate_reference_solution,varargin)
+function export = setupMatlabModel(casename, jsonfolder, generate_reference_solution, varargin)
 %% Script for BattMo.m to produce reference solution
 % - casename : is used to identify json file name for the input and saved data output
 % - jsonfolder : folder where the json file is fetched
@@ -13,7 +13,7 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
     
     %% To run the simulation, you need to install matlab battmo
 
-    export = runBatteryJson(jsonstruct, 'runSimulation', generate_reference_solution);
+    output = runBatteryJson(jsonstruct, 'runSimulation', generate_reference_solution);
 
     %% Save solution as a matlab struct that can be imported in Julia
 
