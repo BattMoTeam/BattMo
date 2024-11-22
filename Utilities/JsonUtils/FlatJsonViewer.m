@@ -36,7 +36,8 @@ classdef FlatJsonViewer
         function T = print(fjv, varargin)
 
             opt = struct('filter', [], ...
-                         'filename', []);
+                         'filename', [], ...
+                         'print', true);
 
             opt = merge_options(opt, varargin{:});
 
@@ -45,7 +46,10 @@ classdef FlatJsonViewer
             end
 
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
-            disp(T);
+
+            if opt.print
+                disp(T);
+            end
 
             if ~isempty(opt.filename)
                 writetable(T, opt.filename);
