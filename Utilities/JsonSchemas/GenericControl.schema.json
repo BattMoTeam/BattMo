@@ -1,85 +1,136 @@
-{  
+{
   "$id": "file://./GenericControl.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties" : {
-    "controlPolicy" : {
-      "type" : "string",
-      "const" : "Generic"},
-    "controlsteps" : {"$ref" : "#/$defs/controlsteps"}
-  },
-  "$defs" : {
-    "controlsteps" : {
-      "type" : "array",
-      "items" : {
-        "$ref" : "#/$defs/controlstep"}},
-    "direction" : {
-      "type" : "string",
-      "enum" : ["discharge",
-                "charge"],    
-    "controlstep" : {
-      "type" : "object",
-      "properties" : {
-        "controltype" : {
-          "type" : "string",
-          "enum" : ["cycle",
-                    "current",
-                    "hold",
-                    "voltage"]}},
-      "oneOf" : [
-        {"properties" : {
-          "controltype" : {
-            "const" : "cycle"},
-          "numberOfCycles" : {
-            "type" : "number"},
-          "termination" : {
-            "$ref" : "#/$defs/termination"},
-          "cycleControlSteps" : {
-            "$ref": "#/$defs/controlsteps"}
-        }},
-        {"properties" : {
-          "controltype" : {
-            "const" : "current"},
-          "termination" : {
-            "$ref" : "#/$defs/termination"},
-          "value" : {"type" : "number",
-                     "description" : "Value of the imposed current"},
-          "direction" : {"$ref" : "#/$defs/direction"},
-          "timeStepSize" : {"type" : "number"}
-        }},
-        {"properties" : {
-          "controltype" : {
-            "const" : "voltage"},
-          "termination" : {
-            "$ref" : "#/$defs/termination"},
-          "value" : {"type" : "number",
-                     "description" : "Value of the imposed voltage"},
-          "direction" : {"$ref" : "#/$defs/direction"},
-          "timeStepSize" : {"type" : "number"}
-        }},
-        {"properties" : {
-          "controltype" : {
-            "const" : "rest"},
-          "termination" : {
-            "type" : "object",
-            "properties" : {
-              "terminationtype" : {
-                "type" : "string",
-                "const" : "time"},
-              "value" : {
-                "type" : "number",
-                "description" : "time duration for the rest"}
-            }},
-          "value" : {
-            "type" : "number",
-            "description" : "Value of the imposed voltage"},
-          "direction" : {"$ref" : "#/$defs/direction"},
-          "timeStepSize" : {"type" : "number"}
-        }}
-      ]
+  "properties": {
+    "controlPolicy": {
+      "type": "string",
+      "const": "Generic"
+    },
+    "controlsteps": {
+      "$ref": "#/$defs/controlsteps"
     }
+  },
+  "$defs": {
+    "controlsteps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/controlstep"
+      }
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["discharge", "charge"]
+    },
+    "controlstep": {
+      "type": "object",
+      "properties": {
+        "controltype": {
+          "type": "string",
+          "enum": ["cycle", "current", "rest", "voltage"]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "controltype": {
+              "const": "cycle"
+            },
+            "numberOfCycles": {
+              "type": "number"
+            },
+            "termination": {
+              "$ref": "#/$defs/termination"
+            },
+            "cycleControlSteps": {
+              "$ref": "#/$defs/controlsteps"
+            }
+          }
+        },
+        {
+          "properties": {
+            "controltype": {
+              "const": "current"
+            },
+            "termination": {
+              "$ref": "#/$defs/termination"
+            },
+            "value": {
+              "type": "number",
+              "description": "Value of the imposed current"
+            },
+            "direction": {
+              "$ref": "#/$defs/direction"
+            },
+            "timeStepSize": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "properties": {
+            "controltype": {
+              "const": "voltage"
+            },
+            "termination": {
+              "$ref": "#/$defs/termination"
+            },
+            "value": {
+              "type": "number",
+              "description": "Value of the imposed voltage"
+            },
+            "direction": {
+              "$ref": "#/$defs/direction"
+            },
+            "timeStepSize": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "properties": {
+            "controltype": {
+              "const": "rest"
+            },
+            "termination": {
+              "type": "object",
+              "properties": {
+                "terminationtype": {
+                  "type": "string",
+                  "const": "time"
+                },
+                "value": {
+                  "type": "number",
+                  "description": "time duration for the rest"
+                }
+              }
+            },
+            "value": {
+              "type": "number",
+              "description": "Value of the imposed voltage"
+            },
+            "direction": {
+              "$ref": "#/$defs/direction"
+            },
+            "timeStepSize": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "termination": {
+      "type": "object",
+      "properties": {
+        "terminationtype": {
+          "type": "string",
+          "enum": ["time", "voltage", "current"]
+        },
+        "value": {
+          "type": "number",
+          "description": "Termination value (time or value)"
+        }
+      }
     }
   }
 }
-
-  
