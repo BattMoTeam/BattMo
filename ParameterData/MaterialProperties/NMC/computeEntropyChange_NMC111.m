@@ -1,24 +1,21 @@
-classdef FunctionInputParams < InputParams
+function dUdT = computeEntropyChange_NMC111(theta)
     
-    properties
-        
-        functionname
-        filepath
-        argumentlist
-        name
-        
-    end
+    % Calculate the entropy change at the given lithiation
     
-    methods
-
-        function inputparams = FunctionInputParams(jsonstruct)
-            inputparams = inputparams@InputParams(jsonstruct);
-        end
-        
-    end
+    coeff1 = [0.199521039        , ...
+                   - 0.928373822      , ...
+                   + 1.364550689000003, ...
+                   - 0.611544893999998];
+    
+    coeff2 = [1                  , ...
+                   - 5.661479886999997, ...
+                   + 11.47636191      , ... 
+                   - 9.82431213599998 , ...
+                   + 3.048755063];
+    
+    dUdT = -1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1), theta);
     
 end
-
 
 
 %{

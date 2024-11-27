@@ -7,8 +7,16 @@
   "guestStoichiometry100": 0.88551,
   "guestStoichiometry0": 0.1429,
   "chargeTransferCoefficient": 0.5,
-  "openCircuitPotential" : {"type": "function",
-           "functionname" : "computeOCP_Graphite_Torchio",
-           "argumentlist" : ["concentration", "temperature", "cmax"]
-          }
+  "openCircuitPotential" : {
+    "functionFormat": "named function",
+    "functionName" : "computeOCP_Graphite_Torchio",
+    "argumentList" : ["guestStoichiometry"]
+  },
+  "includeEntropyChange" : true,
+  "entropyChange" : {
+    "functionFormat": "named function",
+    "functionName" : "computeEntropyChange_Graphite_Torchio",
+    "argumentList" : ["guestStoichiometry"]
+  },
+  "referenceTemperature" : 298.15
 }

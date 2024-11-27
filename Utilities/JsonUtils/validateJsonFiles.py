@@ -11,7 +11,7 @@ import jsonschema
 from referencing import Registry, Resource
 import resolveFileInputJson as rjson
 
-VERBOSE = False
+VERBOSE = True
 
 
 def addSchema(schemaFolder, registry, schemaFilename):

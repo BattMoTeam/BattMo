@@ -8,9 +8,9 @@
   "guestStoichiometry0": 0.99,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
-    "type": "function",
-    "functionname": "computeOCP_NMC811_Chen2020",
-    "argumentlist": [
+    "functionFormat": "named function",
+    "functionName": "computeOCP_NMC811_Chen2020",
+    "argumentList": [
       "concentration",
       "temperature",
       "cmax"

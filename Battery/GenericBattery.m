@@ -271,8 +271,6 @@ classdef GenericBattery < BaseModel
 
             else
                 model = model.removeVarName({elyte, 'diffFlux'});
-                model = model.removeVarName({ne, co, am, itf, 'dUdT'});
-                model = model.removeVarName({pe, co, am, itf, 'dUdT'});
             end
 
             %% Functions that setup external  coupling for negative electrode
