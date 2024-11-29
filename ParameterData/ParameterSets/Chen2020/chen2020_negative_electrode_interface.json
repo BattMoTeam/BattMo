@@ -11,9 +11,7 @@
     "functionFormat": "named function",
     "functionName": "computeOCP_Graphite_SiOx_Chen2020",
     "argumentList": [
-      "concentration",
-      "temperature",
-      "cmax"
+      "stoichiometry"
     ]
   }
 }

@@ -1,4 +1,4 @@
-function OCP = computeOCP_Graphite_SiOx_Chen2020(theta)
+function OCP = computeOCP_Graphite_SiOx_Chen2020(sto)
     % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
     % from [1].
 
