@@ -2,7 +2,7 @@ classdef GenericControlModelInputParams < ControlModelInputParams
 %
     properties
 
-        
+        controlsteps
         
     end
     
@@ -11,7 +11,7 @@ classdef GenericControlModelInputParams < ControlModelInputParams
 
         function model = GenericControlModelInputParams(inputparams)
 
-            model = model@ControlModelInputParams();
+            model = model@ControlModelInputParams(inputparams);
             
         end
     end

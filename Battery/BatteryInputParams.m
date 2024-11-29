@@ -94,6 +94,8 @@ classdef BatteryInputParams < InputParams
                 inputparams.(ctrl) = PowerControlModelInputParams(pick(ctrl));
               case 'timeControl'
                 inputparams.(ctrl) = TimeControlModelInputParams(pick(ctrl));
+              case 'Generic'
+                inputparams.(ctrl) = GenericControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end

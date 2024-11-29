@@ -222,12 +222,14 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
               case {'CCCV', 'Impedance'}
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case {'Generic'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
             end
-            model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
 
             %% Function that update the Thermal Ohmic Terms
 
@@ -558,6 +560,10 @@ classdef GenericBattery < BaseModel
 
                 control = CCcontrolModel(inputparams);
 
+              case "Generic"
+
+                control = GenericControlModel(inputparams);
+                
               otherwise
 
                 error('Error controlPolicy not recognized');
@@ -949,8 +955,14 @@ classdef GenericBattery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
+                
+              case 'Generic'
 
+                % set first step
+                initstate.(ctrl).ctrlStepNumber = 1;
+                
               otherwise
+                
                 error('control policy not recognized');
             end
 
