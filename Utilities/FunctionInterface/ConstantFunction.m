@@ -1,9 +1,9 @@
-classdef ConstantFunction
+classdef ConstantFunction < Function
 % The function is a constant
     
     properties
         
-        constant
+        value
         
     end
 
@@ -11,15 +11,15 @@ classdef ConstantFunction
 
         function fn = Function(jsonstruct)
 
-            fdnames = {'constant'};
+            fdnames = {'value'};
 
             fn = dispatchParams(fn, jsonstruct, fdnames);
 
         end
         
-        function y = eval(fn)
+        function y = eval(fn, varargin)
 
-            y = fn.constant;
+            y = fn.value;
             
         end
 
