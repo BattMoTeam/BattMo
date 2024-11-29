@@ -86,7 +86,7 @@
         { "properties" : {
           "argumentList": {
             "type" : "array",
-            "prefixItems": [{"const": "guestStoichiometry"}]}}}]}]
+            "prefixItems": [{"const": "guestStoichiometry"}]}}}]}],
       "description": "Entropy change function"
     },
     "chargeTransferCoefficient": {
