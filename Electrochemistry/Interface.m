@@ -98,14 +98,11 @@ classdef Interface < BaseModel
             j0 = inputparams.exchangeCurrentDensity;
 
             if ~isempty(j0)
-                switch j0.type
-                  case 'function'
+                if isa(j0, 'struct') && isfield(j0, 'functionFormat')
                     model.useJ0Func = true;
-                    model.computeJ0Func = str2func(j0.functionName);
-                  case 'constant'
+                    model.computeJ0Func = setupFunction(inputparams.exchangeCurrentDensity);
+                else
                     model.useJ0Func = false;
-                  otherwise
-                    error('type of j0 not recognized.')
                 end
             else
                 model.useJ0Func = false;
@@ -164,8 +161,16 @@ classdef Interface < BaseModel
             end
             
             fn = @Interface.updateReactionRateCoefficient;
+            
             if model.useJ0Func
-                inputnames = {'cElectrodeSurface'};
+                switch computeJ0.numberOfArguments
+                  case 1                
+                    inputnames = {'cElectrodeSurface'};
+                  case 3
+                    inputnames = {'cElectrodeSurface', 'T', 'cElectrolyte'};
+                  otherwise
+                    error('number of argument not supported')
+                end
             else
                 inputnames = {'T', 'cElectrolyte', 'cElectrodeSurface'};
             end
@@ -258,15 +263,15 @@ classdef Interface < BaseModel
         function state = updateOCP0(model, state)
             
             computeOCP = model.computeOCPFunc;
-            cmax = model.saturationConcentration;
+            cmax       = model.saturationConcentration;
             
             c = state.cElectrodeSurface;
 
-            if computeOCP.numberOfArguments == 1
+            switch computeOCP.numberOfArguments
+              case 1
                 state.OCP0 = computeOCP.eval(c/cmax);
-            else
-                cmax = model.saturationConcentration;
-                state.OCP0 = computeOCP.eval(c, cmax);
+              otherwise
+                error('number of argument not recognized')
             end
 
         end
@@ -311,18 +316,39 @@ classdef Interface < BaseModel
             if model.useJ0Func
 
                 computeJ0 = model.computeJ0Func;
-                cmax      = model.saturationConcentration;
-                theta0    = model.guestStoichiometry0;
-                theta100  = model.guestStoichiometry100;
 
-                c = state.cElectrodeSurface;
+                switch computeJ0.numberOfArguments
 
-                cmin = theta0*cmax;
-                cmax = theta100*cmax;
+                    case 1
 
-                soc = (c - cmin)./(cmax - cmin);
+                    cmax      = model.saturationConcentration;
+                    theta0    = model.guestStoichiometry0;
+                    theta100  = model.guestStoichiometry100;
+                    
+                    c = state.cElectrodeSurface;
+                    
+                    cmin = theta0*cmax;
+                    cmax = theta100*cmax;
+                    
+                    soc = (c - cmin)./(cmax - cmin);
+                    
+                    j0 = computeJ0.eval(soc);
+                    
+                  case 4
 
-                j0 = computeJ0(soc);
+                    cmax = model.saturationConcentration;
+                    
+                    celyte = state.cElectrolyte;
+                    celde  = state.cElectrodeSurface;
+                    T      = state.T;
+
+                    j0 = computeJ0.eval(celyte, celde, cmax, T);
+
+                  otherwise
+
+                    error('number of argument not recgonized');
+                    
+                end
 
             else
 

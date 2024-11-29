@@ -89,8 +89,8 @@ classdef Electrolyte < BaseModel
                 model.bruggemanCoefficient = b;
             end
             
-            model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionName);
-            model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionName);
+            model.computeConductivityFunc         = setupFunction(inputparams.ionicConductivity);
+            model.computeDiffusionCoefficientFunc = setupFunction(inputparams.diffusionCoefficient);
 
             model.constants = PhysicalConstants();
 
@@ -310,7 +310,7 @@ classdef Electrolyte < BaseModel
             c = state.c;
             T = state.T;
 
-            state.conductivity = computeConductivity(c, T);
+            state.conductivity = computeConductivity.eval(c, T);
 
         end
 
@@ -345,7 +345,7 @@ classdef Electrolyte < BaseModel
             c = state.c;
             T = state.T;
 
-            D = computeD(c, T);
+            D = computeD.eval(c, T);
 
             % set effective coefficient
             state.D = D .* model.volumeFraction .^ brcoef;
