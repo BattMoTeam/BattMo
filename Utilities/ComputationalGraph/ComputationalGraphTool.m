@@ -1,5 +1,19 @@
 classdef ComputationalGraphTool
+%
+% A model is essentially characterised by its computational graph. The functions to setup the graph of a model are given in the BaseModel class.
+%
+% The ComputationalGraphTool is used to store the computational graph and provides utility functions to explore it in an iteractive way.
+%
+% From a model, you can get the computatonial graph by writing in the terminal
+%
+% cgt = model.cgt
+%
+% Then write
+%
+% cgt.help
 
+% to get an overview of the different commands that are available.
+% 
     properties (SetAccess = private)
 
         model
