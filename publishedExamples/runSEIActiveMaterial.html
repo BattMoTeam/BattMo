@@ -252,10 +252,11 @@
 <section id="setup-the-model">
 <h2>Setup the model<a class="headerlink" href="#setup-the-model" title="Permalink to this heading"></a></h2>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% We use a stand alone model for the particle</span>
-<span class="n">inputparams</span><span class="p">.</span><span class="n">standAlone</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="n">inputparams</span><span class="p">.</span><span class="n">isRootSimulationModel</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 
 <span class="c">% We initiate the model</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SEIActiveMaterial</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupForSimulation</span><span class="p">();</span>
 </pre></div>
 </div>
 </section>

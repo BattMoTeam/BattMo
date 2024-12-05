@@ -232,12 +232,12 @@ of the syntax but bring additional information such as a <code class="code docut
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The different schemas may have common object. In the validation process, each schema is handled parallelly. The
-function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> can be used to compose different json files.</p>
+function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> can be used to compose different json files.</p>
 </div>
 <p>For example a component (say the electolyte) has its geometrical and material properties specified in two separate
 schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
-we use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function, see the example <a class="reference internal" href="intermediate.html#mergejsonstructs"><span class="std std-ref">here</span></a>.</p>
+we use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function, see the example <a class="reference internal" href="intermediate.html#mergejsonstructs"><span class="std std-ref">here</span></a>.</p>
 <p>Here, we give an <a class="reference internal" href="jsonexample.html#json-input-example"><span class="std std-ref">Example</span></a></p>
 <section id="simulation-schema">
 <h2>Simulation Schema<a class="headerlink" href="#simulation-schema" title="Permalink to this heading"></a></h2>
@@ -285,13 +285,13 @@ we use the <a class="reference external" href="https://github.com/BattMoTeam/Bat
 </pre></div>
 </div>
 <p>The schemas are available in the directory
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas">JsonSchemas</a>. <a class="reference internal" href="jsonexample.html#simulation"><span class="std std-ref">Here</span></a> is an example of the main input
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas">JsonSchemas</a>. <a class="reference internal" href="jsonexample.html#simulation"><span class="std std-ref">Here</span></a> is an example of the main input
 file where the inputs are given in separate files using the <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> key.</p>
 </section>
 <section id="material-parameters">
 <h2>Material Parameters<a class="headerlink" href="#material-parameters" title="Permalink to this heading"></a></h2>
 <p>The main schema for the material parameter is reproduced below
-(<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Battery.schema.json">source</a>). We recognize the battery model structure presented
+(<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas/Battery.schema.json">source</a>). We recognize the battery model structure presented
 <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">here</span></a>.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./Battery.schema.json&quot;</span><span class="p">,</span>
@@ -352,7 +352,7 @@ file where the inputs are given in separate files using the <code class="code do
 <p>The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
 the json file should contain the function name that is used. The <em>signature</em> of the function is given in the schema in
 form of a <em>argument list</em>. For example, below, we can read that that the <code class="code docutils literal notranslate"><span class="pre">ionicConductivity</span></code> is a function of
-concentration and temperature, see examples <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/OrganicLiPF6Solutions">here</a>.</p>
+concentration and temperature, see examples <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/MaterialProperties/OrganicLiPF6Solutions">here</a>.</p>
 <div class="admonition note" id="note-on-future-function-support">
 <p class="admonition-title">Note</p>
 <p>At the moment, only function implemented in matlab are supported. To add a function, the user must therefore create
@@ -405,9 +405,10 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="w">        </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">}</span>
-<span class="w">    </span><span class="p">},</span>
+<span class="w">        </span><span class="p">}}},</span>
+<span class="w">    </span><span class="nt">&quot;nominalEthyleneCarbonateConcentration&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Nominal Ethylene Carbonate concentration in the electrolyte. This is used as initial concentration, in case the SEI layer is included in model, see Coating.schema.json and the active_material_type property&quot;</span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the mass density of the material&quot;</span><span class="p">,</span>
@@ -418,6 +419,20 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the coefficient for determining effective transport parameters in porous media&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;beta&quot;</span>
 <span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;useRegionBruggemanCoefficients&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Set to true if the electrolye region for each component should get a specific Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;regionBruggemanCoefficients&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bruggeman coefficients for each region&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;PositiveElectrode&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;Separator&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">}},</span>
+<span class="w">    </span><span class="nt">&quot;regionTags&quot;</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Numerical tags that identifies each grid cell for the electrolyte. The conventions is 1 for negative electrode, 2 for positive electrodes, 3 for separator. It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor.&quot;</span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the intrinsic Thermal conductivity of the active component&quot;</span><span class="p">,</span>
@@ -445,7 +460,9 @@ table. When given as a table, the value of the function is interpolated from the
 <span class="w">  </span>
 <span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;Coating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Coating.schema.json&quot;</span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CurrentCollector.schema.json&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CurrentCollector.schema.json&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;use_normed_current_collector&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">                                    </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Use special solver setup for current collector to avoid floating point error when there are very small voltage difference. It is only needed for the positive electrode. Default is true but we set it to false for the moment when we use an iterative linear solver&quot;</span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 
 <span class="p">}</span>
@@ -469,6 +486,13 @@ provide the data for the two active materials (<code class="code docutils litera
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;activeMaterialModelSetup&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;composite&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">                           </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default is false. It true, setup a composite material with two active materials, using fields ActiveMaterial1 and ActiveMaterial2&quot;</span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;SEImodel&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">                          </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Safari&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Bolay&quot;</span><span class="p">]}}},</span>
 <span class="w">        </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ActiveMaterial.schema.json&quot;</span>
 <span class="w">        </span><span class="p">},</span>
@@ -494,12 +518,25 @@ provide the data for the two active materials (<code class="code docutils litera
 <span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the Bruggeman coefficient for effective transport in porous media&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;beta&quot;</span>
 <span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;active_material_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">            </span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="s2">&quot;composite&quot;</span>
-<span class="w">          </span><span class="p">]</span>
+<span class="w">        </span><span class="nt">&quot;volumeFraction&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Volume fraction of the coating. This value is, in the default setup, computed from the other parameters (the mass fractions and the densities of the components, and the effictive density). If the value is passed here using this property, it overrides the default setup.&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vf&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;volumeFractions&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;items&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
+<span class="w">          </span><span class="nt">&quot;minItems&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;maxItems&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Volume fractions for each of the component (active material, binder, conducting additive). As the volume fraction, this value , in the default setup, computed from the other parameters (the mass fractions and the densities of the components, and the effictive density). If the value is passed here using this property, it overrides the default setup. If none of the specific volumes of the components can be computed, then we assume that the volume fraction of the active material is equal to one.&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;effectiveVolumetricHeatCapacity&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the effective volumetric heat capacity, which take into account the volume fraction. This value is in the default setup computed, but the value given here will overwrite the default computed value.&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;effectiveThermalConductivity&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;the effective thermal conductivity, which take into account the volume fraction and the bruggeman coefficient. This value is in the default setup computed, but the value given here will overwrite the default computed value.&quot;</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
@@ -560,6 +597,9 @@ initializaton. This design choice is in fact used consistently in BattMo.</p>
 <span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Active Material&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;SEImodel&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Safari&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Bolay&quot;</span><span class="p">],</span>
+<span class="w">                  </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The default is \&quot;standard\&quot; with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)&quot;</span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Interface.schema.json&quot;</span>
 <span class="w">    </span><span class="p">},</span>
@@ -785,7 +825,7 @@ the guest stoichiometries and the saturation concentration.</p>
 <p>The guest stoichiometries and the saturation concentration are also input data for the
 <a class="reference internal" href="#interface"><span class="std std-ref">interface</span></a>. The given values should then be the same. However, the submodels are initiated
 parallelly at the model level. For that reason, we use a validation mechanism that checks the consistency of the data
-of the submodels, when needed, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Electrochemistry/ActiveMaterialInputParams.m#L107">here</a> for an example.</p>
+of the submodels, when needed, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrochemistry/ActiveMaterialInputParams.m#L107">here</a> for an example.</p>
 </div>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./FullSolidDiffusionModel.schema.json&quot;</span><span class="p">,</span>
@@ -1329,11 +1369,11 @@ various control models can be read from the schema.</p>
 <span class="w">        </span><span class="nt">&quot;controlPolicy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;CCDischarge&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s2">&quot;CCCHarge&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s2">&quot;CCCharge&quot;</span><span class="p">,</span>
 <span class="w">                   </span><span class="s2">&quot;CC&quot;</span><span class="p">,</span>
 <span class="w">                   </span><span class="s2">&quot;CCCV&quot;</span><span class="p">,</span>
-<span class="w">                   </span><span class="s2">&quot;powerControl&quot;</span><span class="p">]}},</span>
-<span class="w">      </span><span class="nt">&quot;CRate&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">}</span>
+<span class="w">                   </span><span class="s2">&quot;powerControl&quot;</span><span class="p">,</span>
+<span class="w">		   </span><span class="s2">&quot;timeControl&quot;</span><span class="p">]}}</span>
 <span class="w">    </span><span class="p">}},</span>
 <span class="w">    </span><span class="nt">&quot;allOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span><span class="nt">&quot;if&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1356,19 +1396,25 @@ various control models can be read from the schema.</p>
 
 <span class="w">  </span><span class="nt">&quot;$defs&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;CCDischarge&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span>
-<span class="w">      </span><span class="p">{</span><span class="nt">&quot;rampupTime&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current.&quot;</span><span class="p">},</span>
-<span class="w">       </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
-<span class="w">       </span><span class="nt">&quot;useCVswitch&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">         </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-<span class="w">         </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached.&quot;</span>
-<span class="w">       </span><span class="p">}}},</span>
+<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;DRate&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;discharge rate&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;rampupTime&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;useCVswitch&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached.&quot;</span>
+<span class="w">        </span><span class="p">}}},</span>
 <span class="w">    </span><span class="nt">&quot;CCCharge&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span>
-<span class="w">      </span><span class="p">{</span><span class="nt">&quot;rampupTime&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;CRate&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;charge rate&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;rampupTime&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current.&quot;</span><span class="p">},</span>
 <span class="w">       </span><span class="nt">&quot;upperCutoffVoltage&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1381,6 +1427,12 @@ various control models can be read from the schema.</p>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;CCCV&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;CRate&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;charge rate&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;DRate&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;discharge rate&quot;</span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;upperCutoffVoltage&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1389,7 +1441,21 @@ various control models can be read from the schema.</p>
 <span class="w">        </span><span class="nt">&quot;dIdtLimit&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;numberOfCycles&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;initialControl&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<span class="w">                            </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;discharging&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;charging&quot;</span><span class="p">]}</span>
+<span class="w">                            </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;discharging&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;charging&quot;</span><span class="p">]},</span>
+<span class="w">        </span><span class="nt">&quot;switchTolerances&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tolerances for the computation of the control switching (relative tolerances)&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;CC_discharge1&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;control corresponding to constant current discharge until lower cutoff voltage is reached, default value : 1e-2&quot;</span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;CC_discharge2&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;control corresponding to zero current until dEdtLimit is reached. Default value : 0.9&quot;</span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;CC_charge1&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">                             </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;control corresponding to constant current charge until upper cutoff voltage is reached. Default value : 1e-2&quot;</span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;CV_charge2&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">                             </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;control corresponding to constant voltage until dIdtLimit is reached. Default value : 0.9&quot;</span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}},</span>
 
 <span class="w">    </span><span class="nt">&quot;powerControl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1437,15 +1503,16 @@ various control models can be read from the schema.</p>
 <span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;totalTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Total time. If not given, may be inferred by some control models&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Total time. It is usually computed by the control models from their specific input. If given, it will (in general) overwrite this computed value. Check for the specific control model you are using&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="nt">&quot;symmbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;timeStepDuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Length of the time step. The solution is computed for every time step.&quot;</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;numberOfTimeSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number of time steps, then we compute the time step duration from total time and number of time steps&quot;</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Number of time steps. If timeStepDuration is not given, we use this number to compute it, using  total time. The default number of time step values is 100.&quot;</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;useRampup&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span>
@@ -1471,7 +1538,7 @@ here .</p>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./Solver.schema.json&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Setting that can be given to the solver (only parts of those are avaible through json interface)&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Setting that can be given to the solver. Only parts of those are avaible through json interface but many more options are available if you use the nonlinear solver object&quot;</span><span class="p">,</span>
 
 <span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;NonLinearSolver&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1480,7 +1547,10 @@ here .</p>
 <span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;maxIterations&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;maximum number of Newton iterations&quot;</span><span class="p">},</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;maximum number of Newton iterations. Default value is 10&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;maxTimestepCuts&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;When a Newton iteration fails to converge, we cut the time step. If it fails again, we cut again until we have reached a number of time equal maxTimeStepCuts. Then, we consider the simulation has failed. The default value is 6&quot;</span><span class="p">},</span><span class="w">          </span>
 <span class="w">        </span><span class="nt">&quot;nonlinearTolerance&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span>
 <span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tolerance value for the nonlinear iteration&quot;</span><span class="p">},</span>
@@ -1498,7 +1568,7 @@ here .</p>
 <section id="output-parameters">
 <h2>Output Parameters<a class="headerlink" href="#output-parameters" title="Permalink to this heading"></a></h2>
 <p>Some extra post-processed parameters can be asked for already at the json level. Otherwise, it is always possible to
-compute those afterwards (see function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Utilities/computeEnergyDensity.m">computeEnergyDensity</a> for example).</p>
+compute those afterwards (see function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Utilities/computeEnergyDensity.m">computeEnergyDensity</a> for example).</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./Ouput.schema.json&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>

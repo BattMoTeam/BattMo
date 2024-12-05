@@ -51,14 +51,15 @@ The properties and parameters of the battery cell, including the architecture an
   
   use_cccv = false;
   if use_cccv
-      cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                           'initialControl'    , 'discharging', ...
-                           'CRate'             , 1         , ...
-                           'lowerCutoffVoltage', 2.4       , ...
-                           'upperCutoffVoltage', 4.1       , ...
-                           'dIdtLimit'         , 0.01      , ...
+      cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
+                           'initialControl'    , 'discharging', ...
+                           'numberOfCycles'    , 1            , ...
+                           'CRate'             , 1            , ...
+                           'lowerCutoffVoltage', 2.4          , ...
+                           'upperCutoffVoltage', 4.1          , ...
+                           'dIdtLimit'         , 0.01         , ...
                            'dEdtLimit'         , 0.01);
-      cccvparamobj = CcCvControlModelInputParams(cccvstruct);
+      cccvinputparams = CcCvControlModelInputParams(cccvstruct);
       inputparams.Control = cccvinputparams;
   end
 
@@ -83,8 +84,6 @@ The battery model is initialized by sending inputparams to the Battery class con
 
   model = Battery(inputparams);
   
-  model.AutoDiffBackend= AutoDiffBackend();
-  
   inspectgraph = false;
   if inspectgraph
       cgt = model.computationalGraph;
@@ -101,27 +100,14 @@ The nominal capacity of the cell is calculated from the active materials. This v
   CRate = model.Control.CRate;
 
 
-Setup the time step schedule
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used for the normal operation.
+Setup the schedule
+^^^^^^^^^^^^^^^^^^
 
 .. code-block:: matlab
 
-  switch model.(ctrl).controlPolicy
-    case 'CCCV'
-      total = 3.5*hour/CRate;
-    case 'CCDischarge'
-      total = 1.4*hour/CRate;
-    otherwise
-      error('control policy not recognized');
-  end
+  timestep.numberOfTimeSteps = 20;
   
-  n  = 100;
-  dt = total/n;
-  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-  
-  % we setup the control by assigning a source and stop function.
-  
+  step    = model.Control.setupScheduleStep(timestep);
   control = model.Control.setupScheduleControl();
   
   % This control is used to set up the schedule
@@ -153,10 +139,10 @@ Setup the properties of the nonlinear solver
       nls.maxIterations = 10;
       nls.verbose = 10;
     case 'battery'
-      nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                  'reduceToCell', true, ...
-                                                  'verbosity'   , 3    , ...
-                                                  'reuse_setup' , false, ...
+      nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
+                                                  'reduceToCell', true, ...
+                                                  'verbosity'   , 3    , ...
+                                                  'reuse_setup' , false, ...
                                                   'method'      , 'direct');
       nls.LinearSolver.tolerance = 1e-4;
     case 'direct'

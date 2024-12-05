@@ -255,7 +255,7 @@
 <span class="n">val</span><span class="p">(</span><span class="n">extfaceind</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">externalHeatTransferCoefficient</span><span class="p">;</span>
 
 <span class="n">figure</span>
-<span class="s">plotFaceData(G,</span><span class="w"> </span><span class="s">val,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;,</span><span class="w"> </span><span class="s">&#39;black&#39;)</span><span class="p">;</span>
+<span class="s">plotFaceData(model.ThermalModel.grid,</span><span class="w"> </span><span class="s">val,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;,</span><span class="w"> </span><span class="s">&#39;black&#39;)</span><span class="p">;</span>
 <span class="n">axis</span><span class="w"> </span><span class="s">equal</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">]);</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;External Heat Transfer Coefficient / W/s/m^2&#39;</span><span class="p">)</span>
@@ -325,7 +325,7 @@
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 
-<span class="c">%% plot final temperature disctribution</span>
+<span class="c">%% plot final temperature distribution</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}</span>
 <span class="nb">figure</span>

@@ -223,7 +223,7 @@ simulation process. This is useful for a more advanced usage where a direct acce
 example for a case that is not covered by the json input interface.</p>
 <p>To run a simulation, we need:</p>
 <ul class="simple">
-<li><p>A <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a> <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
+<li><p>A <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Battery.m">Battery</a> <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
 <li><p>An <strong>initial state</strong> and</p></li>
 <li><p>A <strong>schedule</strong>, which provides the time stepping and can also contain setup for control (covered in <a class="reference internal" href="controlinput.html#control-model-description"><span class="std std-ref">an other
 section</span></a>).</p></li>
@@ -233,7 +233,7 @@ the standard PXD model. The equations are <strong>non-linear</strong>. The charg
 differential equations. First, the equations are discretized. We use a finite volume method which ensures conservation
 at the discrete level. For stability, we use a fully implicit method, also called backward Euler. For each time step, we
 end us with a set of non-linear equations that we have to solve. We use Newton method.</p>
-<p>The function <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> with the following
+<p>The function <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo-dev/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> with the following
 signature takes as argument an initial state, a model and a schedule and returns global variables, a cell array of
 states and a report. Each state in the cell array corresponds to the solution computed at a given time step.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="nf">[globVars, states, schedulereport] = simulateScheduleAD</span><span class="p">(</span>initState, model, schedule, varargin<span class="p">)</span>
@@ -243,18 +243,18 @@ states and a report. Each state in the cell array corresponds to the solution co
 time step, and send them to a Newton solver.</p>
 <section id="initialisation-of-a-battery-simulation-model">
 <h2>Initialisation of a battery simulation model<a class="headerlink" href="#initialisation-of-a-battery-simulation-model" title="Permalink to this heading"></a></h2>
-<p>To initialise a model using json input, we can use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a>. For example,</p>
+<p>To initialise a model using json input, we can use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a>. For example,</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/sample_input.json&#39;</span><span class="p">)</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupModelFromJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Then, we obtain a <code class="code docutils literal notranslate"><span class="pre">model</span></code> which is an instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a>.</p>
+<p>Then, we obtain a <code class="code docutils literal notranslate"><span class="pre">model</span></code> which is an instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Battery.m">Battery</a>.</p>
 <p>Internally, the json input is converted into a <strong>matlab input object</strong> which we typically call <code class="code docutils literal notranslate"><span class="pre">inputparams</span></code> and
-which is here an instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryInputParams.m">BatteryInputParams</a>. An advanced user does not have to use the json interface but
+which is here an instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryInputParams.m">BatteryInputParams</a>. An advanced user does not have to use the json interface but
 can work only with the matlab input structures. This approach with a double layer for input (first json then matlab) can
 appear redundant but the advantage is for the developper to operate within the same Matlab environment: The computation
-models (for example <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a> model) is initiated using a matlab object (for this example
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryInputParams.m">BatteryInputParams</a>). In particular, it enables us to run <strong>validation</strong> methods on the input (doing the same
+models (for example <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Battery.m">Battery</a> model) is initiated using a matlab object (for this example
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryInputParams.m">BatteryInputParams</a>). In particular, it enables us to run <strong>validation</strong> methods on the input (doing the same
 operations directly on json files would have been significantly more complicated to implement).</p>
 <p>Let us now have a closer look to the <code class="code docutils literal notranslate"><span class="pre">setupModelFromJson</span></code> function, line by line. Given a matlab structure
 <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> obtained as above by parsing a json file, we first convert the data that is specified with units to
@@ -272,21 +272,21 @@ SI units,</p>
 </div>
 <p>To every submodel (see <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">BattMo Model Architecture</span></a> for an overview of those), there corresponds a
 matlab input parameter object, which is given the name of the submodel with the suffix <em>InputParams</em>. For example,
-corresponding to the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Electrochemistry/ActiveMaterial.m">ActiveMaterial</a> model, we find the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Electrochemistry/ActiveMaterialInputParams.m">ActiveMaterialInputParams</a> input
+corresponding to the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrochemistry/ActiveMaterial.m">ActiveMaterial</a> model, we find the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrochemistry/ActiveMaterialInputParams.m">ActiveMaterialInputParams</a> input
 model. Typically, the property of the object corresponds to the property of the corresponding json input.</p>
-<p>We add the geometry using the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/setupBatteryGridFromJson.m">setupBatteryGridFromJson</a> which uses the json input</p>
+<p>We add the geometry using the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/setupBatteryGridFromJson.m">setupBatteryGridFromJson</a> which uses the json input</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupBatteryGridFromJson</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Now the object <code class="code docutils literal notranslate"><span class="pre">inputparams</span></code> contains also the grids for each of the submodels. In general, the grids are
 generated using so-called grid generator, see the <a class="reference internal" href="geometryinput.html#battery-geometries"><span class="std std-ref">dedicated section</span></a>. When we
 use a standard parameterized geometry, then the grid parameters can be pass in the json structure (an example is given
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/jsonfiles/4680-geometry.json">here</a> for a <a class="reference internal" href="geometryinput.html#jellyroll"><span class="std std-ref">Jelly Roll geometry</span></a>). The
-function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryGeometry/setupBatteryGridFromJson.m">setupBatteryGridFromJson</a> then takes care of calling the appropriate grid generator with the
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Documentation/jsonfiles/4680-geometry.json">here</a> for a <a class="reference internal" href="geometryinput.html#jellyroll"><span class="std std-ref">Jelly Roll geometry</span></a>). The
+function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/BatteryGeometry/setupBatteryGridFromJson.m">setupBatteryGridFromJson</a> then takes care of calling the appropriate grid generator with the
 parameter, as given in the json input file.</p>
 <p>The input parameter object can now be validated. This step is important. In the <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">BattMo Model Architecture</span></a>, sub-models can use the same parameters. However, the submodels are instantiate in a parallel manner. The
 validate method which is called recursively at each model level can ensure the consistency of the submodels. (For
-example in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Electrochemistry/ActiveMaterialInputParams.m#L105">ActiveMaterialInputParams</a>, we make sure that the <a class="reference internal" href="architecture.html#architectureactivematerial"><span class="std std-ref">Interface</span></a> model and the <a class="reference internal" href="architecture.html#architectureactivematerial"><span class="std std-ref">Solid Diffusion</span></a> model use the same
+example in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrochemistry/ActiveMaterialInputParams.m#L105">ActiveMaterialInputParams</a>, we make sure that the <a class="reference internal" href="architecture.html#architectureactivematerial"><span class="std std-ref">Interface</span></a> model and the <a class="reference internal" href="architecture.html#architectureactivematerial"><span class="std std-ref">Solid Diffusion</span></a> model use the same
 volumetric surface area). We can thus call</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">inputparams</span><span class="p">.</span><span class="n">validateInputParams</span><span class="p">();</span>
 </pre></div>
@@ -338,7 +338,7 @@ can look at the properties of the active material in the negative electrode</p>
 <span class="w">      </span><span class="n">specificHeatCapacity</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span>
 </pre></div>
 </div>
-<p>and we recognize the property names and values given in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/sample_input.json#L13">input json
+<p>and we recognize the property names and values given in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/JsonDataFiles/sample_input.json#L13">input json
 file</a> that is used in this example.</p>
 <p>Some properties of the model are computed at initialisation. This is the case for example of the effective electronic
 conducitivities. Therefore,</p>
@@ -398,12 +398,12 @@ those values are in Siemens/cm^2). We can proceed as follows</p>
 <h2>Computing and inspecting some standard static properties of the model<a class="headerlink" href="#computing-and-inspecting-some-standard-static-properties-of-the-model" title="Permalink to this heading"></a></h2>
 <p>For a battery cell, utility functions are available to compute the standard properties listed below</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Utilities/computeCellMass.m">computeCellMass</a> computes the <strong>mass</strong> of the battery and its components</p></li>
-<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Utilities/computeCellCapacity.m">computeCellCapacity</a> computes the <strong>capacity</strong> of the the electrodes</p></li>
-<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Utilities/computeCellEnergy.m">computeCellEnergy</a> computes the <strong>total energy</strong> of the battery when discharged at equilibrium conditions.
+<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Utilities/computeCellMass.m">computeCellMass</a> computes the <strong>mass</strong> of the battery and its components</p></li>
+<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Utilities/computeCellCapacity.m">computeCellCapacity</a> computes the <strong>capacity</strong> of the the electrodes</p></li>
+<li><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Utilities/computeCellEnergy.m">computeCellEnergy</a> computes the <strong>total energy</strong> of the battery when discharged at equilibrium conditions.
 It means that the transport effects are totally neglicted and corresponds to the case of an infinitly small CRate.</p></li>
 </ul>
-<p>To print to screen all these properties, we can use conveniently an instance of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Utilities/CellSpecificationSummary.m">CellSpecificationSummary</a>
+<p>To print to screen all these properties, we can use conveniently an instance of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Utilities/CellSpecificationSummary.m">CellSpecificationSummary</a>
 as shown below.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;JsonDataFiles/sample_input.json&#39;</span><span class="p">);</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupModelFromJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
@@ -428,9 +428,9 @@ as shown below.</p>
 <span class="w">            </span><span class="n">Initial</span><span class="w"> </span><span class="n">Voltage</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">4.17686</span><span class="w"> </span><span class="p">[</span><span class="n">V</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>We can also mention here the utility function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Utilities/computeCellEnergyGivenCrate.m">computeCellEnergyGivenCrate</a>, even it is not a <em>static</em> property.
+<p>We can also mention here the utility function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Battery/Utilities/computeCellEnergyGivenDrate.m">computeCellEnergyGivenDrate</a>, even it is not a <em>static</em> property.
 The function computes the energy produced by a cell for a given CRate.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">computeCellEnergyGivenCrate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">computeCellEnergyGivenDrate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
 <span class="o">&gt;&gt;</span><span class="w"> </span><span class="nb">fprintf</span><span class="p">(</span><span class="s">&#39;Energy at Crate=2 : %g [Wh]&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">energy</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">watt</span><span class="o">*</span><span class="nb">hour</span><span class="p">));</span>
 
 <span class="n">Energy</span><span class="w"> </span><span class="s">at</span><span class="w"> </span><span class="s">Crate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.0110781</span><span class="w"> </span><span class="p">[</span><span class="n">Wh</span><span class="p">]</span>

@@ -261,12 +261,12 @@ Then, using the :code:`printSpecifications` method, we get
                 Energy Density : 851.122 [Wh/L]
                Initial Voltage : 4.17686 [V]   
    
-We can also mention here the utility function :battmo:`computeCellEnergyGivenCrate`, even it is not a *static* property.
+We can also mention here the utility function :battmo:`computeCellEnergyGivenDrate`, even it is not a *static* property.
 The function computes the energy produced by a cell for a given CRate.
 
 .. code:: matlab
 
-   >> output = computeCellEnergyGivenCrate(model, 2);
+   >> output = computeCellEnergyGivenDrate(model, 2);
    >> fprintf('Energy at Crate=2 : %g [Wh]', output.energy / (watt*hour));
    
    Energy at Crate = 2 : 0.0110781 [Wh]

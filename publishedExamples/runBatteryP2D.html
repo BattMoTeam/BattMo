@@ -254,13 +254,21 @@
 <span class="n">use_cccv</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
 <span class="k">if</span><span class="w"> </span><span class="n">use_cccv</span>
 <span class="w">    </span><span class="n">cccvstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="w"> </span><span class="s">&#39;controlPolicy&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;CCCV&#39;</span><span class="p">,</span><span class="w">  </span><span class="k">...</span>
+
 <span class="w">                         </span><span class="s">&#39;initialControl&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;discharging&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;CRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">2.4</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">4.1</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;dIdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
+<span class="w">                         </span><span class="s">&#39;numberOfCycles&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
+<span class="w">                         </span><span class="s">&#39;CRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
+<span class="w">                         </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">2.4</span><span class="w">          </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
+<span class="w">                         </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">4.1</span><span class="w">          </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
+<span class="w">                         </span><span class="s">&#39;dIdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
 <span class="w">                         </span><span class="s">&#39;dEdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">);</span>
-<span class="w">    </span><span class="n">cccvparamobj</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CcCvControlModelInputParams</span><span class="p">(</span><span class="n">cccvstruct</span><span class="p">);</span>
+<span class="w">    </span><span class="n">cccvinputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CcCvControlModelInputParams</span><span class="p">(</span><span class="n">cccvstruct</span><span class="p">);</span>
 <span class="w">    </span><span class="n">inputparams</span><span class="p">.</span><span class="n">Control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cccvinputparams</span><span class="p">;</span>
 <span class="k">end</span>
 </pre></div>
@@ -281,8 +289,6 @@
 <p>The battery model is initialized by sending inputparams to the Battery class constructor. see <code class="xref py py-class docutils literal notranslate"><span class="pre">Battery</span></code>.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Battery</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
 
-<span class="n">model</span><span class="p">.</span><span class="n">AutoDiffBackend</span><span class="p">=</span><span class="w"> </span><span class="n">AutoDiffBackend</span><span class="p">();</span>
-
 <span class="n">inspectgraph</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
 <span class="k">if</span><span class="w"> </span><span class="n">inspectgraph</span>
 <span class="w">    </span><span class="n">cgt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">computationalGraph</span><span class="p">;</span>
@@ -298,24 +304,11 @@
 </pre></div>
 </div>
 </section>
-<section id="setup-the-time-step-schedule">
-<h2>Setup the time step schedule<a class="headerlink" href="#setup-the-time-step-schedule" title="Permalink to this heading"></a></h2>
-<p>Smaller time steps are used to ramp up the current from zero to its operational value. Larger time steps are then used for the normal operation.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">switch</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">ctrl</span><span class="p">).</span><span class="n">controlPolicy</span>
-<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;CCCV&#39;</span>
-<span class="w">    </span><span class="n">total</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">3.5</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
-<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;CCDischarge&#39;</span>
-<span class="w">    </span><span class="n">total</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1.4</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
-<span class="w">  </span><span class="k">otherwise</span>
-<span class="w">    </span><span class="nb">error</span><span class="p">(</span><span class="s">&#39;control policy not recognized&#39;</span><span class="p">);</span>
-<span class="k">end</span>
+<section id="setup-the-schedule">
+<h2>Setup the schedule<a class="headerlink" href="#setup-the-schedule" title="Permalink to this heading"></a></h2>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">timestep</span><span class="p">.</span><span class="n">numberOfTimeSteps</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span>
 
-<span class="n">n</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
-<span class="n">dt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">total</span><span class="o">/</span><span class="n">n</span><span class="p">;</span>
-<span class="nb">step</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;val&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
-
-<span class="c">% we setup the control by assigning a source and stop function.</span>
-
+<span class="nb">step</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupScheduleStep</span><span class="p">(</span><span class="n">timestep</span><span class="p">);</span>
 <span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupScheduleControl</span><span class="p">();</span>
 
 <span class="c">% This control is used to set up the schedule</span>
@@ -344,9 +337,13 @@
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
 <span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;battery&#39;</span>
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">LinearSolverBatteryExtra</span><span class="p">(</span><span class="s">&#39;verbose&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
 <span class="w">                                                </span><span class="s">&#39;reduceToCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
 <span class="w">                                                </span><span class="s">&#39;verbosity&#39;</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
 <span class="w">                                                </span><span class="s">&#39;reuse_setup&#39;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+
 <span class="w">                                                </span><span class="s">&#39;method&#39;</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;direct&#39;</span><span class="p">);</span>
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="p">.</span><span class="n">tolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">;</span>
 <span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;direct&#39;</span>
