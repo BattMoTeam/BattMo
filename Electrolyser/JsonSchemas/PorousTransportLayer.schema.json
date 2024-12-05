@@ -3,51 +3,93 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Specification of the PorousTransportLayer input parameters",
   "type": "object",
-
-  "properties" : {"solidVolumeFraction" : {"type" : "number",
-                                           "description" : " Solid volume fraction"},
-                  "leverettCoefficient" : {"type" : "number",
-                                           "description" : " Leverett coefficient that enters in the computation of the capillary pressure"},
-                  "theta" : {"type" : "number",
-                             "description" : " Water contact angle, enters in the computation of the capillary pressure"},
-                  "permeability" : {"type" : "number",
-                                    "description" : " Permeability [Darcy]"},
-                  "tortuosity" : {"type" : "number",
-                                  "description" : " tortuosity"},
-                  "sp" : {"type" : "object",
-                          "description" : " species struct ",
-                          "properties" : {"OH" : {"type" : "object",
-                                                  "properties" : {
-                                                    "MW" : {"type" : "number",
-                                                            "description" : "Molecular weight [kg mol^-1]"},
-                                                    "V0" : {"type" : "number",
-                                                            "description" : "Partial molar volume"},
-                                                    "D" : {"type" : "number",
-                                                           "description" : "Diffustion coefficient"},
-                                                    "t" : {"type" : "number",
-                                                           "description" : "Transference coefficient "},
-                                                    "z" : {"type" : "number",
-                                                           "description" : "Charge number"}}},
-                                          "K" : {"type" : "object",
-                                                 "properties" : {"MW" : {"type" : "number"},
-                                                                 "V0" : {"type" : "number"}}
-                                                },
-                                          "H2O" : {"type" : "object",
-                                                   "properties" : {"MW"   : {"type" : "number",
-                                                                             "description" : "Molecular Weight"},
-                                                                   "kLV"  : {"type" : "number",
-                                                                             "description" : "Liquid-vapor exchange rate"},
-                                                                   "mu0"  : {"type" : "number",
-                                                                             "description" : "Standard chemical potential"}
-                                                                  }},
-                                          "H2": {"type" : "object",
-                                                 "description" : "only needed for Hydrogen electrode",
-                                                 "properties" : {"MW" : {"type" : "number",
-                                                                         "description" : "Molecular Weight"}}
-                                                },
-                                          "O2": {"type" : "object",
-                                                 "description" : "only needed for Oxygen electrode",
-                                                 "properties" : {"MW" : {"type" : "number",
-                                                                         "description" : "Molecular Weight"}}
-                                                }
-                                         }}}}
+  "properties" : {
+    "solidVolumeFraction" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : " Solid volume fraction"},
+    "leverettCoefficient" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : " Leverett coefficient that enters in the computation of the capillary pressure"},
+    "waterContactAngle" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : " Water contact angle, enters in the computation of the capillary pressure",
+      "symbol" : "theta"},
+    "permeability" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : " Permeability [Darcy]"},
+    "tortuosity" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description" : " tortuosity",
+      "symbol" : "tau"},
+    "species" : {
+      "type" : "object",
+      "description" : "characteristic properties for each specie contains in the system",
+      "properties" : {
+        "OH" : {
+          "type" : "object",
+          "description" : "properties of OH- ion",
+          "properties" : {
+            "molecularWeight" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Molecular weight [kg mol^-1]",
+              "symbol" : "MW"},
+            "partialMolarVolume" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Partial molar volume",
+              "symbol" : "V0"},
+            "diffusionCoefficient" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Diffusion coefficient",
+              "symbol" : "D"},
+            "transference" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Transference coefficient",
+              "symbol" : "t"},
+            "chargeNumber" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Charge number",
+              "symbol" : "z"}}},
+        "K" : {
+          "type" : "object",
+          "description" : "properties of K+ ion",
+          "properties" : {
+            "molecularWeight" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "symbol" : "MW"},
+            "partialMolarVolume" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "symbol" : "V0"}}
+        },
+        "H2O" : {
+          "type" : "object",
+          "description" : "properties of K+ ion",
+          "properties" : {
+            "molecularWeight"   : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Molecular Weight"},
+            "liquidVaporExchangeRate"  : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Liquid-vapor exchange rate",
+              "symbol" : "kLV"},
+            "standardChemicalPotential"  : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Standard chemical potential",
+              "symbol" : "mu0"}
+          }},
+        "H2": {
+          "type" : "object",
+          "description" : "Properties of H2, only needed for Hydrogen electrode",
+          "properties" : {
+            "molecularWeight" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Molecular Weight",
+              "symbol" : "MW"}}
+        },
+        "O2": {
+          "type" : "object",
+          "description" : "Properties of O2, only needed for Oxygen electrode",
+          "properties" : {
+            "molecularWeight" : {
+              "$ref": "PhysicalQuantity.schema.json",
+              "description" : "Molecular Weight",
+              "symbol" : "MW"}}}}}}}

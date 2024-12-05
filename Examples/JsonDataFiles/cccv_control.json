@@ -7,5 +7,8 @@
   "lowerCutoffVoltage": 2.8,
   "upperCutoffVoltage": 4.2,
   "dIdtLimit": 2e-6,
-  "dEdtLimit": 2e-6}}
+  "dEdtLimit": 2e-6},
+ "TimeStepping" : {
+   "timeStepDuration" : 500
+ }}
 

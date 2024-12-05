@@ -46,8 +46,8 @@ classdef PlatiniumCatalystLayer < CatalystLayer
 
         function state = updateReactionRateConstants(model, state)
             
-            j0   = model.j0;
-            cOH0 = model.sp.OH.c0;
+            j0   = model.referenceExchangeCurrentDensity;
+            cOH0 = model.species.OH.referenceConcentration;
             th   = 1e-2; % regularization parameter for the square root
             
             cOH = state.cOHelyte;
@@ -68,7 +68,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             H2Oa = state.H2OaElyte;
             
             E0  = model.E0eff;
-            c0  = model.sp.OH.c0;
+            c0  = model.species.OH.referenceConcentration;
             con = model.constants;
 
             F  = con.F;
@@ -85,7 +85,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             H2Oa = state.H2OaInmr;
             
             E0  = model.E0eff;
-            c0  = model.sp.OH.c0;
+            c0  = model.species.OH.referenceConcentration;
             con = model.constants;
 
             F  = con.F;

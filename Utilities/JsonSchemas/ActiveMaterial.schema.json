@@ -4,6 +4,9 @@
   "description": "Active Material",
   "type": "object",
   "properties": {
+    "SEImodel" : {"type" : "string",
+                  "enum" : ["none", "Safari", "Bolay"],
+                  "description" : "The default is \"standard\" with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)"},
     "Interface": {
       "$ref": "Interface.schema.json"
     },

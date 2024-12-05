@@ -5,7 +5,8 @@ function loadModule(modulenames, varargin)
 
     opt = struct('setupPython', true, ...
                  'dir', fullfile(battmoDir(), 'Utilities', 'JsonUtils'), ...
-                 'exec', '');
+                 'exec', '', ...
+                 'reload', false);
     opt = merge_options(opt, varargin{:});
 
     if mrstPlatform('matlab')
@@ -22,8 +23,22 @@ function loadModule(modulenames, varargin)
         for k = 1:numel(modulenames)
             modulename = modulenames{k};
             try
-                py.importlib.import_module(modulename);
                 dispif(mrstVerbose, 'Loading module %s\n', modulename);
+                py.importlib.import_module(modulename);
+
+                if opt.reload
+
+                    sys = py.importlib.import_module('sys');
+                    if isfield(sys.modules, modulename)
+                        remove(sys.modules, modulename);
+                    else
+                        warning('Module %s was not loaded before, so it cannot be reloaded.', modulename);
+                    end
+
+                    py.importlib.import_module(modulename);
+
+                end
+
             catch e
                 disp(e);
                 error('Failed to load module %s', modulename);

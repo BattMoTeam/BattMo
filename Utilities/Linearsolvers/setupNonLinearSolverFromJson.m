@@ -1,34 +1,26 @@
-function [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct)
+function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct)
 
     %% Setup the properties of the nonlinear solver 
     nls = NonLinearSolver();
 
-    % load from json file or use default value. 
-    if ~isfield(jsonstruct, 'NonLinearSolver')
-        
-        % setup default values
-        jsonstruct.NonLinearSolver.maxIterations = 10;
-        jsonstruct.NonLinearSolver.nonlinearTolerance = [];
-        jsonstruct.NonLinearSolver.verbose = false;
-        
-        linearSolverSetup.library = "matlab";
-        linearSolverSetup.method = "direct";
+    % setup default values
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxIterations'},  10);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxTimestepCuts'},  6);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'nonlinearTolerance'},  []);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'verbose'},  false);
 
-    else
-
-        linearSolverSetup = jsonstruct.NonLinearSolver.LinearSolver.linearSolverSetup;
-        
-    end
+    linearSolverSetup_default.library = 'matlab';
+    linearSolverSetup_default.method  = 'direct';
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'}, linearSolverSetup_default);
+    linearSolverSetup = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'});
     
-    nls.maxIterations = jsonstruct.NonLinearSolver.maxIterations;
-    if isfield(jsonstruct.NonLinearSolver, 'verbose')
-        nls.verbose = jsonstruct.NonLinearSolver.verbose;
-    else
-        nls.verbose = false;
-    end
+    nls.maxIterations   = jsonstruct.NonLinearSolver.maxIterations;
+    nls.maxTimestepCuts = jsonstruct.NonLinearSolver.maxTimestepCuts;
+    nls.verbose         = jsonstruct.NonLinearSolver.verbose;
     
     % Change default behavior of nonlinear solver, in case of error
     nls.errorOnFailure = false;
+    nls.continueOnFailure = false;
     nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);

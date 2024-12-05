@@ -284,8 +284,10 @@ classdef BatteryLinearSolver < handle
                         varinds = [];
                         for ivar = 1 : numel(variables)
                             addvarinds = solver.getVarIndex(problem, variables{ivar});
-                            assert(~isempty(addvarinds), 'For one of the preconditioners (given in the separate-variable-gmres setup), some of the variables cannot be found, check their description');
-                            varinds = [varinds, addvarinds];
+                            % assert(~isempty(addvarinds), 'For one of the preconditioners (given in the separate-variable-gmres setup), some of the variables cannot be found, check their description');
+                            if ~isempty(addvarinds)
+                                varinds = [varinds, addvarinds];
+                            end
                         end
 
                         ind = solver.getIndex(problem, varinds);
@@ -297,7 +299,11 @@ classdef BatteryLinearSolver < handle
                         if isfield(precondSolverStruct, 'name')
                             precondsolver.name = precondSolverStruct.name;
                         end
-
+                        if isfield(precondSolverStruct, 'verbose')
+                            precondsolver.verbose = precondSolverStruct.verbose;
+                        else
+                            precondsolver.verbose = 0;
+                        end
                         precondsolvers{end + 1} = precondsolver;
 
                     end
@@ -340,18 +346,20 @@ classdef BatteryLinearSolver < handle
                         result = [];
                         return
                     end
-
+                    
                     if solver.verbose
-
+                        
+                        fprintf('\n***  GMRES Report \n');
+                        fprintf('Flag (0:converged, 1:maxiter, 2:ill-posed precond, 3:stagnated) : %d \n', flag);
+                        fprintf('Number of iterations : %d \n', iter);
+                        fprintf('Relative residulal : %g \n', relres);
                         if solver.verbose > 1
-                            fprintf('\n***  GMRES Report \n');
-                            fprintf('flag (0:converged, 1:maxiter, 2:ill-posed precond, 3:stagnated) : %d \n', flag);
-                            fprintf('iterations : %d \n', report.Iterations);
-                            fprintf('***\n\n');
-                        else
-                            if flag == 1
-                                warning('GMRES did not converge');
-                            end
+                            fprintf('Residual norm vector : %g \n', resvec);
+                        end
+                        fprintf('***\n\n');
+                    else
+                        if flag == 1
+                            warning('GMRES did not converge');
                         end
                     end
 
@@ -485,7 +493,7 @@ classdef BatteryLinearSolver < handle
 
                     if any(ind)
                         func = precondsolver.func;
-                        if solver.verbose
+                        if (solver.verbose > 0) && (precondsolver.verbose > 0)
                             if isfield(precondsolver, 'name')
                                 name = sprintf("(%s)", precondsolver.name);
                             else
@@ -584,7 +592,7 @@ classdef BatteryLinearSolver < handle
             relres = extra.err;
             iter   = extra.nIter;
 
-            if solver.verbose > 0
+            if opt.verbose > 2
                 fprintf('**** AMGCL final report\n');
                 fprintf('error : %g\n', extra.err);
                 fprintf('number iterations : %g\n', extra.nIter);

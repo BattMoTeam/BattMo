@@ -35,22 +35,20 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
     methods
         
         function inputparams = FullSolidDiffusionModelInputParams(jsonstruct)
-            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
-        end
 
-        function inputparams = validateInputParams(inputparams)
-
-            D0 = inputparams.referenceDiffusionCoefficient;
-            D  = inputparams.diffusionCoefficient;
+            D0 = getJsonStructField(jsonstruct, 'referenceDiffusionCoefficient');
+            D  = getJsonStructField(jsonstruct, 'diffusionCoefficient');
             
-            assert(~isempty(D0) || ~isempty(D), 'Either D0 or D should be provided');
+            assert(isAssigned(D0) || isAssigned(D), 'Either D0 or D should be provided');
 
-            if ~isempty(D) & strcmp(D.type, 'constant')
-                inputparams.referenceDiffusionCoefficient = inputparams.diffusionCoefficient.value;
+            if isAssigned(D) & strcmp(D.type, 'constant')
+                jsonstruct.referenceDiffusionCoefficient = D.value;
             end
             
+            inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
+            
         end
-        
+
     end
     
     

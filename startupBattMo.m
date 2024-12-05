@@ -2,7 +2,7 @@ function startupBattMo
 
 % This startup file set up the MATLAB path
 %
-%% We use first `MRST <https://bitbucket.org/mrst/mrst-core/wiki/Home>`_ setup for MRST modules.
+%% We use first `MRST <https://github.com/SINTEF-AppliedCompSci/MRST>`_ setup for MRST modules.
 % The source code for MRST is synchronized to BattMo using git-submodule mechanisms (In the MRST directory in BattMo, you
 % should find the subdirectories given by the ``names`` cell array below)
 %
@@ -13,7 +13,7 @@ fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
 rootdirname = fileparts(mfilename('fullpath'));
 
-run(fullfile(rootdirname, 'Externals', 'mrst', 'mrst-core',  'startup'));
+run(fullfile(rootdirname, 'Externals', 'mrst', 'core',  'startup'));
 
 names = {'autodiff', ...
          'solvers', ...
@@ -21,7 +21,7 @@ names = {'autodiff', ...
          'model-io', ...
          'solvers'};
 
-names = cellfun(@(x) fullfile(ROOTDIR, '..', ['mrst-', x]), names, ...
+names = cellfun(@(x) fullfile(ROOTDIR, '..', x), names, ...
                     'UniformOutput', false);
 
 mrstPath('addroot', names{:});
@@ -58,7 +58,7 @@ end
 if mrstPlatform('octave')
 
     % Octave MRST settings
-    run(fullfile('Externals', 'mrst', 'mrst-core', 'utils', 'octave_only', 'startup_octave.m'));
+    run(fullfile('Externals', 'mrst', 'core', 'utils', 'octave_only', 'startup_octave.m'));
 
     % Disable warnings
     warning('off', 'Octave:possible-matlab-short-circuit-operator');

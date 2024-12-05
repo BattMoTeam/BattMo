@@ -4,7 +4,7 @@ classdef ElectrolyserInputParams < InputParams
 
         G % parent grid (the component grids are subgrid of that one)
 
-        Eref % Reference potential
+        referencePotential % Reference potential
 
         IonomerMembrane
         HydrogenEvolutionElectrode
@@ -12,7 +12,6 @@ classdef ElectrolyserInputParams < InputParams
                 
         couplingTerms
         
-        controlI % given value for galvanistic control
     end
     
     methods
@@ -27,7 +26,6 @@ classdef ElectrolyserInputParams < InputParams
             inputparams.HydrogenEvolutionElectrode = EvolutionElectrodeInputParams(pick('HydrogenEvolutionElectrode'));
             inputparams.OxygenEvolutionElectrode = EvolutionElectrodeInputParams(pick('OxygenEvolutionElectrode'));
 
-            inputparams = inputparams.validateInputParams();
         end
 
         function inputparams = validateInputParams(inputparams)
@@ -35,9 +33,9 @@ classdef ElectrolyserInputParams < InputParams
             assert(strcmp(inputparams.HydrogenEvolutionElectrode.porousTransportLayerType, 'Hydrogen'), 'Expected porous transport layer is hydrogen');
             assert(strcmp(inputparams.OxygenEvolutionElectrode.porousTransportLayerType, 'Oxygen'), 'Expected porous transport layer is oxygen');
 
-            inputparams = mergeParameters(inputparams, {{'Eref'}                                               , ...
-                                                  {'HydrogenEvolutionElectrode', 'CatalystLayer', 'Eref'}, ...
-                                                  {'OxygenEvolutionElectrode', 'CatalystLayer', 'Eref'}});
+            inputparams = mergeParameters(inputparams, {{'referencePotential'}                                               , ...
+                                                        {'HydrogenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}, ...
+                                                        {'OxygenEvolutionElectrode', 'CatalystLayer', 'referencePotential'}});
             
             inputparams = validateInputParams@InputParams(inputparams);
             

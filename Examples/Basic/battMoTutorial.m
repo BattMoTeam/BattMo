@@ -221,7 +221,6 @@ ylabel('Cell Voltage  / V')
 
 subplot(1,2,2)
 plot(time/hour, I)
-ylim([0, 0.02])
 xlabel('time  / h')
 ylabel('Cell Current  / A')
 

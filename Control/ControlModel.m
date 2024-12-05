@@ -12,6 +12,7 @@ classdef ControlModel < BaseModel
         % - 'CCCharge'
         % - 'CC'
         % - 'CCCV'
+        % - 'timecontrol'
         %
         controlPolicy
         
@@ -53,7 +54,7 @@ classdef ControlModel < BaseModel
         % Base class behaviour is do nothing.
         end
 
-        function state = prepareStepControl(model, state, state0, dt, drivingForces)
+        function state = prepareStepControl(model, state, state0, dt)
         % Attach to state the values necessary for the control. This is run only once at the beginning of a time step
         % Base class behaviour is do nothing.
         end
@@ -64,9 +65,10 @@ classdef ControlModel < BaseModel
             state.controlEquation = [];
         end
         
-        function state = updateControlState(model, state)
+        function state = updateControlState(model, state, state0, dt)
         % Implemented by child model.
         % Base class behaviour is do nothing.
+        % Called after each Newton iteration
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
@@ -126,7 +128,7 @@ classdef ControlModel < BaseModel
         function schedule = setupSchedule(model, jsonstruct)
         % Convenience function to setup schedule from main jsonstruct with property TimeStepping
             
-            if isfield(jsonstruct, 'TimeStepping')
+            if nargin > 1 && isfield(jsonstruct, 'TimeStepping')
                 timeSteppingParams = jsonstruct.TimeStepping;
             else
                 timeSteppingParams = [];

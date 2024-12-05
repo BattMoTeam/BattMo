@@ -49,20 +49,14 @@ jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
+qjsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
+jsonstruct = setJsonStructField(jsonstruct, {ne, co, am2, 'massFraction'}, 0.08, 'handleMisMatch', 'quiet');
+jsonstruct = setJsonStructField(jsonstruct, {ne, co, bd , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
+jsonstruct = setJsonStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
+
 %%
 % We instantiate the battery :code:`InputParams` object
 inputparams = BatteryInputParams(jsonstruct);
-
-%%
-% We set the mass fractions of the different material in the coating
-% of the negative electrode. This information could have been passed
-% in the json file earlier (:ref:`compositeElectrode`)
-
-inputparams.(ne).(co).(am1).massFraction = 0.9;
-inputparams.(ne).(co).(am2).massFraction = 0.08;
-inputparams.(ne).(co).(bd).massFraction  = 0.01;
-inputparams.(ne).(co).(ad).massFraction  = 0.01;
-
 
 %%
 % Now, we update the inputparams with the properties of the grid.
@@ -121,7 +115,7 @@ model.nonlinearTolerance = 1e-3*model.Control.Imax;
 
 %% Run the simulation for the discharge
 
-fprintf('Run the simulation for the discharge\n');
+fprintf('Run the simulation for the discharge\n')
 [~, states] = simulateScheduleAD(initstate, model, schedule, ...
                                  'OutputMinisteps', true, ...
                                  'NonLinearSolver', nls);
@@ -136,10 +130,9 @@ initstate = states{end};
 
 % We use a new control model.
 
+jsonstruct = setJsonStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCharge', 'handleMisMatch', 'quiet');
 inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
 inputparams.(ctrl).CRate = DRate;
-
-inputparams = inputparams.validateInputParams();
 
 model = Battery(inputparams);
 

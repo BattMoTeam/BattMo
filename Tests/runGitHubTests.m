@@ -5,7 +5,7 @@
 disp(version)
 
 % Debug
-%delete('../Externals/mrst/mrst-core/settings.mat')
+%delete('../Externals/mrst/mrst/settings.mat')
 
 %% Display git commit ids and other stats
 testdir = pwd;
@@ -14,7 +14,7 @@ fprintf('%s %s', pwd, res);
 
 dirs = {'autodiff', 'core', 'model-io', 'solvers', 'visualization'};
 for k = 1:numel(dirs)
-    cd(sprintf('../Externals/mrst/mrst-%s', dirs{k}));
+    cd(sprintf('../Externals/mrst/%s', dirs{k}));
     [~, res] = system('git rev-parse --short HEAD');
     fprintf('%s %s', pwd, res);
     cd(testdir)

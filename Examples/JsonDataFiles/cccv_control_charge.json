@@ -1,0 +1,11 @@
+{"Control": {
+  "controlPolicy": "CCCV",
+   "initialControl" : "charging",
+  "CRate": 1,
+   "numberOfCycles": 1,
+  "lowerCutoffVoltage": 3.0,
+  "upperCutoffVoltage": 4.2,
+  "dIdtLimit":1e-06,
+  "dEdtLimit":  0.000001},
+"SOC":0.0}
+

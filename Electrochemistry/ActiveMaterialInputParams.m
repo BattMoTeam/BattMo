@@ -24,6 +24,12 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
         diffusionModelType     % diffusion model type, either 'full' or 'simple'
 
+        %% SEI layer model choice
+        SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
+                  % - 'none' (default)
+                  % - 'Bolay'
+                  % - 'Safari'
+
         %% Advanced parameters
 
         isRootSimulationModel % Set to true if Active Material is used as a stand-alone model (not within a battery cell, see runActiveMaterial for an example)
@@ -31,87 +37,41 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         %% Coupling parameters
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
-        
+
     end
 
     methods
 
         function inputparams = ActiveMaterialInputParams(jsonstruct)
 
-            inputparams = inputparams@ComponentInputParams(jsonstruct);
-            
-            if isempty(inputparams.isRootSimulationModel)
-                inputparams.isRootSimulationModel = false;
-            end
-
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            pick = @(fd) pickField(jsonstruct, fd);
-            
-            inputparams.(itf) = InterfaceInputParams(pick('Interface'));
+            jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
 
-            if isempty(inputparams.diffusionModelType)
-                inputparams.diffusionModelType = 'full';
-            end
+            jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
+            diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
 
-            diffusionModelType = inputparams.diffusionModelType;
-            
             switch diffusionModelType
                 
               case 'simple'
                 
-                inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pick(sd));
-                
-              case 'full'
-
-                inputparams.(sd) = FullSolidDiffusionModelInputParams(pick(sd));
-                
-              otherwise
-                
-                error('Unknown diffusionModelType %s', diffusionModelType);
-                
-            end
-
-            inputparams = inputparams.validateInputParams();
-            
-        end
-
-        function inputparams = validateInputParams(inputparams)
-
-
-            diffusionModelType = inputparams.diffusionModelType;
-            
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            inputparams = mergeParameters(inputparams, {{'density'}, {itf, 'density'}});
-
-            if inputparams.isRootSimulationModel
-                % only one particle in the stand-alone model
-                inputparams.(sd).np = 1;
-                % For the standalone model, we set the volume fraction to one (no other component is present)
-                inputparams.(sd).volumeFraction = 1;
-            end
-            
-            switch diffusionModelType
-                
-              case 'simple'
-                
-                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
                 
               case 'full'
                 
-                inputparams = mergeParameters(inputparams, {{itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'}});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
+
+                diffusionCoefficient = getJsonStructField(jsonstruct, {sd, 'diffusionCoefficient'});
                 
-                if ~isempty(inputparams.(sd).diffusionCoefficient)
+                if isAssigned(diffusionCoefficient)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
                     paramnames = {'saturationConcentration', ...
                                   'guestStoichiometry100', ...
                                   'guestStoichiometry0'};
                     for iparam = 1 : numel(paramnames)
                         paramname = paramnames{iparam};
-                        inputparams = mergeParameters(inputparams, {{sd, paramname}, {itf, paramname}}, 'force', false);
+                        jsonstruct = equalizeJsonStructField(jsonstruct, {sd, paramname}, {itf, paramname});
                     end
                     
                 end
@@ -122,8 +82,59 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            inputparams = validateInputParams@ComponentInputParams(inputparams);
+            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+
+            if isAssigned(isRootSimulationModel) && isRootSimulationModel 
+                % only one particle in the stand-alone model
+                jsonstruct = setJsonStructField(jsonstruct, {sd, 'np'}, 1);
+                % For the standalone model, we set the volume fraction to one (no other component is present)
+                jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
+            end
+
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
+            inputparams = inputparams.setupInterface(jsonstruct);
+            inputparams = inputparams.setupSolidDiffusion(jsonstruct);
+
+        end
+
+        
+        function inputparams = setupInterface(inputparams, jsonstruct)
+
+            itf = 'Interface';
             
+            switch jsonstruct.SEImodel
+              case {'none', 'Safari'}
+                inputparams.(itf) = InterfaceInputParams(pickField(jsonstruct, itf));
+              case 'Bolay'
+                inputparams.(itf) = BolayInterfaceInputParams(pickField(jsonstruct, itf));
+              otherwise
+                error('SEImodel not recognized')
+            end
+            
+        end
+        
+        function inputparams = setupSolidDiffusion(inputparams, jsonstruct)
+
+
+            sd = 'SolidDiffusion';
+            
+            diffusionModelType = jsonstruct.diffusionModelType;
+            
+            switch diffusionModelType
+                
+              case 'simple'
+                
+                inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
+                
+              case 'full'
+
+                inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
+                
+              otherwise
+                
+                error('Unknown diffusionModelType %s', diffusionModelType);
+                
+            end
         end
         
     end

@@ -1,0 +1,19 @@
+{
+  "initT": 298.15,
+  "use_thermal": true,
+  "connectionType" : "corners",
+  "radiusFraction" : 0,
+  "Control": {
+    "controlPolicy" : "current",
+    "Imax": 1
+  },
+  "ElectronicModel": {
+    "effectiveElectronicConductivity": 59600000.0
+  },
+  "ThermalModel" : {
+    "externalTemperature" : 293.15,
+    "effectiveThermalConductivity": 398,
+    "effectiveVolumetricHeatCapacity": 1e6,
+    "externalHeatTransferCoefficient" : 0
+  }
+}

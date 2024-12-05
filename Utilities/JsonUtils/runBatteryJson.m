@@ -2,7 +2,8 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     opt = struct('runSimulation'       , true , ...
                  'includeGridGenerator', false, ...
-                 'validateJson'        , false);
+                 'validateJson'        , false, ...
+                 'verbose'             , true);
     opt = merge_options(opt, varargin{:});
 
     mrstModule add ad-core mrst-gui mpfa
@@ -76,7 +77,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
         error('initializationSetup not recognized');
     end
 
-    [model, nls] = setupNonLinearSolverFromJson(model, jsonstruct);
+    [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct);
+
+    model.verbose = opt.verbose;
 
     %% Run the simulation
     %
@@ -104,13 +107,14 @@ function  output = runBatteryJson(jsonstruct, varargin)
             [globvars, states, reports] = getPackedSimulatorOutput(problem);
 
         else
-            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+            [globvars, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         end
     else
-        output = struct('model'    , model    , ...
-                        'inputparams' , inputparams , ...
-                        'schedule' , schedule , ...
-                        'initstate', initstate);
+        output = struct('model'          , model      , ...
+                        'inputparams'    , inputparams, ...
+                        'schedule'       , schedule   , ...
+                        'initstate'      , initstate  , ...
+                        'nonLinearSolver', nls);
         if opt.includeGridGenerator
             output.gridGenerator = gridGenerator;
         end
@@ -120,24 +124,26 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Process output and recover the output voltage and current from the output states.
     ind = cellfun(@(x) not(isempty(x)), states);
-    states = states(ind);
+    states   = states(ind);
+    globvars = globvars(ind);
 
     E    = cellfun(@(state) state.Control.E, states);
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states);
 
-    output = struct('model'    , model    , ...
-                    'inputparams' , inputparams , ...
-                    'schedule' , schedule , ...
-                    'initstate', initstate, ...
-                    'time'     , time     , ... % Unit : s
-                    'E'        , E        , ... % Unit : V
-                    'I'        , I); ... % Unit : A
+    output = struct('model'          , model      , ...
+                    'inputparams'    , inputparams, ...
+                    'schedule'       , schedule   , ...
+                    'initstate'      , initstate  , ...
+                    'nonLinearSolver', nls        , ...
+                    'time'           , time       , ... % Unit : s
+                    'E'              , E          , ... % Unit : V
+                    'I'              , I); ... % Unit : A
 
-    output.states = states;
+    output.globvars = globvars;
+    output.states   = states;
 
-    if isfield(jsonstruct, 'Output') ...
-        && isfield(jsonstruct.Output, 'variables') ...
+    if isAssigned(jsonstruct, {'Output', 'variables'}) ...
         && any(ismember({'energy', 'energyDensity', 'specificEnergy'}, jsonstruct.Output.variables))
 
         if ismember('specificEnergy', jsonstruct.Output.variables)

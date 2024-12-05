@@ -1,0 +1,8 @@
+#+TITLE: Overview of the script
+
+* runBolaySEI0
+  - calender aging for a given setup
+* plotSEI and runBolaySEIfunction
+  - run ~plotSEI~ to call runBolaySEIfunction for different SOCs and plot those
+* runBolaySEI
+  - 4 cycles of CCCV with SEI layer growth

@@ -5,7 +5,7 @@ function [bp, simlist] = setupSimList(directory)
     if exist(directory, 'dir')
         dataDirectory = directory;
     else
-        dataDirectory =  fullfile(battmoDir,'Externals','mrst','mrst-core','output', directory);
+        dataDirectory =  fullfile(battmoDir,'Externals','mrst','core','output', directory);
     end
 
     assert(exist(dataDirectory, 'dir'), sprintf('Directory %s not found', dataDirectory));
