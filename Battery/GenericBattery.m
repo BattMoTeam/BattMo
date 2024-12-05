@@ -1831,7 +1831,8 @@ classdef GenericBattery < BaseModel
 
 
         function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
-
+        % This function runs one Newton step
+            
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
             if ~report.Failure
