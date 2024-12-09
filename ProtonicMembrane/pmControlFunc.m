@@ -1,4 +1,4 @@
-function [I, alpha, beta] = controlfunc(time, Imax, tswitch, T, varargin)
+function [I, alpha, beta] = pmControlFunc(time, Imax, tswitch, T, varargin)
 
     opt = struct('order', 'alpha-first');
     opt = merge_options(opt, varargin{:});

@@ -1,7 +1,4 @@
 {
-  "Geometry" : {"type" : "2D",
-                "Ny" : 4,
-                "ylength" : 1},
   "T": 873.15,
   "Anode": {
     "R_ct_0": {"value" : 2e-7,
@@ -85,6 +82,13 @@
              "unit" : "barsa"}
   },
   "Control": {
-    "controlType": "current"
+    "controlType": "current",
+    "Imax" : 0
+  },
+  "TimeStepping" : {
+    "numberOfTimeSteps": 40,
+    "useSwitch" : true,
+    "fractionSwitch" : 0.5,
+    "orderSwitch" : "I-first"
   }
 }

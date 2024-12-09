@@ -3,6 +3,7 @@ classdef ProtonicMembraneControl < BaseModel
     properties
 
         controlType
+        Imax
         
     end
     
@@ -13,7 +14,8 @@ classdef ProtonicMembraneControl < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'controlType'};
+            fdnames = {'controlType',
+                       'Imax'};
             model = dispatchParams(model, inputparams, fdnames);
             
         end
@@ -58,7 +60,46 @@ classdef ProtonicMembraneControl < BaseModel
             end
             
         end
+
+        function step = setupScheduleStep(model, jsonstruct)
+
+            N = jsonstruct.TimeStepping.numberOfTimeSteps;
+            f = jsonstruct.TimeStepping.fractionSwitch;
+
+            N1 = floor(f*N);
+            N2 = N - N1;
+
+            dt1 = 1/N1;
+            dt2 = 1/N2;
+
+            step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+            step.control = ones(numel(step.val), 1);
+            
+        end
+
+        function control = setupScheduleControl(model, jsonstruct)
+
+            useSwitch      = jsonstruct.TimeStepping.useSwitch;
+            fractionSwitch = jsonstruct.TimeStepping.fractionSwitch;
+            orderSwitch    = jsonstruct.TimeStepping.orderSwitch;
+            
+            Imax = model.Imax;
+            
+            control.src = @(time) pmControlFunc(time, Imax, fractionSwitch, 1, 'order', orderSwitch);
+            
+        end
         
+        function schedule = setupSchedule(model, jsonstruct)
+        % Convenience function to setup schedule from main jsonstruct with property TimeStepping
+
+            step    = model.setupScheduleStep(jsonstruct);
+            control = model.setupScheduleControl(jsonstruct);
+
+            schedule = struct('step', step, ...
+                              'control', control);
+            
+        end
+
     end
     
 end
