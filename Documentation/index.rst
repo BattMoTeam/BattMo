@@ -15,7 +15,7 @@
    advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
-   Protonic <publishedExamples/runPM>
+   Protonic Membrane <publishedExamples/runProtonicMembrane>
    gui
    seealso
    References <bibliography>
