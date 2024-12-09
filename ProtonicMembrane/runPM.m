@@ -1,7 +1,10 @@
 %% Protonic Membrane model
 
 
-%% Setup input
+%% Load and parse input from given json files
+% The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/protonicMembrane.json>` and
+% :battmofile:`1d-PM-geometry.json<ProtonicMembrane/1d-PM-geometry.json>`
+
 filename = fullfile(battmoDir(), 'ProtonicMembrane', 'protonicMembrane.json');
 jsonstruct_material = parseBattmoJson(filename);
 
@@ -10,16 +13,10 @@ jsonstruct_geometry = parseBattmoJson(filename);
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
-
 %% Input structure setup
-% We setup the input parameter structur
+% We setup the input parameter structure which will we be used to instantiate the model
 
 inputparams = ProtonicMembraneCellInputParams(jsonstruct);
-
-%% 
-% The json structure has been also updated with some default values and stored in the inputparams variable. We retrieve
-% it
-jsonstruct = inputparams.jsonstruct;
 
 % We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
 [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
@@ -37,28 +34,28 @@ model = model.setupForSimulation();
 state0 = model.setupInitialState();
 
 %% Schedule schedule
-% we setup schedule, which means the timesteps and also the control we want 
+% We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
+% control and the current equal to zero (see here :battmofile:`here<ProtonicMembrane/protonicMembrane.json#86>`).
+%
+% We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state
+% solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).
 
-schedule = model.Control.setupSchedule(jsonstruct);
-
-%% Nonlinear solver options
-% We have added some extra options to the nonlinear solver
-nls = NonLinearSolver();
-nls.maxIterations  = 20;
-nls.errorOnFailure = false;
-nls.verbose        = true;
+schedule = model.Control.setupSchedule(inputparams.jsonstruct);
 
 %%
 % We change the default tolerance
 model.nonlinearTolerance = 1e-8;
 
-%% Run
+%% Simulation
 % We run the simulation
-[~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+[~, states, report] = simulateScheduleAD(state0, model, schedule); 
 
 %% Plotting
 %
 
+%%
+% We setup som shortcuts for convenience
 an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
@@ -67,83 +64,42 @@ ctrl  = 'Control';
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
-do1D = true;
-if do1D
-    N = gen.N;
-else
-    N = gen.Nx;
-end
-
-xc = model.(elyte).grid.cells.centroids(1 : N, 1);
-
-dothisplot = true;
-if dothisplot
-    if numel(states) == 0
-        return
-    end
-    
-    state = states{end};
-    state = model.addVariables(state, control);
-    figure(1)
-    plot(xc, state.(elyte).pi(1 : N))
-    title('pi')
-    xlabel('x [m]')
-    figure(2)
-    hold on
-    plot(xc, state.(elyte).pi(1 : N) - state.(elyte).phi(1 : N))
-    title('E')
-    xlabel('x [m]')
-    figure(3)
-    plot(xc, log(state.(elyte).sigmaEl(1 : N)))
-    title('log(sigmaEl)')
-    xlabel('x [m]')
-    figure(4)
-    plot(xc, state.(elyte).phi(1 : N))
-    title('phi')
-    xlabel('x [m]')
-    
-    fprintf('min E : %g\nmin sigmaEl : %g\n', ...
-            min(state.(elyte).pi - state.(elyte).phi), ...
-            min(state.(elyte).sigmaEl));
-
-    return
-end
+%%
+% We recover the position of the mesh cell of the discretization grid. This is used when plotting the spatial
+% distribution of some of the variables.
+xc = model.(elyte).grid.cells.centroids(:, 1);
 
 %%
+% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.
+state = states{end};
+state = model.addVariables(state, schedule.control);
 
-close all
-figure
+figure(1)
+plot(xc, state.(elyte).pi(1 : N))
+title('Electromotive potential (\pi)')
+xlabel('x / m')
+ylabel('\pi / V')
+
+figure(2)
 hold on
-for istate = 1 : numel(states)
-    state = states{istate};
-    state = model.addVariables(state, control);
-    plot(state.(elyte).E, '*-')
-    title('E')
-end
+plot(xc, state.(elyte).pi(1 : N) - state.(elyte).phi(1 : N))
+title('Electronic chemical potential (E)')
+xlabel('x / m')
+ylabel('E / V')
 
-figure
-hold on
-for istate = 1 : numel(states)
-    state = states{istate};
-    state = model.addVariables(state, control);
-    plot(state.(elyte).sigmaEl, '*-')
-    title('sigmaEl')
-end
+figure(3)
+plot(xc, state.(elyte).phi(1 : N))
+title('Electrostatic potential (\phi)')
+xlabel('x / m')
+ylabel('\phi / V')
+
+figure(3)
+plot(xc, log(state.(elyte).sigmaEl(1 : N)))
+title('logarithm of conductivity (\sigma)')
+xlabel('x / m')
+xlabel('log(\sigma/Siemens)')
 
 
-return
 
-%%
-
-for istate =  numel(states)
-    if istate == 0
-        break
-    end
-    figure
-    state = states{istate};
-    state = model.addVariables(state, control.src);
-    plot(state.(elyte).sigmaEl, '*-')
-    title('sigmaEl')
-end
 
 
