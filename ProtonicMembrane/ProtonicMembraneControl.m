@@ -64,15 +64,10 @@ classdef ProtonicMembraneControl < BaseModel
         function step = setupScheduleStep(model, jsonstruct)
 
             N = jsonstruct.TimeStepping.numberOfTimeSteps;
-            f = jsonstruct.TimeStepping.fractionSwitch;
 
-            N1 = floor(f*N);
-            N2 = N - N1;
-
-            dt1 = 1/N1;
-            dt2 = 1/N2;
-
-            step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
+            dt = 1/N;
+            
+            step.val     = dt*ones(N, 1);
             step.control = ones(numel(step.val), 1);
             
         end
@@ -94,7 +89,7 @@ classdef ProtonicMembraneControl < BaseModel
 
             step    = model.setupScheduleStep(jsonstruct);
             control = model.setupScheduleControl(jsonstruct);
-
+            
             schedule = struct('step', step, ...
                               'control', control);
             
