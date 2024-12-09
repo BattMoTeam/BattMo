@@ -11,14 +11,10 @@ disp(version)
 testdir = pwd;
 [~, res] = system('git rev-parse --short HEAD');
 fprintf('%s %s', pwd, res);
-
-dirs = {'autodiff', 'core', 'model-io', 'solvers', 'visualization'};
-for k = 1:numel(dirs)
-    cd(sprintf('../Externals/mrst/%s', dirs{k}));
-    [~, res] = system('git rev-parse --short HEAD');
-    fprintf('%s %s', pwd, res);
-    cd(testdir)
-end
+cd('../Externals/mrst');
+[~, res] = system('git rev-parse --short HEAD');
+fprintf('%s', res);
+cd(testdir)
 
 disp(pyenv)
 try
