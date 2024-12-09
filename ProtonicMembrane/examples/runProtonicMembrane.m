@@ -2,13 +2,13 @@
 
 
 %% Load and parse input from given json files
-% The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/protonicMembrane.json>` and
-% :battmofile:`1d-PM-geometry.json<ProtonicMembrane/1d-PM-geometry.json>`
+% The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
+% :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
 
-filename = fullfile(battmoDir(), 'ProtonicMembrane', 'protonicMembrane.json');
+filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'protonicMembrane.json');
 jsonstruct_material = parseBattmoJson(filename);
 
-filename = fullfile(battmoDir(), 'ProtonicMembrane', '1d-PM-geometry.json');
+filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', '1d-PM-geometry.json');
 jsonstruct_geometry = parseBattmoJson(filename);
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
@@ -75,26 +75,25 @@ state = states{end};
 state = model.addVariables(state, schedule.control);
 
 figure(1)
-plot(xc, state.(elyte).pi(1 : N))
+plot(xc, state.(elyte).pi)
 title('Electromotive potential (\pi)')
 xlabel('x / m')
 ylabel('\pi / V')
 
 figure(2)
-hold on
-plot(xc, state.(elyte).pi(1 : N) - state.(elyte).phi(1 : N))
+plot(xc, state.(elyte).pi - state.(elyte).phi)
 title('Electronic chemical potential (E)')
 xlabel('x / m')
 ylabel('E / V')
 
 figure(3)
-plot(xc, state.(elyte).phi(1 : N))
+plot(xc, state.(elyte).phi)
 title('Electrostatic potential (\phi)')
 xlabel('x / m')
 ylabel('\phi / V')
 
-figure(3)
-plot(xc, log(state.(elyte).sigmaEl(1 : N)))
+figure(4)
+plot(xc, log(state.(elyte).sigmaEl))
 title('logarithm of conductivity (\sigma)')
 xlabel('x / m')
 xlabel('log(\sigma/Siemens)')
