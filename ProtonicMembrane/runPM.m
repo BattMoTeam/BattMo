@@ -1,79 +1,73 @@
-clear all
-close all
+%% Protonic Membrane model
 
-mrstModule add ad-core
+
+%% Setup input
+filename = fullfile(battmoDir(), 'ProtonicMembrane', 'protonicMembrane.json');
+jsonstruct_material = parseBattmoJson(filename);
+
+filename = fullfile(battmoDir(), 'ProtonicMembrane', '1d-PM-geometry.json');
+jsonstruct_geometry = parseBattmoJson(filename);
+
+jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+
+
+%% Input structure setup
+% We setup the input parameter structur
+
+inputparams = ProtonicMembraneCellInputParams(jsonstruct);
+
+%% 
+% The json structure has been also updated with some default values and stored in the inputparams variable. We retrieve
+% it
+jsonstruct = inputparams.jsonstruct;
+
+% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
+[inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+
+%% Model setup
+% We instantiate the model for the protonic membrane cell
+model = ProtonicMembraneCell(inputparams);
+
+%%
+% The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
+model = model.setupForSimulation();
+
+%% Initial state setup
+% We setup the initial state using a default setup included in the model
+state0 = model.setupInitialState();
+
+%% Schedule schedule
+% we setup schedule, which means the timesteps and also the control we want 
+
+schedule = model.Control.setupSchedule(jsonstruct);
+
+%% Nonlinear solver options
+% We have added some extra options to the nonlinear solver
+nls = NonLinearSolver();
+nls.maxIterations  = 20;
+nls.errorOnFailure = false;
+nls.verbose        = true;
+
+%%
+% We change the default tolerance
+model.nonlinearTolerance = 1e-8;
+
+%% Run
+% We run the simulation
+[~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+%% Plotting
+%
 
 an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
 ctrl  = 'Control';
 
-filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembrane.json';
-jsonstruct = parseBattmoJson(filename);
-
-jsonstruct.(elyte).Nx = 1000;
-
-do1D = true;
-if do1D
-    jsonstruct.Geometry.type = '1D';
-    jsonstruct.(elyte).faceArea = 1;
-end
-
-inputparams = ProtonicMembraneCellInputParams(jsonstruct);
-
-[inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
-
-% Setup model
-model = ProtonicMembraneCell(inputparams);
-
-model = model.setupForSimulation();
-
-cgt   = model.computationalGraph;
-
-model.verbose = true;
-
-% Setup initial state
-state0 = model.setupInitialState();
-
-% Setup schedule
-
-tswitch = 1;
-T       = 2; % This is not a real time scale, as all the model deals with equilibrium
-
-N1  = 20;
-dt1 = tswitch/N1;
-N2  = 20;
-dt2 = (T - tswitch)/N2;
-
-step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
-step.control = ones(numel(step.val), 1);
-
-% Imax = 1e-2*ampere/((centi*meter)^2);
-% Imax = 0.3*ampere/((centi*meter)^2);
-% Imax = 0.01*ampere/((centi*meter)^2);
-Imax = 0;
-
-control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
-
-schedule = struct('control', control, 'step', step); 
-
-nls = NonLinearSolver();
-nls.maxIterations = 20;
-nls.errorOnFailure = false;
-nls.verbose = true;
-
-model.nonlinearTolerance = 1e-8;
-
-[~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-ind = cellfun(@(state) ~isempty(state), states);
-states = states(ind);
-
-%%
-
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
+do1D = true;
 if do1D
     N = gen.N;
 else
