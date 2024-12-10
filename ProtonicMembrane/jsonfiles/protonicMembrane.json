@@ -1,25 +1,38 @@
 {
   "T": 873.15,
   "Anode": {
-    "R_ct_0": {"value" : 2e-7,
-               "unit" : "ohm*((centi*meter)^2)",
-               "description" : "Anode standard charge transfer resistance"},
-    "ilc": { "value" : 4,
-             "unit" : "ampere/((centi*meter)^2)",
-             "description": "limited current cathodic direction"},
-    "ila": { "value" : -2,
-             "unit" : "ampere/((centi*meter)^2)",
-             "description": "limited current anodic direction" },
-    "beta": 0.4,
-    "description" : "symmetry factor"
-    "n": 1,
-    "description": "number electrons in charge transfer step"
-    "E_0": 1.253,
-    "description" : "standard potential"
-    "Ea_ct": 101000,
-    "description" : "activation energy charge transfer resistance"    
-    "SU": 0.05,
-    "description" : "Steam utilization. fraction of converted steam"
+    "R_ct_0": {
+      "value" : 2e-7,
+      "unit" : "ohm*((centi*meter)^2)",
+      "description" : "Anode standard charge transfer resistance"},
+    "ilc": {
+      "value" : 4,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description": "limited current cathodic direction"},
+    "ila": {
+      "value" : -2,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description": "limited current anodic direction" },
+    "beta": {
+      "value" : 0.4,
+      "unit" : "1"
+      "description" : "symmetry factor"},
+    "n": {
+      "value" : 1,
+      "unit" : "1"
+      "description": "number electrons in charge transfer step"},
+    "E_0": {
+      "value" : 1.253,
+      "unit" : "volt"
+      "description" : "standard potential"},
+    "Ea_ct": {
+      "value" : 101000,
+      "unit" : "SI"
+      "description" : "activation energy charge transfer resistance"},
+    "SU": {
+      "value" : 0.05,
+      "unit" : "1"
+      "description" : "Steam utilization. fraction of converted steam"}
     "O2_conc_feed":{
       "value" : 0.2,
       "unit" : "1",
@@ -28,9 +41,10 @@
       "value" : 0.5,
       "unit" : "1",
       "description" : "Fraction of steam in anode gas inlet"},
-    "Ptot": {"value" : 10,
-             "unit" : "barsa",
-             "description" : "Total pressure"},
+    "Ptot": {
+      "value" : 10,
+      "unit" : "barsa",
+      "description" : "Total pressure"},
     "gasSupplyType" : "coupled"
   },
   "Electrolyte": {
@@ -46,15 +60,15 @@
     },
     "dS_hyd": {
       "value" : -119,
-      "unit" : "1",
+      "unit" : "SI",
       "description" : "Entropy of hydration"},
     "dH_hyd": {
       "value" : -90,
-      "unit" : "1",
+      "unit" : "SI",
       "description" : "Entalpy of hydration"},
     "Y": {
       "value" : 0.06,
-      "unit" : "1",
+      "unit" : "SI",
       "description" : "Acceptor concentration"},
     "Am": {
       "value" : 88,
@@ -62,44 +76,49 @@
       "description" : "Pre-exponential coefficient for p-type mobility"},
     "dH_ox": {
       "value" : 101000,
-      "unit" : "1",
-      "description" : "Activation energry for p-type conductivity"},
+      "unit" : "SI",
+      "description" : "Activation energy for p-type conductivity"},
     "E_0": {
       "value" : 1.253,
-      "unit" : "1",
+      "unit" : "volt",
       "description" : "Standard potential"},
     "steam_ratio": {
       "value" : 0.5,
       "unit" : "1",
       "description" : "fraction of steam in anode gas inlet"},
-    "Ptot": {"value" : 10,
-             "unit" : "barsa",
-             "description" : "Total pressure"},
+    "Ptot": {
+      "value" : 10,
+      "unit" : "barsa",
+      "description" : "Total pressure"},
     "SU": {
       "value" : 0.05,
       "unit" : "1",
       "description" : "Steam utilization in fraction"},
     "Ea_prot": {
       "value" : 47.7,
-      "unit" : "1",
+      "unit" : "SI",
       "description" : "Activation energy for proton diffusion"}
   },
   "Cathode": {
-    "E_0": {"value" : 0,
-            "unit" : "volt",
-            "description" : "standard potential"},
-    "R_ct_H": { "value" : 1e-2,
-                "unit" : "ohm*((centi*meter)^2)"
-                "description" : "charge transfer resistance"},
-    "Ptot": {"value": 10,
-             "unit" : "barsa",
-             "description" : "total pressure"}
+    "E_0": {
+      "value" : 0,
+      "unit" : "volt",
+      "description" : "standard potential"},
+    "R_ct_H": {
+      "value" : 1e-2,
+      "unit" : "ohm*((centi*meter)^2)",
+      "description" : "charge transfer resistance"},
+    "Ptot": {
+      "value": 10,
+      "unit" : "barsa",
+      "description" : "total pressure"}
   },
   "Control": {
     "controlType": "current",
-    "Imax" : {"value" : 0,
-              "unit" : "ampere/((centi*meter)^2)",
-              "description" : "input current density"}
+    "Imax" : {
+      "value" : 0,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description" : "input current density"}
   },
   "TimeStepping" : {
     "numberOfTimeSteps": 40,
