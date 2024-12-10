@@ -12,7 +12,7 @@ function [val, isConverted] = convertUnitBattMo(val)
         if numel(val) == 1
             isConverted = true;
             % This is a numerical parameter that requires a unit conversion
-            if ~isempty(val.unit)
+            if ~isempty(val.unit) && ~strcmp(val.unit, 'SI')
                 str = sprintf('val = %g*%s;', val.value, val.unit);
                 eval(str);
             else
