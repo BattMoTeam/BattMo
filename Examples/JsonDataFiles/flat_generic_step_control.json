@@ -1,4 +1,5 @@
-{ "controlPolicy": "Generic",
+{"Control" :
+ { "controlPolicy": "Generic",
   "controlsteps" : [
     {"controltype" : "current",
      "value" : 1,
@@ -23,5 +24,5 @@
     {"controltype" : "rest",
      "termination" : {"value" : 1000, 
                       "terminationtype" : "time"}}]
-  }
+ }}
 

@@ -10,7 +10,10 @@ classdef GenericControlModel < ControlModel
 
         function model = GenericControlModel(inputparams)
 
-            model = model@ControlModel();
+            model = model@ControlModel(inputparams);
+
+            fdnames = {'controlsteps'};
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 
@@ -25,9 +28,11 @@ classdef GenericControlModel < ControlModel
             % - 'voltage'
             varnames{end + 1} = 'ctrlType';
             varnames{end + 1} = 'ctrlStepNumber';
-            
+
             model = model.registerVarNames(varnames);
 
+            model = model.setAsStaticVarName('ctrlStepNumber');
+            
             % Register the functions
             fn = @CcCvControlModel.updateControlType;
             model = model.registerPropFunction({'ctrlType', fn, {'ctrlStepNumber'}});
@@ -37,6 +42,37 @@ classdef GenericControlModel < ControlModel
             
         end
 
+        function cleanState = addStaticVariables(model, cleanState, state)
+
+            cleanState.ctrlStepNumber = state.ctrlStepNumber;
+            
+        end
+        
+        function func = setupControlFunction(model)
+            
+            func = [];
+            
+        end
+        
+        function control = setupScheduleControl(model)
+
+            control = setupScheduleControl@ControlModel(model);
+            control.Generic = true;
+            
+        end
+
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+
+            step.val     = 1*minute*ones(100, 1);
+            step.control = ones(100, 1);
+
+        end
+        
         function state = updateControlType(model, state)
 
             istep = state.ctrlStepNumber;
@@ -75,13 +111,11 @@ classdef GenericControlModel < ControlModel
                     Emin = termination.value
                     if E < Emin
                         doswitch = true;
-                        break
                     end
                   case 'charging'
                     Emax = termination.value
                     if E > Emax
                         doswitch = true;
-                        break
                     end                    
                   otherwise
                     error('direction not recognized');

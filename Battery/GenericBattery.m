@@ -960,6 +960,7 @@ classdef GenericBattery < BaseModel
 
                 % set first step
                 initstate.(ctrl).ctrlStepNumber = 1;
+                initstate.(ctrl).I              = 0;
                 
               otherwise
                 
