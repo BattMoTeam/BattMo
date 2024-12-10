@@ -16,7 +16,7 @@
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
    gui
-   Computational Graph <graph/graphdoc>
+   Computational Graph <computationalGraph/graphdoc>
    seealso
    References <bibliography>
 

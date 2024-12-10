@@ -27,7 +27,9 @@
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="See Also" href="../seealso.html" />
+    <link rel="prev" title="Troubleshooting" href="../gui_troubleshooting.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -50,7 +52,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
@@ -178,6 +180,12 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Computational Graph</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#a-simple-introduction-example">A simple introduction example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#graph-composition">Graph composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../seealso.html">See Also</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../seealso.html#mrst">MRST</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../seealso.html#visualization">Visualization Tutorial</a></li>
@@ -223,7 +231,18 @@ relationship between the variables is given through equations. The purpose of ou
 equations. The equations are added to the system of non-linear equation we solve, at each time step in the case of an
 evolution problem.</p>
 <p>In the computational graph, the nodes are given by the variables in the model. The directed edges represent the
-functional dependency between the variables</p>
+functional dependency between the variables.</p>
+<p>The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class has two functions</p>
+<ol class="arabic simple">
+<li><p>Serve as an <strong>interactive</strong> tool to design, manipulate and explore the computational graph of a model. The interactive functions can be discovered by running the method <code class="code docutils literal notranslate"><span class="pre">help</span></code> (see below).</p></li>
+<li><p>From the computational graph, <strong>automatically</strong> identify</p>
+<ol class="arabic simple">
+<li><p>The unknown of the problems, also called <em>primary variables</em>. They corresponds to the root in the graph (see below)</p></li>
+<li><p>The <em>equations</em>, which are the variables located at the tail of the graph. The equations are solved when the value of the equation variables are equal to zero</p></li>
+<li><p>The function calls and the order they should be called to update all the intermediate variables that directly or indirectly enter in the definition of the equation.</p></li>
+</ol>
+</li>
+</ol>
 <section id="a-simple-introduction-example">
 <h2>A simple introduction example<a class="headerlink" href="#a-simple-introduction-example" title="Permalink to this heading"></a></h2>
 <p>Let us consider the example of a reaction model. The reaction rate <span class="math notranslate nohighlight">\(R\)</span> is given
@@ -946,7 +965,10 @@ the model.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../gui_troubleshooting.html" class="btn btn-neutral float-left" title="Troubleshooting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../seealso.html" class="btn btn-neutral float-right" title="See Also" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
