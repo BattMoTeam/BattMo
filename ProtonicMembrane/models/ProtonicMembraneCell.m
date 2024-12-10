@@ -151,7 +151,8 @@ classdef ProtonicMembraneCell < BaseModel
             elyte = 'Electrolyte';
 
             time = state.time;
-            [ctrlVal, alpha] = drivingForces.src(time);
+            Imax = model.Control.Imax;
+            [ctrlVal, alpha] = drivingForces.src(time, Imax);
 
             state.(ctrl).ctrlVal = ctrlVal;
             state.(elyte).alpha  = alpha;

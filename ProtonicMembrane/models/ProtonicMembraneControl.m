@@ -80,7 +80,7 @@ classdef ProtonicMembraneControl < BaseModel
             
             Imax = model.Imax;
             
-            control.src = @(time) pmControlFunc(time, Imax, fractionSwitch, 1, 'order', orderSwitch);
+            control.src = @(time, Imax) pmControlFunc(time, Imax, fractionSwitch, 1, 'order', orderSwitch);
             
         end
         
