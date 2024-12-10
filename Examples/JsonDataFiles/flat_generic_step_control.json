@@ -1,0 +1,27 @@
+{ "controlPolicy": "Generic",
+  "controlsteps" : [
+    {"controltype" : "current",
+     "value" : 1,
+     "direction" : "discharge",
+     "termination" : {"value" : 3.0,
+                      "terminationtype" : "voltage"},
+     "timeStepSize" : 60 
+    },
+    {"controltype" : "voltage",
+     "value" : 3.0,
+     "termination" : {"value" : 0,
+                      "terminationtype" : "current"},
+     "timeStepSize" : 60
+    },
+    {"controltype" : "current",
+     "value" : 1,
+     "direction" : "charge",
+     "termination" : {"value" : 4,
+                      "terminationtype" : "voltage"},
+     "timeStepSize" : 60 
+    },
+    {"controltype" : "rest",
+     "termination" : {"value" : 1000, 
+                      "terminationtype" : "time"}}]
+  }
+
