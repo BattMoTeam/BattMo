@@ -10,7 +10,18 @@ equations. The equations are added to the system of non-linear equation we solve
 evolution problem.
 
 In the computational graph, the nodes are given by the variables in the model. The directed edges represent the
-functional dependency between the variables
+functional dependency between the variables.
+
+The :battmo:`ComputationalGraphTool` class has two functions
+
+1. Serve as an **interactive** tool to design, manipulate and explore the computational graph of a model. The interactive functions can be discovered by running the method :code:`help` (see below).
+2. From the computational graph, **automatically** identify
+   
+   1. The unknown of the problems, also called *primary variables*. They corresponds to the root in the graph (see below)
+   2. The *equations*, which are the variables located at the tail of the graph. The equations are solved when the value of the equation variables are equal to zero
+   3. The function calls and the order they should be called to update all the intermediate variables that directly or indirectly enter in the definition of the equation.
+      
+   
 
 A simple introduction example
 =============================
