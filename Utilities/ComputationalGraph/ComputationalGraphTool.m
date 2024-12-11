@@ -850,7 +850,7 @@ classdef ComputationalGraphTool
             if isempty(cgt.functionDocs)
                 cgt = cgt.setupFuncDocs();
             end
-
+            
             functionDocs = cgt.functionDocs;
 
             callstrs  = cellfun(@(functionDoc) functionDoc.callstr, functionDocs, 'un', false);
@@ -888,6 +888,16 @@ classdef ComputationalGraphTool
 
             functionDocs{end + 1} = functionDoc;
 
+            % openPropFunction(cgt, nodename)
+
+            docstring = 'This function sends you in the matlab editor to the place in the code where the variable is updated. If the namedoes not match a unique variable name, a list of matching ones is given and the user should enter the number given in the list for the variable he/she is interested in';
+
+            functionDoc.name      = 'openPropFunction';
+            functionDoc.callstr   = 'cgt.openPropFunction(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
             % printRootVariables
 
             docstring = 'This function prints the name of the variables that are detected as roots in the graph. Those variables will correspond to the primary variables, except those that have been declared as static. The static variables are not updated by the Newton solver as they are not considered as unknown. The developper should take care of updating those explicitly';
@@ -908,25 +918,65 @@ classdef ComputationalGraphTool
 
             functionDocs{end + 1} = functionDoc;
 
-            % openPropFunction(cgt, nodename)
+            % printChildDependencyList
 
-            docstring = 'This function prints the name of the variables that are detected as the tails in the graph. Those variables will correspond to the equations, except those that have been declared as extra variables. An equation variable, also called residual, is a variable that the solver will seek for its value to equal zero. We use Newton algorithm for that. The extra variables are variables that do not enter into the evaluation of the residuals but are usefull in a postprocessing of the solution.';
+            docstring = 'This functions prints the list of the function calls that will be used to update all the variables up to the residuals. The list is ordered to obey the dependency relationships that are declared in the graph';
 
-            functionDoc.name      = 'printTailVariables';
-            functionDoc.callstr   = 'cgt.printTailVariables';
+            functionDoc.name      = 'printOrderedFunctionCallList';
+            functionDoc.callstr   = 'cgt.printOrderedFunctionCallList';
             functionDoc.docstring = docstring;
 
-            functionDocs{end + 1} = functionDoc;            
-            % printChildDependencyList(cgt, varname)
-            % printParentDependencyList(cgt, varname)
-            % printDependencyList(cgt, varname, direction)
-            % printPropFunctionCallList(cgt, propfunc, varargin)
-            % openPropFunction(cgt, nodename)
-            % printPropFunction(cgt, nodename)
-            % printTailVariables(cgt, nodename)
-            % printDetachedVariables(cgt)
-            % printOrderedFunctionCallList(cgt)
-            % printSubModelNames(cgt, model, parents)
+            functionDocs{end + 1} = functionDoc;
+            
+            % printChildDependencyList
+
+            docstring = 'Given a variable, prints the list of the variables that depends on it (children in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
+
+            functionDoc.name      = 'printChildDependencyList';
+            functionDoc.callstr   = 'cgt.printChildDependencyList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+            
+            % printParentDependencyList
+
+            docstring = 'Given a variable, prints the list of the variables that the variables depends on (parents in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
+
+            functionDoc.name      = 'printParentDependencyList';
+            functionDoc.callstr   = 'cgt.printParentDependencyList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printPropFunctionCallList
+
+            docstring = 'Given a variable name, this function prints the list of the function calls that will be used to update this variables. The list is ordered to obey the dependency relationships that are declared in the graph';
+
+            functionDoc.name      = 'printPropFunctionCallList';
+            functionDoc.callstr   = 'cgt.printPropFunctionCallList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printPropFunction
+
+            docstring = 'Given a variable name, this function prints the correponding PropFunction object attached to this variable. It includes the function call and the list of the arguments the function depends on';
+
+            functionDoc.name      = 'printPropFunction';
+            functionDoc.callstr   = 'cgt.printPropFunction(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printSubModelNames
+
+            docstring = 'This function prints the list of the sub-models that constitutes the main model';
+
+            functionDoc.name      = 'printSubModelNames';
+            functionDoc.callstr   = 'cgt.printSubModelNames';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
 
             cgt.functionDocs = functionDocs;
         end
