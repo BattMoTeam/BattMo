@@ -842,34 +842,148 @@ classdef ComputationalGraphTool
             end
 
         end
-        function help(cgt)
+        
+        function help(cgt, varargin)
         % print help to terminal to get an overview of all the interactive functions
 
-            parfill = ParagraphFiller('parlength', 60);
-
-            if isempty(cgt.functionDocs)
-                cgt = cgt.setupFuncDocs();
-            end
+            cgt = cgt.setupFuncDocs();
             
             functionDocs = cgt.functionDocs;
+            names = cellfun(@(functionDoc) functionDoc.name, functionDocs, 'un', false);
 
-            callstrs  = cellfun(@(functionDoc) functionDoc.callstr, functionDocs, 'un', false);
-            lcallstrs = cellfun(@(callstr) strlength(callstr), callstrs);
-            maxl   = max(lcallstrs);
+            
+            if nargin > 1
 
-            for ifunc = 1 : numel(functionDocs)
-
-                functionDoc = functionDocs{ifunc};
+                option = varargin{1};
                 
-                lines = parfill.getLines(functionDoc.docstring);
+                parsed = false;
 
-                formatstr = sprintf('%%-%ds %%s\n', maxl);
-                fprintf(formatstr, functionDoc.callstr, lines{1});
-                for iline = 2 : numel(lines)
-                    fprintf(formatstr, '', lines{iline});
+                if ismember(option, {'printAll', 'oneline', 'help', 'printFunctions'})
+                    parsed = true;
+                    if strcmp(option, 'oneline')
+                        oneline = true;
+                        option = 'printAll';
+                    end
                 end
+
+                if ~parsed
+
+                    funcinds = regexpSelect(names, option);
+                    if  ~isempty(inds)
+                        option = 'printSelected'
+                        parsed = true;
+                    end
+
+                end
+
+                assert(parsed, 'option could not be parsed');
+
+            else
+                option = 'printAll';
+            end
+
+            if strcmp(varargin{end}, 'oneline')
+                oneline = true;
+            else
+                oneline = false;
+            end
+            
+            parfill = ParagraphFiller('parlength', 80);
+            if oneline
+                parfill.parlength = Inf;
+            end
+            
+            if ismember(option, {'printAll', 'help'})
+
+                fprintf('Help for interactive use of the computational graph tool\n\n');
+
+                str = 'The computational graph can be used interactively to discover and help the design of new models.';
+                parfill.print(str);
                 fprintf('\n');
 
+                str = 'The help function can take the following arguments:';
+                parfill.print(str);
+                fprintf('\n');
+
+                args = {};
+
+                arg.name = 'help';
+                arg.str = 'print only instruction for the help function';
+                args{end + 1} = arg;
+                
+                arg.name = 'printAll';
+                arg.str = 'print everything, particular help for all of the interactive functions. This is the default argument.';
+                args{end + 1} = arg;                
+                
+                arg.name = 'interactive_function';
+                arg.str = 'print the help for te given interactive function. A substring can be given resulting in printing all the functions that match this substring.';
+                args{end + 1} = arg;
+
+                largs    = cellfun(@(arg) strlength(arg.name), args);
+                maxlargs = max(largs) + 2;
+                
+                for iarg = 1 : numel(largs)
+
+                    arg = args{iarg};
+                    
+                    lines = parfill.getLines(arg.str);
+
+                    formatstr = sprintf('%%-%ds %%s\n', maxlargs);
+                    fprintf(formatstr, ['''', arg.name, ''''], lines{1});
+                    for iline = 2 : numel(lines)
+                        fprintf(formatstr, '', lines{iline});
+                    end
+                    if ~oneline
+                        fprintf('\n');
+                    end
+
+                end
+
+                fprintf('\n');
+                str = 'if the string ''online'' is added at the end of the argument list, the output will not be formated but written as a single line (shorter output)';
+                parfill.print(str);
+                
+            end
+
+            if ismember(option, {'printAll', 'printFunctions'})
+                
+                option   = 'printSelected';
+                funcinds = (1 : numel(functionDocs));
+                
+            end
+
+            if strcmp(option, 'printSelected')
+
+                fprintf('\n')
+                parfill.print('Description of interactive functions for  the computational graph');
+                fprintf('\n')                
+                
+                functionDocs = functionDocs(funcinds);
+
+                callstrs  = cellfun(@(functionDoc) functionDoc.callstr, functionDocs, 'un', false);
+                lcallstrs = cellfun(@(callstr) strlength(callstr), callstrs(funcinds));
+                maxl      = max(lcallstrs);
+
+                if ~oneline
+                    parfill.parlength = 60;
+                end
+
+                for ifunc = 1 : numel(functionDocs)
+
+                    functionDoc = functionDocs{ifunc};
+                    
+                    lines = parfill.getLines(functionDoc.docstring);
+
+                    formatstr = sprintf('%%-%ds %%s\n', maxl);
+                    fprintf(formatstr, functionDoc.callstr, lines{1});
+                    for iline = 2 : numel(lines)
+                        fprintf(formatstr, '', lines{iline});
+                    end
+                    if ~oneline
+                        fprintf('\n');
+                    end
+
+                end
             end
             
         end
