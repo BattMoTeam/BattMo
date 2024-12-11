@@ -144,8 +144,6 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'H2Ogasrhoeps';
             % Liquid volume fraction, without unit [-]
             varnames{end + 1} = 'liqeps';
-            % total liquid density (mass of liquid per total volume) in [kg m^-3]
-            varnames{end + 1} = 'liqrhoeps';
             % Phase pressures in [Pa]
             phasePressures = VarName({}, 'phasePressures', nph);
             varnames{end + 1} = phasePressures;
@@ -235,11 +233,8 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'liquidMassCons';
             % Residual for the conservation equation for OH in the liquid phase
             varnames{end + 1} = 'OHMassCons';
-            % Residual for the equation of state of the liquid
-            varnames{end + 1} = 'liquidStateEquation';
 
             model = model.registerVarNames(varnames);
-
 
             fn = @() PorousTransportLayer.updateVolumeFractions;
             inputnames = {'liqeps'};
@@ -265,25 +260,12 @@ classdef PorousTransportLayer < ElectronicComponent
             var = VarName({}, 'compGasMasses', ngas, gasInd.H2O);
             model = model.registerPropFunction({var, fn, inputnames});
 
-            % update liquid density
-            fn = @() PorousTransportLayer.updateLiquidDensity;
-            inputnames = {'liqrhoeps', ...
-                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
-            model = model.registerPropFunction({'liqrho', fn, inputnames});
-
             % update conductivity
             fn = @() PorousTransportLayer.updateConductivity;
             inputnames = {'T', ...
                           VarName({}, 'concentrations', nliquid, liquidInd.OH), ...
                           VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
             model = model.registerPropFunction({'conductivity', fn, inputnames});
-
-            % assemble concentrations
-            fn = @() PorousTransportLayer.updateConcentrations;
-            inputnames = {'liqrho', ...
-                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
-            ind = setdiff([1 : nliquid]', liquidInd.OH);
-            model = model.registerPropFunction({VarName({}, 'concentrations', nliquid, ind), fn, inputnames});
 
             fn = @() PorousTransportLayer.updateWaterActivity;
             inputnames = {'T', 'OHmolality'};
@@ -309,6 +291,10 @@ classdef PorousTransportLayer < ElectronicComponent
             % Here, the sign indicated by the repeated arrow sign corresponds to positive sign of rate
             model = model.registerPropFunction({'H2OvaporLiquidExchangeRate', fn, inputnames});
 
+            % update liquid density
+            fn = @() PorousTransportLayer.updateLiquidDensity;
+            inputnames = {'T', VarName({}, 'concentrations', nliquid, liquidInd.OH)};
+            model = model.registerPropFunction({'liqrho', fn, inputnames});            
 
             % Assemble phase velocities
             fn = @() PorousTransportLayer.updatePhaseVelocities;
@@ -408,13 +394,8 @@ classdef PorousTransportLayer < ElectronicComponent
             fn = @() PorousTransportLayer.updateLiquidAccum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
-            inputnames = {'liqrhoeps'};
+            inputnames = {'liqrho', 'liqeps'};
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
-
-            % Assemble residual of equation of state for the liquid phase
-            fn = @() PorousTransportLayer.setupLiquidStateEquation;
-            inputnames = {concentrations};
-            model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
             fn = @() PorousTransportLayer.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
@@ -445,6 +426,8 @@ classdef PorousTransportLayer < ElectronicComponent
             model = model.removeVarName(VarName({}, 'phasePressures', nph, phaseInd.solid));
             model = model.removeVarName(VarName({}, 'phaseFluxes', nph, phaseInd.solid));
 
+            model = model.removeVarName(VarName({}, 'concentrations', nliquid, [liquidInd.H2O, liquidInd.K]));
+            
         end
 
         function state = updateBcTerms(model, state)
@@ -624,7 +607,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vols   = model.G.getVolumes();
 
-            state.liquidAccumTerm = vols.*(state.liqrhoeps - state0.liqrhoeps)/dt;
+            state.liquidAccumTerm = vols.*(state.liqrho.*state.liqeps - state0.liqrho.*state0.liqeps)/dt;
 
         end
 
@@ -717,15 +700,6 @@ classdef PorousTransportLayer < ElectronicComponent
             j = j + assembleFlux(model, cOH, coef);
 
             state.j = j;
-
-        end
-
-
-        function state = updateLiquidDensity(model, state)
-
-            vf = state.volumeFractions{model.phaseInd.liquid};
-
-            state.liqrho = state.liqrhoeps./vf;
 
         end
 
@@ -1057,14 +1031,27 @@ classdef PorousTransportLayer < ElectronicComponent
 
         end
 
-        function state = setupLiquidStateEquation(model, state)
+        function state = updateLiquidDensity(model, state)
+        % Density data is compiled from Zatysev et al., Ref [1]
+            
+            rho_par = [ 794.7015   ;
+                        0.0456546  ;  
+                        1.6355     ;
+                        -8.392e-7  ; 
+                        1.659e-5   ;
+                        -0.003205  ;
+                        1.73e-11   ;
+                        -9.7647e-12;
+                        -3.3927e-08 ];
 
-            liqStateEq = -1;
-            for ind = 1 : model.liquidInd.nliquid
-                liqStateEq = liqStateEq + state.concentrations{ind}.*model.Vs(ind);
-            end
-
-            state.liquidStateEquation = liqStateEq;
+            T   = state.T;
+            cOH = state.concentrations{model.liquidInd.OH};
+            
+            rho = rho_par(1) + rho_par(2).*cOH + rho_par(3).*T +  ...
+                  rho_par(4).*cOH.^2 + rho_par(5).*cOH.*T  + rho_par(6).*T.^2  +  ...
+                  rho_par(7).*cOH.^3 + rho_par(8).*cOH.^2.*T  + rho_par(9).*cOH.*T.^2;
+            
+            state.liqrho = rho;
 
         end
 
