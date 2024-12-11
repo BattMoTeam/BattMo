@@ -18,9 +18,14 @@ classdef ComputationalGraphTool
 
         model
 
+        functionDocs % cell array. Each cell contains a struct describing the function documentation, with fields
+                     % - name      : function name
+                     % - docstring : string describing the function
+
     end
 
     properties
+        
         adjencyMatrix    % Adjency matrix for the computational graph
                          % - column index      : output variable index (as in cgt.varNameList)
                          % - row index         : input variable (as in cgt.varNameList)
@@ -385,7 +390,7 @@ classdef ComputationalGraphTool
 
         function nodestaticnames = getStaticVarNames(cgt)
 
-            % add the variables that are updated with no input arguments
+        % add the variables that are updated with no input arguments
             propfunctions = cgt.model.propertyFunctionList;
             varnames = {};
             for iprop = 1 : numel(propfunctions)
@@ -836,6 +841,94 @@ classdef ComputationalGraphTool
 
             end
 
+        end
+        function help(cgt)
+        % print help to terminal to get an overview of all the interactive functions
+
+            parfill = ParagraphFiller('parlength', 60);
+
+            if isempty(cgt.functionDocs)
+                cgt = cgt.setupFuncDocs();
+            end
+
+            functionDocs = cgt.functionDocs;
+
+            callstrs  = cellfun(@(functionDoc) functionDoc.callstr, functionDocs, 'un', false);
+            lcallstrs = cellfun(@(callstr) strlength(callstr), callstrs);
+            maxl   = max(lcallstrs);
+
+            for ifunc = 1 : numel(functionDocs)
+
+                functionDoc = functionDocs{ifunc};
+                
+                lines = parfill.getLines(functionDoc.docstring);
+
+                formatstr = sprintf('%%-%ds %%s\n', maxl);
+                fprintf(formatstr, functionDoc.callstr, lines{1});
+                for iline = 2 : numel(lines)
+                    fprintf(formatstr, '', lines{iline});
+                end
+                fprintf('\n');
+
+            end
+            
+        end
+
+        function cgt = setupFuncDocs(cgt)
+
+            functionDocs = {};
+
+            % printVarNames
+
+            docstring = 'This function lists the name of all the variables declared in the model. They corresponds to the name of the nodes in the computational graph. When the function is called with an argument, it select the variables whose name is matched by the argument, in the sense that the argument is a substring of the variable name';
+
+            functionDoc.name      = 'printVarNames';
+            functionDoc.callstr   = 'cgt.printVarNames';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printRootVariables
+
+            docstring = 'This function prints the name of the variables that are detected as roots in the graph. Those variables will correspond to the primary variables, except those that have been declared as static. The static variables are not updated by the Newton solver as they are not considered as unknown. The developper should take care of updating those explicitly';
+
+            functionDoc.name      = 'printRootVariables';
+            functionDoc.callstr   = 'cgt.printRootVariables';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printTailVariables
+
+            docstring = 'This function prints the name of the variables that are detected as the tails in the graph. Those variables will correspond to the equations, except those that have been declared as extra variables. An equation variable, also called residual, is a variable that the solver will seek for its value to equal zero. We use Newton algorithm for that. The extra variables are variables that do not enter into the evaluation of the residuals but are usefull in a postprocessing of the solution.';
+
+            functionDoc.name      = 'printTailVariables';
+            functionDoc.callstr   = 'cgt.printTailVariables';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % openPropFunction(cgt, nodename)
+
+            docstring = 'This function prints the name of the variables that are detected as the tails in the graph. Those variables will correspond to the equations, except those that have been declared as extra variables. An equation variable, also called residual, is a variable that the solver will seek for its value to equal zero. We use Newton algorithm for that. The extra variables are variables that do not enter into the evaluation of the residuals but are usefull in a postprocessing of the solution.';
+
+            functionDoc.name      = 'printTailVariables';
+            functionDoc.callstr   = 'cgt.printTailVariables';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;            
+            % printChildDependencyList(cgt, varname)
+            % printParentDependencyList(cgt, varname)
+            % printDependencyList(cgt, varname, direction)
+            % printPropFunctionCallList(cgt, propfunc, varargin)
+            % openPropFunction(cgt, nodename)
+            % printPropFunction(cgt, nodename)
+            % printTailVariables(cgt, nodename)
+            % printDetachedVariables(cgt)
+            % printOrderedFunctionCallList(cgt)
+            % printSubModelNames(cgt, model, parents)
+
+            cgt.functionDocs = functionDocs;
         end
 
     end
