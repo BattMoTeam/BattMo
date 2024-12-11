@@ -18,12 +18,28 @@ classdef ParagraphFiller
 
         function lines = getLines(parfill, str)
 
+            if parfill.parlength == Inf
+                lines = {str};
+                return
+            end
+            
             words = parfill.splitInWords(str);
 
             done = false;
             lines = {};
             while ~done
                 [done, words, lines] = parfill.addOneLine(words, lines);
+            end
+            
+        end
+
+        function print(parfill, str)
+        % print directly the lines
+
+            lines = parfill.getLines(str);
+
+            for iline = 1 : numel(lines)
+                fprintf('%s\n', lines{iline});
             end
             
         end
