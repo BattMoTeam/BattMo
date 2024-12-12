@@ -211,7 +211,7 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     % Run simulation
 
-    dopacked = true;
+    dopacked = false;
     if dopacked
         simname = md5sum(input);
         dataFolder = opt.directory;
