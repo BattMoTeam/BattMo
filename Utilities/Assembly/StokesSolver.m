@@ -29,7 +29,7 @@ classdef StokesSolver
                     %   - nodes
                     %   - faces
         
-        neumannFaces   % Index of the Dirichlet boundary faces
+        neumannFaces % Index of the Neumann boundary faces
         
         operators % struct with fields
                   % - A    : System matrix (see definition below)

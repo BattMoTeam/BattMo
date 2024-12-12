@@ -4,14 +4,14 @@
 % upr : https://github.com/rbe051/UPR.git
 % Download those and put them in your path using : addpath(genpath('.'))
 %
-% The option debugging works without those (not that we get a constant pressure in this example)
+% The option debugging works without those (note that we get a constant pressure in this example)
 
 dim = 2;
 
 close all
 clear all
 
-gridtype = 'debugging';
+gridtype = 'radial';
 
 viscosity = 1;
 
