@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>&lt;no title&gt; &mdash; BattMo  documentation</title>
+  <title>Source code for runProtonicMembrane &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css" />
@@ -24,7 +24,6 @@
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/design-tabs.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -225,9 +224,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="breadcrumb-item active">Source code for runProtonicMembrane</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/publishedExamples/runElectrolyserPreamble.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/publishedExamples/runProtonicMembrane_source.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -235,75 +234,110 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>The implementation of a AEM simulation code was motivated by the need for better simulation capabilities for H2
-electrolysis and the possibility to validate the code using an implementation we had access to, which is also the one
-used in <span id="id1">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>. The mathematical model for AEM is complex andincludes many coupledprocesses . We refer
-to the papers mentioned above for all the details. Here, we include a figure from <span id="id2">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span> which
-illustrates the following processes</p>
-<ul class="simple">
-<li><p>Two parallel ionic conduction path ways: ionomer and liquid electrolyte,</p></li>
-<li><p>Water concentration gradient build-up in the membrane inducing water exchange between electrodes,</p></li>
-<li><p>Water exchange between the liquid and gas phases in the electrolyte,</p></li>
-<li><p>Hydroxide exchange between the electrolyte and ionomer.</p></li>
-</ul>
-<figure class="align-center" id="id5">
-<a class="reference external image-reference" href="../_images/electolysermodeling.png"><img alt="../_images/electolysermodeling.png" src="../_images/electolysermodeling.png" /></a>
-<figcaption>
-<p><span class="caption-text">Illustration taken from <span id="id3">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span></span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p>We use a model hierarchy which enables us to structure the code in a hopefully clearly readable way. The main model is
-split into three models</p>
-<ul class="simple">
-<li><p>Oxygen Evolution Electrode,</p></li>
-<li><p>Ionomer Membrane,</p></li>
-<li><p>Hydrogen Evolution Electrode.</p></li>
-</ul>
-<figure class="align-center">
-<a class="reference external image-reference" href="../_images/electrolyser1.png"><img alt="../_images/electrolyser1.png" src="../_images/electrolyser1.png" style="width: 100%;" /></a>
-</figure>
-<p>The electrode models share the same structure given by</p>
-<ul class="simple">
-<li><p>Porous Transport Layer,</p></li>
-<li><p>Catalyst Layer,</p></li>
-<li><p>Exchange Reactions Model,</p></li>
-</ul>
-<figure class="align-center">
-<a class="reference external image-reference" href="../_images/electrolyser2.png"><img alt="../_images/electrolyser2.png" src="../_images/electrolyser2.png" style="width: 90%;" /></a>
-</figure>
-<p>The governing equations consists of charge and mass conservations equations with exchange source terms, see Figure. They
-are assembled at each model level for the core parts while the coupling terms are assembled at levels above in the model
-hierarchy. We use generic discrete spatial differentiation operators that can be applied to any dimension, even if the
-geometry we have setup for the result in this model is only 1D. Once the equations are discretized in space, we
-discretize in time and solve the resulting non-linear system of equations using an implicit scheme. This approach is
-robust independently of the choice oftime step size. We use automatic differentiation to assemble the equations and compute the
-derivative of the system that are needed in the Newton algorithmused to solve
-the equations. These computation steps are in fact generic and we
-rely on the BattMo infrastructure to run them.</p>
-<figure class="align-center">
-<a class="reference external image-reference" href="../_images/electrolyser3.png"><img alt="../_images/electrolyser3.png" src="../_images/electrolyser3.png" /></a>
-</figure>
-<p>We consider a one-dimensional electrolyser cell where the volume fractions of each component are given in Figure below.
-We increase the current linearly from 0 to 3 A/cm^2. The pressures at the boundary are set to 1 atmosphere and the
-<span class="math notranslate nohighlight">\(OH^{-}\)</span> concentration to 1 mol/litre.</p>
-<figure class="align-center" id="id6">
-<a class="reference external image-reference" href="../_images/electrolyter_volume_fractions.png"><img alt="../_images/electrolyter_volume_fractions.png" src="../_images/electrolyter_volume_fractions.png" /></a>
-<figcaption>
-<p><span class="caption-text">Volume fractions used initially in the cell. Illustration picture taken from <span id="id4">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>.</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p>The input datas are given in a json format. A simple way to get acquainted to the format is to look at the examples used
-in the example below. We provide also <a class="reference external" href="https://json-schema.org/">json schemas</a> that describes these inputs:</p>
-<ul class="simple">
-<li><p>Catalyst Layer  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/CatalystLayer.schema.json">CatalystLayer.schema.json</a></p></li>
-<li><p>Electrolyser  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/Electrolyser.schema.json">Electrolyser.schema.json</a></p></li>
-<li><p>Evolution Electrode  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/EvolutionElectrode.schema.json">EvolutionElectrode.schema.json</a></p></li>
-<li><p>Exchange Reaction  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/ExchangeReaction.schema.json">ExchangeReaction.schema.json</a></p></li>
-<li><p>Ionomer Membrane  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/IonomerMembrane.schema.json">IonomerMembrane.schema.json</a></p></li>
-<li><p>Porous Transport Layer  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/PorousTransportLayer.schema.json">PorousTransportLayer.schema.json</a></p></li>
-<li><p>Electrolyser Geometry  <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrolyser/JsonSchemas/ElectrolyserGeometry.schema.json">ElectrolyserGeometry.schema.json</a></p></li>
-</ul>
-<p>Here comes the listing of the code:</p>
+  <section id="source-code-for-runprotonicmembrane">
+<span id="runprotonicmembrane-source"></span><h1>Source code for runProtonicMembrane<a class="headerlink" href="#source-code-for-runprotonicmembrane" title="Permalink to this heading"></a></h1>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Protonic Membrane model</span>
+
+
+<span class="c">%% Load and parse input from given json files</span>
+<span class="c">% The source of the json files can be seen in :battmofile:`protonicMembrane&lt;ProtonicMembrane/jsonfiles/protonicMembrane.json&gt;` and</span>
+<span class="c">% :battmofile:`1d-PM-geometry.json&lt;ProtonicMembrane/jsonfiles/1d-PM-geometry.json&gt;`</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;protonicMembrane.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;1d-PM-geometry.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct_geometry</span><span class="p">});</span>
+
+<span class="c">%% Input structure setup</span>
+<span class="c">% We setup the input parameter structure which will we be used to instantiate the model</span>
+
+<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneCellInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`</span>
+<span class="p">[</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">gen</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupProtonicMembraneCellGrid</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Model setup</span>
+<span class="c">% We instantiate the model for the protonic membrane cell</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneCell</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The model is equipped for simulation using the following command (this step may become unnecessary in future versions)</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupForSimulation</span><span class="p">();</span>
+
+<span class="c">%% Initial state setup</span>
+<span class="c">% We setup the initial state using a default setup included in the model</span>
+<span class="n">state0</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">();</span>
+
+<span class="c">%% Schedule schedule</span>
+<span class="c">% We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current</span>
+<span class="c">% control and the current equal to zero (see here :battmofile:`here&lt;ProtonicMembrane/protonicMembrane.json#86&gt;`).</span>
+<span class="c">%</span>
+<span class="c">% We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state</span>
+<span class="c">% solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).</span>
+
+<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupSchedule</span><span class="p">(</span><span class="n">inputparams</span><span class="p">.</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% We change the default tolerance</span>
+<span class="n">model</span><span class="p">.</span><span class="n">nonlinearTolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-8</span><span class="p">;</span>
+
+<span class="c">%% Simulation</span>
+<span class="c">% We run the simulation</span>
+
+<span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
+
+<span class="c">%% Plotting</span>
+<span class="c">%</span>
+
+<span class="c">%%</span>
+<span class="c">% We setup som shortcuts for convenience</span>
+<span class="n">an</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Anode&#39;</span><span class="p">;</span>
+<span class="n">ct</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Cathode&#39;</span><span class="p">;</span>
+<span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
+<span class="n">ctrl</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Control&#39;</span><span class="p">;</span>
+
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% We recover the position of the mesh cell of the discretization grid. This is used when plotting the spatial</span>
+<span class="c">% distribution of some of the variables.</span>
+<span class="n">xc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.</span>
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="p">);</span>
+
+<span class="nb">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electromotive potential (\pi)&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\pi / V&#39;</span><span class="p">)</span>
+
+<span class="nb">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electronic chemical potential (E)&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">)</span>
+
+<span class="nb">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electrostatic potential (\phi)&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\phi / V&#39;</span><span class="p">)</span>
+
+<span class="nb">figure</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="nb">log</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">sigmaEl</span><span class="p">))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;logarithm of conductivity (\sigma)&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;log(\sigma/Siemens)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 
 
            </div>
