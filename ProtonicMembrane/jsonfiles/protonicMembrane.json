@@ -1,5 +1,4 @@
-{
-  "T": 873.15,
+{"T": 873.15,
   "Anode": {
     "R_ct_0": {
       "value" : 2e-7,
@@ -15,25 +14,25 @@
       "description": "limited current anodic direction" },
     "beta": {
       "value" : 0.4,
-      "unit" : "1"
+      "unit" : "1",
       "description" : "symmetry factor"},
     "n": {
       "value" : 1,
-      "unit" : "1"
+      "unit" : "1",
       "description": "number electrons in charge transfer step"},
     "E_0": {
       "value" : 1.253,
-      "unit" : "volt"
+      "unit" : "volt",
       "description" : "standard potential"},
     "Ea_ct": {
       "value" : 101000,
-      "unit" : "SI"
+      "unit" : "SI",
       "description" : "activation energy charge transfer resistance"},
     "SU": {
       "value" : 0.05,
-      "unit" : "1"
-      "description" : "Steam utilization. fraction of converted steam"}
-    "O2_conc_feed":{
+      "unit" : "1",
+      "description" : "Steam utilization. fraction of converted steam"},
+    "O2_conc_feed": {
       "value" : 0.2,
       "unit" : "1",
       "description" : "Oxygen concentration in feed"},
