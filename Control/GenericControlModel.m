@@ -68,7 +68,7 @@ classdef GenericControlModel < ControlModel
       % why we include this method here, for convenience. It can be overloaded by derived classes. The
       % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
       
-      step.val     = 1*minute*ones(600, 1);
+      step.val     = 10*minute*ones(600, 1);
       step.control = ones(600, 1);
       
     end
@@ -77,7 +77,7 @@ classdef GenericControlModel < ControlModel
       
       istep = state.ctrlStepNumber;
       
-      ctrlstep = model.controlsteps{istep}
+      ctrlstep = model.controlsteps{istep};
       
       state.ctrlType = ctrlstep.controltype;
       
@@ -90,7 +90,7 @@ classdef GenericControlModel < ControlModel
       % one, and proceed with the Newton algorithm
       
       ctrlType  = state.ctrlType;
-      ictrlstep = state.ctrlStepNumber
+      ictrlstep = state.ctrlStepNumber;
       
       ctrlstep = model.controlsteps{ictrlstep};
       termination = ctrlstep.termination;
@@ -105,10 +105,10 @@ classdef GenericControlModel < ControlModel
             doswitch = true;
           end
         case 'voltage'
-          E = state.E
+          E = state.E;
           switch ctrlstep.direction
             case 'discharge'
-              Emin = termination.value
+              Emin = termination.value;
               if E < Emin
                 doswitch = true;
               end
@@ -172,8 +172,9 @@ classdef GenericControlModel < ControlModel
       end
       
     end
+    
     function state = updateControlEquation(model, state)
-      
+        
       ctrlType  = state.ctrlType;
       ictrlstep = state.ctrlStepNumber;
       
@@ -195,7 +196,7 @@ classdef GenericControlModel < ControlModel
           
           givenE = controlstep.value;
           
-          ctrleq = state.E - givenE;
+          ctrleq = (state.E - givenE)*1e5;
           
         otherwise
           

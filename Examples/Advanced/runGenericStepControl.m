@@ -70,8 +70,13 @@ schedule = struct('control', control, 'step', step);
 
 initstate = model.setupInitialState();
 
+model.verbose = true;
+
+solver = NonLinearSolver();
+solver.maxIterations = 10;
+
 %% Run the simulation
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', solver);
 % output = runBatteryJson(jsonstruct);
 
 %% Process output and recover the output voltage and current from the output states.
