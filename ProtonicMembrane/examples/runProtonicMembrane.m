@@ -1,6 +1,5 @@
 %% Protonic Membrane model
 
-
 %% Load and parse input from given json files
 % The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
 % :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
@@ -77,7 +76,7 @@ state = model.addVariables(state, schedule.control);
 %%
 % Plot of electromotive potential
 
-figure(1)
+figure
 plot(xc, state.(elyte).pi)
 title('Electromotive potential (\pi)')
 xlabel('x / m')
@@ -86,7 +85,7 @@ ylabel('\pi / V')
 %%
 % Plot of electronic chemical potential
 
-figure(2)
+figure
 plot(xc, state.(elyte).pi - state.(elyte).phi)
 title('Electronic chemical potential (E)')
 xlabel('x / m')
@@ -95,7 +94,7 @@ ylabel('E / V')
 %%
 % Plot of electrostatic potential
 
-figure(3)
+figure
 plot(xc, state.(elyte).phi)
 title('Electrostatic potential (\phi)')
 xlabel('x / m')
@@ -104,7 +103,7 @@ ylabel('\phi / V')
 %%
 % Plot of the conductivity
 
-figure(4)
+figure
 plot(xc, log(state.(elyte).sigmaEl))
 title('logarithm of conductivity (\sigma)')
 xlabel('x / m')
