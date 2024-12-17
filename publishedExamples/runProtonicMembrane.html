@@ -173,7 +173,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#input-structure-setup">Input structure setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#model-setup">Model setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initial-state-setup">Initial state setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#schedule-schedule">Schedule schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#schedule">Schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#simulation">Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting">Plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
@@ -347,8 +347,8 @@ a relation between the <span class="math notranslate nohighlight">\(H^+\)</span>
 </pre></div>
 </div>
 </section>
-<section id="schedule-schedule">
-<h2>Schedule schedule<a class="headerlink" href="#schedule-schedule" title="Permalink to this heading"></a></h2>
+<section id="schedule">
+<h2>Schedule<a class="headerlink" href="#schedule" title="Permalink to this heading"></a></h2>
 <p>We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current control and the current equal to zero (see here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ProtonicMembrane/protonicMembrane.json#L86">here</a>).
 We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupSchedule</span><span class="p">(</span><span class="n">inputparams</span><span class="p">.</span><span class="n">jsonstruct</span><span class="p">);</span>
