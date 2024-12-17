@@ -24,8 +24,8 @@ classdef ProtonicMembraneCathode < ProtonicMembraneElectrode
 
             c = model.constants;
             
-            pH2O_neg = 0.05*model.Ptot; 
-            pH2      = (model.Ptot - pH2O_neg)./2;
+            pH2O_neg = 0.1*model.Ptot; 
+            pH2      = (model.Ptot - pH2O_neg);
 
             pRef = model.pRef;
             
