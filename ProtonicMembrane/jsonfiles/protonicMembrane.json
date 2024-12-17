@@ -1,7 +1,7 @@
 {"T": 873.15,
   "Anode": {
     "R_ct_0": {
-      "value" : 2e-7,
+      "value" : 12e-7,
       "unit" : "ohm*((centi*meter)^2)",
       "description" : "Anode standard charge transfer resistance"},
     "ilc": {
@@ -25,7 +25,7 @@
       "unit" : "volt",
       "description" : "standard potential"},
     "Ea_ct": {
-      "value" : 101000,
+      "value" : 85000,
       "unit" : "SI",
       "description" : "activation energy charge transfer resistance"},
     "SU": {
@@ -51,7 +51,7 @@
       "value" : 22,
       "unit" : "micro*meter"
     },
-    "Nx": 1000,
+    "Nx": 10000,
     "sigma_n0": {
       "value" : 1e-5,
       "unit" : "siemens/(centi*meter)",
@@ -63,14 +63,14 @@
       "description" : "Entropy of hydration"},
     "dH_hyd": {
       "value" : -90,
-      "unit" : "SI",
+      "unit" : "1",
       "description" : "Entalpy of hydration"},
     "Y": {
-      "value" : 0.06,
-      "unit" : "SI",
+      "value" : 0.085,
+      "unit" : "1",
       "description" : "Acceptor concentration"},
     "Am": {
-      "value" : 88,
+      "value" : 68,
       "unit" : "1",
       "description" : "Pre-exponential coefficient for p-type mobility"},
     "dH_ox": {
