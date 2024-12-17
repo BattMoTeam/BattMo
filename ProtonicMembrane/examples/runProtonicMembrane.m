@@ -109,6 +109,73 @@ title('logarithm of conductivity (\sigma)')
 xlabel('x / m')
 xlabel('log(\sigma/Siemens)')
 
+%% Evolution of the Faradic efficiency
+% We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
+%
+% We sample the current value from 0 to 1 A/cm^2.
+%
+
+Is = linspace(0, 1*ampere/((centi*meter)^2), 20);
+
+%%
+% We run the simulation for each current value and collect the results in the :code:`endstates`.
+%
+endstates = {};
+for iI = 1 : numel(Is)
+
+    model.Control.I = Is(iI);
+    [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+
+    state = states{end};
+    state = model.addVariables(state, schedule.control);
+    
+    endstates{iI} = state;
+    
+end
+
+%%
+% We plot the profile of the electromotive potential for the mininum and maximum current values.
+%
+
+figure
+hold on
+
+unit = ampere/((centi*meter)^2); % shortcut
+
+state = endstates{1};
+plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(1)/unit));
+state = endstates{end};
+plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(end)/unit));
+
+title('Electromotive potential (\pi)')
+xlabel('x / m')
+ylabel('\pi / V')
+legend
+
+%%
+% We retrieve and plot the cell potential 
+%
+
+E = cellfun(@(state) state.(an).pi - state.(ct).pi, endstates);
+
+figure
+plot(Is/unit, E, '*-');
+xlabel('Current density / A/cm^2')
+ylabel('E / V')
+title('Cell potential');
+
+%%
+% We retrieve and plot the Faradic efficiency
+%
+
+feff = cellfun(@(state) state.(an).iHp/state.(an).i, endstates);
+
+figure
+plot(Is/unit, feff, '*-');
+xlabel('Current density / A/cm^2')
+ylabel('Faradic efficiency / -')
+title('Faradic efficiency');
+
 
 
 
