@@ -150,7 +150,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runElectrolyser.html">Electrolyser simulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-input">Setup input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-model">Setup model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
@@ -174,6 +173,7 @@
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#schedule-schedule">Schedule schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#simulation">Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../gui.html">BattMo App</a><ul>
@@ -238,418 +238,210 @@
 <span id="runseiactivematerial-source"></span><h1>Source code for runSEIActiveMaterial<a class="headerlink" href="#source-code-for-runseiactivematerial" title="Permalink to this heading"></a></h1>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Particle simulation with SEI layer growth</span>
 
-
-
 <span class="c">% clear the workspace and close open figures</span>
-
 <span class="nb">clear</span>
-
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
 
-
-
 <span class="c">%% Import the required modules from MRST</span>
-
 <span class="c">% load MRST modules</span>
-
 <span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">mrst-gui</span><span class="w"> </span><span class="s">mpfa</span>
 
-
-
 <span class="c">%% Setup the properties of Li-ion battery materials and cell design</span>
-
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;ParameterSets&#39;</span><span class="p">,</span><span class="s">&#39;Safari2009&#39;</span><span class="p">,</span><span class="s">&#39;anode_sei.json&#39;</span><span class="p">));</span>
 
-
-
 <span class="c">% Some shorthands used for the sub-models</span>
-
 <span class="n">ne</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
-
 <span class="n">pe</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">;</span>
-
 <span class="n">am</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">;</span>
-
 <span class="n">sd</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidDiffusion&#39;</span><span class="p">;</span>
-
 <span class="n">itf</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Interface&#39;</span><span class="p">;</span>
-
 <span class="n">sei</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidElectrodeInterface&#39;</span><span class="p">;</span>
-
 <span class="n">sr</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SideReaction&#39;</span><span class="p">;</span>
-
 <span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
 
+<span class="n">paramobj</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SEIActiveMaterialInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
-
-<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SEIActiveMaterialInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-
-
-
-<span class="n">inputparams</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">N</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-
-<span class="n">inputparams</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">N</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-
-
+<span class="n">paramobj</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">N</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="n">paramobj</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">N</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
 
 <span class="c">%% Setup the model</span>
 
-
-
 <span class="c">% We use a stand alone model for the particle</span>
-
-<span class="n">inputparams</span><span class="p">.</span><span class="n">isRootSimulationModel</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
-
-
+<span class="n">paramobj</span><span class="p">.</span><span class="n">standAlone</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 
 <span class="c">% We initiate the model</span>
-
-<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SEIActiveMaterial</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
-
-<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupForSimulation</span><span class="p">();</span>
-
-
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SEIActiveMaterial</span><span class="p">(</span><span class="n">paramobj</span><span class="p">);</span>
 
 <span class="c">%% Setup initial state</span>
 
-
-
 <span class="n">Nsd</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">N</span><span class="p">;</span>
-
 <span class="n">Nsei</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">N</span><span class="p">;</span>
 
-
-
 <span class="c">% Initial concentration value at the electrode</span>
-
 <span class="n">cElectrodeInit</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="mf">0.75</span><span class="o">*</span><span class="n">model</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">saturationConcentration</span><span class="p">;</span>
-
 <span class="c">% Initial value of the potential at the electrode</span>
-
 <span class="n">phiElectrodeInit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-
 <span class="c">% Initial concentration value in the electrolyte</span>
-
 <span class="n">cElectrolyte</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="mf">5e-1</span><span class="o">*</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">;</span>
-
 <span class="c">% Temperature</span>
-
 <span class="n">T</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="mf">298.15</span><span class="p">;</span>
 
-
-
 <span class="c">% The following datas come from :cite:`Safari_2009`</span>
-
 <span class="c">% Porosity of the SEI film</span>
-
 <span class="n">epsiSEI</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="mf">0.05</span><span class="p">;</span>
-
 <span class="c">% Solvent concentration in the bulk of the electrolyte</span>
-
 <span class="n">cECsolution</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">4.541</span><span class="o">*</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">;</span>
-
 <span class="c">% Solvent concentration in the SEI film</span>
-
 <span class="n">cECexternal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">epsiSEI</span><span class="o">*</span><span class="n">cECsolution</span><span class="p">;</span>
 
-
-
 <span class="c">% We compute the OCP from the given data and use it to assign electrical potential in electrolyte</span>
-
 <span class="n">initState</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">T</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">cSurface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cElectrodeInit</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">initState</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">itf</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;OCP&#39;</span><span class="p">});</span>
 
-
-
 <span class="n">OCP</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">initState</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">OCP</span><span class="p">;</span>
-
 <span class="n">phiElectrolyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">phiElectrodeInit</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">OCP</span><span class="p">;</span>
 
-
-
 <span class="c">% From the values computed above we set the values of the initial state</span>
-
 <span class="n">initState</span><span class="p">.</span><span class="n">E</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="n">phiElectrodeInit</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.</span><span class="n">I</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">c</span><span class="w">           </span><span class="p">=</span><span class="w"> </span><span class="n">cElectrodeInit</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">Nsd</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">c</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="n">cECexternal</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">Nsei</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">cInterface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cECexternal</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">delta</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="mi">5</span><span class="o">*</span><span class="n">nano</span><span class="o">*</span><span class="n">meter</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.</span><span class="n">R</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 
-
-
 <span class="c">% we set also static variable fields</span>
-
 <span class="n">initState</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">T</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">cElectrolyte</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">cElectrolyte</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">phiElectrolyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">phiElectrolyte</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sr</span><span class="p">).</span><span class="n">phiElectrolyte</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">phiElectrolyte</span><span class="p">;</span>
-
 <span class="n">initState</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">cExternal</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="n">cECexternal</span><span class="p">;</span>
-
-
-
 
 
 <span class="c">%% Setup schedule</span>
 
-
-
 <span class="c">% Reference rate which roughly corresponds to 1 hour for the data of this example</span>
-
 <span class="n">Iref</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1.3e-4</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">;</span>
-
-
 
 <span class="n">Imax</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e1</span><span class="o">*</span><span class="n">Iref</span><span class="p">;</span>
 
-
-
 <span class="n">total</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="nb">hour</span><span class="o">*</span><span class="p">(</span><span class="n">Iref</span><span class="o">/</span><span class="n">Imax</span><span class="p">);</span>
-
 <span class="n">n</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
-
 <span class="n">dt</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">total</span><span class="o">/</span><span class="n">n</span><span class="p">;</span>
-
 <span class="nb">step</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;val&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
 
-
-
 <span class="c">% rampup value for the current function, see rampupSwitchControl</span>
-
 <span class="n">tup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">dt</span><span class="p">;</span>
-
 <span class="n">srcfunc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="nb">time</span><span class="p">)</span><span class="w"> </span><span class="n">rampupControl</span><span class="p">(</span><span class="nb">time</span><span class="p">,</span><span class="w"> </span><span class="n">tup</span><span class="p">,</span><span class="w"> </span><span class="n">Imax</span><span class="p">);</span>
 
-
-
 <span class="n">cmin</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">guestStoichiometry0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">itf</span><span class="p">).</span><span class="n">saturationConcentration</span><span class="p">);</span>
-
 <span class="n">control</span><span class="p">.</span><span class="n">stopFunction</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">state0_inner</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">cSurface</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">cmin</span><span class="p">);</span>
-
 <span class="n">control</span><span class="p">.</span><span class="n">src</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">srcfunc</span><span class="p">;</span>
-
-
 
 <span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
 
-
-
 <span class="c">%% Setup non-linear solver</span>
 
-
-
 <span class="n">nls</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">NonLinearSolver</span><span class="p">();</span>
-
 <span class="n">nls</span><span class="p">.</span><span class="n">errorOnFailure</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
-
 
 <span class="n">model</span><span class="p">.</span><span class="n">nonlinearTolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-5</span><span class="p">;</span>
 
-
-
 <span class="c">%% Run simulation</span>
 
-
-
 <span class="n">model</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
-
 <span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initState</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;OutputMinisteps&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
-
-
 
 <span class="c">%% Plotting</span>
 
-
-
 <span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaulttextfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-
 <span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-
 <span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
-
 <span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultfigureposition&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="mi">400</span><span class="p">]);</span>
 
-
-
 <span class="n">ind</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="o">~</span><span class="nb">isempty</span><span class="p">(</span><span class="n">state</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">(</span><span class="n">ind</span><span class="p">);</span>
-
-
 
 <span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
-
-
 <span class="n">cSurface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">cSurface</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">figure</span>
-
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">cSurface/(1/litre))</span><span class="p">;</span>
-
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Surface concentration / mol/L&#39;</span><span class="p">);</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Surface concentration&#39;</span><span class="p">);</span>
 
-
-
 <span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">figure</span>
-
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">E)</span><span class="p">;</span>
-
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Potential / V&#39;</span><span class="p">);</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Potential&#39;</span><span class="p">);</span>
 
 
-
-
-
 <span class="n">cmin</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">c</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">cmax</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">c</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
-
-
 <span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
-
 <span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">sd</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cAverage&#39;</span><span class="p">});</span>
-
 <span class="k">end</span>
-
-
 
 <span class="n">caver</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">cAverage</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
-
-
 <span class="n">figure</span>
-
 <span class="s">hold</span><span class="w"> </span><span class="s">on</span>
-
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">cmin</span><span class="w"> </span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cmin&#39;</span><span class="p">);</span>
-
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">cmax</span><span class="w"> </span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cmax&#39;</span><span class="p">);</span>
-
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">caver</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;total concentration&#39;</span><span class="p">);</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Concentration in particle / mol/L&#39;</span><span class="p">)</span>
-
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
 
-
-
 <span class="n">delta</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">delta</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">figure</span>
-
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">delta/(nano*meter))</span><span class="p">;</span>
-
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hour]&#39;</span><span class="p">);</span>
-
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;thickness / nm&#39;</span><span class="p">);</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;SEI thickness&#39;</span><span class="p">)</span>
 
-
-
 <span class="n">c</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}.(</span><span class="n">sd</span><span class="p">).</span><span class="n">c</span><span class="p">;</span>
-
 <span class="n">r</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">particleRadius</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">sd</span><span class="p">).</span><span class="n">N</span><span class="p">);</span>
 
-
-
 <span class="n">figure</span>
-
 <span class="s">plot(r,</span><span class="w"> </span><span class="s">c/(mol/litre))</span><span class="p">;</span>
-
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;radius / m&#39;</span><span class="p">)</span>
-
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;concentration / mol/L&#39;</span><span class="p">)</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Particle concentration profile (last time step)&#39;</span><span class="p">)</span>
 
-
-
 <span class="n">r</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}.(</span><span class="n">sei</span><span class="p">).</span><span class="n">delta</span><span class="p">;</span>
-
 <span class="n">r</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">sei</span><span class="p">).</span><span class="n">N</span><span class="p">);</span>
-
 <span class="n">c</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}.(</span><span class="n">sei</span><span class="p">).</span><span class="n">c</span><span class="p">;</span>
 
-
-
 <span class="n">figure</span>
-
 <span class="s">plot(r/(nano*meter),</span><span class="w"> </span><span class="s">c/(mol/litre))</span><span class="p">;</span>
-
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
-
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;concentration / mol/L&#39;</span><span class="p">);</span>
-
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Concentration profile in SEI layer (last time step)&#39;</span><span class="p">);</span>
 
 
-
-
-
 <span class="cm">%{</span>
-
-<span class="cm">Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology</span>
-
+<span class="cm">Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology</span>
 <span class="cm">and SINTEF Digital, Mathematics &amp; Cybernetics.</span>
-
-
 
 <span class="cm">This file is part of The Battery Modeling Toolbox BattMo</span>
 
-
-
 <span class="cm">BattMo is free software: you can redistribute it and/or modify</span>
-
 <span class="cm">it under the terms of the GNU General Public License as published by</span>
-
 <span class="cm">the Free Software Foundation, either version 3 of the License, or</span>
-
 <span class="cm">(at your option) any later version.</span>
 
-
-
 <span class="cm">BattMo is distributed in the hope that it will be useful,</span>
-
 <span class="cm">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
-
 <span class="cm">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
-
 <span class="cm">GNU General Public License for more details.</span>
 
-
-
 <span class="cm">You should have received a copy of the GNU General Public License</span>
-
 <span class="cm">along with BattMo.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-
 <span class="cm">%}</span>
 </pre></div>
 </div>

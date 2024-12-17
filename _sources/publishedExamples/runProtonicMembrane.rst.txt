@@ -111,41 +111,137 @@ We consider the solution obtained at the last time step, which corresponds to th
 
   state = states{end};
   state = model.addVariables(state, schedule.control);
-  
-  figure(1)
+
+Plot of electromotive potential
+
+.. code-block:: matlab
+
+  figure
   plot(xc, state.(elyte).pi)
   title('Electromotive potential (\pi)')
   xlabel('x / m')
   ylabel('\pi / V')
-  
-  figure(2)
+
+.. figure:: runProtonicMembrane_01.png
+  :figwidth: 100%
+
+Plot of electronic chemical potential
+
+.. code-block:: matlab
+
+  figure
   plot(xc, state.(elyte).pi - state.(elyte).phi)
   title('Electronic chemical potential (E)')
   xlabel('x / m')
   ylabel('E / V')
-  
-  figure(3)
+
+.. figure:: runProtonicMembrane_02.png
+  :figwidth: 100%
+
+Plot of electrostatic potential
+
+.. code-block:: matlab
+
+  figure
   plot(xc, state.(elyte).phi)
   title('Electrostatic potential (\phi)')
   xlabel('x / m')
   ylabel('\phi / V')
-  
-  figure(4)
+
+.. figure:: runProtonicMembrane_03.png
+  :figwidth: 100%
+
+Plot of the conductivity
+
+.. code-block:: matlab
+
+  figure
   plot(xc, log(state.(elyte).sigmaEl))
   title('logarithm of conductivity (\sigma)')
   xlabel('x / m')
   xlabel('log(\sigma/Siemens)')
 
-.. figure:: runProtonicMembrane_01.png
-  :figwidth: 100%
-
-.. figure:: runProtonicMembrane_02.png
-  :figwidth: 100%
-
-.. figure:: runProtonicMembrane_03.png
-  :figwidth: 100%
-
 .. figure:: runProtonicMembrane_04.png
+  :figwidth: 100%
+
+
+Evolution of the Faradic efficiency
+===================================
+
+We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
+We sample the current value from 0 to 1 A/cm^2
+
+.. code-block:: matlab
+
+  Is = linspace(0, 1*ampere/((centi*meter)^2), 20);
+
+We run the simulation for each current value and collect the results in the :code:`endstates`
+
+.. code-block:: matlab
+
+  endstates = {};
+  for iI = 1 : numel(Is)
+  
+      model.Control.I = Is(iI);
+      [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+  
+      state = states{end};
+      state = model.addVariables(state, schedule.control);
+  
+      endstates{iI} = state;
+  
+  end
+
+We plot the profile of the electromotive potential for the mininum and maximum current values.
+
+.. code-block:: matlab
+
+  figure
+  hold on
+  
+  unit = ampere/((centi*meter)^2); % shortcut
+  
+  state = endstates{1};
+  plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(1)/unit));
+  state = endstates{end};
+  plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(end)/unit));
+  
+  title('Electromotive potential (\pi)')
+  xlabel('x / m')
+  ylabel('\pi / V')
+  legend
+
+.. figure:: runProtonicMembrane_05.png
+  :figwidth: 100%
+
+We retrieve and plot the cell potential
+
+.. code-block:: matlab
+
+  E = cellfun(@(state) state.(an).pi - state.(ct).pi, endstates);
+  
+  figure
+  plot(Is/unit, E, '*-');
+  xlabel('Current density / A/cm^2')
+  ylabel('E / V')
+  title('Cell potential');
+
+.. figure:: runProtonicMembrane_06.png
+  :figwidth: 100%
+
+We retrieve and plot the Faradic efficiency
+
+.. code-block:: matlab
+
+  feff = cellfun(@(state) state.(an).iHp/state.(an).i, endstates);
+  
+  figure
+  plot(Is/unit, feff, '*-');
+  xlabel('Current density / A/cm^2')
+  ylabel('Faradic efficiency / -')
+  title('Faradic efficiency');
+
+.. figure:: runProtonicMembrane_07.png
   :figwidth: 100%
 
 

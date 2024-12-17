@@ -150,7 +150,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runElectrolyser.html">Electrolyser simulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-input">Setup input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-model">Setup model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
@@ -174,6 +173,7 @@
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#schedule-schedule">Schedule schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#simulation">Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../gui.html">BattMo App</a><ul>
@@ -237,359 +237,196 @@
   <section id="source-code-for-runbatteryp2d">
 <span id="runbatteryp2d-source"></span><h1>Source code for runBatteryP2D<a class="headerlink" href="#source-code-for-runbatteryp2d" title="Permalink to this heading"></a></h1>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model</span>
-
 <span class="c">% This example demonstrates how to setup a P2D model of a Li-ion battery</span>
-
 <span class="c">% and run a simple simulation.</span>
 
-
-
 <span class="c">% Clear the workspace and close open figures</span>
-
 <span class="nb">clear</span>
-
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
 
-
-
 <span class="c">%% Import the required modules from MRST</span>
-
 <span class="c">% load MRST modules</span>
-
-
 
 <span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">mrst-gui</span><span class="w"> </span><span class="s">mpfa</span><span class="w"> </span><span class="s">agmg</span><span class="w"> </span><span class="s">linearsolvers</span>
 
-
-
 <span class="c">%% Setup the properties of Li-ion battery materials and cell design</span>
-
 <span class="c">% The properties and parameters of the battery cell, including the</span>
-
 <span class="c">% architecture and materials, are set using an instance of</span>
-
 <span class="c">% :class:`BatteryInputParams &lt;Battery.BatteryInputParams&gt;`. This class is</span>
-
 <span class="c">% used to initialize the simulation and it propagates all the parameters</span>
-
 <span class="c">% throughout the submodels. The input parameters can be set manually or</span>
-
 <span class="c">% provided in json format. All the parameters for the model are stored in</span>
-
-<span class="c">% the inputparams object.</span>
-
-
+<span class="c">% the paramobj object.</span>
 
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">));</span>
 
-
-
 <span class="c">% We define some shorthand names for simplicity.</span>
-
 <span class="n">ne</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
-
 <span class="n">pe</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">;</span>
-
 <span class="n">elyte</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
-
 <span class="n">thermal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ThermalModel&#39;</span><span class="p">;</span>
-
 <span class="n">co</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">;</span>
-
 <span class="n">am</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">;</span>
-
 <span class="n">itf</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Interface&#39;</span><span class="p">;</span>
-
 <span class="n">sd</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidDiffusion&#39;</span><span class="p">;</span>
-
 <span class="n">ctrl</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Control&#39;</span><span class="p">;</span>
-
 <span class="n">cc</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;CurrentCollector&#39;</span><span class="p">;</span>
 
-
-
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">use_thermal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
 
-
-
-<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">BatteryInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-
-
+<span class="n">paramobj</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">BatteryInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
 <span class="n">use_cccv</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
 <span class="k">if</span><span class="w"> </span><span class="n">use_cccv</span>
-
 <span class="w">    </span><span class="n">cccvstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="w"> </span><span class="s">&#39;controlPolicy&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;CCCV&#39;</span><span class="p">,</span><span class="w">  </span><span class="k">...</span>
-
 <span class="w">                         </span><span class="s">&#39;initialControl&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;discharging&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
-<span class="w">                         </span><span class="s">&#39;numberOfCycles&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
-<span class="w">                         </span><span class="s">&#39;CRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
-<span class="w">                         </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">2.4</span><span class="w">          </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
-<span class="w">                         </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">4.1</span><span class="w">          </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
-<span class="w">                         </span><span class="s">&#39;dIdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
+<span class="w">                         </span><span class="s">&#39;CRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">2.4</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">4.1</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">&#39;dIdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                         </span><span class="s">&#39;dEdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">);</span>
-
-<span class="w">    </span><span class="n">cccvinputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CcCvControlModelInputParams</span><span class="p">(</span><span class="n">cccvstruct</span><span class="p">);</span>
-
-<span class="w">    </span><span class="n">inputparams</span><span class="p">.</span><span class="n">Control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cccvinputparams</span><span class="p">;</span>
-
+<span class="w">    </span><span class="n">cccvparamobj</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CcCvControlModelInputParams</span><span class="p">(</span><span class="n">cccvstruct</span><span class="p">);</span>
+<span class="w">    </span><span class="n">paramobj</span><span class="p">.</span><span class="n">Control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cccvparamobj</span><span class="p">;</span>
 <span class="k">end</span>
-
-
-
 
 
 <span class="c">%% Setup the geometry and computational grid</span>
-
 <span class="c">% Here, we setup the 1D computational grid that will be used for the</span>
-
 <span class="c">% simulation. The required discretization parameters are already included</span>
-
 <span class="c">% in the class BatteryGeneratorP2D.</span>
-
 <span class="n">gen</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">BatteryGeneratorP2D</span><span class="p">();</span>
 
-
-
-<span class="c">% Now, we update the inputparams with the properties of the grid.</span>
-
-<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">gen</span><span class="p">.</span><span class="n">updateBatteryInputParams</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
-
-
-
+<span class="c">% Now, we update the paramobj with the properties of the grid.</span>
+<span class="n">paramobj</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">gen</span><span class="p">.</span><span class="n">updateBatteryInputParams</span><span class="p">(</span><span class="n">paramobj</span><span class="p">);</span>
 
 
 <span class="c">%%  Initialize the battery model.</span>
-
-<span class="c">% The battery model is initialized by sending inputparams to the Battery class</span>
-
+<span class="c">% The battery model is initialized by sending paramobj to the Battery class</span>
 <span class="c">% constructor. see :class:`Battery &lt;Battery.Battery&gt;`.</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Battery</span><span class="p">(</span><span class="n">paramobj</span><span class="p">);</span>
 
-<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Battery</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
-
-
+<span class="n">model</span><span class="p">.</span><span class="n">AutoDiffBackend</span><span class="p">=</span><span class="w"> </span><span class="n">AutoDiffBackend</span><span class="p">();</span>
 
 <span class="n">inspectgraph</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
 <span class="k">if</span><span class="w"> </span><span class="n">inspectgraph</span>
-
 <span class="w">    </span><span class="n">cgt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">computationalGraph</span><span class="p">;</span>
-
 <span class="w">    </span><span class="k">return</span>
-
 <span class="k">end</span>
 
-
-
 <span class="c">%% Compute the nominal cell capacity and choose a C-Rate</span>
-
 <span class="c">% The nominal capacity of the cell is calculated from the active materials.</span>
-
 <span class="c">% This value is then combined with the user-defined C-Rate to set the cell</span>
-
 <span class="c">% operational current.</span>
-
-
 
 <span class="n">CRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">CRate</span><span class="p">;</span>
 
+<span class="c">%% Setup the time step schedule</span>
+<span class="c">% Smaller time steps are used to ramp up the current from zero to its</span>
+<span class="c">% operational value. Larger time steps are then used for the normal</span>
+<span class="c">% operation.</span>
+<span class="k">switch</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">ctrl</span><span class="p">).</span><span class="n">controlPolicy</span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;CCCV&#39;</span>
+<span class="w">    </span><span class="n">total</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">3.5</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;CCDischarge&#39;</span>
+<span class="w">    </span><span class="n">total</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1.4</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
+<span class="w">  </span><span class="k">otherwise</span>
+<span class="w">    </span><span class="nb">error</span><span class="p">(</span><span class="s">&#39;control policy not recognized&#39;</span><span class="p">);</span>
+<span class="k">end</span>
 
+<span class="n">n</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="n">dt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">total</span><span class="o">/</span><span class="n">n</span><span class="p">;</span>
+<span class="nb">step</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;val&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
 
-<span class="c">%% Setup the schedule</span>
-
-<span class="c">%</span>
-
-
-
-<span class="n">timestep</span><span class="p">.</span><span class="n">numberOfTimeSteps</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span>
-
-
-
-<span class="nb">step</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupScheduleStep</span><span class="p">(</span><span class="n">timestep</span><span class="p">);</span>
+<span class="c">% we setup the control by assigning a source and stop function.</span>
 
 <span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupScheduleControl</span><span class="p">();</span>
 
-
-
 <span class="c">% This control is used to set up the schedule</span>
-
 <span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
 
-
-
 <span class="c">%% Setup the initial state of the model</span>
-
 <span class="c">% The initial state of the model is setup using the model.setupInitialState() method.</span>
-
-
 
 <span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">();</span>
 
-
-
 <span class="c">%% Setup the properties of the nonlinear solver</span>
-
 <span class="n">nls</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">NonLinearSolver</span><span class="p">();</span>
 
-
-
 <span class="n">linearsolver</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;direct&#39;</span><span class="p">;</span>
-
 <span class="k">switch</span><span class="w"> </span><span class="n">linearsolver</span>
-
 <span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;amgcl&#39;</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">AMGCLSolverAD</span><span class="p">(</span><span class="s">&#39;verbose&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;reduceToCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="p">.</span><span class="n">tolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">;</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="p">.</span><span class="n">maxIterations</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">maxIterations</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-
 <span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;battery&#39;</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">LinearSolverBatteryExtra</span><span class="p">(</span><span class="s">&#39;verbose&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
 <span class="w">                                                </span><span class="s">&#39;reduceToCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
 <span class="w">                                                </span><span class="s">&#39;verbosity&#39;</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
 <span class="w">                                                </span><span class="s">&#39;reuse_setup&#39;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-
 <span class="w">                                                </span><span class="s">&#39;method&#39;</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;direct&#39;</span><span class="p">);</span>
-
 <span class="w">    </span><span class="n">nls</span><span class="p">.</span><span class="n">LinearSolver</span><span class="p">.</span><span class="n">tolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">;</span>
-
 <span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s">&#39;direct&#39;</span>
-
 <span class="w">    </span><span class="nb">disp</span><span class="p">(</span><span class="s">&#39;standard direct solver&#39;</span><span class="p">)</span>
-
 <span class="w">  </span><span class="k">otherwise</span>
-
 <span class="w">    </span><span class="nb">error</span><span class="p">(</span><span class="s">&#39;Unknown solver %s&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">linearsolver</span><span class="p">);</span>
-
 <span class="k">end</span>
-
-
 
 <span class="c">% Change default maximum iteration number in nonlinear solver</span>
-
 <span class="n">nls</span><span class="p">.</span><span class="n">maxIterations</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
-
 <span class="c">% Change default behavior of nonlinear solver, in case of error</span>
-
 <span class="n">nls</span><span class="p">.</span><span class="n">errorOnFailure</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
 <span class="n">nls</span><span class="p">.</span><span class="n">timeStepSelector</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">StateChangeTimeStepSelector</span><span class="p">(</span><span class="s">&#39;TargetProps&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="s">&#39;E&#39;</span><span class="p">}},</span><span class="w"> </span><span class="s">&#39;targetChangeAbs&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03</span><span class="p">);</span>
-
 <span class="c">% Change default tolerance for nonlinear solver</span>
-
 <span class="n">model</span><span class="p">.</span><span class="n">nonlinearTolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-3</span><span class="o">*</span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">Imax</span><span class="p">;</span>
-
 <span class="c">% Set verbosity</span>
-
 <span class="n">model</span><span class="p">.</span><span class="n">verbose</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 
-
-
 <span class="c">%% Run the simulation</span>
-
 <span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;OutputMinisteps&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
 
-
-
 <span class="c">%% Process output and recover the output voltage and current from the output states.</span>
-
 <span class="n">ind</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">not</span><span class="p">(</span><span class="nb">isempty</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">(</span><span class="n">ind</span><span class="p">);</span>
-
 <span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">T</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">.(</span><span class="n">thermal</span><span class="p">).</span><span class="n">T</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="n">Tmax</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
 <span class="c">% [SOCN, SOCP] =  cellfun(@(x) model.calculateSOC(x), states);</span>
-
 <span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
-
-
 <span class="n">figure</span>
-
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">E)</span><span class="p">;</span>
-
 <span class="n">grid</span><span class="w"> </span><span class="s">on</span>
-
 <span class="nb">xlabel</span><span class="w"> </span><span class="s">&#39;time  / h&#39;</span><span class="p">;</span>
-
 <span class="n">ylabel</span><span class="w"> </span><span class="s">&#39;potential  / V&#39;</span><span class="p">;</span>
 
-
-
 <span class="n">writeh5</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
-
 <span class="k">if</span><span class="w"> </span><span class="n">writeh5</span>
-
 <span class="w">    </span><span class="n">writeOutput</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;output.h5&#39;</span><span class="p">);</span>
-
 <span class="k">end</span>
-
-
-
 
 
 <span class="cm">%{</span>
-
-<span class="cm">Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology</span>
-
+<span class="cm">Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology</span>
 <span class="cm">and SINTEF Digital, Mathematics &amp; Cybernetics.</span>
-
-
 
 <span class="cm">This file is part of The Battery Modeling Toolbox BattMo</span>
 
-
-
 <span class="cm">BattMo is free software: you can redistribute it and/or modify</span>
-
 <span class="cm">it under the terms of the GNU General Public License as published by</span>
-
 <span class="cm">the Free Software Foundation, either version 3 of the License, or</span>
-
 <span class="cm">(at your option) any later version.</span>
 
-
-
 <span class="cm">BattMo is distributed in the hope that it will be useful,</span>
-
 <span class="cm">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
-
 <span class="cm">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
-
 <span class="cm">GNU General Public License for more details.</span>
 
-
-
 <span class="cm">You should have received a copy of the GNU General Public License</span>
-
 <span class="cm">along with BattMo.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-
 <span class="cm">%}</span>
 </pre></div>
 </div>

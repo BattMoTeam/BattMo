@@ -153,7 +153,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runElectrolyser.html">Electrolyser simulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#load-mrst-modules">Load MRST modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-input">Setup input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-model">Setup model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
@@ -177,6 +176,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#schedule-schedule">Schedule schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#simulation">Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../gui.html">BattMo App</a><ul>
@@ -385,26 +385,43 @@ We compute the steady-state solution so that the time stepping here is more an a
 <p>We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="p">);</span>
-
-<span class="nb">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Plot of electromotive potential</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">)</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electromotive potential (\pi)&#39;</span><span class="p">)</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\pi / V&#39;</span><span class="p">)</span>
-
-<span class="nb">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_01.png" src="../_images/runProtonicMembrane_01.png" />
+</figure>
+<p>Plot of electronic chemical potential</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electronic chemical potential (E)&#39;</span><span class="p">)</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">)</span>
-
-<span class="nb">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_02.png" src="../_images/runProtonicMembrane_02.png" />
+</figure>
+<p>Plot of electrostatic potential</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electrostatic potential (\phi)&#39;</span><span class="p">)</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\phi / V&#39;</span><span class="p">)</span>
-
-<span class="nb">figure</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_03.png" src="../_images/runProtonicMembrane_03.png" />
+</figure>
+<p>Plot of the conductivity</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="nb">log</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">sigmaEl</span><span class="p">))</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;logarithm of conductivity (\sigma)&#39;</span><span class="p">)</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
@@ -412,16 +429,76 @@ We compute the steady-state solution so that the time stepping here is more an a
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
-<img alt="../_images/runProtonicMembrane_01.png" src="../_images/runProtonicMembrane_01.png" />
-</figure>
-<figure class="align-default" style="width: 100%">
-<img alt="../_images/runProtonicMembrane_02.png" src="../_images/runProtonicMembrane_02.png" />
-</figure>
-<figure class="align-default" style="width: 100%">
-<img alt="../_images/runProtonicMembrane_03.png" src="../_images/runProtonicMembrane_03.png" />
-</figure>
-<figure class="align-default" style="width: 100%">
 <img alt="../_images/runProtonicMembrane_04.png" src="../_images/runProtonicMembrane_04.png" />
+</figure>
+</section>
+<section id="evolution-of-the-faradic-efficiency">
+<h2>Evolution of the Faradic efficiency<a class="headerlink" href="#evolution-of-the-faradic-efficiency" title="Permalink to this heading"></a></h2>
+<p>We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
+We sample the current value from 0 to 1 A/cm^2</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">Is</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="mi">20</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>We run the simulation for each current value and collect the results in the <code class="code docutils literal notranslate"><span class="pre">endstates</span></code></p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">endstates</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="k">for</span><span class="w"> </span><span class="n">iI</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">Is</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="n">iI</span><span class="p">);</span>
+<span class="w">    </span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">endstates</span><span class="p">{</span><span class="n">iI</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">;</span>
+
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>We plot the profile of the electromotive potential for the mininum and maximum current values.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
+<span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
+
+<span class="n">unit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="c">% shortcut</span>
+
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">endstates</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;I=%g A/cm^2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">endstates</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;I=%g A/cm^2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="k">end</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
+
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electromotive potential (\pi)&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\pi / V&#39;</span><span class="p">)</span>
+<span class="nb">legend</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_05.png" src="../_images/runProtonicMembrane_05.png" />
+</figure>
+<p>We retrieve and plot the cell potential</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">pi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ct</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="n">endstates</span><span class="p">);</span>
+
+<span class="n">figure</span>
+<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">E,</span><span class="w"> </span><span class="s">&#39;*-&#39;)</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Current density / A/cm^2&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Cell potential&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_06.png" src="../_images/runProtonicMembrane_06.png" />
+</figure>
+<p>We retrieve and plot the Faradic efficiency</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">iHp</span><span class="o">/</span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">endstates</span><span class="p">);</span>
+
+<span class="n">figure</span>
+<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">feff,</span><span class="w"> </span><span class="s">&#39;*-&#39;)</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Current density / A/cm^2&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Faradic efficiency / -&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Faradic efficiency&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runProtonicMembrane_07.png" src="../_images/runProtonicMembrane_07.png" />
 </figure>
 <p>complete source code can be found <a class="reference internal" href="runProtonicMembrane_source.html#runprotonicmembrane-source"><span class="std std-ref">here</span></a></p>
 </section>

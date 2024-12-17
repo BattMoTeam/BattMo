@@ -1,8 +1,9 @@
-
 .. _battMoTutorial:
 
+
+===============
 BattMo Tutorial
-------------------------------------
+===============
 *Generated from battMoTutorial.m*
 
 
@@ -21,7 +22,7 @@ This tutorial explains how to setup and run a simulation in BattMo
 
 
 Setting up the environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================
 BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:
 
 .. code-block:: matlab
@@ -30,12 +31,12 @@ BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality is c
 
 
 Specifying the physical model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo. We use :battmo:`parseBattmoJson` to parse the file.
+=============================
+In this tutorial we will simulate a lithium-ion battery consisting of a negative electrode, a positive electrode and an electrolyte. BattMo comes with some pre-defined models which can be loaded from JSON files. Here we will load the basic lithium-ion model JSON file which comes with Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
 
 .. code-block:: matlab
 
-  fname = fullfile('ParameterData','BatteryCellParameters',...
+  fname = fullfile('ParameterData','BatteryCellParameters',...
                    'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
   jsonstruct = parseBattmoJson(fname);
 
@@ -74,51 +75,51 @@ Now we can set the diffusion model type for the active material (am) in the posi
   jsonstruct.(pe).(am).diffusionModelType = 'full';
   jsonstruct.(ne).(am).diffusionModelType = 'full';
 
-To see which other types of diffusion model are available one can view :battmo:`ActiveMaterialInputParams`. When running a simulation, BattMo requires that all model parameters are stored in an instance of :battmo:`BatteryInputParams`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
+To see which other types of diffusion model are available one can view :battmo:`ActiveMaterialInputParams`.  When running a simulation, BattMo requires that all model parameters are stored in an instance of :battmo:`BatteryInputParams`. This class is used to initialize the simulation and is accessed by various parts of the simulator during the simulation. This class is instantiated using the jsonstruct we just created:
 
 .. code-block:: matlab
 
-  inputparams = BatteryInputParams(jsonstruct);
+  paramobj = BatteryInputParams(jsonstruct);
 
-It is also possible to update the properties of this inputparams in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :battmo:`FullSolidDiffusionModelInputParams`.
+It is also possible to update the properties of this paramobj in a similar way to updating the jsonstruct. Here we set the discretisation level for the diffusion model. Other input parameters for the full diffusion model can be found here: :battmo:`FullSolidDiffusionModelInputParams`.
 
 .. code-block:: matlab
 
-  inputparams.(ne).(co).(am).(sd).N = 5;
-  inputparams.(pe).(co).(am).(sd).N = 5;
+  paramobj.(ne).(co).(am).(sd).N = 5;
+  paramobj.(pe).(co).(am).(sd).N = 5;
   
   % We can also change how the battery is operated, for example setting
   % the cut off voltage.
-  inputparams.(ctrl).lowerCutoffVoltage = 2.5;
+  paramobj.(ctrl).lowerCutoffVoltage = 2.5;
 
 
 Setting up the geometry
-^^^^^^^^^^^^^^^^^^^^^^^
+=======================
 Here, we setup the 1D computational grid that will be used for the simulation. The required discretization parameters are already included in the class :battmo:`BatteryGeneratorP2D`. Classes for generating other geometries can be found in the BattMo/Battery/BatteryGeometry folder.
 
 .. code-block:: matlab
 
   gen = BatteryGeneratorP2D();
 
-Now, we update the inputparams with the properties of the grid. This function will update relevent parameters in the inputparams object and make sure we have all the required parameters for the model geometry chosen.
+Now, we update the paramobj with the properties of the grid. This function will update relevent parameters in the paramobj object and make sure we have all the required parameters for the model geometry chosen.
 
 .. code-block:: matlab
 
-  inputparams = gen.updateBatteryInputParams(inputparams);
+  paramobj = gen.updateBatteryInputParams(paramobj);
 
 
 Initialising the battery model object
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The battery model is initialized by sending inputparams to the Battery class constructor. see :battmo:`Battery`.
+=====================================
+The battery model is initialized by sending paramobj to the Battery class constructor. see :battmo:`Battery`.
 In BattMo a battery model is actually a collection of submodels: Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control Model. The battery class contains all of these submodels and various other parameters necessary to run the simulation.
 
 .. code-block:: matlab
 
-  model = Battery(inputparams);
+  model = Battery(paramobj);
 
 
 Plotting the OCP curves against state of charge
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===============================================
 We can inspect the model object to find out which parameters are being used. For instance the information we need to plot the OCP curves for the positive and negative electrodes can be found in the interface structure of each electrode.
 
 .. code-block:: matlab
@@ -155,13 +156,24 @@ We can inspect the model object to find out which parameters are being used. For
 
 
 Controlling the simulation
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================
 The control model specifies how the battery is operated, i.e., how the simulation is controlled.
-The input parameters for the control have been given as part of the json structure :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`. The total simulation time is setup for us, computed from the CRate value. We use the method :code:`setupScheduleStep` in :battmo:`ControlModel` to setup the :code:`step` structure.
+In the first instance we use CCDischarge control policy. We set the total time scaled by the CRate in the model. The CRate has been set by the json file. We can access it here:
 
 .. code-block:: matlab
 
-  step = model.Control.setupScheduleStep();
+  CRate = model.Control.CRate;
+  total = 1.1*hour/CRate;
+
+We want to break this total time into 100 timesteps. To begin with we will use equal values for each timestep.
+We create a structure containing the length of each step in seconds ('val') and also which control to use for each step ('control').
+In this case we use control 1 for all steps. This means that the functions used to setup the control values are the same at each step.
+
+.. code-block:: matlab
+
+  n  = 100;
+  dt = total/n;
+  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 We create a control structure containing the source function and and a stopping criteria. The control parameters have been given in the json file :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
 The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
@@ -178,7 +190,7 @@ Finally we collect the control and step structures together in a schedule struct
 
 
 Setting the initial state of the battery
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+========================================
 To run simulation we need to know the starting point which we will run it from, in terms of the value of the primary variables being modelled at the start of the simulation. The initial state of the model is setup using model.setupInitialState() Here we take the state of charge (SOC) given in the input and calculate equilibrium concentration based on theta0, theta100 and cmax.
 
 .. code-block:: matlab
@@ -187,9 +199,9 @@ To run simulation we need to know the starting point which we will run it from, 
 
 
 Running the simulation
-^^^^^^^^^^^^^^^^^^^^^^
+======================
 Once we have the initial state, the model and the schedule, we can call the simulateScheduleAD function which will actually run the simulation.
-The outputs from the simulation are: - sols: which provides the current and voltage of the battery at each timestep. - states: which contains the values of the primary variables in the model at each timestep. - reports: which contains technical information about the steps used in the numerical solvers.
+The outputs from the simulation are: - sols: which provides the current and voltage of the battery at each   timestep. - states: which contains the values of the primary variables in the model   at each timestep. - reports: which contains technical information about the steps used in   the numerical solvers.
 
 .. code-block:: matlab
 
@@ -197,7 +209,7 @@ The outputs from the simulation are: - sols: which provides the current and volt
 
 
 Plotting the results
-^^^^^^^^^^^^^^^^^^^^
+====================
 To get the results we use the matlab cellfun function to extract the values Control.E, Control.I and time from each timestep (cell in the cell array) in states. We can then plot the vectors.
 
 .. code-block:: matlab
