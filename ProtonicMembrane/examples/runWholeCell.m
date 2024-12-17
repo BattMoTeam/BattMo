@@ -65,10 +65,10 @@ if doplot
     
 end
 
-%% Adjust Imax
+%% Adjust I
 
-Imax = 0.5/((centi*meter)^2) * gen.ly;
-fprintf('use Imax = %g\n', Imax);
+I = 0.5/((centi*meter)^2) * gen.ly;
+fprintf('use I = %g\n', I);
 
 %%
 
@@ -206,10 +206,10 @@ if doinitialisation
     step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
     step.control = ones(numel(step.val), 1);
 
-    % Imax = 1e-2*ampere/((centi*meter)^2);
-    % Imax = 0.3*ampere/((centi*meter)^2);
-    % Imax = 0.01*ampere/((centi*meter)^2);
-    control.src = @(time) controlfunc(time, Imax, tswitch, T, 'order', 'I-first');
+    % I = 1e-2*ampere/((centi*meter)^2);
+    % I = 0.3*ampere/((centi*meter)^2);
+    % I = 0.01*ampere/((centi*meter)^2);
+    control.src = @(time) controlfunc(time, I, tswitch, T, 'order', 'I-first');
 
     schedule = struct('control', control, 'step', step); 
     nls = NonLinearSolver();
@@ -232,11 +232,11 @@ if doinitialisation
     
 else
 
-    switch Imax
+    switch I
       case 0
-        molfluxref = 1.7236e-06; % value for Imax = 0
+        molfluxref = 1.7236e-06; % value for I = 0
       case 7.5
-        molfluxref = 7.35713e-05; % mol/second, for Imax = 7.5
+        molfluxref = 7.35713e-05; % mol/second, for I = 7.5
       otherwise
         error('value of molflux ref did not appear to have been computed precedently');
     end
@@ -337,7 +337,7 @@ steps2 = rampupTimesteps(totaltime -timeswitch, dt2, 5);
 step.val = [steps1; steps2];
 step.control = ones(numel(step.val), 1);
 
-control.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'alpha-equal-beta');
+control.src = @(time) controlfunc(time, I, timeswitch, totaltime, 'order', 'alpha-equal-beta');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -516,7 +516,7 @@ xlabel('height / mm')
 
 % Faradic effect in Anode
 
-drivingForces.src = @(time) controlfunc(time, Imax, timeswitch, totaltime, 'order', 'I-first');
+drivingForces.src = @(time) controlfunc(time, I, timeswitch, totaltime, 'order', 'I-first');
 state = model.evalVarName(state, 'Cell.Anode.iHp', {{'drivingForces', drivingForces}});
 
 i   = state.Cell.Anode.i;

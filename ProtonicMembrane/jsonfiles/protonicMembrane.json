@@ -114,7 +114,7 @@
   },
   "Control": {
     "controlType": "current",
-    "Imax" : {
+    "I" : {
       "value" : 0,
       "unit" : "ampere/((centi*meter)^2)",
       "description" : "input current density"}

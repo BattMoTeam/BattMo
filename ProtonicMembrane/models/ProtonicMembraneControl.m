@@ -3,7 +3,7 @@ classdef ProtonicMembraneControl < BaseModel
     properties
 
         controlType
-        Imax
+        I
         
     end
     
@@ -15,7 +15,7 @@ classdef ProtonicMembraneControl < BaseModel
             model = model@BaseModel();
 
             fdnames = {'controlType',
-                       'Imax'};
+                       'I'};
             model = dispatchParams(model, inputparams, fdnames);
             
         end
@@ -78,9 +78,9 @@ classdef ProtonicMembraneControl < BaseModel
             fractionSwitch = jsonstruct.TimeStepping.fractionSwitch;
             orderSwitch    = jsonstruct.TimeStepping.orderSwitch;
             
-            Imax = model.Imax;
+            I = model.I;
             
-            control.src = @(time, Imax) pmControlFunc(time, Imax, fractionSwitch, 1, 'order', orderSwitch);
+            control.src = @(time, I) pmControlFunc(time, I, fractionSwitch, 1, 'order', orderSwitch);
             
         end
         
