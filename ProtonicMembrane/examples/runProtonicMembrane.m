@@ -74,11 +74,17 @@ xc = model.(elyte).grid.cells.centroids(:, 1);
 state = states{end};
 state = model.addVariables(state, schedule.control);
 
+%%
+% Plot of electromotive potential
+
 figure(1)
 plot(xc, state.(elyte).pi)
 title('Electromotive potential (\pi)')
 xlabel('x / m')
 ylabel('\pi / V')
+
+%%
+% Plot of electronic chemical potential
 
 figure(2)
 plot(xc, state.(elyte).pi - state.(elyte).phi)
@@ -86,17 +92,24 @@ title('Electronic chemical potential (E)')
 xlabel('x / m')
 ylabel('E / V')
 
+%%
+% Plot of electrostatic potential
+
 figure(3)
 plot(xc, state.(elyte).phi)
 title('Electrostatic potential (\phi)')
 xlabel('x / m')
 ylabel('\phi / V')
 
+%%
+% Plot of the conductivity
+
 figure(4)
 plot(xc, log(state.(elyte).sigmaEl))
 title('logarithm of conductivity (\sigma)')
 xlabel('x / m')
 xlabel('log(\sigma/Siemens)')
+
 
 
 
