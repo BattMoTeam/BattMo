@@ -66,10 +66,10 @@ classdef ProtonicMembraneElectrolyte < BaseModel
             T = model.T;
 
             % Equilibrium constant for hydratation reaction
-            K_hyd              = exp((model.dS_hyd/c.R) - model.dH_hyd*1000/(T*c.R));
-            K_H_p              = K_hyd; 
+            K_hyd = exp((model.dS_hyd/c.R) - model.dH_hyd*1000/(T*c.R));
+            K_H_p = K_hyd; 
             % concentration of protons at 1 bar H2O (at equilibrium)
-            p_ref              = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
+            p_ref = ((3*K_H_p - sqrt(K_H_p*(9*K_H_p - 6*K_H_p*Y + K_H_p*Y^2 + 24*Y - 4*Y^2)))/(K_H_p - 4));
             % Data from Amir Masoud at UiO
             sigma_p_masoud_std = c.F*(1/T)*(3*(Y - p_ref)/2)^(1/2)*(3)^(- 1/2)*1^(1/4)*model.Am*exp(-model.dH_ox/(c.R.*T));
             sigma_p0           = sigma_p_masoud_std;

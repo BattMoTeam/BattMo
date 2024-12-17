@@ -67,8 +67,8 @@ classdef ProtonicMembraneAnode < ProtonicMembraneElectrode
             % Compute charge-transfer current density
             
             R_ct = model.R_ct_0.*exp(model.Ea_ct./(c.R.*T)).*(pO2/pRef).^(-0.2); 
-            f = c.F/(c.R*T);
-            i_0 = 1./(R_ct.*f.*model.n); % charge-transfer current density
+            f    = c.F/(c.R*T);
+            i_0  = 1./(R_ct.*f.*model.n); % charge-transfer current density
 
             % Setup the gas components
 
