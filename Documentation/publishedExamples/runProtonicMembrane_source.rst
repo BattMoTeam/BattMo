@@ -10,7 +10,6 @@ Source code for runProtonicMembrane
 
   %% Protonic Membrane model
   
-  
   %% Load and parse input from given json files
   % The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
   % :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
@@ -84,29 +83,111 @@ Source code for runProtonicMembrane
   state = states{end};
   state = model.addVariables(state, schedule.control);
   
-  figure(1)
+  %%
+  % Plot of electromotive potential
+  
+  figure
   plot(xc, state.(elyte).pi)
   title('Electromotive potential (\pi)')
   xlabel('x / m')
   ylabel('\pi / V')
   
-  figure(2)
+  %%
+  % Plot of electronic chemical potential
+  
+  figure
   plot(xc, state.(elyte).pi - state.(elyte).phi)
   title('Electronic chemical potential (E)')
   xlabel('x / m')
   ylabel('E / V')
   
-  figure(3)
+  %%
+  % Plot of electrostatic potential
+  
+  figure
   plot(xc, state.(elyte).phi)
   title('Electrostatic potential (\phi)')
   xlabel('x / m')
   ylabel('\phi / V')
   
-  figure(4)
+  %%
+  % Plot of the conductivity
+  
+  figure
   plot(xc, log(state.(elyte).sigmaEl))
   title('logarithm of conductivity (\sigma)')
   xlabel('x / m')
   xlabel('log(\sigma/Siemens)')
+  
+  %% Evolution of Faradic efficiency
+  % We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency
+  %
+  
+  %%
+  % We sample the current value from 0 to 1 A/cm^2
+  %
+  
+  Is = linspace(0, 1*ampere/((centi*meter)^2), 20);
+  
+  %%
+  % We run the simulation for each current value and collect the results in the :code:`endstates`
+  %
+  endstates = {};
+  for iI = 1 : numel(Is)
+  
+      model.Control.I = Is(iI);
+      [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+  
+      state = states{end};
+      state = model.addVariables(state, schedule.control);
+      
+      endstates{iI} = state;
+      
+  end
+  
+  %%
+  % We plot the profile of the electromotive potential for the mininum and maximum current values.
+  %
+  
+  figure
+  hold on
+  
+  unit = ampere/((centi*meter)^2); % shortcut
+  
+  state = endstates{1};
+  plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(1)/unit));
+  state = endstates{end};
+  plot(xc, state.(elyte).pi, 'displayname', sprintf('I=%g A/cm^2', Is(end)/unit));
+  
+  title('Electromotive potential (\pi)')
+  xlabel('x / m')
+  ylabel('\pi / V')
+  legend
+  
+  %%
+  % We retrieve and plot the cell potential 
+  %
+  
+  E = cellfun(@(state) state.(an).pi - state.(ct).pi, endstates);
+  
+  figure
+  plot(Is/unit, E, '*-');
+  xlabel('Current density / A/cm^2')
+  ylabel('E / V')
+  title('Cell potential');
+  
+  %%
+  % We retrieve and plot the Faradic efficiency
+  %
+  
+  feff = cellfun(@(state) state.(an).iHp/state.(an).i, endstates);
+  
+  figure
+  plot(Is/unit, feff, '*-');
+  xlabel('Current density / A/cm^2')
+  ylabel('Faradic efficiency / -')
+  title('Faradic efficiency');
+  
   
   
   
