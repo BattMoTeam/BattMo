@@ -165,9 +165,10 @@ Plot of the conductivity
   :figwidth: 100%
 
 
-Evolution of Faradic efficiency
-===============================
-We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency
+Evolution of the Faradic efficiency
+===================================
+
+We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
 We sample the current value from 0 to 1 A/cm^2
 
 .. code-block:: matlab
