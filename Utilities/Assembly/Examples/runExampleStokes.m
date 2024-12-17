@@ -11,7 +11,7 @@ dim = 2;
 close all
 clear all
 
-gridtype = 'radial';
+gridtype = 'debugging';
 
 viscosity = 1;
 
