@@ -32,7 +32,7 @@ model = model.setupForSimulation();
 % We setup the initial state using a default setup included in the model
 state0 = model.setupInitialState();
 
-%% Schedule schedule
+%% Schedule
 % We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
 % control and the current equal to zero (see here :battmofile:`here<ProtonicMembrane/protonicMembrane.json#86>`).
 %
