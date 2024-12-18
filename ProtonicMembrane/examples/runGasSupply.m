@@ -9,7 +9,7 @@
 % We load the input data that is given by json structure
 %
 
-filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'gas_supply.json');
+filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'gas-supply.json');
 jsonstruct_material = parseBattmoJson(filename);
 
 filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', '2d-gas-layer-geometry.json');
@@ -50,7 +50,7 @@ G = model.grid;
 plotGrid(G);
 
 %%
-% The boundary conditions have been given by the input json file, see :battmofile:`gas_supply.json <ProtonicMembrane/jsonsfiles/gas_supply.json>`
+% The boundary conditions have been given by the input json file, see :battmofile:`gas-supply.json <ProtonicMembrane/jsonfiles/gas-supply.json>`
 %
 coupTerm = model.couplingTerms{1};
 plotFaces(G, coupTerm.couplingfaces, 'edgecolor', 'blue', 'linewidth', 3)

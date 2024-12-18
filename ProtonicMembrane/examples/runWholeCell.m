@@ -13,7 +13,7 @@ ctrl  = 'Control';
             
 clear jsonstruct
 
-filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
+filename = 'ProtonicMembrane/gas-supply-whole-cell.json';
 jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
 jsonstruct.Cell = parseBattmoJson(filename);
@@ -76,7 +76,7 @@ rungaslayer = false;
 
 if rungaslayer
 
-    filename = 'ProtonicMembrane/gas_supply_whole_cell.json';
+    filename = 'ProtonicMembrane/gas-supply-whole-cell.json';
     gsjsonstruct = parseBattmoJson(filename);
 
     %% adjust N2
