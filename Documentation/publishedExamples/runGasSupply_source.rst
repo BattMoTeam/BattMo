@@ -10,9 +10,6 @@ Source code for runGasSupply
 
   %% Gas Supply Layer
   %
-  % Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top
-  % (See illustration below).
-  %
   
   %% json input data
   %

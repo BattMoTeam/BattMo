@@ -1,8 +1,5 @@
 %% Gas Supply Layer
 %
-% Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top
-% (See illustration below).
-%
 
 %% json input data
 %
@@ -134,7 +131,7 @@ title('Pressure / bar');
 %%
 % We plot the water mass fractions at three different time step
 
-inds = [1; 5; 10];
+inds = [1; 2; 4; 8];
 ninds = numel(inds);
 for i = 1 : ninds
     figure
