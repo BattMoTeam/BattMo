@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BattMo example Json input &mdash; BattMo  documentation</title>
+  <title>Source code for runGasSupply &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css" />
@@ -235,9 +235,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">BattMo example Json input</li>
+      <li class="breadcrumb-item active">Source code for runGasSupply</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/publishedExamples/runJsonScript.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/publishedExamples/runGasSupply_source.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -245,109 +245,156 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="battmo-example-json-input">
-<span id="runjsonscript"></span><h1>BattMo example Json input<a class="headerlink" href="#battmo-example-json-input" title="Permalink to this heading"></a></h1>
-<p><em>Generated from runJsonScript.m</em></p>
-<p>This script shows an example where we setup a simulation using exclusively json input files.</p>
-<section id="setting-up-the-environment">
-<h2>Setting up the environment<a class="headerlink" href="#setting-up-the-environment" title="Permalink to this heading"></a></h2>
-<p>BattMo uses functionality from <code class="xref py py-mod docutils literal notranslate"><span class="pre">MRST</span></code>. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">mrst-gui</span>
-</pre></div>
-</div>
-</section>
-<section id="we-load-the-json-files">
-<h2>We load the json files<a class="headerlink" href="#we-load-the-json-files" title="Permalink to this heading"></a></h2>
-<p>When loading a json file using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code>, the output is the standard matlab structure that is obtained by the native matlab command <code class="code docutils literal notranslate"><span class="pre">jsondecode</span></code>, see <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">here</a></p>
-</section>
-<section id="material-properties">
-<h2>Material properties<a class="headerlink" href="#material-properties" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the material properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="geometry">
-<h2>Geometry<a class="headerlink" href="#geometry" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the geometrical properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="control">
-<h2>Control<a class="headerlink" href="#control" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the geometrical properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="simulation-parameters">
-<h2>Simulation parameters<a class="headerlink" href="#simulation-parameters" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the simulation parameters</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_simparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="ouput-specificiations">
-<h2>Ouput specificiations<a class="headerlink" href="#ouput-specificiations" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for output extra specifications.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;extra_output.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>We merge the json structures. The function issues a warning if a parameter is set with different values in the given structures. The rule is that the first value takes precedence.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_simparams</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_output</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                              </span><span class="p">});</span>
-</pre></div>
-</div>
-<p>We adjust the total time with respect to the given CRate.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">CRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">CRate</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="p">.</span><span class="n">totalTime</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1.4</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="p">.</span><span class="n">numberOfTimeSteps</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span>
-</pre></div>
-</div>
-</section>
-<section id="we-start-the-simulation">
-<h2>We start the simulation<a class="headerlink" href="#we-start-the-simulation" title="Permalink to this heading"></a></h2>
-<p>We use the function <code class="code docutils literal notranslate"><span class="pre">runBatteryJson</span></code> to run the simulation with json input structure</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="plotting">
-<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this heading"></a></h2>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
+  <section id="source-code-for-rungassupply">
+<span id="rungassupply-source"></span><h1>Source code for runGasSupply<a class="headerlink" href="#source-code-for-rungassupply" title="Permalink to this heading"></a></h1>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Gas Supply Layer</span>
+<span class="c">%</span>
+<span class="c">% Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top</span>
+<span class="c">% (See illustration below).</span>
+<span class="c">%</span>
 
-<span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="c">%% json input data</span>
+<span class="c">%</span>
+<span class="c">% We load the input data that is given by json structures. The physical properties of the supply gas layer is given in the json file :battmofile:`gas-supply.json &lt;ProtonicMembrane/jsonfiles/gas-supply.json&gt;`</span>
+<span class="c">%</span>
 
-<span class="nb">figure</span><span class="p">()</span>
-<span class="nb">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hours]&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Voltage [V]&#39;</span><span class="p">)</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;gas-supply.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
-<span class="nb">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hours]&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Current [A]&#39;</span><span class="p">)</span>
+<span class="c">%%</span>
+<span class="c">% The geometry input is loaded from :battmofile:`2d-gas-layer-geometry.json &lt;ProtonicMembrane/jsonfiles/2d-gas-layer-geometry.json&gt;`</span>
+<span class="c">%</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;2d-gas-layer-geometry.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The input for the initial state is loaded from :battmofile:`gas-supply-initialization.json &lt;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&gt;`</span>
+<span class="c">%</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;gas-supply-initialization.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct_initialization</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_geometry</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_initialization</span><span class="p">});</span>
+
+<span class="c">%% Input parameter setup</span>
+<span class="c">%</span>
+<span class="c">% We setup the input parameter structure which will we be used to instantiate the model</span>
+<span class="c">%</span>
+
+<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneGasSupplyInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneGasLayerGrid`</span>
+<span class="p">[</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">gridGenerator</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupProtonicMembraneGasLayerGrid</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Model setup</span>
+<span class="c">%</span>
+<span class="c">% We instantiate the model for the gas supply layer</span>
+<span class="c">%</span>
+
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneGasSupply</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The model is equipped for simulation using the following command (this step may become unnecessary in future versions)</span>
+
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupForSimulation</span><span class="p">();</span>
+
+<span class="c">%% Model Plot</span>
+<span class="c">%</span>
+<span class="c">% We plot the simulation grid</span>
+<span class="c">%</span>
+<span class="n">G</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">;</span>
+
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">G</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The boundary conditions have been given by the input json file, see :battmofile:`gas-supply.json</span>
+<span class="c">% &lt;ProtonicMembrane/jsonfiles/gas-supply.json#16&gt;`. In this case we have rate control at the inlet at the bottom, and</span>
+<span class="c">% pressure control at the outlet at the top.</span>
+<span class="c">%</span>
+<span class="c">% The index of the faces for the inlet and outlet are stored in a :code:`couplingTerm` structure (see :battmo:`here</span>
+<span class="c">% &lt;couplingTerm&gt;` for the base class). Those have been assigned when the grid is setup (for this example we have used</span>
+<span class="c">% :battmo:`GasSupplyGridGenerator2D`).</span>
+<span class="c">%</span>
+<span class="c">% We plot the inlet faces.</span>
+<span class="n">coupTerm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;blue&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c">%%</span>
+<span class="c">% We plot the outlet faces.</span>
+<span class="n">coupTerm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c">%% Setup initial state</span>
+<span class="c">%</span>
+<span class="c">% The model provides us with a default initialization</span>
+
+<span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Schedule setup</span>
+<span class="c">%</span>
+<span class="c">% The schedule structure constains two fields :code:`step`, :code:`control`, which gives respectively the time steps and</span>
+<span class="c">% the control to be applied.</span>
+
+<span class="n">T</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-2</span><span class="o">*</span><span class="nb">second</span><span class="p">;</span>
+<span class="n">N</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+
+<span class="n">dt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">rampupTimesteps</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">/</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="nb">step</span><span class="p">.</span><span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">dt</span><span class="p">;</span>
+<span class="nb">step</span><span class="p">.</span><span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">ones</span><span class="p">(</span><span class="nb">numel</span><span class="p">(</span><span class="nb">step</span><span class="p">.</span><span class="n">val</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="n">control</span><span class="p">.</span><span class="n">src</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[];</span><span class="w"> </span><span class="c">% The control is taking care of by a dedicated submobel. Hence, the empty field here.</span>
+
+<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
+
+<span class="c">%% Simulation</span>
+<span class="c">%</span>
+<span class="c">% We start the simulation</span>
+<span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
+
+<span class="c">%% Result plots</span>
+<span class="c">%</span>
+<span class="c">% To analyse the result, we can use the interactive :code:`plotToolbar` command (see :mrstfile:`here &lt;visualization/mrst-gui/plotToolbar.m&gt;`)</span>
+<span class="c">%</span>
+<span class="nb">figure</span>
+<span class="n">plotToolbar</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="c">%</span>
+<span class="c">%</span>
+
+<span class="c">%%</span>
+<span class="c">% We plot the pressure at the final step.</span>
+<span class="c">%</span>
+
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
+
+<span class="n">G</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">;</span>
+
+<span class="n">figure</span>
+<span class="s">plotCellData(G,</span><span class="w"> </span><span class="s">state.pressure/barsa)</span><span class="p">;</span>
+<span class="n">colorbar</span>
+<span class="s">title(&#39;Pressure / bar&#39;)</span><span class="p">;</span>
+
+<span class="c">%%</span>
+<span class="c">% We plot the water mass fractions at three different time step</span>
+
+<span class="n">inds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="mi">10</span><span class="p">];</span>
+<span class="n">ninds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">inds</span><span class="p">);</span>
+<span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ninds</span>
+<span class="w">    </span><span class="nb">figure</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="n">inds</span><span class="p">(</span><span class="nb">i</span><span class="p">)};</span>
+<span class="w">    </span><span class="n">plotCellData</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">clim</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">]);</span>
+<span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;H2O mass fraction\n(timestep:%d)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">inds</span><span class="p">(</span><span class="nb">i</span><span class="p">)));</span>
+<span class="w">    </span><span class="n">colorbar</span>
+<span class="s">end</span>
 </pre></div>
 </div>
-<figure class="align-default" style="width: 100%">
-<img alt="../_images/runJsonScript_01.png" src="../_images/runJsonScript_01.png" />
-</figure>
-<p>complete source code can be found <a class="reference internal" href="runJsonScript_source.html#runjsonscript-source"><span class="std std-ref">here</span></a></p>
-</section>
 </section>
 
 

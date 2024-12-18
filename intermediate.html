@@ -178,6 +178,17 @@
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo App</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="gui_features.html">Features</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gui_features.html#use-default-materials">Use default materials</a></li>
@@ -308,7 +319,7 @@
 </figure>
 <p>We find a extensive set of plotting functions in <a class="reference external" href="https://www.sintef.no/Projectweb/MRST/">MRST</a>. You may be interested
 to have a look at the <a class="reference external" href="https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/">Visualization Tutorial</a>. Let us use the
-<a class="reference external" href="https://bitbucket.org/mrst/mrst-core/src/battmo-dev/plotting/plotGrid.m">plotGrid</a> and <a class="reference external" href="https://bitbucket.org/mrst/mrst-core/src/battmo-dev/plotting/plotCellData.m">plotCellData</a> to plot the
+<a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-core/plotting/plotGrid.m">plotGrid</a> and <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-core/plotting/plotCellData.m">plotCellData</a> to plot the
 surface particle concentrations in both electrode at a given time step.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="mi">20</span><span class="p">};</span>
 <span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span>
@@ -355,7 +366,7 @@ inserted in place. Hence, when we write</p>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
 <div class="sphinx_collapse docutils">
-<input class="sphinx_collapse__input" id="19060724-0cc8-43c9-adae-1363927ac775" name="19060724-0cc8-43c9-adae-1363927ac775" type="checkbox"><label class="sphinx_collapse__label" for="19060724-0cc8-43c9-adae-1363927ac775"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
+<input class="sphinx_collapse__input" id="3ab3edd3-de5c-444e-ba6f-52269fd9be36" name="3ab3edd3-de5c-444e-ba6f-52269fd9be36" type="checkbox"><label class="sphinx_collapse__label" for="3ab3edd3-de5c-444e-ba6f-52269fd9be36"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>

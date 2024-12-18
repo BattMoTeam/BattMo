@@ -179,6 +179,17 @@
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="gui.html">BattMo App</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="gui_features.html">Features</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gui_features.html#use-default-materials">Use default materials</a></li>
@@ -340,7 +351,7 @@ following result.</p>
 </section>
 <section id="control-model-description">
 <h2>Control model description<a class="headerlink" href="#control-model-description" title="Permalink to this heading"></a></h2>
-<p>Beside json input, the function <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo-dev/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> is used to run a simulation. It requires</p>
+<p>Beside json input, the function <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-autodiff/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> is used to run a simulation. It requires</p>
 <ul class="simple">
 <li><p>A <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
 <li><p>An <strong>initial state</strong>,</p></li>
@@ -390,7 +401,7 @@ a <code class="code docutils literal notranslate"><span class="pre">controlPolic
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Now, we can run the simulation for the given schedule, model and initial state using <a class="reference external" href="https://bitbucket.org/mrst/mrst-autodiff/src/battmo-dev/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a></p>
+<p>Now, we can run the simulation for the given schedule, model and initial state using <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-autodiff/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a></p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
 </pre></div>
 </div>
