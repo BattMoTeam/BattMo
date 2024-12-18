@@ -2,9 +2,8 @@ clear all
 
 mrstModule add ad-core mrst-gui
 
-filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/gas_supply.json';
-jsonstruct = fileread(filename);
-jsonstruct = jsondecode(jsonstruct);
+filename   = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'gas_supply.json');
+jsonstruct = parseBattmoJson(filename);
 
 %%
 Dmult = 1e-7;
