@@ -10,7 +10,7 @@ function [inputparams, gridGenerator] = setupProtonicMembraneCellGrid(inputparam
 
         gen  = PEMgridGenerator1D();
         
-        gen.xlength  = convertUnitBattMo(jsonstruct.(elyte).xlength);
+        gen.xlength  = jsonstruct.(elyte).xlength;
         gen.faceArea = jsonstruct.(elyte).faceArea;
         gen.N        = jsonstruct.(elyte).Nx;
 
@@ -20,9 +20,9 @@ function [inputparams, gridGenerator] = setupProtonicMembraneCellGrid(inputparam
 
         gen  = PEMgridGenerator2D();
         
-        gen.ylength = convertUnitBattMo(jsonstruct.Geometry.ylength);
+        gen.ylength = jsonstruct.Geometry.ylength;
         gen.Ny      = jsonstruct.Geometry.Ny;
-        gen.xlength = convertUnitBattMo(jsonstruct.(elyte).xlength);
+        gen.xlength = jsonstruct.(elyte).xlength;
         gen.Nx      = jsonstruct.(elyte).Nx;
         
         inputparams = gen.updateInputParams(inputparams);
