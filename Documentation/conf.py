@@ -320,7 +320,7 @@ add_module_names=False
 
 
 repo_url    = 'https://github.com/BattMoTeam/BattMo'
-branch_name = 'dev'
+branch_name = 'main'
 
 def find_battmo_file(filename):
     ignored_dirs = ['output', 'Externals', '.git', '.github']
