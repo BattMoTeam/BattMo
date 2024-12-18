@@ -66,6 +66,8 @@ classdef ProtonicMembraneGasSupply < BaseModel
 
             model = model.setupControl();
 
+            model = model.setupScalings();
+            
         end
 
         function model = setupForSimulation(model)
@@ -81,6 +83,61 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
             model = model.equipModelForComputation('shortNames', shortNames);
             
+        end
+
+        function model = setupScalings(model)
+            
+            gasInd = model.gasInd;
+
+            %% pick-up rate value in control
+            %
+            
+            comptypecouptbl = model.helpers.comptypecouptbl;
+            ctrlvals        = model.helpers.ctrlvals;
+
+            clear comptypetbl2
+            comptypetbl2.type = [2]; % type=2 for rate control
+            comptypetbl2.comp = [1]; % component index = 1 for rate value
+            comptypetbl2 = IndexArray(comptypetbl2);
+
+            map = TensorMap();
+            map.fromTbl  = comptypecouptbl;
+            map.toTbl    = comptypetbl2;
+            map.mergefds = {'comp', 'type'};
+            map = map.setup();
+
+            rates = map.eval(ctrlvals);
+            [rate, imax] = max(rates);
+            % Get the coupling index where we can find the pressure values
+            coupinds = map.pivottbl.get('coup');
+            Nxs = cellfun(@(coupterm) numel(coupterm.couplingcells), model.couplingTerms);
+            Nx = Nxs(imax);
+            
+            scalFlux = rate/Nx;
+
+            %% pick-up pressure value in control
+            %
+            
+            clear comptypetbl2
+            comptypetbl2.type = [1; 3]; % type=2 for rate control
+            comptypetbl2.comp = [1]; % component index = 1 for rate value
+            comptypetbl2 = IndexArray(comptypetbl2);
+
+            map = TensorMap();
+            map.fromTbl  = comptypecouptbl;
+            map.toTbl    = comptypetbl2;
+            map.mergefds = {'comp', 'type'};
+            map = map.setup();
+
+            scalPressure = max(map.eval(ctrlvals));
+
+            model.scalings = {{{'massConses', 1}, scalFlux}, ...
+                              {{'massConses', 2}, scalFlux}, ...
+                              {{'Control', 'pressureEq'}, scalPressure}, ...
+                              {{'Control', 'rateEq'}, Nx*scalFlux}, ...
+                              {{'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
+                              {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
+
         end
         
         function model = registerVarAndPropfuncNames(model)

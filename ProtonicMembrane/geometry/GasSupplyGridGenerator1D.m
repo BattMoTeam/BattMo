@@ -2,8 +2,8 @@ classdef GasSupplyGridGenerator1D < GasSupplyGridGenerator
     
     properties
         
-        nx
-        lx
+        Nx
+        xlength
 
         faceArea
         
@@ -22,10 +22,10 @@ classdef GasSupplyGridGenerator1D < GasSupplyGridGenerator
 
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
-            nx = gen.nx;
-            lx = gen.lx;
+            Nx      = gen.Nx;
+            xlength = gen.xlength;
 
-            G = cartGrid(nx, lx);
+            G = cartGrid(Nx, xlength);
             
             parentGrid = Grid(G, 'faceArea', gen.faceArea);
             
@@ -39,9 +39,9 @@ classdef GasSupplyGridGenerator1D < GasSupplyGridGenerator
 
         function inputparams = setupExternalCoupling(gen, inputparams, params)
 
-            G  = inputparams.G.mrstFormat;
-            nx = gen.nx;
-            lx = gen.lx;
+            G       = inputparams.G.mrstFormat;
+            Nx      = gen.Nx;
+            xlength = gen.xlength;
             
             tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
@@ -53,7 +53,7 @@ classdef GasSupplyGridGenerator1D < GasSupplyGridGenerator
             bcfacecouptbl1 =  bcfacecouptbl1.addInd('coup', ones(nc, 1));
 
             clear bcfacecouptbl2;
-            bcfacecouptbl2.faces = (nx + 1);
+            bcfacecouptbl2.faces = (Nx + 1);
             bcfacecouptbl2 = IndexArray(bcfacecouptbl2);
             nc = bcfacecouptbl2.num;
             bcfacecouptbl2 =  bcfacecouptbl2.addInd('coup', 2*ones(nc, 1));

@@ -2,10 +2,10 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
     
     properties
         
-        nx
-        ny
-        lx
-        ly
+        Nx
+        Ny
+        xlength
+        ylength
 
     end
 
@@ -22,12 +22,12 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
 
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
 
-            nx = gen.nx;
-            ny = gen.ny;
-            lx = gen.lx;
-            ly = gen.ly;
+            Nx      = gen.Nx;
+            Ny      = gen.Ny;
+            xlength = gen.xlength;
+            ylength = gen.ylength;
 
-            G = cartGrid([nx, ny], [lx, ly]);
+            G = cartGrid([Nx, Ny], [xlength, ylength]);
             
             parentGrid = Grid(G);
             
@@ -42,22 +42,23 @@ classdef GasSupplyGridGenerator2D < GasSupplyGridGenerator
         function inputparams = setupExternalCoupling(gen, inputparams, params)
 
             G  = inputparams.G.mrstFormat;
-            nx = gen.nx;
-            ny = gen.ny;
-            lx = gen.lx;
-            ly = gen.ly;
+            
+            Nx      = gen.Nx;
+            Ny      = gen.Ny;
+            xlength = gen.xlength;
+            ylength = gen.ylength;
             
             tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
 
             clear bcfacecouptbl1;
-            bcfacecouptbl1.faces = (nx + 1)*ny + (1 : floor(nx/2))';
+            bcfacecouptbl1.faces = (Nx + 1)*Ny + (1 : floor(Nx/2))';
             bcfacecouptbl1 = IndexArray(bcfacecouptbl1);
             nc = bcfacecouptbl1.num;
             bcfacecouptbl1 =  bcfacecouptbl1.addInd('coup', ones(nc, 1));
 
             clear bcfacecouptbl2;
-            bcfacecouptbl2.faces = (nx + 1)*ny + ny*nx + (1 : floor(nx/2))';
+            bcfacecouptbl2.faces = (Nx + 1)*Ny + Ny*Nx + (1 : floor(Nx/2))';
             bcfacecouptbl2 = IndexArray(bcfacecouptbl2);
             nc = bcfacecouptbl2.num;
             bcfacecouptbl2 =  bcfacecouptbl2.addInd('coup', 2*ones(nc, 1));

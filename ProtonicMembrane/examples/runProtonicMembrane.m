@@ -17,6 +17,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
 inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
+%%
 % We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
 [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 

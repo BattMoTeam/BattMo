@@ -11,6 +11,7 @@
    "unit" : "centi*poise"
  },
  "diffusionCoefficients" : [1e-4, 1e-4],
+ "comment" : "One value for each component.",
  "T" : 298,
  "control" : [{"name" : "External input",
                "type" : "rate-composition",
