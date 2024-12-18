@@ -19,8 +19,6 @@ classdef GasDiffusionCell < MaxwellStefanGasDiffusion
 
             model.Control = GasDiffusionCellControl(inputparams.Control);
 
-            model.subModelNameList{end + 1} = 'Control';
-
             model = model.setupControlMappings();
 
         end

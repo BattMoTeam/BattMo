@@ -73,7 +73,7 @@ classdef MaxwellStefanDiffusion < BaseModel
 
             model.numberOfComponents = numel(model.componentNames);
 
-            model.subModelNameList = {'Boundary'};
+            model.Boundary = BaseModel();
             
             ncomp = model.numberOfComponents;
             
