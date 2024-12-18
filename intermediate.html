@@ -243,7 +243,7 @@
 <p>Let’s build a pseudo-four-dimensional Li-ion battery model and explore more about how to mix-and-match <strong>BattMo</strong> parameter definitions!</p>
 <p>P4D simulations provide the most spatial detail for battery simulations. They can consider the effects of complex shapes like current collector tabs, jelly rolls, or multi-layer cells on overall performance. However, they are also the most computationally expensive simulations to run. They are therefore usually reserved for specicial cases when geometric effects play a significant role.</p>
 <p>P4D models can be setup using a similar JSON parameter definition as described in the section on Basic Usage.</p>
-<p><strong>BattMo</strong> aims to provide a modular solution for building electrochemical models. That allows us to mix-and-match different sets of parameter definitions without needing to do much re-coding. In this example, we will use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function to build a model definition from multiple sources.</p>
+<p><strong>BattMo</strong> aims to provide a modular solution for building electrochemical models. That allows us to mix-and-match different sets of parameter definitions without needing to do much re-coding. In this example, we will use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function to build a model definition from multiple sources.</p>
 <section id="define-parameters">
 <h3>Define Parameters<a class="headerlink" href="#define-parameters" title="Permalink to this heading"></a></h3>
 <p>We will combine five separate JSON files that define the parameters for:</p>
@@ -298,7 +298,7 @@
 </section>
 <section id="visualize-results">
 <h3>Visualize Results<a class="headerlink" href="#visualize-results" title="Permalink to this heading"></a></h3>
-<p>We plot the model using <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/Visualization/plotBatteryGrid.m">plotBatteryGrid</a> (note that the different axis are scaled differently)</p>
+<p>We plot the model using <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotBatteryGrid.m">plotBatteryGrid</a> (note that the different axis are scaled differently)</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span>
 <span class="n">plotBatteryGrid</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
@@ -331,11 +331,11 @@ surface particle concentrations in both electrode at a given time step.</p>
 <li><p>Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></p></li>
 </ol>
 <p>We have just seen an example of the first mechanism, which can be used within Matlab when we setup the simulation.</p>
-<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/parseBattmoJson.m">parseBattmoJson</a> is used to parse a JSON input and create the corresponding matlab structure. It
+<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/parseBattmoJson.m">parseBattmoJson</a> is used to parse a JSON input and create the corresponding matlab structure. It
 basically relies on <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">jsondecode</a>.</p>
 <p>In this process the reserved keyword properties <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> combined with <code class="code docutils literal notranslate"><span class="pre">filename</span></code> are used to fetch and
 insert in place JSON data located in separate files. Here is an example, taken from
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">lithium_ion_battery_nmc_graphite.json</a>
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">lithium_ion_battery_nmc_graphite.json</a>
 where we have the following lines</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -346,16 +346,16 @@ where we have the following lines</p>
 <span class="w">      </span><span class="p">}}}}</span>
 </pre></div>
 </div>
-<p>The content of the file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a> is then
+<p>The content of the file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a> is then
 inserted in place. Hence, when we write</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fileread</span><span class="p">(</span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">)</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
 <div class="sphinx_collapse docutils">
-<input class="sphinx_collapse__input" id="d04ac226-103c-4e0c-a65b-dad02fe5a5dc" name="d04ac226-103c-4e0c-a65b-dad02fe5a5dc" type="checkbox"><label class="sphinx_collapse__label" for="d04ac226-103c-4e0c-a65b-dad02fe5a5dc"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
+<input class="sphinx_collapse__input" id="19060724-0cc8-43c9-adae-1363927ac775" name="19060724-0cc8-43c9-adae-1363927ac775" type="checkbox"><label class="sphinx_collapse__label" for="19060724-0cc8-43c9-adae-1363927ac775"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>

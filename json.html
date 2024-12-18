@@ -253,12 +253,12 @@ of the syntax but bring additional information such as a <code class="code docut
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The different schemas may have common object. In the validation process, each schema is handled parallelly. The
-function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> can be used to compose different json files.</p>
+function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> can be used to compose different json files.</p>
 </div>
 <p>For example a component (say the electolyte) has its geometrical and material properties specified in two separate
 schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
-we use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function, see the example <a class="reference internal" href="intermediate.html#mergejsonstructs"><span class="std std-ref">here</span></a>.</p>
+we use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function, see the example <a class="reference internal" href="intermediate.html#mergejsonstructs"><span class="std std-ref">here</span></a>.</p>
 <p>Here, we give an <a class="reference internal" href="jsonexample.html#json-input-example"><span class="std std-ref">Example</span></a></p>
 <section id="simulation-schema">
 <h2>Simulation Schema<a class="headerlink" href="#simulation-schema" title="Permalink to this heading"></a></h2>
@@ -306,13 +306,13 @@ we use the <a class="reference external" href="https://github.com/BattMoTeam/Bat
 </pre></div>
 </div>
 <p>The schemas are available in the directory
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas">JsonSchemas</a>. <a class="reference internal" href="jsonexample.html#simulation"><span class="std std-ref">Here</span></a> is an example of the main input
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas">JsonSchemas</a>. <a class="reference internal" href="jsonexample.html#simulation"><span class="std std-ref">Here</span></a> is an example of the main input
 file where the inputs are given in separate files using the <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> key.</p>
 </section>
 <section id="material-parameters">
 <h2>Material Parameters<a class="headerlink" href="#material-parameters" title="Permalink to this heading"></a></h2>
 <p>The main schema for the material parameter is reproduced below
-(<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/JsonSchemas/Battery.schema.json">source</a>). We recognize the battery model structure presented
+(<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Battery.schema.json">source</a>). We recognize the battery model structure presented
 <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">here</span></a>.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./Battery.schema.json&quot;</span><span class="p">,</span>
@@ -373,7 +373,7 @@ file where the inputs are given in separate files using the <code class="code do
 <p>The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
 the json file should contain the function name that is used. The <em>signature</em> of the function is given in the schema in
 form of a <em>argument list</em>. For example, below, we can read that that the <code class="code docutils literal notranslate"><span class="pre">ionicConductivity</span></code> is a function of
-concentration and temperature, see examples <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ParameterData/MaterialProperties/OrganicLiPF6Solutions">here</a>.</p>
+concentration and temperature, see examples <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/OrganicLiPF6Solutions">here</a>.</p>
 <div class="admonition note" id="note-on-future-function-support">
 <p class="admonition-title">Note</p>
 <p>At the moment, only function implemented in matlab are supported. To add a function, the user must therefore create
@@ -846,7 +846,7 @@ the guest stoichiometries and the saturation concentration.</p>
 <p>The guest stoichiometries and the saturation concentration are also input data for the
 <a class="reference internal" href="#interface"><span class="std std-ref">interface</span></a>. The given values should then be the same. However, the submodels are initiated
 parallelly at the model level. For that reason, we use a validation mechanism that checks the consistency of the data
-of the submodels, when needed, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Electrochemistry/ActiveMaterialInputParams.m#L107">here</a> for an example.</p>
+of the submodels, when needed, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Electrochemistry/ActiveMaterialInputParams.m#L107">here</a> for an example.</p>
 </div>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./FullSolidDiffusionModel.schema.json&quot;</span><span class="p">,</span>
@@ -1589,7 +1589,7 @@ here .</p>
 <section id="output-parameters">
 <h2>Output Parameters<a class="headerlink" href="#output-parameters" title="Permalink to this heading"></a></h2>
 <p>Some extra post-processed parameters can be asked for already at the json level. Otherwise, it is always possible to
-compute those afterwards (see function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Examples/Utilities/computeEnergyDensity.m">computeEnergyDensity</a> for example).</p>
+compute those afterwards (see function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Utilities/computeEnergyDensity.m">computeEnergyDensity</a> for example).</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;$id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file://./Ouput.schema.json&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>

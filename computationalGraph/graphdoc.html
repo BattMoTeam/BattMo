@@ -247,7 +247,7 @@ equations. The equations are added to the system of non-linear equation we solve
 evolution problem.</p>
 <p>In the computational graph, the nodes are given by the variables in the model. The directed edges represent the
 functional dependency between the variables.</p>
-<p>The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class has two functions</p>
+<p>The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class has two functions</p>
 <ol class="arabic simple">
 <li><p>Serve as an <strong>interactive</strong> tool to design, manipulate and explore the computational graph of a model. The interactive functions can be discovered by running the method <code class="code docutils literal notranslate"><span class="pre">help</span></code> (see below).</p></li>
 <li><p>From the computational graph, <strong>automatically</strong> identify</p>
@@ -524,7 +524,7 @@ supported. A typical example is a chemical system which brings different species
 concencentration variable. To get a generic implementation, it is impractical to deal with the names of each of
 the species and we rather use indices, over which it is easy to iterate. A map between species name in index
 can be conveniently introduced. We end up with the following structure for a variable name, a class called
-<code class="code docutils literal notranslate"><span class="pre">VarName</span></code> see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/VarName.m">VarName</a> with the following properties</p>
+<code class="code docutils literal notranslate"><span class="pre">VarName</span></code> see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a> with the following properties</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">VarName</span>
 
 <span class="w">  </span><span class="k">properties</span>
@@ -595,7 +595,7 @@ model</span></a>. Namespace is needed to distinguish between those,</p>
 </div></blockquote>
 <p>Let us introduce the code functionalities for constructing models. For the moment, we focus on the the nodes
 (variable names). Later, we will look at the edges (functional dependencies). We use the <a class="reference internal" href="#tempgraph"><span class="std std-ref">temperature
-model</span></a> as an example. The class <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/Various/BaseModel.m">BaseModel</a> is, at its name indicates, the base class for
+model</span></a> as an example. The class <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/BaseModel.m">BaseModel</a> is, at its name indicates, the base class for
 all models. We will introduce gradually the most usefull methods for this class. For our temperature model, we
 start with</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">ThermalModel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BaseModel</span>
@@ -628,17 +628,17 @@ start with</p>
 <span class="k">end</span>
 </pre></div>
 </div>
-<p>The most impatient can have a look of the complete implementation of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>. The method
+<p>The most impatient can have a look of the complete implementation of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>. The method
 <code class="code docutils literal notranslate"><span class="pre">registerVarAndPropfuncNames</span></code> is used to setup all that deals with the graph in a given model. We called
 the method <code class="code docutils literal notranslate"><span class="pre">registerVarNames</span></code> to add a list of nodes in our graph given by <code class="code docutils literal notranslate"><span class="pre">varnames</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The variable name is given by a single string here and not a instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/VarName.m">VarName</a>. This is a
+<p>The variable name is given by a single string here and not a instance of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a>. This is a
 syntaxic sugar and internally the variable name <code class="code docutils literal notranslate"><span class="pre">T</span></code> is converted to <code class="code docutils literal notranslate"><span class="pre">VarName({},</span> <span class="pre">'T',</span> <span class="pre">1,</span> <span class="pre">':')</span></code></p>
 <p>To lighten the graph setup, we have introduced at several places syntaxic sugar.</p>
 </div>
 <p>We can now instantiate the model, setup the computational graph. The graph is given as a
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class instance. This class provides some computational and inspection methods
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class instance. This class provides some computational and inspection methods
 that acts on the graph.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ThermalModel</span><span class="p">();</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupComputationalGraph</span><span class="p">();</span>
@@ -649,9 +649,9 @@ that acts on the graph.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">cgt</span><span class="w"> </span><span class="p">=</span><span class="w">  </span><span class="n">model</span><span class="p">.</span><span class="n">cgt</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>When the computational graph is setup, the property <code class="code docutils literal notranslate"><span class="pre">varNameList</span></code> of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/Various/BaseModel.m">BaseModel</a> is populated
-with <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/VarName.m">VarName</a> variables. We will rarely look at this list directly. Instead, we use the method
-<code class="code docutils literal notranslate"><span class="pre">printVarNames</span></code> in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> which, as its name indicates, print the variables
+<p>When the computational graph is setup, the property <code class="code docutils literal notranslate"><span class="pre">varNameList</span></code> of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/BaseModel.m">BaseModel</a> is populated
+with <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a> variables. We will rarely look at this list directly. Instead, we use the method
+<code class="code docutils literal notranslate"><span class="pre">printVarNames</span></code> in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> which, as its name indicates, print the variables
 that have been registered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">()</span>
 
@@ -697,7 +697,7 @@ that have been registered.</p>
 </pre></div>
 </div>
 <p>(For the impatient, the full implementation which includes the properties is available
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>). As expected, we obtain the following output</p>
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>). As expected, we obtain the following output</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ReactionModel</span><span class="p">();</span>
 <span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span><span class="p">;</span>
 <span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span>
@@ -738,7 +738,7 @@ namespace. We write</p>
 <span class="k">end</span>
 </pre></div>
 </div>
-<p>We can already instantiate this model (for the impatient, the full model setup is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ReactionThermalModel.m">here</a>).</p>
+<p>We can already instantiate this model (for the impatient, the full model setup is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionThermalModel.m">here</a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ReactionThermalModel</span><span class="p">();</span>
 <span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span><span class="p">;</span>
 <span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">();</span>
@@ -760,12 +760,12 @@ namespace. We write</p>
 </div>
 <p>We now observe how the new model has all the variables from both the sub models and they have been assigned a
 namespace which prevents ambiguities. In the printed form above, the name space components are joined with a
-dot delimiter and added in front of the name. The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/VarName.m">VarName</a> variable that corresponds to the first
+dot delimiter and added in front of the name. The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a> variable that corresponds to the first
 name in the printed list above is <code class="code docutils literal notranslate"><span class="pre">VarName({'Reaction'},</span> <span class="pre">'phi_s')</span></code></p>
 <p>Let us now look at how we declare the edges, with corresponds for us to the function that update some of the
 variables. For some of the variables, we declare the fact that the variable will be updated by calling a
 function where the arguments are given by other variables (i.e. nodes) given in the graph. In this way we
-obtain directed edges. The class to encode this information is <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/PropFunction.m">PropFunction</a>. The properties for the
+obtain directed edges. The class to encode this information is <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/PropFunction.m">PropFunction</a>. The properties for the
 class are the following</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">PropFunction</span>
 
@@ -848,7 +848,7 @@ function would be as follows</p>
 </pre></div>
 </div>
 </div>
-<p>We can instantiate this model and use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphPlot.m">ComputationalGraphPlot</a> tool to visualize the resulting
+<p>We can instantiate this model and use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphPlot.m">ComputationalGraphPlot</a> tool to visualize the resulting
 graph.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ThermalModel</span><span class="p">();</span>
 <span class="n">cgp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">cgp</span><span class="p">();</span><span class="w"> </span><span class="c">% &quot;cgp&quot; stands for &quot;computational graph plot&quot;</span>
@@ -862,9 +862,9 @@ graph.</p>
 <p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraphcopy" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
-<p>We can use the <code class="code docutils literal notranslate"><span class="pre">printOrderedFunctionCallList</span></code> method of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class to
+<p>We can use the <code class="code docutils literal notranslate"><span class="pre">printOrderedFunctionCallList</span></code> method of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class to
 print the sequence of function calls that is used to update all the variables in the model
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>, which examplify how we can automatize the assembly. The order of the function
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>, which examplify how we can automatize the assembly. The order of the function
 evaluation is computed from the graph structure.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span>
 <span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printOrderedFunctionCallList</span>
@@ -875,10 +875,10 @@ evaluation is computed from the graph structure.</p>
 <span class="n">state</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">updateEnergyCons</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Similarly we implement the property functions of the reaction model, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>. The
+<p>Similarly we implement the property functions of the reaction model, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>. The
 corresponding graph is plotted <a class="reference internal" href="#reacmodelgraph"><span class="std std-ref">above</span></a></p>
 <p>For the sake of the illustration we introduce and <code class="code docutils literal notranslate"><span class="pre">UncoupledReactionThermalModel</span></code>, which consists only of
-the following line (see also <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/UncoupledReactionThermalModel.m">here</a>)</p>
+the following line (see also <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/UncoupledReactionThermalModel.m">here</a>)</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">UncoupledReactionThermalModel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BaseModel</span>
 <span class="w">    </span><span class="k">properties</span>
 <span class="w">        </span><span class="n">Reaction</span>
@@ -909,7 +909,7 @@ the following line (see also <a class="reference external" href="https://github.
 originates from is added to the name of each variable. We can clearly see that the two graphs of the sub-models
 are uncoupled as no edge connect them to each other.</p>
 <p>We implement the coupling between the models, as announced <a class="reference internal" href="#tempreacgraph"><span class="std std-ref">here</span></a>, using the following
-setup (see also <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/Documentation/computationalGraph/scripts/ReactionThermalModel.m">here</a>), which coupled the OCP to the temperature and the source
+setup (see also <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionThermalModel.m">here</a>), which coupled the OCP to the temperature and the source
 term of the energy equation to the reaction rate.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">ReactionThermalModel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BaseModel</span>
 

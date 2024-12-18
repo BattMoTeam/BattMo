@@ -308,7 +308,7 @@ a relation between the <span class="math notranslate nohighlight">\(H^+\)</span>
 </section>
 <section id="load-and-parse-input-from-given-json-files">
 <h2>Load and parse input from given json files<a class="headerlink" href="#load-and-parse-input-from-given-json-files" title="Permalink to this heading"></a></h2>
-<p>The source of the json files can be seen in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ProtonicMembrane/jsonfiles/protonicMembrane.json">protonicMembrane</a> and <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ProtonicMembrane/jsonfiles/1d-PM-geometry.json">1d-PM-geometry.json</a></p>
+<p>The source of the json files can be seen in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/protonicMembrane.json">protonicMembrane</a> and <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/1d-PM-geometry.json">1d-PM-geometry.json</a></p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;protonicMembrane.json&#39;</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
@@ -349,7 +349,7 @@ a relation between the <span class="math notranslate nohighlight">\(H^+\)</span>
 </section>
 <section id="schedule">
 <h2>Schedule<a class="headerlink" href="#schedule" title="Permalink to this heading"></a></h2>
-<p>We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current control and the current equal to zero (see here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/dev/ProtonicMembrane/protonicMembrane.json#L86">here</a>).
+<p>We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current control and the current equal to zero (see here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/protonicMembrane.json#L86">here</a>).
 We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupSchedule</span><span class="p">(</span><span class="n">inputparams</span><span class="p">.</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
