@@ -11,7 +11,7 @@ Protonic Membrane model
 
 Load and parse input from given json files
 ==========================================
-The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
+The source of the json files can be seen in :battmofile:`protonicMembrane.json<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
 
 .. code-block:: matlab
 
@@ -31,8 +31,11 @@ We setup the input parameter structure which will we be used to instantiate the 
 .. code-block:: matlab
 
   inputparams = ProtonicMembraneCellInputParams(jsonstruct);
-  
-  % We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
+
+We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
+
+.. code-block:: matlab
+
   [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 
@@ -62,18 +65,12 @@ We setup the initial state using a default setup included in the model
 
 Schedule
 ========
-We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current control and the current equal to zero (see here :battmofile:`here<ProtonicMembrane/protonicMembrane.json#86>`).
-We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).
+We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current control and the current equal to zero (see :battmofile:`here<ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
+We compute the steady-state solution and the time stepping here does not correspond to time values but should be seen as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which includes highly nonlineaer effect with the exponential terms. We do not detail here the method).
 
 .. code-block:: matlab
 
   schedule = model.Control.setupSchedule(inputparams.jsonstruct);
-
-We change the default tolerance
-
-.. code-block:: matlab
-
-  model.nonlinearTolerance = 1e-8;
 
 
 Simulation
@@ -87,7 +84,7 @@ We run the simulation
 
 Plotting
 ========
-We setup som shortcuts for convenience
+We setup som shortcuts for convenience and introduce plotting options
 
 .. code-block:: matlab
 
@@ -105,7 +102,7 @@ We recover the position of the mesh cell of the discretization grid. This is use
 
   xc = model.(elyte).grid.cells.centroids(:, 1);
 
-We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.
+We consider the solution obtained at the last time step, which corresponds to the solution at steady-state. The second line adds to the state variable all the variables that are derived from our primary unknowns.
 
 .. code-block:: matlab
 

@@ -1,7 +1,7 @@
 %% Protonic Membrane model
 
 %% Load and parse input from given json files
-% The source of the json files can be seen in :battmofile:`protonicMembrane<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
+% The source of the json files can be seen in :battmofile:`protonicMembrane.json<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
 % :battmofile:`1d-PM-geometry.json<ProtonicMembrane/jsonfiles/1d-PM-geometry.json>`
 
 filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'protonicMembrane.json');
@@ -35,16 +35,13 @@ state0 = model.setupInitialState();
 
 %% Schedule
 % We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
-% control and the current equal to zero (see here :battmofile:`here<ProtonicMembrane/protonicMembrane.json#86>`).
+% control and the current equal to zero (see :battmofile:`here<ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
 %
-% We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state
-% solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).
+% We compute the steady-state solution and the time stepping here does not correspond to time values but should be seen
+% as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which
+% includes highly nonlineaer effect with the exponential terms. We do not detail here the method).
 
 schedule = model.Control.setupSchedule(inputparams.jsonstruct);
-
-%%
-% We change the default tolerance
-model.nonlinearTolerance = 1e-8;
 
 %% Simulation
 % We run the simulation
@@ -55,7 +52,7 @@ model.nonlinearTolerance = 1e-8;
 %
 
 %%
-% We setup som shortcuts for convenience
+% We setup som shortcuts for convenience and introduce plotting options
 an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
@@ -70,7 +67,8 @@ set(0, 'defaultaxesfontsize', 15);
 xc = model.(elyte).grid.cells.centroids(:, 1);
 
 %%
-% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.
+% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state. The second
+% line adds to the state variable all the variables that are derived from our primary unknowns.
 state = states{end};
 state = model.addVariables(state, schedule.control);
 
