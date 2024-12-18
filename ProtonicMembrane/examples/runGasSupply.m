@@ -46,6 +46,7 @@ switch dimcase
   otherwise
 
     error('dimcase not recognized')
+    
 end
 
 inputparams = gen.updateInputParams(inputparams);
@@ -106,7 +107,7 @@ model.scalings = {{{'massConses', 1}, scalFlux}, ...
 
 T = 1*second;
 N = 10;
-dt = rampupTimesteps(T, T/N, 1, 'threshold_error', 1e-15);
+dt = rampupTimesteps(T, T/N, 1);
 
 step.val = dt;
 step.control = ones(numel(step.val), 1);
@@ -115,10 +116,10 @@ control.src = [];
 
 schedule = struct('control', control, 'step', step);
 
-nls = NonLinearSolver();
-nls.maxIterations = 20;
+nls                = NonLinearSolver();
+nls.maxIterations  = 20;
 nls.errorOnFailure = false;
-nls.verbose = true;
+nls.verbose        = true;
 
 model.verbose = true;
 
