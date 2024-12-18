@@ -1,9 +1,14 @@
 Troubleshooting
 ################
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+      
+   Unnatural artifacts <app_unnatural_artifacts>
+   Unsuccessful simulation <app_unsuccessful_simulation>
+
 This sections gives some troubleshooting ideas.
-
-
 
 .. grid:: 2
 
