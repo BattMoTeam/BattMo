@@ -42,7 +42,7 @@ Source code for runProtonicMembrane
   % We setup the initial state using a default setup included in the model
   state0 = model.setupInitialState();
   
-  %% Schedule schedule
+  %% Schedule
   % We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
   % control and the current equal to zero (see here :battmofile:`here<ProtonicMembrane/protonicMembrane.json#86>`).
   %
@@ -119,24 +119,22 @@ Source code for runProtonicMembrane
   xlabel('x / m')
   xlabel('log(\sigma/Siemens)')
   
-  %% Evolution of Faradic efficiency
-  % We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency
+  %% Evolution of the Faradic efficiency
+  % We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
   %
-  
-  %%
-  % We sample the current value from 0 to 1 A/cm^2
+  % We sample the current value from 0 to 1 A/cm^2.
   %
   
   Is = linspace(0, 1*ampere/((centi*meter)^2), 20);
   
   %%
-  % We run the simulation for each current value and collect the results in the :code:`endstates`
+  % We run the simulation for each current value and collect the results in the :code:`endstates`.
   %
   endstates = {};
   for iI = 1 : numel(Is)
   
       model.Control.I = Is(iI);
-      [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+      [~, states, report] = simulateScheduleAD(state0, model, schedule);
   
       state = states{end};
       state = model.addVariables(state, schedule.control);

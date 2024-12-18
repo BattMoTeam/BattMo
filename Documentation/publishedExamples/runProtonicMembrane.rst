@@ -167,15 +167,14 @@ Plot of the conductivity
 
 Evolution of the Faradic efficiency
 ===================================
-
 We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.
-We sample the current value from 0 to 1 A/cm^2
+We sample the current value from 0 to 1 A/cm^2.
 
 .. code-block:: matlab
 
   Is = linspace(0, 1*ampere/((centi*meter)^2), 20);
 
-We run the simulation for each current value and collect the results in the :code:`endstates`
+We run the simulation for each current value and collect the results in the :code:`endstates`.
 
 .. code-block:: matlab
 
@@ -183,7 +182,7 @@ We run the simulation for each current value and collect the results in the :cod
   for iI = 1 : numel(Is)
   
       model.Control.I = Is(iI);
-      [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+      [~, states, report] = simulateScheduleAD(state0, model, schedule);
   
       state = states{end};
       state = model.addVariables(state, schedule.control);
