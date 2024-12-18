@@ -33,13 +33,15 @@ classdef ServerManager < handle
             addParameter(p , 'cwd'                , serverFolder, @ischar);
             addParameter(p , 'port'               , 3000        , @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', 'positive'}));
             addParameter(p , 'shared'             , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
+            addParameter(p , 'verbose'            , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'print_stack'        , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'async'              , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'gc'                 , true        , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'debug'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'reset'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'updateJuliaPackages', false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            
+            addParameter(p , 'extra_args'         , ''          , @ischar);
+
             parse(p, varargin{:});
             manager.options = p.Results;
 
@@ -54,6 +56,8 @@ classdef ServerManager < handle
             [st, result] = mkdir(manager.use_folder);
             assert(st == 1, 'Unable to use mkdir: %s', result);
 
+            manager.options.extra_args = [' ', manager.options.extra_args, ' '];
+
             % Save options in file to be read in Julia
             op = manager.options;
             opt_file = fullfile(manager.use_folder, 'options.mat');
@@ -65,7 +69,8 @@ classdef ServerManager < handle
             manager.base_call = [manager.options.julia, ' '                              , ...
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
-                                 '--threads='         , num2str(manager.options.threads)];
+                                 '--threads='         , num2str(manager.options.threads), ...
+                                 manager.options.extra_args];
 
             if isunix
                 
@@ -76,11 +81,10 @@ classdef ServerManager < handle
             if ~isfile(fullfile(serverFolder, 'RunFromMatlab', 'Manifest.toml'))
 
                 fprintf('Setting up Battmo Julia server (may take 1 minute) ... ');
-                setup_battmojl_call = [''''                                      , ...
-                                       'using Pkg;'                              , ...
-                                       'Pkg.add(name = "BattMo", rev = "main");'  , ...
-                                       'Pkg.add(name = "Jutul", rev = "battmo");', ...
-                                       'Pkg.update();'                           , ...
+                setup_battmojl_call = [''''                                     , ...
+                                       'using Pkg;'                             , ...
+                                       'Pkg.add(name = "BattMo", rev = "main");', ...
+                                       'Pkg.update();'                          , ...
                                        ''''];
                 manager.DaemonCall(setup_battmojl_call);
                 fprintf('done\n');
@@ -173,7 +177,7 @@ classdef ServerManager < handle
                          ' -load '                            , ...
                          loadingDataFilename];
 
-            if manager.options.debug
+            if manager.options.debug | manager.options.verbose
                 fprintf("Loading data into Julia \n")
             end
 
@@ -193,7 +197,7 @@ classdef ServerManager < handle
                             ' -run '                     , ...
                             outputFileName];
 
-            if manager.options.debug
+            if manager.options.debug | manager.options.verbose
                 fprintf("Calling run battery \n")
             end
 
@@ -287,7 +291,7 @@ classdef ServerManager < handle
                     % ', async='                          , ...
                     % jl_bool(manager.options.async)      , ...
 
-                    if manager.options.debug
+                    if manager.options.debug | manager.options.verbose
                         fprintf("Starting Julia server \n")
                     end
 
@@ -314,7 +318,7 @@ classdef ServerManager < handle
             [st, result] = system(cmd);
             assert(st == 0, "System call failed: \n %s \nSystem call returned:\n %s\n", cmd, result);
 
-            if manager.options.debug
+            if manager.options.debug | manager.options.verbose
                 fprintf("Shutting down server \n");
             end
 
@@ -335,6 +339,8 @@ classdef ServerManager < handle
 
             if manager.options.debug
                 fprintf("Call to julia: %s \n", cmd);
+            elseif manager.options.verbose
+                fprintf("Call to julia (It will take time the first time due to just in time compilation)\n");
             end
 
             [st, result] = system(cmd);
@@ -367,7 +373,7 @@ classdef ServerManager < handle
         function result = collect_results(manager, f, index)
         % Collect results from a Futures object at given indices
 
-            if manager.options.debug
+            if manager.options.debug | manager.options.verbose
                 disp("Waiting for futures object to finish...")
             end
 
@@ -375,7 +381,7 @@ classdef ServerManager < handle
                 pause(0.1);
             end
 
-            if manager.options.debug
+            if manager.options.debug | manager.options.versbose
                 disp("Loading data from object")
             end
 

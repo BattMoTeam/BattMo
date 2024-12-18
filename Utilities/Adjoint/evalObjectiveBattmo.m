@@ -99,11 +99,11 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
     if isempty(opt.NonLinearSolver)
         nls = NonLinearSolver;
         nls.errorOnFailure    = false;
-        nls.continueOnFailure = false;        
+        nls.continueOnFailure = false;
     else
         nls = opt.NonLinearSolver;
     end
-    
+
     [globVars, states] = simulateScheduleAD(setupNew.state0               , ...
                                             setupNew.model                , ...
                                             setupNew.schedule             , ...
@@ -120,8 +120,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         objValue = NaN;
         failure = true;
     end
-        
-    
+
+
 
     if nargout > 1
 
@@ -129,7 +129,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
             varargout = cell(nargout, 1);
             return
-            
+
         else
 
             switch opt.gradientMethod
@@ -206,7 +206,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         end
 
         if nargout > 2
-            [varargout{2:3}] = deal(wellSols, states);
+            [varargout{2:3}] = deal(scaledGradient, states);
         end
 
         if nargout > 4
@@ -214,7 +214,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         end
 
     end
-    
+
 end
 
 

@@ -1,23 +1,16 @@
-
 .. _runElectrolyser:
 
+
+==============================
 Alkaline Membrane Electrolyser
-----------------------------------------------------
+==============================
 *Generated from runElectrolyser.m*
 
 .. include:: runElectrolyserPreamble.rst
 
 
-Load MRST modules
-^^^^^^^^^^^^^^^^^
-
-.. code-block:: matlab
-
-  mrstModule add ad-core
-
-
 Setup input
-^^^^^^^^^^^
+===========
 Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
 
 .. code-block:: matlab
@@ -45,7 +38,7 @@ We define shortcuts for the different submodels.
 
 
 Setup model
-^^^^^^^^^^^
+===========
 
 .. code-block:: matlab
 
@@ -53,7 +46,7 @@ Setup model
 
 
 Setup the initial condition
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===========================
 We use the default initial setup implemented in the model
 
 .. code-block:: matlab
@@ -62,7 +55,7 @@ We use the default initial setup implemented in the model
 
 
 Setup the schedule with the time discretization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===============================================
 We run the simulation over 10 hours, increasing the input current linearly in time.
 
 .. code-block:: matlab
@@ -87,7 +80,7 @@ We use the function :battmo:`rampupControl` to increase the current linearly in 
 
 
 Setup the non-linear solver
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===========================
 We do only minor modifications here from the standard solver
 
 .. code-block:: matlab
@@ -100,7 +93,7 @@ We do only minor modifications here from the standard solver
 
 
 Run the simulation
-^^^^^^^^^^^^^^^^^^
+==================
 
 .. code-block:: matlab
 
@@ -108,7 +101,7 @@ Run the simulation
 
 
 Visualize the results
-^^^^^^^^^^^^^^^^^^^^^
+=====================
 The results contain only the primary variables of the system (the unknwons that descrive the state of the system). We use the method :code:`addVariables` to add all the intermediate quantities that are computed to solve the equations but not stored automatically in the result.
 
 .. code-block:: matlab
@@ -150,62 +143,60 @@ We plot the results for the voltage and current
 
 
 pH distribution plot
-^^^^^^^^^^^^^^^^^^^^
+====================
 We consider the three domains and plot the pH in each of those. We setup the helper structures to iterate over each domain for the plot.
 
 .. code-block:: matlab
 
-  doplot = false;
+  models = {model.(oer).(ptl), ...
+            model.(her).(ptl), ...
+            model.(inm)};
   
-  if doplot
+  fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
+            {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
+            {'IonomerMembrane', 'cOH'}};
   
-      models = {model.(oer).(ptl), ...
-                model.(her).(ptl), ...
-                model.(inm)};
+  h = figure();
+  set(h, 'position', [10, 10, 800, 450]);
+  hold on
   
-      fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
-                {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
-                {'IonomerMembrane', 'cOH'}};
+  ntime = numel(time);
+  times = linspace(1, ntime, 10);
+  cmap  = cmocean('deep', 10);
   
-      h = figure();
-      set(h, 'position', [10, 10, 800, 450]);
-      hold on
+  for ifield = 1 : numel(fields)
   
-      ntime = numel(time);
-      times = linspace(1, ntime, 10);
-      cmap  = cmocean('deep', 10);
+      fd       = fields{ifield};
+      submodel = models{ifield};
   
-      for ifield = 1 : numel(fields)
+      x    = submodel.grid.cells.centroids;
   
-          fd       = fields{ifield};
-          submodel = models{ifield};
+      for itimes = 1 : numel(times);
   
-          x    = submodel.G.cells.centroids;
+          itime = floor(times(itimes));
+          % The method :code:`getProp` is used to recover the value from the state structure
+          val   = model.getProp(states{itime}, fd);
+          pH    = 14 + log10(val/(mol/litre));
   
-          for itimes = 1 : numel(times);
-  
-              itime = floor(times(itimes));
-              % The method :code:`getProp` is used to recover the value from the state structure
-              val   = model.getProp(states{itime}, fd);
-              pH    = 14 + log10(val/(mol/litre));
-  
-              % plot of pH for the current submodel.
-              plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
-  
-          end
+          % plot of pH for the current submodel.
+          plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
   
       end
   
-      xlabel('x  /  mm');
-      ylabel('pH');
-      title('pH distribition in electrolyser')
-  
-      colormap(cmap)
-      hColorbar = colorbar;
-      caxis([0 3]);
-      hTitle = get(hColorbar, 'Title');
-      set(hTitle, 'string', 'J (A/cm^2)');
   end
+  
+  xlabel('x  /  mm');
+  ylabel('pH');
+  title('pH distribution in electrolyser')
+  
+  colormap(cmap)
+  hColorbar = colorbar;
+  caxis([0 3]);
+  hTitle = get(hColorbar, 'Title');
+  set(hTitle, 'string', 'J (A/cm^2)');
+
+.. figure:: runElectrolyser_02.png
+  :figwidth: 100%
 
 
 

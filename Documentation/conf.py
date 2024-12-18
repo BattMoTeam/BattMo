@@ -66,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BattMo'
-copyright = '2021-2023'
+copyright = '2021-2024'
 author = 'Simon Clark'
 
 # The version info for the project you're documenting, acts as replacement for
