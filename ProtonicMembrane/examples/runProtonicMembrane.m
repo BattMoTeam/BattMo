@@ -124,7 +124,7 @@ endstates = {};
 for iI = 1 : numel(Is)
 
     model.Control.I = Is(iI);
-    [~, states, report] = simulateScheduleAD(state0, model, schedule, 'NonLinearSolver', nls);
+    [~, states, report] = simulateScheduleAD(state0, model, schedule);
 
     state = states{end};
     state = model.addVariables(state, schedule.control);
