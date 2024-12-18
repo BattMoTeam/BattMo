@@ -1,0 +1,6 @@
+{"initialState" : {
+  "massfractions" : [0.2, 0.8],
+  "pressure" : {"value" : 1.7,
+                "unit" : "barsa"}}}
+  
+

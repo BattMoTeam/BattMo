@@ -736,7 +736,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
         
-        function initstate = setupInitialState(model)
+        function initstate = setupInitialState(model, jsonstruct)
 
             nGas    = model.nGas;
             nc      = model.G.getNumberOfCells();
@@ -744,43 +744,10 @@ classdef ProtonicMembraneGasSupply < BaseModel
             gasInd  = model.gasInd;
             control = model.control;
 
-            comptypecouptbl = model.helpers.comptypecouptbl;
-            ctrlvals        = model.helpers.ctrlvals;
-
-
-            %% we find the lowest pressure value in the control and use it for initialization
+            jsonstruct = jsonstruct.initialState;
             
-            clear comptypetbl2;
-            comptypetbl2.type = [1; 3];
-            comptypetbl2.comp = [1; 1];
-            comptypetbl2 = IndexArray(comptypetbl2);
-            comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'comp', 'type'});
-
-            map = TensorMap();
-            map.fromTbl = comptypecouptbl;
-            map.toTbl = comptypecouptbl2;
-            map.mergefds = {'comp', 'type', 'coup'};
-            map = map.setup();
-
-            pInit = map.eval(ctrlvals);
-            pInit = min(pInit);
-
-            %% we find the highest mass fraction value in the control and use it for initialization
-
-            clear comptypetbl2;
-            comptypetbl2.type = [1; 2];
-            comptypetbl2.comp = [2; 2];
-            comptypetbl2 = IndexArray(comptypetbl2);
-            comptypecouptbl2 = crossIndexArray(comptypetbl2, comptypecouptbl, {'comp', 'type'});
-
-            map = TensorMap();
-            map.fromTbl = comptypecouptbl;
-            map.toTbl = comptypecouptbl2;
-            map.mergefds = {'comp', 'type', 'coup'};
-            map = map.setup();
-
-            mfInit = map.eval(ctrlvals);
-            mfInit = min(mfInit);
+            pInit  = jsonstruct.pressure;
+            mfInit = jsonstruct.massfractions(1);
             
             %% Initialization
             
@@ -825,9 +792,6 @@ classdef ProtonicMembraneGasSupply < BaseModel
             
         end
 
-        function model = validateModel(model, varargin)
-        % do nothing
-        end
 
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
