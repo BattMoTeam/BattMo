@@ -17,7 +17,7 @@
    Electrolyser simulation <publishedExamples/runElectrolyser>
    Protonic Membrane <publishedExamples/runProtonicMembrane>
    Gas Supply <publishedExamples/runGasSupply>
-   gui
+   app
    Computational Graph <computationalGraph/graphdoc>
    seealso
    References <bibliography>
