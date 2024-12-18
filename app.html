@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Features &mdash; BattMo  documentation</title>
+  <title>BattMoApp &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css" />
@@ -27,8 +27,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Calculations" href="gui_calculations.html" />
-    <link rel="prev" title="BattMo App" href="gui.html" /> 
+    <link rel="next" title="Computation Graph Model Design ang Assembly" href="computationalGraph/graphdoc.html" />
+    <link rel="prev" title="Gas Supply Layer" href="publishedExamples/runGasSupply.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -189,20 +189,8 @@
 <li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="gui.html">BattMo App</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Features</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#use-default-materials">Use default materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#define-your-own-materials">Define your own materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#visualize-your-geometry">Visualize your geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#download-your-input-data">Download your input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#visualize-and-download-your-results">Visualize and download your results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gui_calculations.html">Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui_troubleshooting.html">Troubleshooting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gui_troubleshooting.html#unnatural-artifacts-in-your-results">Unnatural artifacts in your results</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BattMoApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting started</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="computationalGraph/graphdoc.html">Computational Graph</a><ul>
@@ -237,10 +225,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="gui.html">BattMo App</a></li>
-      <li class="breadcrumb-item active">Features</li>
+      <li class="breadcrumb-item active">BattMoApp</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/gui_features.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/app.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -248,38 +235,42 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="features">
-<h1>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h1>
-<p>This section explains some convenient features that the application includes.</p>
-<section id="use-default-materials">
-<h2>Use default materials<a class="headerlink" href="#use-default-materials" title="Permalink to this heading"></a></h2>
-<p>The application has some default materials that you can use in your input parameter setup.
-These materials are datasets formed from literature. An overview of which materials are available
-can be found on the page <a class="reference external" href="http://app.batterymodel.com/Materials_and_models">Materials and models</a> together with the reference and dataset details.</p>
-</section>
-<section id="define-your-own-materials">
-<h2>Define your own materials<a class="headerlink" href="#define-your-own-materials" title="Permalink to this heading"></a></h2>
-<p>Did you characterize your own material in the lab, found one in literature, or just simply would like to see how changing material characteristics change the
-simulation results? Then you can do this by defining your own material. You can do this on the <a class="reference external" href="http://app.batterymodel.com/Simulation">Simulation</a> page by selecting ‘User defined’ in the
-a material selectbox. When ‘User defined’ is selected, an expander will appear where you can fill in your own parameter values. You can still use parameter values from the default materials by copying
-the values from the <a class="reference external" href="http://app.batterymodel.com/Materials_and_models">Materials and models</a> page.</p>
-</section>
-<section id="visualize-your-geometry">
-<h2>Visualize your geometry<a class="headerlink" href="#visualize-your-geometry" title="Permalink to this heading"></a></h2>
-<p>We’ve included a feature on the <a class="reference external" href="http://app.batterymodel.com/Simulation">Simulation</a> page that visualizes the battery cell geometry depending on the component
-thicknesses and porosities, the length, and the width that are defined in the parameter inputs.</p>
-</section>
-<section id="download-your-input-data">
-<h2>Download your input data<a class="headerlink" href="#download-your-input-data" title="Permalink to this heading"></a></h2>
-<p>After defining your parameters on the <a class="reference external" href="http://app.batterymodel.com/Simulation">Simulation</a> page, you can download them in two different formats.
-The first format is the JSON Linked Data format in which the data is structured, together with its metadata, according to the <a class="reference external" href="https://www.go-fair.org/fair-principles/">FAIR data principles</a> and
-the <a class="reference external" href="https://5stardata.info/en/">5 star open data guidelines</a> in order to improve interoperability.
-In the second format, the input data is structured according to the <strong>BattMo</strong> format.</p>
-</section>
-<section id="visualize-and-download-your-results">
-<h2>Visualize and download your results<a class="headerlink" href="#visualize-and-download-your-results" title="Permalink to this heading"></a></h2>
-<p>After a simulation has finished, the results can immediatly be Visualized on the <a class="reference external" href="http://app.batterymodel.com/Results">Results</a> page.
-You can choose from several results parameters and visualize them in line or color plots. You can also download you results as an HDF5 file.</p>
+  <section id="battmoapp">
+<h1>BattMoApp<a class="headerlink" href="#battmoapp" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>BattMoApp is a user-friendly web application that leverages the powerful BattMo.jl simulation software to model battery cells with precision and speed. It offers a suite
+of features designed to make battery simulations easy, intuitive, and accessible. For now it only utilizes BattMo’s P2D model, but
+as BattMo.jl expands its models, BattMoApp will follow along with that development.</p>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h2>
+<p>Accessing BattMoApp is as simple as navigating to app.batterymodel.com. Once there, you’ll find an intuitive interface guiding you through the simulation setup process.</p>
+<p>It is also possible to install BattMoApp locally with Docker. On the <a class="reference external" href="https://github.com/BattMoTeam/BattMoApp">github</a> page you can find detailed instructions on how to install the app using Docker.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-1 sd-row-cols-lg-1 docutils">
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference external" href="https://github.com/BattMoTeam/BattMoApp">Install using Docker</a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="app_features.html#features"><span class="std std-ref">Features</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="app_troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 </section>
 
@@ -287,8 +278,8 @@ You can choose from several results parameters and visualize them in line or col
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="gui.html" class="btn btn-neutral float-left" title="BattMo App" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="gui_calculations.html" class="btn btn-neutral float-right" title="Calculations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="publishedExamples/runGasSupply.html" class="btn btn-neutral float-left" title="Gas Supply Layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="computationalGraph/graphdoc.html" class="btn btn-neutral float-right" title="Computation Graph Model Design ang Assembly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

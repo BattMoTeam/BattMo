@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solid Diffusion Models &mdash; BattMo  documentation</title>
+  <title>Calculations &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css" />
@@ -24,11 +24,10 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
         <script src="_static/design-tabs.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Parameter sets" href="parsets.html" />
-    <link rel="prev" title="Control models" href="controlinput.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,7 +50,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basicusage.html">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
@@ -115,7 +114,7 @@
 <li class="toctree-l2"><a class="reference internal" href="geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
@@ -127,7 +126,7 @@
 <li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Solid Diffusion Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
@@ -225,10 +224,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="advancedtopics.html">Advanced Usage</a></li>
-      <li class="breadcrumb-item active">Solid Diffusion Models</li>
+      <li class="breadcrumb-item active">Calculations</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/soliddiffusion.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/app_calculations.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -236,40 +234,45 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="solid-diffusion-models">
-<h1>Solid Diffusion Models<a class="headerlink" href="#solid-diffusion-models" title="Permalink to this heading"></a></h1>
-<p>We use the Doyler, Fuller and Newman model, see <span id="id1">[<a class="reference internal" href="bibliography.html#id4" title="Marc Doyle, Thomas F. Fuller, and John Newman. Modeling of galvanostatic charge and discharge of the lithium/polymer/insertion cell. Journal of The Electrochemical Society, 140(6):1526–1533, June 1993. URL: http://dx.doi.org/10.1149/1.2221597, doi:10.1149/1.2221597.">DFN93</a>]</span>. For each given spatial location, the concentration
-profile in the solid is given for a representative spherical particle located there. The diffusion in the solid
-electrode is then modeled as a diffusion equation in thee radial dimension of the pseudo particle. We use a standard
-control volume method to solve the diffusion equation after discretization in the radial direction.</p>
-<p>Reduced models for the solid diffusion have been considered to reduced the computation time. We have implemented the
-<em>polynomial approximation method</em> as described in <span id="id2">[<a class="reference internal" href="bibliography.html#id3" title="Qi Zhang and Ralph E. White. Comparison of approximate solution methods for the solid phase diffusion equation in a porous electrode model. Journal of Power Sources, 165(2):880–886, March 2007. URL: http://dx.doi.org/10.1016/j.jpowsour.2006.12.056, doi:10.1016/j.jpowsour.2006.12.056.">ZW07b</a>]</span>.</p>
-<p>The option <code class="code docutils literal notranslate"><span class="pre">diffusionModelType</span></code> in the Active Material part of the json schema (see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/ActiveMaterial.schema.json#L10">here</a>) is used to choose the type of diffusion model.</p>
-<p>In the script <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Advanced/runChen2020.m">runChen2020</a>, we compare the two diffusion models in addition to the solution produced by <a class="reference external" href="https://pybamm.org/">PyBaMM</a> for the Chen dataset <span id="id3">[<a class="reference internal" href="bibliography.html#id11" title="Chang-Hui Chen, Ferran Planella, Kieran O’Regan, Dominika Gastol, Dhammika Widanagea, and Emma Kendrick. Development of Experimental Techniques for Parameterization of Multi-scale Lithium-ion Battery Models. Journal of The Electrochemical Society, 167:080534, 2020. doi:10.1149/1945-7111/ab9050.">CPORegan+20</a>]</span>.</p>
-<p>We reproduce the last plot produced in this script here. We observe a good overall match between the full and reduced
-model for solid diffusion. The discripancies are large only at the beginning of the discharge. We observe also a good
-agreement between BattMo and PyBaMM.</p>
-<figure class="align-center" id="id4">
-<a class="reference external image-reference" href="_images/chencomp.png"><img alt="_images/chencomp.png" src="_images/chencomp.png" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-text">Discharge curves for Chen’s dataset with the full and reduced model for diffusion.</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<figure class="align-center" id="id5">
-<a class="reference external image-reference" href="_images/chencompzoom.png"><img alt="_images/chencompzoom.png" src="_images/chencompzoom.png" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-text">Zoom on the initial phase of the discharge.</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
+  <section id="calculations">
+<h1>Calculations<a class="headerlink" href="#calculations" title="Permalink to this heading"></a></h1>
+<p>Multiple quick calculations are done within the app to calculate certain parameters.
+In this section you can find the formulas that belong to these calculations.</p>
+<dl>
+<dt><strong>Effective density</strong></dt><dd><p>The effective density of an electrode coating:</p>
+<div class="math notranslate nohighlight">
+\[\rho = \sum_i \omega_{i} \rho_i\]</div>
+<p>Here is <span class="math notranslate nohighlight">\(\omega_{i}\)</span> the mass fraction of an electrode coating material and <span class="math notranslate nohighlight">\(\rho_{i}\)</span> the density of the same coating material.</p>
+</dd>
+<dt><strong>Mass loading</strong></dt><dd><p>The mass loading of an electrode:</p>
+<div class="math notranslate nohighlight">
+\[\rho A = d \rho(1-\varepsilon)\]</div>
+<p>Here is <span class="math notranslate nohighlight">\(d\)</span> the thickness of the electrode coating, <span class="math notranslate nohighlight">\(\rho\)</span> is the effective density, and <span class="math notranslate nohighlight">\(\varepsilon\)</span> is the porosity.</p>
+</dd>
+<dt><strong>Specific capacity</strong></dt><dd><p>The specific capacity of an active material:</p>
+<div class="math notranslate nohighlight">
+\[Q_s = c_{max} |x_{max} - x_{min}| \frac{nF}{\rho}\]</div>
+<p>Here is <span class="math notranslate nohighlight">\(c_{max}\)</span> the maximum concentration, <span class="math notranslate nohighlight">\(x_{max}\)</span> and <span class="math notranslate nohighlight">\(x_{min}\)</span> are the maximum and minimum stoichiometry,
+<span class="math notranslate nohighlight">\(F\)</span> is the Faraday constant, <span class="math notranslate nohighlight">\(\rho\)</span> the density of the active material, and <span class="math notranslate nohighlight">\(n\)</span> is the number of electrons transfered.</p>
+</dd>
+<dt><strong>Capacity</strong></dt><dd><p>The capacity of an electrode:</p>
+<div class="math notranslate nohighlight">
+\[Q =  \omega Q_s \rho V (1-\varepsilon)\]</div>
+<p>Here is <span class="math notranslate nohighlight">\(\omega\)</span> the mass fraction, <span class="math notranslate nohighlight">\(Q_s\)</span> is the specific capacity, <span class="math notranslate nohighlight">\(\rho\)</span> the effective density, <span class="math notranslate nohighlight">\(V\)</span> is the volume of the electrode, and <span class="math notranslate nohighlight">\(\varepsilon\)</span> is the porosity.</p>
+<p>The capacity of the cell is the limiting capacity out of the thwo electrode capacities.</p>
+</dd>
+<dt><strong>Cell mass</strong></dt><dd><p>The cell mass:</p>
+<div class="math notranslate nohighlight">
+\[m = \sum_i m_{i}\]</div>
+<p><span class="math notranslate nohighlight">\(m_i\)</span> represents here the mass of the several battery components: negative and positive electrode, separator, electrolyte, current collector, and the packing mass.</p>
+</dd>
+</dl>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="controlinput.html" class="btn btn-neutral float-left" title="Control models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="parsets.html" class="btn btn-neutral float-right" title="Parameter sets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
