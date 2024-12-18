@@ -141,7 +141,7 @@ Source code for runGasSupply
   %%
   % We plot the water mass fractions at three different time step
   
-  inds = [1; 5; 10];
+  inds = [1; 2; 4; 8];
   ninds = numel(inds);
   for i = 1 : ninds
       figure

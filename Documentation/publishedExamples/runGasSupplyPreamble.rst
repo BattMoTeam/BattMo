@@ -63,26 +63,30 @@ Boundary conditions
 
 We have implemented boundary equations of three types, which can be used for both inlet and outlet:
 
-* total mass rate and composition (mass fractions)
-* pressure and composition (mass fractions)
-* pressure and zero mass fraction derivative condition
+* **total mass rate and composition**
+* **pressure and composition**
+* **pressure and zero mass fraction derivative condition**
 
 The boundary conditions are applied on a subset of external faces in the grid (see drawing below). The two first types
 of boundary conditions are standard.
 
-When we impose the rate and composition, the given rate corresponds to the sum of all the input mass rates of every face
-which belongs to the boundary condition (It means that each boundary face individually can see different mass
-rates). This condition is use for the inlet in the example below, see json input :battmofile:`here <ProtonicMembrane/jsonfiles/gas-supply.json#16>`.
+When we impose the **rate and composition**, the given rate corresponds to the sum of all the input mass rates of every face
+which belongs to the boundary condition (It means that each boundary face individually can see different mass rates). A
+given composition corresponds to given mass fractions. This condition is use for the inlet in the example below, see
+json input :battmofile:`here <ProtonicMembrane/jsonfiles/gas-supply.json#16>`.
 
-The pressure and composition boundary condition corresponds to a standard Dirichlet condition. We would typically use
-such condition at the outlet. Even for a convection dominated flow, the composition at the boundary is given. This could
-be seen as an artifact because, in an experimental setup, we do not control the composition directly at the outlet, and
-we do not want to model and simulate the flow outside the gas layer region. Therefore, we introduced the third boundary
-condition.
+The **pressure and composition** boundary condition corresponds to a standard Dirichlet condition. We would typically use
+such condition at the outlet. Even for a convection dominated flow, the composition at the boundary is then given. This
+could then result in an artifact in the outlet region because, in an experimental setup, we do not control the
+composition directly at the outlet, and we do not want to model and simulate the flow outside the gas layer
+region. Therefore, we introduced the third boundary condition.
 
 When we use a *zero mass fraction derivative* boundary condition, we impose that the *derivative* of the mass fraction
 in the normal direction at the boundary is zero, :math:`\frac{\partial x_i}{\partial n} = 0`. In this way, we model a
 situation where the outlet is connected to a long pipe which is itself connected to the ambient room, where we have a
-given composition. The pipe is long enough to contain the diffusion effects which
+given composition. In the pipe, the flow is dominated by convection and we cannot observe the separation effect of
+diffusion (due to the difference in the value of the diffusion coefficient for each specie) at the beginning of the pipe
+. Hence, the vanishing condition of the derivative of the mass fractions. This condition is implemented in the example
+below, see :battmofile:`here <ProtonicMembrane/jsonfiles/gas-supply.json#19>`.
 
 

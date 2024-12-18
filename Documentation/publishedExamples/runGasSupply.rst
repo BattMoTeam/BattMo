@@ -177,7 +177,7 @@ We plot the water mass fractions at three different time step
 
 .. code-block:: matlab
 
-  inds = [1; 5; 10];
+  inds = [1; 2; 4; 8];
   ninds = numel(inds);
   for i = 1 : ninds
       figure
@@ -195,6 +195,9 @@ We plot the water mass fractions at three different time step
   :figwidth: 100%
 
 .. figure:: runGasSupply_08.png
+  :figwidth: 100%
+
+.. figure:: runGasSupply_09.png
   :figwidth: 100%
 
 
