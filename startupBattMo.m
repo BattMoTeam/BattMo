@@ -88,7 +88,8 @@ if mrstPlatform('octave')
 
 end
 
-mrstModule add ad-core mpfa
+mrstModule add ad-core mpfa mrst-gui
+
 end
 
 %{
