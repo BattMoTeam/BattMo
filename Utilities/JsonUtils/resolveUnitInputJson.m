@@ -20,9 +20,21 @@ function jsonstruct = resolveUnitInputJson(jsonstruct)
             % We have an array of struct. We convert iteratively every element in the array
             for ijson = 1 : numel(jsonstruct)
 
-                jsonstruct(ijson) = resolveUnitInputJson(jsonstruct(ijson));
+                % The following is necessary to avoid in struct array assignment the error of unlike types.
+                if ijson == 1
+                    res = resolveUnitInputJson(jsonstruct(ijson));
+                    if isstruct(res)
+                        resJsonstruct = repmat(res, numel(jsonstruct), 1);
+                    else
+                        resJsonstruct = [];
+                    end
+                end
+
+                resJsonstruct(ijson) = resolveUnitInputJson(jsonstruct(ijson));
                 
             end
+            
+            jsonstruct = resJsonstruct;
             
         end
         
