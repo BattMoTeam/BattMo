@@ -270,7 +270,7 @@
 <span class="c">% We setup the initial state using a default setup included in the model</span>
 <span class="n">state0</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">();</span>
 
-<span class="c">%% Schedule schedule</span>
+<span class="c">%% Schedule</span>
 <span class="c">% We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current</span>
 <span class="c">% control and the current equal to zero (see here :battmofile:`here&lt;ProtonicMembrane/protonicMembrane.json#86&gt;`).</span>
 <span class="c">%</span>
@@ -347,24 +347,22 @@
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;log(\sigma/Siemens)&#39;</span><span class="p">)</span>
 
-<span class="c">%% Evolution of Faradic efficiency</span>
-<span class="c">% We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency</span>
+<span class="c">%% Evolution of the Faradic efficiency</span>
+<span class="c">% We increase the current density from 0 to 1 A/cm^2 and plot the faraday efficiency.</span>
 <span class="c">%</span>
-
-<span class="c">%%</span>
-<span class="c">% We sample the current value from 0 to 1 A/cm^2</span>
+<span class="c">% We sample the current value from 0 to 1 A/cm^2.</span>
 <span class="c">%</span>
 
 <span class="n">Is</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="mi">20</span><span class="p">);</span>
 
 <span class="c">%%</span>
-<span class="c">% We run the simulation for each current value and collect the results in the :code:`endstates`</span>
+<span class="c">% We run the simulation for each current value and collect the results in the :code:`endstates`.</span>
 <span class="c">%</span>
 <span class="n">endstates</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{};</span>
 <span class="k">for</span><span class="w"> </span><span class="n">iI</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">Is</span><span class="p">)</span>
 
 <span class="w">    </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="n">iI</span><span class="p">);</span>
-<span class="w">    </span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
+<span class="w">    </span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
 
 <span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 <span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="p">);</span>
