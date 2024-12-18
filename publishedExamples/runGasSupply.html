@@ -24,6 +24,7 @@
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/design-tabs.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -179,6 +180,11 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-overview">Model overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#governing-equations">Governing equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#json-input-data">json input data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#input-parameter-setup">Input parameter setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#model-setup">Model setup</a></li>
@@ -238,7 +244,75 @@
   <section id="gas-supply-layer">
 <span id="rungassupply"></span><h1>Gas Supply Layer<a class="headerlink" href="#gas-supply-layer" title="Permalink to this heading"></a></h1>
 <p><em>Generated from runGasSupply.m</em></p>
-<p>Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top (See illustration below).</p>
+<section id="model-overview">
+<h2>Model overview<a class="headerlink" href="#model-overview" title="Permalink to this heading"></a></h2>
+<p>We present here a simulation model for a single gas layer. The complete electroyser has two such layers, see
+illustration below.</p>
+<figure class="align-center" id="id1">
+<a class="reference external image-reference" href="../_images/gas-layer-illustration.png"><img alt="../_images/gas-layer-illustration.png" src="../_images/gas-layer-illustration.png" /></a>
+<figcaption>
+<p><span class="caption-text">Illustration of the electrolyser with the two gas layer domains</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>We consider the gas layer alone, without coupling with the electrodes. We will choose here the gas layer used at the
+anode. We inject a mixture of two gases (H2O and O2). We model the gas supply layer as a porous media. The flow is then driven by a pressure gradient and the effect of diffusion.</p>
+<section id="governing-equations">
+<h3>Governing equations<a class="headerlink" href="#governing-equations" title="Permalink to this heading"></a></h3>
+<p>The governing equations are given by mass conservation. We have</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\rho x_i}{\partial t} + \nabla\cdot\left(j_{\text{conv},i} + j_{\text{diff}, i}\right) = 0.\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho\)</span> denotes the density, <span class="math notranslate nohighlight">\(x_i\)</span> the mass fraction of the component <span class="math notranslate nohighlight">\(i\)</span>, for
+<span class="math notranslate nohighlight">\(i=\{1,2\}\)</span>. The convection and diffusion fluxes are denoted with <span class="math notranslate nohighlight">\(j_{\text{conv},i}\)</span> and
+<span class="math notranslate nohighlight">\(j_{\text{diff}, i}\)</span>, respectively.</p>
+<p>We use a simple equation of state for the gases, as we assume that they behave as ideal gas.</p>
+<p>For the momentum equation, we use the Darcy approximation which covers the case of a flow in a porous media. The Darcy velocity is given by</p>
+<div class="math notranslate nohighlight">
+\[u = -\frac{K}{\mu}\nabla p,\]</div>
+<p>where <span class="math notranslate nohighlight">\(K\)</span> denotes the permeability and <span class="math notranslate nohighlight">\(mu\)</span> the viscosity. We are working on a model which uses the Stokes equations, which can be used for a free flow.</p>
+<p>The convection term for each species is given by</p>
+<div class="math notranslate nohighlight">
+\[u_{\text{conv}, i} =  \rho x_i u.\]</div>
+<p>For the diffusion term, we use a Fick diffusion model and the diffusion flux for each component is given by</p>
+<div class="math notranslate nohighlight">
+\[\hat j_{\text{diff}, i} = -D_i \nabla c_i\]</div>
+<p>where <span class="math notranslate nohighlight">\(c_i\)</span> is the concentration of the specie <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(\hat j_{\text{diff}, i}\)</span> is the flux in
+<span class="math notranslate nohighlight">\(mol/m^2/s\)</span>. We convert this flux in a mass flux, using the assumption that the gas are ideal gas, to obtain</p>
+<div class="math notranslate nohighlight">
+\[j_{\text{diff}, i} = -D_i \nabla (\rho x_i)\]</div>
+<p>Our governing equations can now be rewritten using the explicit expression for the fluxes,</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\rho x_i}{\partial t} + \nabla\cdot\left(\rho x_i u - D_i\nabla (\rho x_i)\right) = 0\]</div>
+<p>This system of equation is discretized using finite volume and solved in time using backward Euler, for stability. The
+unknowns are the pressure and one of the mass fractions.</p>
+</section>
+<section id="boundary-conditions">
+<h3>Boundary conditions<a class="headerlink" href="#boundary-conditions" title="Permalink to this heading"></a></h3>
+<p>We have implemented boundary equations of three types, which can be used for both inlet and outlet:</p>
+<ul class="simple">
+<li><p><strong>total mass rate and composition</strong></p></li>
+<li><p><strong>pressure and composition</strong></p></li>
+<li><p><strong>pressure and zero mass fraction derivative condition</strong></p></li>
+</ul>
+<p>The boundary conditions are applied on a subset of external faces in the grid (see drawing below). The two first types
+of boundary conditions are standard.</p>
+<p>When we impose the <strong>rate and composition</strong>, the given rate corresponds to the sum of all the input mass rates of every face
+which belongs to the boundary condition (It means that each boundary face individually can see different mass rates). A
+given composition corresponds to given mass fractions. This condition is use for the inlet in the example below, see
+json input <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply.json#L16">here</a>.</p>
+<p>The <strong>pressure and composition</strong> boundary condition corresponds to a standard Dirichlet condition. We would typically use
+such condition at the outlet. Even for a convection dominated flow, the composition at the boundary is then given. This
+could then result in an artifact in the outlet region because, in an experimental setup, we do not control the
+composition directly at the outlet, and we do not want to model and simulate the flow outside the gas layer
+region. Therefore, we introduced the third boundary condition.</p>
+<p>When we use a <em>zero mass fraction derivative</em> boundary condition, we impose that the <em>derivative</em> of the mass fraction
+in the normal direction at the boundary is zero, <span class="math notranslate nohighlight">\(\frac{\partial x_i}{\partial n} = 0\)</span>. In this way, we model a
+situation where the outlet is connected to a long pipe which is itself connected to the ambient room, where we have a
+given composition. In the pipe, the flow is dominated by convection and we cannot observe the separation effect of
+diffusion (due to the difference in the value of the diffusion coefficient for each specie) at the beginning of the pipe
+. Hence, the vanishing condition of the derivative of the mass fractions. This condition is implemented in the example
+below, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply.json#L19">here</a>.</p>
+</section>
+</section>
 <section id="json-input-data">
 <h2>json input data<a class="headerlink" href="#json-input-data" title="Permalink to this heading"></a></h2>
 <p>We load the input data that is given by json structures. The physical properties of the supply gas layer is given in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply.json">gas-supply.json</a></p>
@@ -374,7 +448,7 @@ We plot the inlet faces.</p>
 <img alt="../_images/runGasSupply_05.png" src="../_images/runGasSupply_05.png" />
 </figure>
 <p>We plot the water mass fractions at three different time step</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="mi">10</span><span class="p">];</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="mi">8</span><span class="p">];</span>
 <span class="n">ninds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">inds</span><span class="p">);</span>
 <span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ninds</span>
 <span class="w">    </span><span class="nb">figure</span>
@@ -394,6 +468,9 @@ We plot the inlet faces.</p>
 </figure>
 <figure class="align-default" style="width: 100%">
 <img alt="../_images/runGasSupply_08.png" src="../_images/runGasSupply_08.png" />
+</figure>
+<figure class="align-default" style="width: 100%">
+<img alt="../_images/runGasSupply_09.png" src="../_images/runGasSupply_09.png" />
 </figure>
 <p>complete source code can be found <a class="reference internal" href="runGasSupply_source.html#rungassupply-source"><span class="std std-ref">here</span></a></p>
 </section>

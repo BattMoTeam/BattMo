@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BattMo example Json input &mdash; BattMo  documentation</title>
+  <title>Model overview &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css" />
@@ -24,6 +24,7 @@
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/design-tabs.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -228,9 +229,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">BattMo example Json input</li>
+      <li class="breadcrumb-item active">Model overview</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/publishedExamples/runJsonScript.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/publishedExamples/runGasSupplyPreamble.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -238,108 +239,73 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="battmo-example-json-input">
-<span id="runjsonscript"></span><h1>BattMo example Json input<a class="headerlink" href="#battmo-example-json-input" title="Permalink to this heading"></a></h1>
-<p><em>Generated from runJsonScript.m</em></p>
-<p>This script shows an example where we setup a simulation using exclusively json input files.</p>
-<section id="setting-up-the-environment">
-<h2>Setting up the environment<a class="headerlink" href="#setting-up-the-environment" title="Permalink to this heading"></a></h2>
-<p>BattMo uses functionality from <code class="xref py py-mod docutils literal notranslate"><span class="pre">MRST</span></code>. This functionality is collected into modules where each module contains code for doing specific things. To use this functionality we must add these modules to the matlab path by running:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">mrst-gui</span>
-</pre></div>
-</div>
-</section>
-<section id="we-load-the-json-files">
-<h2>We load the json files<a class="headerlink" href="#we-load-the-json-files" title="Permalink to this heading"></a></h2>
-<p>When loading a json file using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code>, the output is the standard matlab structure that is obtained by the native matlab command <code class="code docutils literal notranslate"><span class="pre">jsondecode</span></code>, see <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">here</a></p>
-</section>
-<section id="material-properties">
-<h2>Material properties<a class="headerlink" href="#material-properties" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the material properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="geometry">
-<h2>Geometry<a class="headerlink" href="#geometry" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the geometrical properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="control">
-<h2>Control<a class="headerlink" href="#control" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the geometrical properties</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="simulation-parameters">
-<h2>Simulation parameters<a class="headerlink" href="#simulation-parameters" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for the simulation parameters</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_simparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="ouput-specificiations">
-<h2>Ouput specificiations<a class="headerlink" href="#ouput-specificiations" title="Permalink to this heading"></a></h2>
-<p>We load the json structure for output extra specifications.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;extra_output.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>We merge the json structures. The function issues a warning if a parameter is set with different values in the given structures. The rule is that the first value takes precedence.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_simparams</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_output</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                              </span><span class="p">});</span>
-</pre></div>
-</div>
-<p>We adjust the total time with respect to the given CRate.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">CRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">CRate</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="p">.</span><span class="n">totalTime</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1.4</span><span class="o">*</span><span class="nb">hour</span><span class="o">/</span><span class="n">CRate</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="p">.</span><span class="n">numberOfTimeSteps</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span>
-</pre></div>
-</div>
-</section>
-<section id="we-start-the-simulation">
-<h2>We start the simulation<a class="headerlink" href="#we-start-the-simulation" title="Permalink to this heading"></a></h2>
-<p>We use the function <code class="code docutils literal notranslate"><span class="pre">runBatteryJson</span></code> to run the simulation with json input structure</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="plotting">
-<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this heading"></a></h2>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
-
-<span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-
-<span class="nb">figure</span><span class="p">()</span>
-<span class="nb">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hours]&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Voltage [V]&#39;</span><span class="p">)</span>
-
-<span class="nb">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hours]&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Current [A]&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<figure class="align-default" style="width: 100%">
-<img alt="../_images/runJsonScript_01.png" src="../_images/runJsonScript_01.png" />
+  <section id="model-overview">
+<h1>Model overview<a class="headerlink" href="#model-overview" title="Permalink to this heading"></a></h1>
+<p>We present here a simulation model for a single gas layer. The complete electroyser has two such layers, see
+illustration below.</p>
+<figure class="align-center" id="id1">
+<a class="reference external image-reference" href="../_images/gas-layer-illustration.png"><img alt="../_images/gas-layer-illustration.png" src="../_images/gas-layer-illustration.png" /></a>
+<figcaption>
+<p><span class="caption-text">Illustration of the electrolyser with the two gas layer domains</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
 </figure>
-<p>complete source code can be found <a class="reference internal" href="runJsonScript_source.html#runjsonscript-source"><span class="std std-ref">here</span></a></p>
+<p>We consider the gas layer alone, without coupling with the electrodes. We will choose here the gas layer used at the
+anode. We inject a mixture of two gases (H2O and O2). We model the gas supply layer as a porous media. The flow is then driven by a pressure gradient and the effect of diffusion.</p>
+<section id="governing-equations">
+<h2>Governing equations<a class="headerlink" href="#governing-equations" title="Permalink to this heading"></a></h2>
+<p>The governing equations are given by mass conservation. We have</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\rho x_i}{\partial t} + \nabla\cdot\left(j_{\text{conv},i} + j_{\text{diff}, i}\right) = 0.\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho\)</span> denotes the density, <span class="math notranslate nohighlight">\(x_i\)</span> the mass fraction of the component <span class="math notranslate nohighlight">\(i\)</span>, for
+<span class="math notranslate nohighlight">\(i=\{1,2\}\)</span>. The convection and diffusion fluxes are denoted with <span class="math notranslate nohighlight">\(j_{\text{conv},i}\)</span> and
+<span class="math notranslate nohighlight">\(j_{\text{diff}, i}\)</span>, respectively.</p>
+<p>We use a simple equation of state for the gases, as we assume that they behave as ideal gas.</p>
+<p>For the momentum equation, we use the Darcy approximation which covers the case of a flow in a porous media. The Darcy velocity is given by</p>
+<div class="math notranslate nohighlight">
+\[u = -\frac{K}{\mu}\nabla p,\]</div>
+<p>where <span class="math notranslate nohighlight">\(K\)</span> denotes the permeability and <span class="math notranslate nohighlight">\(mu\)</span> the viscosity. We are working on a model which uses the Stokes equations, which can be used for a free flow.</p>
+<p>The convection term for each species is given by</p>
+<div class="math notranslate nohighlight">
+\[u_{\text{conv}, i} =  \rho x_i u.\]</div>
+<p>For the diffusion term, we use a Fick diffusion model and the diffusion flux for each component is given by</p>
+<div class="math notranslate nohighlight">
+\[\hat j_{\text{diff}, i} = -D_i \nabla c_i\]</div>
+<p>where <span class="math notranslate nohighlight">\(c_i\)</span> is the concentration of the specie <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(\hat j_{\text{diff}, i}\)</span> is the flux in
+<span class="math notranslate nohighlight">\(mol/m^2/s\)</span>. We convert this flux in a mass flux, using the assumption that the gas are ideal gas, to obtain</p>
+<div class="math notranslate nohighlight">
+\[j_{\text{diff}, i} = -D_i \nabla (\rho x_i)\]</div>
+<p>Our governing equations can now be rewritten using the explicit expression for the fluxes,</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial\rho x_i}{\partial t} + \nabla\cdot\left(\rho x_i u - D_i\nabla (\rho x_i)\right) = 0\]</div>
+<p>This system of equation is discretized using finite volume and solved in time using backward Euler, for stability. The
+unknowns are the pressure and one of the mass fractions.</p>
+</section>
+<section id="boundary-conditions">
+<h2>Boundary conditions<a class="headerlink" href="#boundary-conditions" title="Permalink to this heading"></a></h2>
+<p>We have implemented boundary equations of three types, which can be used for both inlet and outlet:</p>
+<ul class="simple">
+<li><p><strong>total mass rate and composition</strong></p></li>
+<li><p><strong>pressure and composition</strong></p></li>
+<li><p><strong>pressure and zero mass fraction derivative condition</strong></p></li>
+</ul>
+<p>The boundary conditions are applied on a subset of external faces in the grid (see drawing below). The two first types
+of boundary conditions are standard.</p>
+<p>When we impose the <strong>rate and composition</strong>, the given rate corresponds to the sum of all the input mass rates of every face
+which belongs to the boundary condition (It means that each boundary face individually can see different mass rates). A
+given composition corresponds to given mass fractions. This condition is use for the inlet in the example below, see
+json input <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply.json#L16">here</a>.</p>
+<p>The <strong>pressure and composition</strong> boundary condition corresponds to a standard Dirichlet condition. We would typically use
+such condition at the outlet. Even for a convection dominated flow, the composition at the boundary is then given. This
+could then result in an artifact in the outlet region because, in an experimental setup, we do not control the
+composition directly at the outlet, and we do not want to model and simulate the flow outside the gas layer
+region. Therefore, we introduced the third boundary condition.</p>
+<p>When we use a <em>zero mass fraction derivative</em> boundary condition, we impose that the <em>derivative</em> of the mass fraction
+in the normal direction at the boundary is zero, <span class="math notranslate nohighlight">\(\frac{\partial x_i}{\partial n} = 0\)</span>. In this way, we model a
+situation where the outlet is connected to a long pipe which is itself connected to the ambient room, where we have a
+given composition. In the pipe, the flow is dominated by convection and we cannot observe the separation effect of
+diffusion (due to the difference in the value of the diffusion coefficient for each specie) at the beginning of the pipe
+. Hence, the vanishing condition of the derivative of the mass fractions. This condition is implemented in the example
+below, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply.json#L19">here</a>.</p>
 </section>
 </section>
 

@@ -6,8 +6,8 @@ Gas Supply Layer
 ================
 *Generated from runGasSupply.m*
 
+.. include:: runGasSupplyPreamble.rst
 
-Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top (See illustration below).
 
 json input data
 ===============
@@ -177,7 +177,7 @@ We plot the water mass fractions at three different time step
 
 .. code-block:: matlab
 
-  inds = [1; 5; 10];
+  inds = [1; 2; 4; 8];
   ninds = numel(inds);
   for i = 1 : ninds
       figure
@@ -195,6 +195,9 @@ We plot the water mass fractions at three different time step
   :figwidth: 100%
 
 .. figure:: runGasSupply_08.png
+  :figwidth: 100%
+
+.. figure:: runGasSupply_09.png
   :figwidth: 100%
 
 

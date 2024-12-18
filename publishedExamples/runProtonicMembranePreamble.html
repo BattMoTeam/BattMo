@@ -178,6 +178,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-overview">Model overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#json-input-data">json input data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-setup">Model setup</a></li>
@@ -239,15 +244,17 @@
 <p>We consider the model of a mixed proton and electron conducting membrane, as described in <span id="id1">[<a class="reference internal" href="../bibliography.html#id2" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> from 2019.</p>
 <section id="governing-equations">
 <h2>Governing equations<a class="headerlink" href="#governing-equations" title="Permalink to this heading"></a></h2>
-<p>We have three components given by the proton (<span class="math notranslate nohighlight">\(H^+\)</span>), the <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(n\)</span> type. We want to find expressions for the fluxes for each of the components</p>
+<p>In the membrane, we have three components or <em>species</em> given by the proton (<span class="math notranslate nohighlight">\(H^+\)</span>), and the <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(n\)</span>
+type charge carriers. We need expressions for the fluxes for each of those. The governing equations will then be given
+by charge and mass conservation equations.</p>
 <p>We denote by <span class="math notranslate nohighlight">\(\phi\)</span> the electrostatic potential. For each of the components <span class="math notranslate nohighlight">\(\alpha=\{H^+, p, n\}\)</span>, we
 introduce the electrochemical potential denoted <span class="math notranslate nohighlight">\(\bar\mu_\alpha\)</span> and the chemical potential denoted
 <span class="math notranslate nohighlight">\(\mu_\alpha\)</span>. The potentials are related with each other through the relation</p>
 <div class="math notranslate nohighlight">
-\[\bar\mu_\alpha = \mu_\alpha + z_\alpha F \phi\]</div>
+\[\bar\mu_\alpha = \mu_\alpha + z_\alpha F \phi.\]</div>
 <p>The fluxes are governed by the gradient of the electrochemical potential. We have</p>
 <div class="math notranslate nohighlight">
-\[j_{\alpha} = -k_\alpha\nabla\bar\mu_\alpha\]</div>
+\[j_{\alpha} = -k_\alpha\nabla\bar\mu_\alpha,\]</div>
 <p>for some coefficient <span class="math notranslate nohighlight">\(k_\alpha\)</span> which is not necessarily a constant.</p>
 <p>We assume that the chemical potential of <span class="math notranslate nohighlight">\(H^+\)</span>, that is <span class="math notranslate nohighlight">\(\mu_{H^+}\)</span>, is constant in the electrolyte and that
 <span class="math notranslate nohighlight">\(k_{H^+}\)</span> is constant. Hence, the current density of <span class="math notranslate nohighlight">\(H^+\)</span> is given</p>
@@ -259,13 +266,12 @@ introduce the electrochemical potential denoted <span class="math notranslate no
 <p>For the <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(n\)</span> type conductivities,  we use the empirical relations</p>
 <div class="math notranslate nohighlight">
 \[\sigma_p(E) = \sigma_p^0\exp\left(\frac{F(E - E_{\text{ref},p})}{RT}\right)\quad\text{ and }\quad\sigma_n(E) = \sigma_n^0\exp\left(\frac{-F(E - E_{\text{ref},n})}{RT}\right).\]</div>
-<p>Here <span class="math notranslate nohighlight">\(E_{\text{ref},p}\)</span> and <span class="math notranslate nohighlight">\(E_{\text{ref},n}\)</span> are two reference potentials (see below).</p>
+<p>Here <span class="math notranslate nohighlight">\(E_{\text{ref},p}\)</span> and <span class="math notranslate nohighlight">\(E_{\text{ref},n}\)</span> are two reference potentials.</p>
 <p>We consider the steady state. We could introduce later charge and mass capacitors. The unknowns are the functions <span class="math notranslate nohighlight">\(\phi(x)\)</span> and <span class="math notranslate nohighlight">\(E(x)\)</span> in the electrolyte. The governing equations are given by the mass conservation for the proton and the charge conservation.</p>
-<p>The mass conservation for $H^+$ is given by</p>
+<p>The <strong>mass conservation equation</strong> for <span class="math notranslate nohighlight">\(H^+\)</span> is given by</p>
 <div class="math notranslate nohighlight">
 \[\nabla\cdot j_{H^+} = 0.\]</div>
-<p>The current density is given by <span class="math notranslate nohighlight">\(i = F (j_{H^+} + j_p - j_n)\)</span> and the textbf{charge
-conservation equation} is</p>
+<p>The total current density is given by <span class="math notranslate nohighlight">\(i = F (j_{H^+} + j_p - j_n)\)</span> and the <strong>charge conservation equation</strong> is</p>
 <div class="math notranslate nohighlight">
 \[\nabla\cdot i = 0.\]</div>
 <p>We introduce the electronic current density <span class="math notranslate nohighlight">\(i_{\text{el}} = F(j_p - j_n)\)</span> and we get</p>
@@ -274,7 +280,8 @@ conservation equation} is</p>
 <p>We can rewrite <span class="math notranslate nohighlight">\(i_{\text{el}}\)</span> as</p>
 <div class="math notranslate nohighlight">
 \[i_{\text{el}} = - (\sigma_p(E) + \sigma_n(E))\nabla ( E + \phi ).\]</div>
-<p>The governing equations for <span class="math notranslate nohighlight">\(\phi(x)\)</span> and <span class="math notranslate nohighlight">\(\pi(x)\)</span> are therefore the differential equations</p>
+<p>We finally obtain the governing equations for <span class="math notranslate nohighlight">\(\phi(x)\)</span> and <span class="math notranslate nohighlight">\(\pi(x)\)</span> as the following system of differential
+equations</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
 -\nabla\cdot(\sigma_{H^+}\nabla\phi) &amp;= 0,\\
@@ -287,12 +294,13 @@ conservation equation} is</p>
 <div class="math notranslate nohighlight">
 \[\eta_\text{elde} = \pi_\text{elde} - \phi_\text{elde} - \text{OCP}_\text{elde}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\text{OCP}_\text{elde}\)</span> is the open-circuit potential for the given electrode. The value of the
-$text{OCP}$ at each electrode depend on the composition at the electrode (see <span id="id2">[<a class="reference internal" href="../bibliography.html#id2" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> for the expressions).</p>
+OCP at each electrode depend on the composition at the electrode (see <span id="id2">[<a class="reference internal" href="../bibliography.html#id2" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> for the expressions).</p>
 <p>At the anode, we imposte that the proton current  is given through the following Buttler-Volmer type expression</p>
 <div class="math notranslate nohighlight">
 \[i_{H^+, \text{an}} = -i_0\frac{e^{-\beta\frac{ z F \eta_{\text{an}}}{RT}} - e^{( 1- \beta)\frac{ z F \eta_{\text{an}}}{RT}}}{ 1+ \frac{i_0}{i_{l,c}}e^{-\beta\frac{ z F \eta_{\text{an}}}{RT}} -  \frac{i_0}{i_{l,a}}e^{( 1- \beta)\frac{ z F \eta_{\text{an}}}{RT}}}\]</div>
-<p>Here, <span class="math notranslate nohighlight">\(i_{l,c}\)</span> and <span class="math notranslate nohighlight">\(i_{l,a}\)</span> are given constants. The value of the reference current density $i_0$ is also constant</p>
-<p>The total current is given by <span class="math notranslate nohighlight">\(i_{\text{an}} = I\)</span> for some constant current $I$.</p>
+<p>Here, <span class="math notranslate nohighlight">\(i_{l,c}\)</span> and <span class="math notranslate nohighlight">\(i_{l,a}\)</span> are given constants. The value of the reference current density <span class="math notranslate nohighlight">\(i_0\)</span> is
+also constant.</p>
+<p>The total current is given by <span class="math notranslate nohighlight">\(i_{\text{an}} = I\)</span> for some constant current <span class="math notranslate nohighlight">\(I\)</span>.</p>
 <p>At the cathode, we impose that the electrostatic potential is equal to zero and
 a relation between the <span class="math notranslate nohighlight">\(H^+\)</span> current and the over-potential that takes a linear form,</p>
 <div class="math notranslate nohighlight">

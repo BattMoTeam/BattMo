@@ -177,6 +177,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-overview">Model overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#json-input-data">json input data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-setup">Model setup</a></li>
@@ -238,7 +243,7 @@
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Protonic Membrane model</span>
 
 <span class="c">%% Load and parse input from given json files</span>
-<span class="c">% The source of the json files can be seen in :battmofile:`protonicMembrane&lt;ProtonicMembrane/jsonfiles/protonicMembrane.json&gt;` and</span>
+<span class="c">% The source of the json files can be seen in :battmofile:`protonicMembrane.json&lt;ProtonicMembrane/jsonfiles/protonicMembrane.json&gt;` and</span>
 <span class="c">% :battmofile:`1d-PM-geometry.json&lt;ProtonicMembrane/jsonfiles/1d-PM-geometry.json&gt;`</span>
 
 <span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;protonicMembrane.json&#39;</span><span class="p">);</span>
@@ -254,6 +259,7 @@
 
 <span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneCellInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
+<span class="c">%%</span>
 <span class="c">% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`</span>
 <span class="p">[</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">gen</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupProtonicMembraneCellGrid</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
 
@@ -271,16 +277,13 @@
 
 <span class="c">%% Schedule</span>
 <span class="c">% We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current</span>
-<span class="c">% control and the current equal to zero (see here :battmofile:`here&lt;ProtonicMembrane/protonicMembrane.json#86&gt;`).</span>
+<span class="c">% control and the current equal to zero (see :battmofile:`here&lt;ProtonicMembrane/jsonfiles/protonicMembrane.json#118&gt;`).</span>
 <span class="c">%</span>
-<span class="c">% We compute the steady-state solution so that the time stepping here is more an artifact to reach the steady-state</span>
-<span class="c">% solution. In particular, it governs the pace at which we increase the non-linearity (not detailed here).</span>
+<span class="c">% We compute the steady-state solution and the time stepping here does not correspond to time values but should be seen</span>
+<span class="c">% as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which</span>
+<span class="c">% includes highly nonlineaer effect with the exponential terms. We do not detail here the method).</span>
 
 <span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">setupSchedule</span><span class="p">(</span><span class="n">inputparams</span><span class="p">.</span><span class="n">jsonstruct</span><span class="p">);</span>
-
-<span class="c">%%</span>
-<span class="c">% We change the default tolerance</span>
-<span class="n">model</span><span class="p">.</span><span class="n">nonlinearTolerance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">1e-8</span><span class="p">;</span>
 
 <span class="c">%% Simulation</span>
 <span class="c">% We run the simulation</span>
@@ -291,7 +294,7 @@
 <span class="c">%</span>
 
 <span class="c">%%</span>
-<span class="c">% We setup som shortcuts for convenience</span>
+<span class="c">% We setup som shortcuts for convenience and introduce plotting options</span>
 <span class="n">an</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Anode&#39;</span><span class="p">;</span>
 <span class="n">ct</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Cathode&#39;</span><span class="p">;</span>
 <span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
@@ -306,7 +309,8 @@
 <span class="n">xc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 
 <span class="c">%%</span>
-<span class="c">% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state.</span>
+<span class="c">% We consider the solution obtained at the last time step, which corresponds to the solution at steady-state. The second</span>
+<span class="c">% line adds to the state variable all the variables that are derived from our primary unknowns.</span>
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="p">);</span>
 

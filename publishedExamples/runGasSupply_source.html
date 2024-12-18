@@ -177,6 +177,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-overview">Model overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#json-input-data">json input data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="runGasSupply.html#model-setup">Model setup</a></li>
@@ -236,9 +241,6 @@
   <section id="source-code-for-rungassupply">
 <span id="rungassupply-source"></span><h1>Source code for runGasSupply<a class="headerlink" href="#source-code-for-rungassupply" title="Permalink to this heading"></a></h1>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Gas Supply Layer</span>
-<span class="c">%</span>
-<span class="c">% Single gas supply layer where a mixture of two gases (here H2O and O2) is injected at the bottom and flows to the top</span>
-<span class="c">% (See illustration below).</span>
 <span class="c">%</span>
 
 <span class="c">%% json input data</span>
@@ -371,7 +373,7 @@
 <span class="c">%%</span>
 <span class="c">% We plot the water mass fractions at three different time step</span>
 
-<span class="n">inds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="mi">10</span><span class="p">];</span>
+<span class="n">inds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="mi">8</span><span class="p">];</span>
 <span class="n">ninds</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">inds</span><span class="p">);</span>
 <span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ninds</span>
 <span class="w">    </span><span class="nb">figure</span>
