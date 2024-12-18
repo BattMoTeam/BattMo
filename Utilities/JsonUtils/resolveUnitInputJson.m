@@ -1,17 +1,29 @@
 function jsonstruct = resolveUnitInputJson(jsonstruct)
 % When a unit is detected, we convert it to SI.
     
-    if isstruct(jsonstruct) & numel(jsonstruct) == 1
+    if isstruct(jsonstruct)
 
-        [val, isConverted] = convertUnitBattMo(jsonstruct);
+        if numel(jsonstruct) == 1
 
-        if isConverted
-            jsonstruct = val;
-        else
-            fds = fieldnames(jsonstruct);
-            for ind = 1 : numel(fds)
-                jsonstruct.(fds{ind}) = resolveUnitInputJson(jsonstruct.(fds{ind}));
+            [val, isConverted] = convertUnitBattMo(jsonstruct);
+
+            if isConverted
+                jsonstruct = val;
+            else
+                fds = fieldnames(jsonstruct);
+                for ind = 1 : numel(fds)
+                    jsonstruct.(fds{ind}) = resolveUnitInputJson(jsonstruct.(fds{ind}));
+                end
             end
+
+        else
+            % We have an array of struct. We convert iteratively every element in the array
+            for ijson = 1 : numel(jsonstruct)
+
+                jsonstruct(ijson) = resolveUnitInputJson(jsonstruct(ijson));
+                
+            end
+            
         end
         
     end
