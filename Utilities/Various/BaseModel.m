@@ -300,55 +300,59 @@ classdef BaseModel < PhysicalModel
 
                 submodelname = submodelnames{isub};
                 submodel = model.(submodelname);
-                
-                submodel = registerVarAndPropfuncNames(submodel);
 
-                % Register the variable names from the submodel after adding the model name in the name space
-
-                subvarnames = submodel.varNameList;
-                
-                for isubvar = 1 : numel(subvarnames)
-                    subvarname = subvarnames{isubvar};
-                    subvarname.namespace = {submodelname, subvarname.namespace{:}};
-                    subvarnames{isubvar} = subvarname;
-                end
-                
-                varnames = mergeList(varnames, subvarnames);
-                
-                % Register the property functions from the submodel after adding the model name in the name space
-                
-                subpropfuncs = submodel.propertyFunctionList;
-
-                for isubpropfunc = 1 : numel(subpropfuncs)
-
-                    subpropfunc = subpropfuncs{isubpropfunc};
+                if isa(submodel, 'BaseModel')
                     
-                    subpropfunc.varname.namespace = {submodelname, subpropfunc.varname.namespace{:}};
-                    subpropfunc.modelnamespace = {submodelname, subpropfunc.modelnamespace{:}};
+                    submodel = registerVarAndPropfuncNames(submodel);
+
+                    % Register the variable names from the submodel after adding the model name in the name space
+
+                    subvarnames = submodel.varNameList;
                     
-                    subinputvarnames = subpropfunc.inputvarnames;
-                    for isubinput = 1 : numel(subinputvarnames)
-                        subinputvarname = subinputvarnames{isubinput};
-                        subinputvarname.namespace = {submodelname, subinputvarname.namespace{:}};
-                        subinputvarnames{isubinput} = subinputvarname;
+                    for isubvar = 1 : numel(subvarnames)
+                        subvarname = subvarnames{isubvar};
+                        subvarname.namespace = {submodelname, subvarname.namespace{:}};
+                        subvarnames{isubvar} = subvarname;
                     end
-                    subpropfunc.inputvarnames = subinputvarnames;
                     
-                    subpropfuncs{isubpropfunc} = subpropfunc;
-                end               
-                
-                propfuncs = mergeList(propfuncs, subpropfuncs);
+                    varnames = mergeList(varnames, subvarnames);
+                    
+                    % Register the property functions from the submodel after adding the model name in the name space
+                    
+                    subpropfuncs = submodel.propertyFunctionList;
 
-                % Register the static variables
-                subextravarnames = submodel.extraVarNameList;
-                
-                for isubvar = 1 : numel(subextravarnames)
-                    subaddvarname = subextravarnames{isubvar};
-                    subaddvarname.namespace = {submodelname, subaddvarname.namespace{:}};
-                    subextravarnames{isubvar} = subaddvarname;
+                    for isubpropfunc = 1 : numel(subpropfuncs)
+
+                        subpropfunc = subpropfuncs{isubpropfunc};
+                        
+                        subpropfunc.varname.namespace = {submodelname, subpropfunc.varname.namespace{:}};
+                        subpropfunc.modelnamespace = {submodelname, subpropfunc.modelnamespace{:}};
+                        
+                        subinputvarnames = subpropfunc.inputvarnames;
+                        for isubinput = 1 : numel(subinputvarnames)
+                            subinputvarname = subinputvarnames{isubinput};
+                            subinputvarname.namespace = {submodelname, subinputvarname.namespace{:}};
+                            subinputvarnames{isubinput} = subinputvarname;
+                        end
+                        subpropfunc.inputvarnames = subinputvarnames;
+                        
+                        subpropfuncs{isubpropfunc} = subpropfunc;
+                    end               
+                    
+                    propfuncs = mergeList(propfuncs, subpropfuncs);
+
+                    % Register the static variables
+                    subextravarnames = submodel.extraVarNameList;
+                    
+                    for isubvar = 1 : numel(subextravarnames)
+                        subaddvarname = subextravarnames{isubvar};
+                        subaddvarname.namespace = {submodelname, subaddvarname.namespace{:}};
+                        subextravarnames{isubvar} = subaddvarname;
+                    end
+                    
+                    extravarnames = mergeList(extravarnames, subextravarnames);
+
                 end
-                
-                extravarnames = mergeList(extravarnames, subextravarnames);
                 
             end
             
@@ -498,8 +502,10 @@ classdef BaseModel < PhysicalModel
                     if ~isfield(cleanState, submodelname)
                         cleanState.(submodelname) = [];
                     end
-                    
-                    cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+
+                    if isa(model.(submodelname), 'BaseModel')
+                        cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
+                    end 
                 end
 
             end
