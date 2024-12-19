@@ -1,4 +1,4 @@
-classdef ProtonicMembraneCellWithGasSupplyInputParams < ComponentInputParams
+classdef ProtonicMembraneCellInputParams < ComponentInputParams
     
     properties
 
@@ -13,7 +13,7 @@ classdef ProtonicMembraneCellWithGasSupplyInputParams < ComponentInputParams
     
     methods
         
-        function inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneCellInputParams(jsonstruct)
 
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             

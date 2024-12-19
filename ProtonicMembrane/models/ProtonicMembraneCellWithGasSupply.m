@@ -1,4 +1,4 @@
-classdef ProtonicMembraneCellWithGasSupply < BaseModel
+classdef ProtonicMembraneCell < BaseModel
     
     properties
         
@@ -23,7 +23,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
     
     methods
         
-        function model = ProtonicMembraneCellWithGasSupply(inputparams)
+        function model = ProtonicMembraneCell(inputparams)
 
             model = model@BaseModel();
 
@@ -75,7 +75,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             % The partial pressures are not used directly in assembly but we want to compute them in post-processing
             model = model.unsetAsExtraVarName(VarName({'Interface'}, 'pressures', nGas));
 
-            fn =  @ProtonicMembraneCellWithGasSupply.updateInterfaceEquation;
+            fn =  @ProtonicMembraneCell.updateInterfaceEquation;
             inputvarnames = {VarName({'Interface'}, 'massFluxes', nGas)   , ...
                              VarName({'Interface'}, 'massfractions', nGas), ...
                              VarName({'Interface'}, 'densities', nGas)    , ...
@@ -88,29 +88,29 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             outputvarname = VarName({'Interface'}, 'bcFluxEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
-            fn =  @ProtonicMembraneCellWithGasSupply.updateAnodePressures;
+            fn =  @ProtonicMembraneCell.updateAnodePressures;
             inputvarnames = {VarName({'Interface'}, 'pressures', nGas)};
             outputvarname = VarName({'Cell', 'Anode'}, 'pressures', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
-            fn =  @ProtonicMembraneCellWithGasSupply.updateCouplingEquation;
+            fn =  @ProtonicMembraneCell.updateCouplingEquation;
             inputvarnames = {{'Cell', 'Anode' 'iHp'}, ...
                              VarName({'Interface'}, 'massFluxes', nGas), ...
                              'beta'};
             outputvarname = VarName({}, 'massCouplingEquations', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
-            fn =  @ProtonicMembraneCellWithGasSupply.updateGasSupplySource;
+            fn =  @ProtonicMembraneCell.updateGasSupplySource;
             inputvarnames = {VarName({'Interface'}, 'massFluxes', nGas), VarName({'GasSupply', 'GasSupplyBc'}, 'massFluxes', nGas)};
             outputvarname = VarName({'GasSupply'}, 'massSources', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
             
             model = model.setAsStaticVarName('time');
             
-            fn =  @ProtonicMembraneCellWithGasSupply.dispatchTime;
+            fn =  @ProtonicMembraneCell.dispatchTime;
             model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
 
-            fn = @ProtonicMembraneCellWithGasSupply.updateBeta;
+            fn = @ProtonicMembraneCell.updateBeta;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'beta', fn, {'time'}});
             

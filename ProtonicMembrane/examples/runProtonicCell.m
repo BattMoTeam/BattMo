@@ -30,7 +30,7 @@ fprintf('Rate value : %g\n', rate);
 jsonstruct.(gs).control(1).values(1) = rate;
 %%
 
-inputparams = ProtonicMembraneCellWithGasSupplyInputParams(jsonstruct);
+inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
@@ -245,7 +245,7 @@ end
 
 %%
 
-model = ProtonicMembraneCellWithGasSupply(inputparams);
+model = ProtonicMembraneCell(inputparams);
 
 model = model.setupForSimulation();
 
