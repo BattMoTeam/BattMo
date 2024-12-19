@@ -1,11 +1,11 @@
-classdef GasSupplyPEMgridGenerator
+classdef CellGridGenerator
 
     properties
 
         parentGrid
         
         % Use to generate the structure of the internal coupling terms
-        cellGridGenerator
+        electrolyserGridGenerator
         gasSupplyGridGenerator
         
     end
@@ -27,11 +27,11 @@ classdef GasSupplyPEMgridGenerator
             gen = gen.setupElectrolyserGridGenerator(inputparams, params);
             gen = gen.setupGasSupplyGridGenerator(inputparams, params);
 
-            inputparams.Electrolyser.G      = genSubGrid(gen.parentGrid, params.Electrolyser.cellinds);
-            inputparams.GasSupply.G = genSubGrid(gen.parentGrid, params.GasSupply.cellinds);
+            inputparams.Electrolyser.G = genSubGrid(gen.parentGrid, params.Electrolyser.cellinds);
+            inputparams.GasSupply.G    = genSubGrid(gen.parentGrid, params.GasSupply.cellinds);
             
-            [inputparams.Electrolyser, gen]      = gen.setupElectrolyser(inputparams.Electrolyser, params.Electrolyser);
-            [inputparams.GasSupply, gen] = gen.setupGasSupply(inputparams.GasSupply, params.GasSupply);
+            [inputparams.Electrolyser, gen] = gen.setupElectrolyser(inputparams.Electrolyser, params.Electrolyser);
+            [inputparams.GasSupply, gen]    = gen.setupGasSupply(inputparams.GasSupply, params.GasSupply);
 
             [inputparams, gen] = gen.setupElectrolyserGasSupplyCoupling(inputparams);
             
@@ -44,7 +44,7 @@ classdef GasSupplyPEMgridGenerator
         end
         
         function gen = setupElectrolyserGridGenerator(gen, inputparams, params)
-        % setup gen.cellGridGenerator
+        % setup gen.electrolyserGridGenerator
 
             error('virtual function');
             
@@ -62,9 +62,9 @@ classdef GasSupplyPEMgridGenerator
         % - The setup is taken from setupInputParams method in PEMgridGenerator except for the grid setup.
         %   Note that we assume that electrolyte and PEM have same grid (this may changed...)
         % - params has the same fields as the one sent to setupInputParams method.
-        %   params.Electrolyte.cellind should correspond to gen.parentGrid (which is same as gen.cellGridGenerator.parentGrid).
+        %   params.Electrolyte.cellind should correspond to gen.parentGrid (which is same as gen.electrolyserGridGenerator.parentGrid).
 
-            cgen = gen.cellGridGenerator;
+            cgen = gen.electrolyserGridGenerator;
             
             inputparams.Electrolyte = cgen.setupElectrolyte(inputparams.Electrolyte, params.Electrolyte);
             

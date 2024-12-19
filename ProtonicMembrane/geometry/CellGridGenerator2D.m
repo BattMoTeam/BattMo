@@ -1,4 +1,4 @@
-classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
+classdef CellGridGenerator2D < CellGridGenerator
 
     properties
 
