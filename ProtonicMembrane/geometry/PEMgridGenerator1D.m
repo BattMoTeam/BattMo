@@ -24,9 +24,6 @@ classdef PEMgridGenerator1D < PEMgridGenerator
 
             inputparams = gen.setupInputParams(inputparams, []);
             
-            inputparams.dx       = gen.xlength/gen.N;
-            inputparams.faceArea = gen.faceArea;
-            
         end
 
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
@@ -56,6 +53,13 @@ classdef PEMgridGenerator1D < PEMgridGenerator
             params.(ct).couplingfaces = G.getNumberOfFaces();
 
             inputparams = setupElectrodeElectrolyteCoupTerm@PEMgridGenerator(gen, inputparams, params);
+            
+        end
+
+        function inputparams = setupControlArea(gen, inputparams)
+        % Here inputparams is instance of ProtonicMembraneControlInputParams
+            
+            inputparams.area = gen.faceArea;
             
         end
         

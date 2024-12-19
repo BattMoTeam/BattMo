@@ -61,6 +61,14 @@ classdef PEMgridGenerator2D < PEMgridGenerator
             
         end
 
+
+        function inputparams = setupControlArea(gen, inputparams)
+        % Here inputparams is instance of ProtonicMembraneControlInputParams
+            
+            inputparams.area = gen.ylength;
+            
+        end
+        
         
     end
     

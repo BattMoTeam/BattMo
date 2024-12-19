@@ -69,6 +69,8 @@ classdef CellGridGenerator
             inputparams.Electrolyte = cgen.setupElectrolyte(inputparams.Electrolyte, params.Electrolyte);
             
             inputparams = cgen.setupElectrodeElectrolyteCoupTerm(inputparams);
+
+            inputparams.Control = cgen.setupControlArea(inputparams.Control);
             
         end
 

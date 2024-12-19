@@ -114,7 +114,9 @@
   },
   "Control": {
     "controlType": "current",
-    "I" : {
+    "useCurrentDensity" : true,
+    "description" : "If useDensity is true, then we use the value of currentDensity. Otherwise, a value for I the total current should be given.",
+    "currentDensity" : {
       "value" : 0,
       "unit" : "ampere/((centi*meter)^2)",
       "description" : "input current density"}

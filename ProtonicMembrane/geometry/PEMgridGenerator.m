@@ -27,6 +27,8 @@ classdef PEMgridGenerator
 
             inputparams = gen.setupElectrodeElectrolyteCoupTerm(inputparams);
             
+            inputparams.Control = gen.setupControlArea(inputparams.Control);
+            
         end
 
         function [inputparams, gen] = setupGrid(gen, inputparams, params)
@@ -51,6 +53,13 @@ classdef PEMgridGenerator
             
         end
 
+        function inputparams = setupControlArea(gen, inputparams)
+        % Here inputparams is instance of ProtonicMembraneControlInputParams
+            
+            error('virtual function');
+            
+        end
+        
         function inputparams = setupElectrodeElectrolyteCoupTerm(gen, inputparams, params)
 
 

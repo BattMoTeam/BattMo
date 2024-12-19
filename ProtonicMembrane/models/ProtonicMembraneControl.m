@@ -3,7 +3,12 @@ classdef ProtonicMembraneControl < BaseModel
     properties
 
         controlType
+        useCurrentDensity % If true, then we use the value of currentDensity. Otherwise, a value for I the total current should
+                          % be given.
+        currentDensity
         I
+        
+        area % if current density is used, we need the area. This value will typically be assigned by the grid constructor
         
     end
     
@@ -14,9 +19,16 @@ classdef ProtonicMembraneControl < BaseModel
 
             model = model@BaseModel();
 
-            fdnames = {'controlType',
-                       'I'};
+            fdnames = {'controlType'      , ...
+                       'useCurrentDensity', ...
+                       'currentDensity'   , ...
+                       'I'                , ...
+                       'area'};
             model = dispatchParams(model, inputparams, fdnames);
+
+            if model.useCurrentDensity
+                model.I = model.currentDensity*model.area;
+            end
             
         end
 
