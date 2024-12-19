@@ -882,7 +882,7 @@ classdef ComputationalGraphTool
                 option = 'printAll';
             end
 
-            if strcmp(varargin{end}, 'oneline')
+            if nargin > 1 && strcmp(varargin{end}, 'oneline')
                 oneline = true;
             else
                 oneline = false;
