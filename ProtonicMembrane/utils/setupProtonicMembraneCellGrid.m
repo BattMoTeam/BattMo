@@ -1,4 +1,4 @@
-function [inputparams, gridGenerator] = setupProtonicMembraneCellGrid(inputparams, jsonstruct)
+function [inputparams, gridGenerator] = setupProtonicMembraneGrid(inputparams, jsonstruct)
 
     an    = 'Anode';
     ct    = 'Cathode';

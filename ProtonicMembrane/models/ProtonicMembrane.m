@@ -1,4 +1,4 @@
-classdef ProtonicMembraneCell < BaseModel
+classdef ProtonicMembrane < BaseModel
 
     properties
 
@@ -19,7 +19,7 @@ classdef ProtonicMembraneCell < BaseModel
 
     methods
 
-        function model = ProtonicMembraneCell(inputparams)
+        function model = ProtonicMembrane(inputparams)
 
             model = model@BaseModel();
 
@@ -89,44 +89,44 @@ classdef ProtonicMembraneCell < BaseModel
             
             model = model.registerVarNames(varnames);
 
-            fn = @ProtonicMembraneCell.setupHpSources;
+            fn = @ProtonicMembrane.setupHpSources;
             inputnames = {{an, 'iHp'}, {ct, 'iHp'}};
             model = model.registerPropFunction({{elyte, 'sourceHp'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.setupElSources;
+            fn = @ProtonicMembrane.setupElSources;
             inputnames = {{an, 'iEl'}, {ct, 'iEl'}};
             model = model.registerPropFunction({{elyte, 'sourceEl'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateAnodeIHpEquation;
+            fn = @ProtonicMembrane.updateAnodeIHpEquation;
             inputnames = {{elyte, 'phi'}, {an, 'phi'}, {elyte, 'sigmaHp'}, {an, 'iHp'}};
             model = model.registerPropFunction({{an, 'iHpEquation'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateAnodeIElEquation;
+            fn = @ProtonicMembrane.updateAnodeIElEquation;
             inputnames = {{elyte, 'pi'}, {an, 'pi'}, {elyte, 'sigmaEl'}, {an, 'iEl'}};
             model = model.registerPropFunction({{an, 'iElEquation'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateCathodeIHpEquation;
+            fn = @ProtonicMembrane.updateCathodeIHpEquation;
             inputnames = {{elyte, 'phi'}, {ct, 'phi'}, {elyte, 'sigmaHp'}, {ct, 'iHp'}};
             model = model.registerPropFunction({{ct, 'iHpEquation'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateCathodeIElEquation;
+            fn = @ProtonicMembrane.updateCathodeIElEquation;
             inputnames = {{elyte, 'pi'}, {ct, 'pi'}, {elyte, 'sigmaEl'}, {ct, 'iEl'}};
             model = model.registerPropFunction({{ct, 'iElEquation'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateFromControl;
+            fn = @ProtonicMembrane.updateFromControl;
             inputnames = {{ctrl, 'U'}};
             model = model.registerPropFunction({{an, 'pi'}, fn, inputnames});
 
-            fn = @ProtonicMembraneCell.updateAnodeChargeCons;
+            fn = @ProtonicMembrane.updateAnodeChargeCons;
             inputnames = {{ctrl, 'I'}, {an, 'i'}};
             model = model.registerPropFunction({'anodeChargeCons', fn, inputnames});
 
-            fn = @ProtonicMembraneCell.setupCathodeBoundary;
+            fn = @ProtonicMembrane.setupCathodeBoundary;
             inputnames = {};
             model = model.registerPropFunction({{ct, 'phi'}, fn, inputnames});
 
             inputnames = {'time'};
-            fn = @ProtonicMembraneCell.updateControl;
+            fn = @ProtonicMembrane.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
             model = model.registerPropFunction({{elyte, 'alpha'}, fn, inputnames});

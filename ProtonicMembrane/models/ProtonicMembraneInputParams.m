@@ -1,4 +1,4 @@
-classdef ProtonicMembraneCellInputParams < ComponentInputParams
+classdef ProtonicMembraneInputParams < ComponentInputParams
     
     properties
 
@@ -18,7 +18,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
     
     methods
         
-        function inputparams = ProtonicMembraneCellInputParams(jsonstruct)
+        function inputparams = ProtonicMembraneInputParams(jsonstruct)
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'TimeStepping', 'useSwitch'}, true);
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'TimeStepping', 'fractionSwitch'}, 0.5);

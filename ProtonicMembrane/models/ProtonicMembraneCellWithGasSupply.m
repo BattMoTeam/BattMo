@@ -33,7 +33,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Cell      = ProtonicMembraneCell(inputparams.Cell);
+            model.Cell      = ProtonicMembrane(inputparams.Cell);
             model.GasSupply = ProtonicMembraneGasSupply(inputparams.GasSupply);
 
             % Setup interface model
@@ -110,7 +110,7 @@ classdef ProtonicMembraneCellWithGasSupply < BaseModel
             fn =  @ProtonicMembraneCellWithGasSupply.dispatchTime;
             model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
 
-            fn = @ProtonicMembraneCell.updateBeta;
+            fn = @ProtonicMembraneCellWithGasSupply.updateBeta;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'beta', fn, {'time'}});
             

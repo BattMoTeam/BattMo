@@ -19,7 +19,7 @@ classdef ProtonicMembraneCellWithGasSupplyInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            inputparams.Cell      = ProtonicMembraneCellInputParams(pick('Cell'));
+            inputparams.Cell      = ProtonicMembraneInputParams(pick('Cell'));
             inputparams.GasSupply = ProtonicMembraneGasSupplyInputParams(pick('GasSupply'));
             
             inputparams = inputparams.validateInputParams();

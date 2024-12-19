@@ -15,15 +15,15 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 %% Input structure setup
 % We setup the input parameter structure which will we be used to instantiate the model
 
-inputparams = ProtonicMembraneCellInputParams(jsonstruct);
+inputparams = ProtonicMembraneInputParams(jsonstruct);
 
 %%
-% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
-[inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneGrid`
+[inputparams, gen] = setupProtonicMembraneGrid(inputparams, jsonstruct);
 
 %% Model setup
 % We instantiate the model for the protonic membrane cell
-model = ProtonicMembraneCell(inputparams);
+model = ProtonicMembrane(inputparams);
 
 %%
 % The model is equipped for simulation using the following command (this step may become unnecessary in future versions)

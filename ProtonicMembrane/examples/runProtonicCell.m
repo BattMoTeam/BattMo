@@ -179,7 +179,7 @@ if doinitialisation
     filename = 'ProtonicMembrane/protonicMembrane.json';
     jsonstructpem = parseBattmoJson(filename);
 
-    inputparamspem = ProtonicMembraneCellInputParams(jsonstructpem);
+    inputparamspem = ProtonicMembraneInputParams(jsonstructpem);
 
     genpem = PEMgridGenerator2D();
     genpem.xlength = gen.lxCell;
@@ -189,7 +189,7 @@ if doinitialisation
 
     inputparamspem = genpem.updateInputParams(inputparamspem);
 
-    model = ProtonicMembraneCell(inputparamspem);
+    model = ProtonicMembrane(inputparamspem);
     
     model = model.setupForSimulation();
     
