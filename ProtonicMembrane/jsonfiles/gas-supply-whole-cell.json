@@ -10,11 +10,11 @@
    "value" : 0.018369247,
    "unit" : "centi*poise"
  },
- "diffusionCoefficients" : [1e-4, 1e-4],
+ "diffusionCoefficients" : [1e-7, 1e-7],
  "T" : 298,
  "control" : [{"name" : "External input",
                "type" : "rate-composition",
-               "values" : [1e-3, 0.8085]},
+               "values" : [1e-6, 0.8085]},
               {"name" : "External output",
                "type" : "pressure-zero mass fraction flux",
                "values" : [5.875e5]}
