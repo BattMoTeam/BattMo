@@ -1,18 +1,12 @@
-clear all
+%% PEM electrolyser with Gas Supply
+%
 
-mrstDebug(20);
+%% json input data
+%
+% We load the input data that is given by json structures. The physical properties of the supply gas layer is given in
+% the json file :battmofile:`gas-supply-whole-cell.json <ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json>`
 
-mrstModule add ad-core mrst-gui
-
-gs    = 'GasSupply';
-elyser    = 'Electrolyser';
-an    = 'Anode';
-ct    = 'Cathode';
-elyte = 'Electrolyte';
-ctrl  = 'Control';
-            
 clear jsonstruct_material
-
 filename = 'ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json';
 jsonstruct_material.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/jsonfiles/protonicMembrane.json';
@@ -32,61 +26,37 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_initialization});
 
-%% Adjust diffusion
-Dmult = 1e-3;
-fprintf('Diffusion coefficient multiplier : %g\n', Dmult);
-jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficients;
-%%
 
-%% Adjust rate
-rate = 1e-6;
-fprintf('Rate value : %g\n', rate);
-jsonstruct.(gs).control(1).values(1) = rate;
+%% Input parameter setup
+%
+% We setup the input parameter structure which will we be used to instantiate the model
+%
+
+inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
 %%
+%
+% We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneGasLayerGrid`
+%
 
-inputparams        = ProtonicMembraneCellInputParams(jsonstruct);
 [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
-%% Adjust I
-
-I = 0.5/((centi*meter)^2) * gen.ly;
-fprintf('use I = %g\n', I);
-
-%%
-
-rungaslayer = false;
-
-if rungaslayer
-
-    rungaslayer_only;
-    
-end
-
-doinitialisation = false;
-
-if doinitialisation
-
-    run_initialization;
-    
-else
-
-    switch I
-      case 0
-        molfluxref = 1.7236e-06; % value for I = 0
-      case 7.5
-        molfluxref = 7.35713e-05; % mol/second, for I = 7.5
-      otherwise
-        error('value of molflux ref did not appear to have been computed precedently');
-    end
-    
-end
-
-%%
+%% Model setup
+%
+%
 
 model = ProtonicMembraneCell(inputparams);
 
+%%
+% The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
+
+model = model.setupForSimulation();
+
+%% Grid plots
+%
+
 figure('position', [337, 757, 3068, 557])
+hold on
 plotGrid(model.grid)
 plotGrid(model.Electrolyser.grid, 'facecolor', 'red')
 plotGrid(model.GasSupply.grid, 'facecolor', 'blue')
@@ -97,102 +67,17 @@ plotGrid(model.Electrolyser.grid, model.Electrolyser.couplingTerms{1}.couplingce
 plotGrid(model.Electrolyser.grid, model.Electrolyser.couplingTerms{2}.couplingcells(:, 2));
 plotGrid(model.GasSupply.grid, model.couplingTerm.couplingcells(:, 1) );
 
-model = model.setupForSimulation();
-
-
-%% Print cutoff values
-%
-
-fprintf('Cutoff min pressure : %g\n'     , model.pmin);
-fprintf('Cutoff min mass fraction : %g\n', model.mfmin);
-fprintf('Cutoff max mass fraction : %g\n', model.mfmax);
-fprintf('Cutoff abs potentials : %g\n'   , model.phimax);
-
 %% Setup initial state
+%
 
 initstate = model.setupInitialState(jsonstruct);
 
-%% Setup scalings
-
-gasInd = model.(gs).gasInd;
-
-pH2O         = initstate.(gs).pressure(1);
-rho          = initstate.(gs).density(1);
-scalFlux     = molfluxref/model.(gs).molecularWeights(1)/gen.ny; % in kg/s
-scalPressure = pH2O;
-
-model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
-                  {{gs, 'massConses', 2}, scalFlux}                      , ...
-                  {{gs, 'Control', 'pressureEq'}, scalPressure}          , ...
-                  {{gs, 'Control', 'rateEq'}, gen.nxGasSupply*scalFlux}           , ...
-                  {{gs, 'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
-                  {{gs, 'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
-
-initstate.Control.I = 0;
-drivingforces.src = @(time, I) pmControlFunc(time, I, 1, 2, 'order', 'I-first');
-initstate = model.evalVarName(initstate, {elyser, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
-initstate = model.evalVarName(initstate, {elyser, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
-
-sigmaHp = initstate.(elyser).(elyte).sigmaHp(1);
-sigmaEl = initstate.(elyser).(elyte).sigmaEl(1);
-phi0    = abs(model.(elyser).(an).E_0 - model.(elyser).(ct).E_0); % characteristic voltage
-T       = model.(elyser).(elyte).G.getTrans();
-T       = T(1);
-
-sHp = T*sigmaHp*phi0;
-sEl = T*sigmaEl*phi0;
-
-model.scalings =  horzcat(model.scalings, ...
-                          {{{elyser, elyte, 'massConsHp'}     , sHp}, ...
-                           {{elyser, elyte, 'chargeConsEl'}   , sEl}, ...
-                           {{elyser, an   , 'chargeCons'}     , sEl}, ...
-                           {{elyser, an   , 'iElEquation'}    , sEl}, ...
-                           {{elyser, an   , 'iHpEquation'}    , sHp}, ...
-                           {{elyser, ct   , 'chargeCons'}     , sEl}, ...
-                           {{elyser, ct   , 'iElEquation'}    , sEl}, ...
-                           {{elyser, ct   , 'iHpEquation'}    , sHp}, ...
-                           {{elyser, ctrl , 'controlEquation'}, sEl}, ...
-                           {{elyser, 'anodeChargeCons'}       , sEl}});
-
 %% Setup schedule
+%
 
-tswitch   = 0.1;
-totaltime = 10*minute;
+schedule = model.setupSchedule(jsonstruct);
 
-timeswitch = tswitch*totaltime;
-
-%% adjust N2
-
-N1  = 10;
-fprintf('use N1 = %g\n', N1);
-
-
-%%
-
-dt1 = timeswitch/N1;
-t1  = linspace(0, dt1, N1 + 1)';
-alpha = 40;
-t1 = log(alpha*t1 + 1)./log(alpha*dt1 + 1)*dt1;
-
-steps1 = diff(t1);
-
-%% adjust N2
-N2  = 20;
-fprintf('use N2 = %g\n', N2);
-
-%%
-
-dt2 = (totaltime - timeswitch)/N2;
-steps2 = rampupTimesteps(totaltime -timeswitch, dt2, 5);
-
-%%
-
-step.val = [steps1; steps2];
-step.control = ones(numel(step.val), 1);
-
-control.src = @(time, I) pmControlFunc(time, I, timeswitch, totaltime, 'order', 'alpha-equal-beta');
-
-schedule = struct('control', control, 'step', step); 
+return
 
 %% Setup nonlinear solver
 
