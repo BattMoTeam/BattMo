@@ -44,9 +44,9 @@ classdef CellGridGenerator2D < CellGridGenerator
             % We setup params structure which defines which cells are in the PEM and GasSupply
             % NOTE that we rely implicity below on ordering of cells used in tensorGrid
             
-            nxElectrolyser      = gen.nxElectrolyser;
-            nxGasSupply = gen.nxGasSupply;
-            ny          = gen.ny;
+            nxElectrolyser = gen.nxElectrolyser;
+            nxGasSupply    = gen.nxGasSupply;
+            ny             = gen.ny;
             
             nx = nxElectrolyser + nxGasSupply;
             lx = gen.lxElectrolyser + gen.lxGasSupply;
@@ -87,7 +87,7 @@ classdef CellGridGenerator2D < CellGridGenerator
         end
         
         function gen = setupElectrolyserGridGenerator(gen, inputparams, params)
-        % setup cellGridGenerator
+        % setup electrolyserGridGenerator
 
             cgen = PEMgridGenerator2D();
 
@@ -97,7 +97,7 @@ classdef CellGridGenerator2D < CellGridGenerator
             cgen.Nx         = gen.nxElectrolyser;
             cgen.Ny         = gen.ny;
             
-            gen.cellGridGenerator = cgen;
+            gen.electrolyserGridGenerator = cgen;
             
         end
 
@@ -107,10 +107,10 @@ classdef CellGridGenerator2D < CellGridGenerator
             gsgen = GasSupplyGridGenerator2D();
 
             gsgen.parentGrid = gen.parentGrid;
-            gsgen.nx         = gen.nxGasSupply;
-            gsgen.ny         = gen.ny;
-            gsgen.lx         = gen.lxGasSupply;
-            gsgen.ly         = gen.ly;
+            gsgen.Nx         = gen.nxGasSupply;
+            gsgen.Ny         = gen.ny;
+            gsgen.xlength    = gen.lxGasSupply;
+            gsgen.ylength    = gen.ly;
 
             gen.gasSupplyGridGenerator = gsgen;
             

@@ -11,12 +11,22 @@ ct    = 'Cathode';
 elyte = 'Electrolyte';
 ctrl  = 'Control';
             
-clear jsonstruct
+clear jsonstruct_material
 
-filename = 'ProtonicMembrane/gas-supply-whole-cell.json';
-jsonstruct.GasSupply = parseBattmoJson(filename);
-filename = 'ProtonicMembrane/protonicMembrane.json';
-jsonstruct.Electrolyser = parseBattmoJson(filename);
+filename = 'ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json';
+jsonstruct_material.GasSupply = parseBattmoJson(filename);
+filename = 'ProtonicMembrane/jsonfiles/protonicMembrane.json';
+jsonstruct_material.Electrolyser = parseBattmoJson(filename);
+
+filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
+jsonstruct_geometry = parseBattmoJson(filename);
+
+jsonstruct_material = removeJsonStructFields(jsonstruct_material, ...
+                                             {'Electrolyser', 'Electrolyte', 'Nx'}, ...
+                                             {'Electrolyser', 'Electrolyte', 'xlength'});
+
+jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+                               jsonstruct_geometry});
 
 %% Adjust diffusion
 Dmult = 1e-3;
@@ -28,42 +38,11 @@ jsonstruct.(gs).diffusionCoefficients = Dmult*jsonstruct.(gs).diffusionCoefficie
 rate = 1e-6;
 fprintf('Rate value : %g\n', rate);
 jsonstruct.(gs).control(1).values(1) = rate;
+
 %%
 
-inputparams = ProtonicMembraneCellInputParams(jsonstruct);
-
-gen = GasSupplyPEMgridGenerator2D();
-
-gen.nxElectrolyser      = 1000;
-gen.nxGasSupply = 50;
-gen.lxElectrolyser      = 22*micro*meter;
-gen.lxGasSupply = 0.5*milli*meter;
-
-gen.ny = 30;
-gen.ly = 1.5e-3;
-
-inputparams = gen.updateInputParams(inputparams);
-
-doplot = false;
-
-if doplot
-    
-    close all
-
-    figure('position', [337, 757, 3068, 557])
-    plotGrid(inputparams.G)
-    plotGrid(inputparams.Electrolyser.G, 'facecolor', 'red')
-    plotGrid(inputparams.GasSupply.G, 'facecolor', 'blue')
-
-    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{1}.couplingcells);
-    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{2}.couplingcells);
-    plotGrid(inputparams.Electrolyser.G, inputparams.Electrolyser.couplingTerms{1}.couplingcells(:, 2));
-    plotGrid(inputparams.Electrolyser.G, inputparams.Electrolyser.couplingTerms{2}.couplingcells(:, 2));
-    plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{3}.couplingcells );
-
-    return
-    
-end
+inputparams        = ProtonicMembraneCellInputParams(jsonstruct);
+[inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 %% Adjust I
 
@@ -76,159 +55,15 @@ rungaslayer = false;
 
 if rungaslayer
 
-    filename = 'ProtonicMembrane/gas-supply-whole-cell.json';
-    gsjsonstruct = parseBattmoJson(filename);
-
-    %% adjust N2
-    h2omassfracoutput = 0.4
-    fprintf('use H2O mass fraction at output  = %g\n', h2omassfracoutput);
-    gsjsonstruct.control(2).values(2) = h2omassfracoutput;
-    %%
-    
-    gsinputparams = ProtonicMembraneGasSupplyInputParams(gsjsonstruct);
-
-    gsgen = GasSupplyGridGenerator2D();
-
-    gsgen.nx = gen.nxGasSupply;
-    gsgen.ny = gen.ny;
-    gsgen.lx = gen.lxGasSupply;
-    gsgen.ly = gen.ly;
-    
-    gsinputparams = gsgen.updateInputParams(gsinputparams);
-
-    gsmodel = ProtonicMembraneGasSupply(gsinputparams);
-    gsmodel = gsmodel.setupForSimulation();
-
-    initstate = gsmodel.setupInitialState();
-
-    %% setup scalings
-
-    comptypecouptbl = model.(gs).helpers.comptypecouptbl;
-    ctrlvals        = model.(gs).helpers.ctrlvals;
-
-    clear comptypetbl2
-    comptypetbl2.type = [2]; % type=2 for rate control
-    comptypetbl2.comp = [1]; % component index = 1 for rate value
-    comptypetbl2 = IndexArray(comptypetbl2);
-
-    map = TensorMap();
-    map.fromTbl = comptypecouptbl;
-    map.toTbl = comptypetbl2;
-    map.mergefds = {'comp', 'type'};
-    map = map.setup();
-
-    rate = max(map.eval(ctrlvals));
-
-    gasInd = gsmodel.gasInd;
-
-    pH2O         = initstate.pressure(1);
-    rho          = initstate.density(1);
-    scalFlux     = rate/gen.nxGasSupply;
-    scalPressure = pH2O;
-    
-    gsmodel.scalings = {{{'massConses', 1}, scalFlux}, ...
-                      {{'massConses', 2}, scalFlux}, ...
-                      {{'Control', 'pressureEq'}, scalPressure}, ...
-                      {{'Control', 'rateEq'}, gsgen.nx*scalFlux}, ...
-                      {{'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
-                      {{'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
-
-
-    T = 1*second;
-    N = 1;
-    dt = rampupTimesteps(T, T/N, 10, 'threshold_error', 1e-15);
-
-    step.val = dt;
-    step.control = ones(numel(step.val), 1);
-
-    control.src = [];
-
-    schedule = struct('control', control, 'step', step);
-
-    nls = NonLinearSolver();
-    nls.maxIterations  = 20;
-    nls.errorOnFailure = false;
-    nls.verbose        = true;
-
-    gsmodel.verbose = true;
-
-    gsmodel.nonlinearTolerance = 1e-8;
-
-    [~, gsstates, report] = simulateScheduleAD(initstate, gsmodel, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-    %%
-
-    figure
-    plotToolbar(gsmodel.grid, gsstates);
-    % caxis([0.2, 0.4])
-    % uit = findobj(gcf, 'Tooltip', 'Freeze caxis');
-    % uit.State = 'on';
-
-    return
+    rungaslayer_only;
     
 end
-
-%%
 
 doinitialisation = false;
 
 if doinitialisation
-    % We run the protonic membrane alone to get an order of magnitude of iHp to scale the full cell model (with gas
-    % layer)
 
-    filename = 'ProtonicMembrane/protonicMembrane.json';
-    jsonstructpem = parseBattmoJson(filename);
-
-    inputparamspem = ProtonicMembraneInputParams(jsonstructpem);
-
-    genpem = PEMgridGenerator2D();
-    genpem.xlength = gen.lxElectrolyser;
-    genpem.ylength = gen.ly;
-    genpem.Nx      = gen.nxElectrolyser;
-    genpem.Ny      = gen.ny;
-
-    inputparamspem = genpem.updateInputParams(inputparamspem);
-
-    model = ProtonicMembrane(inputparamspem);
-    
-    model = model.setupForSimulation();
-    
-    state0 = model.setupInitialState();
-
-    tswitch = 1;
-    T       = 2; % This is not a real time scale, as all the model deals with equilibrium
-
-    N1  = 20;
-    dt1 = tswitch/N1;
-    N2  = 20;
-    dt2 = (T - tswitch)/N2;
-
-    step.val = [dt1*ones(N1, 1); dt2*ones(N2, 1)];
-    step.control = ones(numel(step.val), 1);
-
-    % I = 1e-2*ampere/((centi*meter)^2);
-    % I = 0.3*ampere/((centi*meter)^2);
-    % I = 0.01*ampere/((centi*meter)^2);
-    control.src = @(time) controlfunc(time, I, tswitch, T, 'order', 'I-first');
-
-    schedule = struct('control', control, 'step', step); 
-    nls = NonLinearSolver();
-    nls.maxIterations  = 20;
-    nls.errorOnFailure = false;
-    nls.verbose        = true;
-
-    model.nonlinearTolerance = 1e-8;
-
-    [~, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-    state = states{end};
-    state = model.addVariables(state, control);
-
-    molfluxref = abs(sum(state.Anode.iHp)/PhysicalConstants.F); % in mol/second
-
-    fprintf('Reference molar flux: %g mol/second\n', molfluxref);
-    
-    return
+    run_initialization;
     
 else
 
@@ -247,10 +82,19 @@ end
 
 model = ProtonicMembraneCell(inputparams);
 
+figure('position', [337, 757, 3068, 557])
+plotGrid(model.grid)
+plotGrid(model.Electrolyser.grid, 'facecolor', 'red')
+plotGrid(model.GasSupply.grid, 'facecolor', 'blue')
+
+plotGrid(model.GasSupply.grid, model.GasSupply.couplingTerms{1}.couplingcells);
+plotGrid(model.GasSupply.grid, model.GasSupply.couplingTerms{2}.couplingcells);
+plotGrid(model.Electrolyser.grid, model.Electrolyser.couplingTerms{1}.couplingcells(:, 2));
+plotGrid(model.Electrolyser.grid, model.Electrolyser.couplingTerms{2}.couplingcells(:, 2));
+plotGrid(model.GasSupply.grid, model.couplingTerm.couplingcells(:, 1) );
+
 model = model.setupForSimulation();
 
-cgt = model.cgt;
-cgp = model.cgp;
 
 %% Print cutoff values
 %
