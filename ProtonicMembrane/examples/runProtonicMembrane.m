@@ -41,7 +41,7 @@ state0 = model.setupInitialState();
 % as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which
 % includes highly nonlineaer effect with the exponential terms. We do not detail here the method).
 
-schedule = model.Control.setupSchedule(inputparams.jsonstruct);
+schedule = model.Control.setupSchedule(jsonstruct);
 
 %% Simulation
 % We run the simulation
