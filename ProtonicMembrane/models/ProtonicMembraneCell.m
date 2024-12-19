@@ -33,17 +33,20 @@ classdef ProtonicMembraneCell < BaseModel
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Electrolyser      = ProtonicMembrane(inputparams.Electrolyser);
-            model.GasSupply = ProtonicMembraneGasSupply(inputparams.GasSupply);
+            model.Electrolyser = ProtonicMembrane(inputparams.Electrolyser);
+            model.GasSupply    = ProtonicMembraneGasSupply(inputparams.GasSupply);
 
             % Setup interface model
             interfaceinputparams.T                = inputparams.GasSupply.T;
             interfaceinputparams.molecularWeights = inputparams.GasSupply.molecularWeights;
+
             model.Interface = ProtonicMembraneGasSupplyBc(interfaceinputparams);
             
             model = model.setupInterface();
             
             model.constants = PhysicalConstants();
+
+            model = model.setupScalings(inputparams);
             
         end
         
@@ -116,6 +119,86 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
+
+        function model = setupScalings(model, inputparams)
+
+            jsonstruct = inputparams.jsonstruct;
+
+            elyser = 'Electrolyser';
+            elyte  = 'Electrolyte';
+            an     = 'Anode';
+            ct     = 'Cathode';
+            ctrl   = 'Control';
+            
+            elysermodel = ProtonicMembrane(inputparams.(elyser));
+            elysermodel = elysermodel.setupForSimulation();
+
+            initElyserState = elysermodel.setupInitialState();
+
+            initElyserState.Control.I = 0;
+
+            drivingforces.src = @(time, I) pmControlFunc(time, I, 1, 2, 'order', 'I-first');
+            initElyserState = elysermodel.evalVarName(initElyserState, {elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
+            initElyserState = elysermodel.evalVarName(initElyserState, {elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
+
+            sigmaHp = initElyserState.(elyte).sigmaHp(1);
+            sigmaEl = initElyserState.(elyte).sigmaEl(1);
+            
+            phi0    = abs(model.(elyser).(an).E_0 - model.(elyser).(ct).E_0); % characteristic voltage
+            T       = model.(elyser).(elyte).G.getTrans();
+            T       = T(1);
+
+            sHp = T*sigmaHp*phi0;
+            sEl = T*sigmaEl*phi0;
+
+            elyserScalings = {{{elyser, elyte, 'massConsHp'}     , sHp}, ...
+                              {{elyser, elyte, 'chargeConsEl'}   , sEl}, ...
+                              {{elyser, an   , 'chargeCons'}     , sEl}, ...
+                              {{elyser, an   , 'iElEquation'}    , sEl}, ...
+                              {{elyser, an   , 'iHpEquation'}    , sHp}, ...
+                              {{elyser, ct   , 'chargeCons'}     , sEl}, ...
+                              {{elyser, ct   , 'iElEquation'}    , sEl}, ...
+                              {{elyser, ct   , 'iHpEquation'}    , sHp}, ...
+                              {{elyser, ctrl , 'controlEquation'}, sEl}, ...
+                              {{elyser, 'anodeChargeCons'}       , sEl}};
+
+            schedule = elysermodel.Control.setupSchedule(jsonstruct.(elyser));
+
+            [~, states, report] = simulateScheduleAD(initElyserState, elysermodel, schedule);
+
+            state = states{end};
+            state = elysermodel.addVariables(state, schedule.control);
+
+            molfluxref = abs(sum(state.Anode.iHp)/PhysicalConstants.F); % in mol/second
+
+            gs = 'GasSupply';
+            
+            gasInd = model.(gs).gasInd;
+            pH2O = jsonstruct.(gs).initialState.pressure;
+
+
+            switch jsonstruct.Geometry.type
+              case '2D'
+                scalFlux = molfluxref/model.(gs).molecularWeights(1)/jsonstruct.Geometry.Ny; % in kg/s
+              otherwise
+                error('geometry not covered yet');
+            end
+            
+            scalPressure = pH2O;
+            scalRateEq = jsonstruct.(gs).Nx*scalFlux;
+            
+            gsScalings = {{{gs, 'massConses', 1}, scalFlux}                    , ...
+                          {{gs, 'massConses', 2}, scalFlux}                    , ...
+                          {{gs, 'Control', 'pressureEq'}, scalPressure}        , ...
+                          {{gs, 'Control', 'rateEq'}, scalRateEq}              , ...
+                          {{gs, 'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
+                          {{gs, 'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
+
+
+            model.scalings = horzcat(elyserScalings, gsScalings);
+            
+        end
+        
         function initstate = setupInitialState(model, jsonstruct)
 
             gs     = 'GasSupply';
@@ -443,6 +526,62 @@ classdef ProtonicMembraneCell < BaseModel
             end
 
         end
+
+
+        function step = setupScheduleStep(model, jsonstruct)
+
+            jtstruct = jsonstruct.TimeStepping;
+            
+            N = jtstruct.numberOfTimeSteps;
+            T = jtstruct.totalTime;
+            f = jtstruct.fractionSwitch;
+
+            timeswitch = f*T;
+
+            % we dedicate about 1/3 of time steps to the first phase
+            N1 = floor(1/3*N);
+            N2 = N - N1;
+            
+            dt1 = timeswitch/N1;
+            t1  = linspace(0, dt1, N1 + 1)';
+            alpha = 40; % we invert the exponential growth (to try to match with the exponential function in the electronic conductivity)
+            t1 = log(alpha*t1 + 1)./log(alpha*dt1 + 1)*dt1;
+
+            steps1 = diff(t1);
+
+            dt2 = (T - timeswitch)/N2;
+            steps2 = rampupTimesteps(totaltime - timeswitch, dt2, 5);
+
+            step.val = [steps1; steps2];
+            step.control = ones(numel(step.val), 1);
+
+        end
+
+        function control = setupScheduleControl(model, jsonstruct)
+
+            jtstruct = jsonstruct.TimeStepping;
+
+            T           = jtstruct.totalTime;
+            f           = jtstruct.fractionSwitch;
+            orderSwitch = jtstruct.orderSwitch;
+
+            timeswitch = f*T;
+            
+            control.src = @(time, I) pmControlFunc(time, I, timeswitch, T, 'order', orderSwitch);
+            
+        end
+        
+        function schedule = setupSchedule(model, jsonstruct)
+        % Convenience function to setup schedule from main jsonstruct with property TimeStepping
+
+            step    = model.setupScheduleStep(jsonstruct);
+            control = model.setupScheduleControl(jsonstruct);
+            
+            schedule = struct('step', step, ...
+                              'control', control);
+            
+        end
+        
         
     end
     
