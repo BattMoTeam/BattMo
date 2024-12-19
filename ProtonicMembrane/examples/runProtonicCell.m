@@ -1,11 +1,11 @@
 clear all
 
-% mrstDebug(20);
+mrstDebug(20);
 
 mrstModule add ad-core mrst-gui
 
 gs    = 'GasSupply';
-ce    = 'Electrolyser';
+elyser    = 'Electrolyser';
 an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
@@ -18,15 +18,19 @@ jsonstruct_material.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/jsonfiles/protonicMembrane.json';
 jsonstruct_material.Electrolyser = parseBattmoJson(filename);
 
-filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
-jsonstruct_geometry = parseBattmoJson(filename);
-
 jsonstruct_material = removeJsonStructFields(jsonstruct_material, ...
                                              {'Electrolyser', 'Electrolyte', 'Nx'}, ...
                                              {'Electrolyser', 'Electrolyte', 'xlength'});
 
+filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
+jsonstruct_geometry = parseBattmoJson(filename);
+
+filename = 'ProtonicMembrane/jsonfiles/gas-supply-initialization.json';
+jsonstruct_initialization.GasSupply = parseBattmoJson(filename);
+
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
-                               jsonstruct_geometry});
+                               jsonstruct_geometry, ...
+                               jsonstruct_initialization});
 
 %% Adjust diffusion
 Dmult = 1e-3;
@@ -106,7 +110,7 @@ fprintf('Cutoff abs potentials : %g\n'   , model.phimax);
 
 %% Setup initial state
 
-initstate = model.setupInitialState();
+initstate = model.setupInitialState(jsonstruct);
 
 %% Setup scalings
 
@@ -124,30 +128,31 @@ model.scalings = {{{gs, 'massConses', 1}, scalFlux}                      , ...
                   {{gs, 'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
                   {{gs, 'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
 
-drivingforces.src = @(time) controlfunc(time, 0, 1, 2, 'order', 'I-first');
-initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
-initstate = model.evalVarName(initstate, {ce, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
+initstate.Control.I = 0;
+drivingforces.src = @(time, I) pmControlFunc(time, I, 1, 2, 'order', 'I-first');
+initstate = model.evalVarName(initstate, {elyser, elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
+initstate = model.evalVarName(initstate, {elyser, elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
 
-sigmaHp = initstate.(ce).(elyte).sigmaHp(1);
-sigmaEl = initstate.(ce).(elyte).sigmaEl(1);
-phi0    = abs(model.(ce).(an).E_0 - model.(ce).(ct).E_0); % characteristic voltage
-T       = model.(ce).(elyte).G.getTrans();
+sigmaHp = initstate.(elyser).(elyte).sigmaHp(1);
+sigmaEl = initstate.(elyser).(elyte).sigmaEl(1);
+phi0    = abs(model.(elyser).(an).E_0 - model.(elyser).(ct).E_0); % characteristic voltage
+T       = model.(elyser).(elyte).G.getTrans();
 T       = T(1);
 
 sHp = T*sigmaHp*phi0;
 sEl = T*sigmaEl*phi0;
 
 model.scalings =  horzcat(model.scalings, ...
-                          {{{ce, elyte, 'massConsHp'}     , sHp}, ...
-                           {{ce, elyte, 'chargeConsEl'}   , sEl}, ...
-                           {{ce, an   , 'chargeCons'}     , sEl}, ...
-                           {{ce, an   , 'iElEquation'}    , sEl}, ...
-                           {{ce, an   , 'iHpEquation'}    , sHp}, ...
-                           {{ce, ct   , 'chargeCons'}     , sEl}, ...
-                           {{ce, ct   , 'iElEquation'}    , sEl}, ...
-                           {{ce, ct   , 'iHpEquation'}    , sHp}, ...
-                           {{ce, ctrl , 'controlEquation'}, sEl}, ...
-                           {{ce, 'anodeChargeCons'}       , sEl}});
+                          {{{elyser, elyte, 'massConsHp'}     , sHp}, ...
+                           {{elyser, elyte, 'chargeConsEl'}   , sEl}, ...
+                           {{elyser, an   , 'chargeCons'}     , sEl}, ...
+                           {{elyser, an   , 'iElEquation'}    , sEl}, ...
+                           {{elyser, an   , 'iHpEquation'}    , sHp}, ...
+                           {{elyser, ct   , 'chargeCons'}     , sEl}, ...
+                           {{elyser, ct   , 'iElEquation'}    , sEl}, ...
+                           {{elyser, ct   , 'iHpEquation'}    , sHp}, ...
+                           {{elyser, ctrl , 'controlEquation'}, sEl}, ...
+                           {{elyser, 'anodeChargeCons'}       , sEl}});
 
 %% Setup schedule
 
@@ -157,8 +162,11 @@ totaltime = 10*minute;
 timeswitch = tswitch*totaltime;
 
 %% adjust N2
+
 N1  = 10;
 fprintf('use N1 = %g\n', N1);
+
+
 %%
 
 dt1 = timeswitch/N1;
@@ -171,6 +179,7 @@ steps1 = diff(t1);
 %% adjust N2
 N2  = 20;
 fprintf('use N2 = %g\n', N2);
+
 %%
 
 dt2 = (totaltime - timeswitch)/N2;
@@ -181,7 +190,7 @@ steps2 = rampupTimesteps(totaltime -timeswitch, dt2, 5);
 step.val = [steps1; steps2];
 step.control = ones(numel(step.val), 1);
 
-control.src = @(time) controlfunc(time, I, timeswitch, totaltime, 'order', 'alpha-equal-beta');
+control.src = @(time, I) pmControlFunc(time, I, timeswitch, totaltime, 'order', 'alpha-equal-beta');
 
 schedule = struct('control', control, 'step', step); 
 
@@ -232,17 +241,17 @@ set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
 N = gen.nxElectrolyser;
-xc = model.(ce).(elyte).grid.cells.centroids(1 : N, 1);
+xc = model.(elyser).(elyte).grid.cells.centroids(1 : N, 1);
 
 state = states{end};
 
 state = model.addVariables(state);
 
-X = reshape(model.(ce).(elyte).grid.cells.centroids(:, 1), N, [])/(milli*meter);
-Y = reshape(model.(ce).(elyte).grid.cells.centroids(:, 2), N, [])/(milli*meter);
+X = reshape(model.(elyser).(elyte).grid.cells.centroids(:, 1), N, [])/(milli*meter);
+Y = reshape(model.(elyser).(elyte).grid.cells.centroids(:, 2), N, [])/(milli*meter);
 
 figure
-val = state.(ce).(elyte).pi;
+val = state.(elyser).(elyte).pi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('pi / V')
@@ -252,7 +261,7 @@ view(45, 31)
 colorbar
 
 figure
-val = state.(ce).(elyte).pi - state.(ce).(elyte).phi;
+val = state.(elyser).(elyte).pi - state.(elyser).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('E / V')
@@ -262,7 +271,7 @@ view(45, 31)
 colorbar
 
 figure
-val = state.(ce).(elyte).phi;
+val = state.(elyser).(elyte).phi;
 Z = reshape(val, N, []);
 surf(X, Y, Z, 'edgecolor', 'none');
 title('phi / V')
@@ -360,7 +369,7 @@ xlabel('height / mm')
 
 % Faradic effect in Anode
 
-drivingForces.src = @(time) controlfunc(time, I, timeswitch, totaltime, 'order', 'I-first');
+drivingForces.src = @(time) pmControlFunc(time, I, timeswitch, totaltime, 'order', 'I-first');
 state = model.evalVarName(state, 'Electrolyser.Anode.iHp', {{'drivingForces', drivingForces}});
 
 i   = state.Electrolyser.Anode.i;

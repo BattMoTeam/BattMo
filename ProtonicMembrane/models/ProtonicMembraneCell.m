@@ -51,13 +51,13 @@ classdef ProtonicMembraneCell < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            gs    = 'GasSupply';
-            ce    = 'Electrolyser';
-            an    = 'Anode';
-            ct    = 'Cathode';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
-            itf   = 'Interface';
+            gs     = 'GasSupply';
+            elyser = 'Electrolyser';
+            an     = 'Anode';
+            ct     = 'Cathode';
+            elyte  = 'Electrolyte';
+            ctrl   = 'Control';
+            itf    = 'Interface';
             
             nGas = model.GasSupply.nGas;
 
@@ -108,7 +108,7 @@ classdef ProtonicMembraneCell < BaseModel
             model = model.setAsStaticVarName('time');
             
             fn =  @ProtonicMembraneCell.dispatchTime;
-            model = model.registerPropFunction({{ce, 'time'}, fn, {'time'}});
+            model = model.registerPropFunction({{elyser, 'time'}, fn, {'time'}});
 
             fn = @ProtonicMembraneCell.updateBeta;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -116,11 +116,11 @@ classdef ProtonicMembraneCell < BaseModel
             
         end
 
-        function initstate = setupInitialState(model)
+        function initstate = setupInitialState(model, jsonstruct)
 
-            gs = 'GasSupply';
-            ce = 'Electrolyser';
-            an = 'Anode';
+            gs     = 'GasSupply';
+            elyser = 'Electrolyser';
+            an     = 'Anode';
             
             gasInd = model.(gs).gasInd;
             nGas   = model.(gs).nGas;
@@ -128,7 +128,7 @@ classdef ProtonicMembraneCell < BaseModel
             
             model.(gs) = model.(gs).setupComputationalGraph();
             
-            initstate.(gs) = model.(gs).setupInitialState();
+            initstate.(gs) = model.(gs).setupInitialState(jsonstruct.GasSupply);
 
             p   = initstate.(gs).pressure;
             mfs = initstate.(gs).massfractions;
@@ -145,12 +145,12 @@ classdef ProtonicMembraneCell < BaseModel
             pH2O = pgs{gasInd.H2O};
             pO2  = pgs{gasInd.O2};
 
-            model.(ce).(an).pH2O = pH2O(1);
-            model.(ce).(an).pO2  = pO2(1);
+            model.(elyser).(an).pH2O = pH2O(1);
+            model.(elyser).(an).pO2  = pO2(1);
             
-            model.(ce) = model.(ce).setupComputationalGraph();
+            model.(elyser) = model.(elyser).setupComputationalGraph();
 
-            initstate.(ce) = model.(ce).setupInitialState();
+            initstate.(elyser) = model.(elyser).setupInitialState();
 
             initstate = model.evalVarName(initstate, VarName({gs}, 'density'));
             initstate.time = 0;
@@ -174,7 +174,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             % we add those values to be able to run addVariables method
             newstate.Electrolyser.Electrolyte.alpha = state.Electrolyser.Electrolyte.alpha;
-            newstate.beta                   = state.beta;
+            newstate.beta                           = state.beta;
             newstate.Electrolyser.Control.I         = state.Electrolyser.Control.I;
             
         end
@@ -192,14 +192,14 @@ classdef ProtonicMembraneCell < BaseModel
             dt = 1;
             state0 = state;
 
-            function [I, alpha, beta] = src(time)
+            function [I, alpha, beta] = src(time, I)
             % we need only beta value
                 I     = state.Electrolyser.Control.I;
                 alpha = state.Electrolyser.Electrolyte.alpha;
                 beta  = state.beta;
             end
             
-            drivingForces.src = @(time) src(time);
+            drivingForces.src = @(time, I) src(time, I);
             
             % We call getEquations to update state
 
@@ -265,7 +265,7 @@ classdef ProtonicMembraneCell < BaseModel
         function state = updateBeta(model, state, drivingForces)
             
             time = state.time;
-            [~, ~, beta] = drivingForces.src(time);
+            [~, ~, beta] = drivingForces.src(time, state.Electrolyser.Control.I);
             state.beta = beta;
             % state.beta = 0;
             
@@ -370,12 +370,12 @@ classdef ProtonicMembraneCell < BaseModel
             shortNames = {'1'                    , 'H2O';
                           '2'                    , 'O2';
                           'massConses'           , 'massCons';
-                          'Electrolyser'                 , 'ce';
+                          'Electrolyser'         , 'elyser';
                           'GasSupply'            , 'gs';
                           'GasSupplyBc'          , 'gsBc';
                           'massCouplingEquations', 'massCoupEqs';
                           'controlEquations'     , 'ctrlEqs';
-                          'bcFluxEquations'    , 'bcEqs';
+                          'bcFluxEquations'      , 'bcEqs';
                           'Electrolyte'          , 'elyte';
                           'Anode'                , 'an';
                           'Cathode'              , 'ct';
@@ -403,13 +403,13 @@ classdef ProtonicMembraneCell < BaseModel
 
             % cutoff the pressures
 
-            gs    = 'GasSupply';
-            ce    = 'Electrolyser';
-            an    = 'Anode';
-            ct    = 'Cathode';
-            itf   = 'Interface';
-            elyte = 'Electrolyte';
-            ctrl  = 'Control';
+            gs     = 'GasSupply';
+            elyser = 'Electrolyser';
+            an     = 'Anode';
+            ct     = 'Cathode';
+            itf    = 'Interface';
+            elyte  = 'Electrolyte';
+            ctrl   = 'Control';
 
             pmin   = model.pmin;
             mfmin  = model.mfmin;
