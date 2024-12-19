@@ -11,9 +11,6 @@ classdef ProtonicMembraneInputParams < ComponentInputParams
         
         couplingTerms
 
-        dx
-        faceArea
-        
     end
     
     methods
