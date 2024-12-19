@@ -7,7 +7,7 @@ classdef ProtonicMembraneCell < BaseModel
         % Structure with physical constants
         constants
 
-        Cell
+        Electrolyser
         GasSupply
         Interface
         
@@ -33,7 +33,7 @@ classdef ProtonicMembraneCell < BaseModel
             
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Cell      = ProtonicMembrane(inputparams.Cell);
+            model.Electrolyser      = ProtonicMembrane(inputparams.Electrolyser);
             model.GasSupply = ProtonicMembraneGasSupply(inputparams.GasSupply);
 
             % Setup interface model
@@ -52,7 +52,7 @@ classdef ProtonicMembraneCell < BaseModel
             model = registerVarAndPropfuncNames@BaseModel(model);
 
             gs    = 'GasSupply';
-            ce    = 'Cell';
+            ce    = 'Electrolyser';
             an    = 'Anode';
             ct    = 'Cathode';
             elyte = 'Electrolyte';
@@ -65,7 +65,7 @@ classdef ProtonicMembraneCell < BaseModel
 
             % Coupling equations
             varnames{end + 1} = VarName({}, 'massCouplingEquations', nGas);
-            % We add time variables to this model and the Cell model. Needed for the control
+            % We add time variables to this model and the Electrolyser model. Needed for the control
             varnames{end + 1} = 'time';
             % Coupling damping variable
             varnames{end + 1} = 'beta';
@@ -90,11 +90,11 @@ classdef ProtonicMembraneCell < BaseModel
 
             fn =  @ProtonicMembraneCell.updateAnodePressures;
             inputvarnames = {VarName({'Interface'}, 'pressures', nGas)};
-            outputvarname = VarName({'Cell', 'Anode'}, 'pressures', nGas);
+            outputvarname = VarName({'Electrolyser', 'Anode'}, 'pressures', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn =  @ProtonicMembraneCell.updateCouplingEquation;
-            inputvarnames = {{'Cell', 'Anode' 'iHp'}, ...
+            inputvarnames = {{'Electrolyser', 'Anode' 'iHp'}, ...
                              VarName({'Interface'}, 'massFluxes', nGas), ...
                              'beta'};
             outputvarname = VarName({}, 'massCouplingEquations', nGas);
@@ -119,7 +119,7 @@ classdef ProtonicMembraneCell < BaseModel
         function initstate = setupInitialState(model)
 
             gs = 'GasSupply';
-            ce = 'Cell';
+            ce = 'Electrolyser';
             an = 'Anode';
             
             gasInd = model.(gs).gasInd;
@@ -173,9 +173,9 @@ classdef ProtonicMembraneCell < BaseModel
             newstate = addVariablesAfterConvergence@BaseModel(model, newstate, state);
 
             % we add those values to be able to run addVariables method
-            newstate.Cell.Electrolyte.alpha = state.Cell.Electrolyte.alpha;
+            newstate.Electrolyser.Electrolyte.alpha = state.Electrolyser.Electrolyte.alpha;
             newstate.beta                   = state.beta;
-            newstate.Cell.Control.I         = state.Cell.Control.I;
+            newstate.Electrolyser.Control.I         = state.Electrolyser.Control.I;
             
         end
             
@@ -194,8 +194,8 @@ classdef ProtonicMembraneCell < BaseModel
 
             function [I, alpha, beta] = src(time)
             % we need only beta value
-                I     = state.Cell.Control.I;
-                alpha = state.Cell.Electrolyte.alpha;
+                I     = state.Electrolyser.Control.I;
+                alpha = state.Electrolyser.Electrolyte.alpha;
                 beta  = state.beta;
             end
             
@@ -209,7 +209,7 @@ classdef ProtonicMembraneCell < BaseModel
         
         function model = setupInterface(model)
 
-            coupterms = model.Cell.couplingTerms;
+            coupterms = model.Electrolyser.couplingTerms;
             
             for icoup = 1 : numel(coupterms)
                 coupterm = coupterms{icoup};
@@ -223,7 +223,7 @@ classdef ProtonicMembraneCell < BaseModel
             end
 
             % face interface indices in parent grid.
-            pfaces = model.Cell.Electrolyte.G.mappings.facemap(faces);
+            pfaces = model.Electrolyser.Electrolyte.G.mappings.facemap(faces);
 
             invfacemap = model.GasSupply.G.mappings.invfacemap;
 
@@ -273,7 +273,7 @@ classdef ProtonicMembraneCell < BaseModel
 
         function state = dispatchTime(model, state)
 
-            state.Cell.time = state.time;
+            state.Electrolyser.time = state.time;
             
         end
 
@@ -340,7 +340,7 @@ classdef ProtonicMembraneCell < BaseModel
             mws    = model.GasSupply.molecularWeights;
             F      = PhysicalConstants.F;
             
-            iHp     = state.Cell.Anode.iHp;
+            iHp     = state.Electrolyser.Anode.iHp;
             mfluxes = state.Interface.massFluxes;
             beta    = state.beta;
             
@@ -358,7 +358,7 @@ classdef ProtonicMembraneCell < BaseModel
 
         function state = updateAnodePressures(model, state)
 
-            state.Cell.Anode.pressures = state.Interface.pressures;
+            state.Electrolyser.Anode.pressures = state.Interface.pressures;
             
         end
 
@@ -370,7 +370,7 @@ classdef ProtonicMembraneCell < BaseModel
             shortNames = {'1'                    , 'H2O';
                           '2'                    , 'O2';
                           'massConses'           , 'massCons';
-                          'Cell'                 , 'ce';
+                          'Electrolyser'                 , 'ce';
                           'GasSupply'            , 'gs';
                           'GasSupplyBc'          , 'gsBc';
                           'massCouplingEquations', 'massCoupEqs';
@@ -404,7 +404,7 @@ classdef ProtonicMembraneCell < BaseModel
             % cutoff the pressures
 
             gs    = 'GasSupply';
-            ce    = 'Cell';
+            ce    = 'Electrolyser';
             an    = 'Anode';
             ct    = 'Cathode';
             itf   = 'Interface';
@@ -433,10 +433,10 @@ classdef ProtonicMembraneCell < BaseModel
                 state = model.capProperty(state, mfvars{ip}, mfmin, mfmax);
             end
             
-            phivars = {{'Cell', 'Anode'      , 'phi'}, ...
-                       {'Cell', 'Cathode'    , 'pi'} , ...
-                       {'Cell', 'Electrolyte', 'phi'}, ...
-                       {'Cell', 'Electrolyte', 'pi'}};
+            phivars = {{'Electrolyser', 'Anode'      , 'phi'}, ...
+                       {'Electrolyser', 'Cathode'    , 'pi'} , ...
+                       {'Electrolyser', 'Electrolyte', 'phi'}, ...
+                       {'Electrolyser', 'Electrolyte', 'pi'}};
             
             for ip = 1 : numel(phivars)
                 state = model.capProperty(state, phivars{ip}, -phimax , phimax);

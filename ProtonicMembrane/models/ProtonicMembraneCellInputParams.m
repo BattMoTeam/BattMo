@@ -4,7 +4,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
 
         T
         
-        Cell
+        Electrolyser
         GasSupply
         
         couplingTerm
@@ -19,7 +19,7 @@ classdef ProtonicMembraneCellInputParams < ComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
 
-            inputparams.Cell      = ProtonicMembraneInputParams(pick('Cell'));
+            inputparams.Electrolyser      = ProtonicMembraneInputParams(pick('Electrolyser'));
             inputparams.GasSupply = ProtonicMembraneGasSupplyInputParams(pick('GasSupply'));
             
             inputparams = inputparams.validateInputParams();

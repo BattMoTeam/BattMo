@@ -2,10 +2,10 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
     properties
 
-        nxCell
+        nxElectrolyser
         nxGasSupply
         
-        lxCell
+        lxElectrolyser
         lxGasSupply
 
         nx
@@ -21,9 +21,9 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
             % We start with grid setup
             nx1 = gen.nxGasSupply;
-            nx2 = gen.nxCell;
+            nx2 = gen.nxElectrolyser;
             lx1 = gen.lxGasSupply;
-            lx2 = gen.lxCell;
+            lx2 = gen.lxElectrolyser;
             ny  = gen.ny;
             ly  = gen.ly;
 
@@ -44,12 +44,12 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             % We setup params structure which defines which cells are in the PEM and GasSupply
             % NOTE that we rely implicity below on ordering of cells used in tensorGrid
             
-            nxCell      = gen.nxCell;
+            nxElectrolyser      = gen.nxElectrolyser;
             nxGasSupply = gen.nxGasSupply;
             ny          = gen.ny;
             
-            nx = nxCell + nxGasSupply;
-            lx = gen.lxCell + gen.lxGasSupply;
+            nx = nxElectrolyser + nxGasSupply;
+            lx = gen.lxElectrolyser + gen.lxGasSupply;
 
             gen.nx = nx;
             gen.lx = lx;
@@ -63,12 +63,12 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             % NOTE that we rely implicity on ordering of cells used in tensorGrid
             carttbl = carttbl.addInd('cells', (1 : nx*ny)')';
 
-            celltbl.xind = nxGasSupply + (1 : nxCell)';
+            celltbl.xind = nxGasSupply + (1 : nxElectrolyser)';
             celltbl = IndexArray(celltbl);
             celltbl = crossIndexArray(carttbl, celltbl, {'xind'});
             
-            params.Cell.cellinds             = celltbl.get('cells');
-            params.Cell.Electrolyte.cellinds = params.Cell.cellinds;
+            params.Electrolyser.cellinds             = celltbl.get('cells');
+            params.Electrolyser.Electrolyte.cellinds = params.Electrolyser.cellinds;
             
             gassupplytbl.xind = (1 : nxGasSupply)';
             gassupplytbl = IndexArray(gassupplytbl);
@@ -86,15 +86,15 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
         end
         
-        function gen = setupCellGridGenerator(gen, inputparams, params)
+        function gen = setupElectrolyserGridGenerator(gen, inputparams, params)
         % setup cellGridGenerator
 
             cgen = PEMgridGenerator2D();
 
             cgen.parentGrid = gen.parentGrid;
-            cgen.xlength    = gen.lxCell;
+            cgen.xlength    = gen.lxElectrolyser;
             cgen.ylength    = gen.ly;
-            cgen.Nx         = gen.nxCell;
+            cgen.Nx         = gen.nxElectrolyser;
             cgen.Ny         = gen.ny;
             
             gen.cellGridGenerator = cgen;
@@ -116,10 +116,10 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             
         end
 
-        function [inputparams, gen] = setupCellGasSupplyCoupling(gen, inputparams, params)
+        function [inputparams, gen] = setupElectrolyserGasSupplyCoupling(gen, inputparams, params)
 
 
-            coupTerms = inputparams.Cell.couplingTerms;
+            coupTerms = inputparams.Electrolyser.couplingTerms;
 
             for icoup = 1 : numel(coupTerms)
                 coupTerm = coupTerms{icoup};
@@ -136,8 +136,8 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
             coupcfacetbl.ind = (1 : numel(cfaces))'; % we keep track of local indexing which is used for the anode structure
             coupcfacetbl = IndexArray(coupcfacetbl);
 
-            % We setup Cell mapping
-            cG = inputparams.Cell.G;
+            % We setup Electrolyser mapping
+            cG = inputparams.Electrolyser.G;
             cfacefacetbl.cfaces = (1 : cG.getNumberOfFaces())';
             cfacefacetbl.faces = cG.mappings.facemap;
             cfacefacetbl = IndexArray(cfacefacetbl);
@@ -157,7 +157,7 @@ classdef GasSupplyPEMgridGenerator2D < GasSupplyPEMgridGenerator
 
             coupgcellgfacecfacefacetbl = crossIndexArray(coupgfacecfacefacetbl, gcellgfacetbl, {'gfaces'});
 
-            coupTerm = couplingTerm('Gas Supply - Anode', {'GasSupply', {'Cell', 'Anode'}});
+            coupTerm = couplingTerm('Gas Supply - Anode', {'GasSupply', {'Electrolyser', 'Anode'}});
             tbl = coupgcellgfacecfacefacetbl; % shortcut
             coupTerm.couplingcells = [tbl.get('gcells'), tbl.get('ind')];
             coupTerm.couplingfaces = [tbl.get('gfaces'), tbl.get('ind')];

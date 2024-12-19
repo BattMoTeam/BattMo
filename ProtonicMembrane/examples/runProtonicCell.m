@@ -5,7 +5,7 @@ clear all
 mrstModule add ad-core mrst-gui
 
 gs    = 'GasSupply';
-ce    = 'Cell';
+ce    = 'Electrolyser';
 an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
@@ -16,7 +16,7 @@ clear jsonstruct
 filename = 'ProtonicMembrane/gas-supply-whole-cell.json';
 jsonstruct.GasSupply = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/protonicMembrane.json';
-jsonstruct.Cell = parseBattmoJson(filename);
+jsonstruct.Electrolyser = parseBattmoJson(filename);
 
 %% Adjust diffusion
 Dmult = 1e-3;
@@ -34,9 +34,9 @@ inputparams = ProtonicMembraneCellInputParams(jsonstruct);
 
 gen = GasSupplyPEMgridGenerator2D();
 
-gen.nxCell      = 1000;
+gen.nxElectrolyser      = 1000;
 gen.nxGasSupply = 50;
-gen.lxCell      = 22*micro*meter;
+gen.lxElectrolyser      = 22*micro*meter;
 gen.lxGasSupply = 0.5*milli*meter;
 
 gen.ny = 30;
@@ -52,13 +52,13 @@ if doplot
 
     figure('position', [337, 757, 3068, 557])
     plotGrid(inputparams.G)
-    plotGrid(inputparams.Cell.G, 'facecolor', 'red')
+    plotGrid(inputparams.Electrolyser.G, 'facecolor', 'red')
     plotGrid(inputparams.GasSupply.G, 'facecolor', 'blue')
 
     plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{1}.couplingcells);
     plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{2}.couplingcells);
-    plotGrid(inputparams.Cell.G, inputparams.Cell.couplingTerms{1}.couplingcells(:, 2));
-    plotGrid(inputparams.Cell.G, inputparams.Cell.couplingTerms{2}.couplingcells(:, 2));
+    plotGrid(inputparams.Electrolyser.G, inputparams.Electrolyser.couplingTerms{1}.couplingcells(:, 2));
+    plotGrid(inputparams.Electrolyser.G, inputparams.Electrolyser.couplingTerms{2}.couplingcells(:, 2));
     plotGrid(inputparams.GasSupply.G, inputparams.GasSupply.couplingTerms{3}.couplingcells );
 
     return
@@ -182,9 +182,9 @@ if doinitialisation
     inputparamspem = ProtonicMembraneInputParams(jsonstructpem);
 
     genpem = PEMgridGenerator2D();
-    genpem.xlength = gen.lxCell;
+    genpem.xlength = gen.lxElectrolyser;
     genpem.ylength = gen.ly;
-    genpem.Nx      = gen.nxCell;
+    genpem.Nx      = gen.nxElectrolyser;
     genpem.Ny      = gen.ny;
 
     inputparamspem = genpem.updateInputParams(inputparamspem);
@@ -387,7 +387,7 @@ close all
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
 
-N = gen.nxCell;
+N = gen.nxElectrolyser;
 xc = model.(ce).(elyte).grid.cells.centroids(1 : N, 1);
 
 state = states{end};
@@ -483,11 +483,11 @@ view([50, 51]);
 
 % Current in anode
 
-i = state.Cell.Anode.i;
+i = state.Electrolyser.Anode.i;
 
-ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
-yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
-areas = model.Cell.Electrolyte.grid.faces.areas(ind);
+ind   = model.Electrolyser.couplingTerms{1}.couplingfaces(:, 2);
+yc    = model.Electrolyser.Electrolyte.grid.faces.centroids(ind, 2);
+areas = model.Electrolyser.Electrolyte.grid.faces.areas(ind);
 
 u = ampere/((centi*meter)^2);
 i = (i./areas)/u;
@@ -500,11 +500,11 @@ xlabel('height / mm')
 
 % Current in anode
 
-iHp = state.Cell.Anode.iHp;
+iHp = state.Electrolyser.Anode.iHp;
 
-ind   = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
-yc    = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
-areas = model.Cell.Electrolyte.grid.faces.areas(ind);
+ind   = model.Electrolyser.couplingTerms{1}.couplingfaces(:, 2);
+yc    = model.Electrolyser.Electrolyte.grid.faces.centroids(ind, 2);
+areas = model.Electrolyser.Electrolyte.grid.faces.areas(ind);
 
 u = ampere/((centi*meter)^2);
 iHp = (iHp./areas)/u;
@@ -517,13 +517,13 @@ xlabel('height / mm')
 % Faradic effect in Anode
 
 drivingForces.src = @(time) controlfunc(time, I, timeswitch, totaltime, 'order', 'I-first');
-state = model.evalVarName(state, 'Cell.Anode.iHp', {{'drivingForces', drivingForces}});
+state = model.evalVarName(state, 'Electrolyser.Anode.iHp', {{'drivingForces', drivingForces}});
 
-i   = state.Cell.Anode.i;
-iHp = state.Cell.Anode.iHp;
+i   = state.Electrolyser.Anode.i;
+iHp = state.Electrolyser.Anode.iHp;
 
-ind = model.Cell.couplingTerms{1}.couplingfaces(:, 2);
-yc  = model.Cell.Electrolyte.grid.faces.centroids(ind, 2);
+ind = model.Electrolyser.couplingTerms{1}.couplingfaces(:, 2);
+yc  = model.Electrolyser.Electrolyte.grid.faces.centroids(ind, 2);
 
 figure
 plot(yc/(milli*meter), iHp./i);

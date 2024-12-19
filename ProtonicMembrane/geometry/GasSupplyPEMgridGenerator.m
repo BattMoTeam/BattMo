@@ -24,16 +24,16 @@ classdef GasSupplyPEMgridGenerator
             
             [inputparams, gen] = gen.setupGrid(inputparams, params);
 
-            gen = gen.setupCellGridGenerator(inputparams, params);
+            gen = gen.setupElectrolyserGridGenerator(inputparams, params);
             gen = gen.setupGasSupplyGridGenerator(inputparams, params);
 
-            inputparams.Cell.G      = genSubGrid(gen.parentGrid, params.Cell.cellinds);
+            inputparams.Electrolyser.G      = genSubGrid(gen.parentGrid, params.Electrolyser.cellinds);
             inputparams.GasSupply.G = genSubGrid(gen.parentGrid, params.GasSupply.cellinds);
             
-            [inputparams.Cell, gen]      = gen.setupCell(inputparams.Cell, params.Cell);
+            [inputparams.Electrolyser, gen]      = gen.setupElectrolyser(inputparams.Electrolyser, params.Electrolyser);
             [inputparams.GasSupply, gen] = gen.setupGasSupply(inputparams.GasSupply, params.GasSupply);
 
-            [inputparams, gen] = gen.setupCellGasSupplyCoupling(inputparams);
+            [inputparams, gen] = gen.setupElectrolyserGasSupplyCoupling(inputparams);
             
         end
 
@@ -43,7 +43,7 @@ classdef GasSupplyPEMgridGenerator
             
         end
         
-        function gen = setupCellGridGenerator(gen, inputparams, params)
+        function gen = setupElectrolyserGridGenerator(gen, inputparams, params)
         % setup gen.cellGridGenerator
 
             error('virtual function');
@@ -57,7 +57,7 @@ classdef GasSupplyPEMgridGenerator
             
         end
 
-        function [inputparams, gen] = setupCell(gen, inputparams, params)
+        function [inputparams, gen] = setupElectrolyser(gen, inputparams, params)
         % - inputparams is instance of ProtonicMembraneInputParams
         % - The setup is taken from setupInputParams method in PEMgridGenerator except for the grid setup.
         %   Note that we assume that electrolyte and PEM have same grid (this may changed...)
