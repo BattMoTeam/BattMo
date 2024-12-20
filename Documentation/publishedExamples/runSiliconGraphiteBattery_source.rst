@@ -35,7 +35,7 @@ Source code for runSiliconGraphiteBattery
   % We load the property of a composite silicon graphite electrode, see :ref:`compositeElectrode`
   %
   
-  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
+  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
   
   %%
   % For the remaining properties, we consider a standard data set 
@@ -58,35 +58,35 @@ Source code for runSiliconGraphiteBattery
   
   %%
   % We instantiate the battery :code:`InputParams` object
-  inputparams = BatteryInputParams(jsonstruct);
+  paramobj = BatteryInputParams(jsonstruct);
   
   %%
   % We set the mass fractions of the different material in the coating of the negative electrode. This information could
   % have been passed in the json file earlier (:ref:`compositeElectrode`)
   
-  inputparams.(ne).(co).(am1).massFraction = 0.9;
-  inputparams.(ne).(co).(am2).massFraction = 0.08;
-  inputparams.(ne).(co).(bd).massFraction  = 0.01;
-  inputparams.(ne).(co).(ad).massFraction  = 0.01;
+  paramobj.(ne).(co).(am1).massFraction = 0.9;
+  paramobj.(ne).(co).(am2).massFraction = 0.08;
+  paramobj.(ne).(co).(bd).massFraction  = 0.01;
+  paramobj.(ne).(co).(ad).massFraction  = 0.01;
   
   %%
   % We change the given CRate
-  inputparams.Control.CRate = 0.1;
+  paramobj.Control.CRate = 0.1;
   
   %%
   % We validate the :code:`InputParams` using the method :code:`validateInputParams` which belongs to the parent class. This step 
-  Inputparams = inputparams.validateInputParams();
+  Paramobj = paramobj.validateInputParams();
   
-  gen = BatteryGeneratorP2D();
+  gen = BatteryGenerator1D();
   
   %% 
-  % Now, we update the inputparams with the properties of the mesh. 
-  inputparams = gen.updateBatteryInputParams(inputparams);
+  % Now, we update the paramobj with the properties of the mesh. 
+  paramobj = gen.updateBatteryInputParams(paramobj);
   
   %% Model Instantiation
   % We instantiate the model
   
-  model = Battery(inputparams);
+  model = Battery(paramobj);
   
   
   %% Setup schedule (control and time stepping)
@@ -106,7 +106,7 @@ Source code for runSiliconGraphiteBattery
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               model.Control.Imax, ...
                                               model.Control.lowerCutoffVoltage);
-  control = struct('src', srcfunc, 'CCDischarge', true);
+  control = struct('src', srcfunc, 'IEswitch', true);
   
   schedule = struct('control', control, 'step', step); 
   
@@ -154,7 +154,7 @@ Source code for runSiliconGraphiteBattery
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               -model.Control.Imax, ...
                                               model.Control.upperCutoffVoltage);
-  control = struct('src', srcfunc, 'CCDischarge', true);
+  control = struct('src', srcfunc, 'IEswitch', true);
   schedule = struct('control', control, 'step', step); 
   
   %% Run the simulation for the charge perios

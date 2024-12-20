@@ -36,7 +36,7 @@ Source code for runJsonScript
   
   %% Control
   % We load the json structure for the geometrical properties
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
+  jsonfilename = fullfile('Examples', 'jsondatafiles', 'ie_control.json');
   jsonstruct_control = parseBattmoJson(jsonfilename);
   
   %% Simulation parameters
@@ -65,7 +65,7 @@ Source code for runJsonScript
   
   CRate = jsonstruct.Control.CRate;
   jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-  jsonstruct.TimeStepping.numberOfTimeSteps = 40;
+  jsonstruct.TimeStepping.N = 40;
   
   %% We start the simulation
   % We use the function :code:`runBatteryJson` to run the simulation with json input structure

@@ -24,21 +24,21 @@ We load the input data that is given by json structures. The physical properties
                                                {'Electrolyser', 'Electrolyte', 'Nx'}, ...
                                                {'Electrolyser', 'Electrolyte', 'xlength'});
 
-The geometrical property of the cell is given in battmofile::`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
+The geometrical property of the cell is given in :battmofile:`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
 
 .. code-block:: matlab
 
   filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
   jsonstruct_geometry = parseBattmoJson(filename);
 
-The initial state is given in battmofile::`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
+The initial state is given in :battmofile:`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
 
 .. code-block:: matlab
 
   filename = 'ProtonicMembrane/jsonfiles/gas-supply-initialization.json';
   jsonstruct_initialization.GasSupply = parseBattmoJson(filename);
 
-The time stepping parameters are given in battmofile::`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
+The time stepping parameters are given in :battmofile:`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
 
 .. code-block:: matlab
 
@@ -73,7 +73,7 @@ We setup the grid, by calling the function :battmo:`setupProtonicMembraneGasLaye
 
 .. code-block:: matlab
 
-  % [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+  [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 
 Model setup
@@ -82,13 +82,13 @@ We setup the model for the full cell (electrolyser and a gas supply layer).
 
 .. code-block:: matlab
 
-  % model = ProtonicMembraneCell(inputparams);
+  model = ProtonicMembraneCell(inputparams);
 
 The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
 
 .. code-block:: matlab
 
-  % model = model.setupForSimulation();
+  model = model.setupForSimulation();
 
 
 Grid plots
@@ -179,7 +179,12 @@ We use an adaptive time stepping. In this case, the solver will try to keep the 
 
 Start simulation
 ================
-We start the simulation [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+We start the simulation
+
+.. code-block:: matlab
+
+  [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+
 
 plotting setup
 ==============

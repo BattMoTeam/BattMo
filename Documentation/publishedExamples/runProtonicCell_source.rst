@@ -27,21 +27,21 @@ Source code for runProtonicCell
                                                {'Electrolyser', 'Electrolyte', 'xlength'});
   
   %%
-  % The geometrical property of the cell is given in battmofile::`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
+  % The geometrical property of the cell is given in :battmofile:`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
   %
   
   filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
   jsonstruct_geometry = parseBattmoJson(filename);
   
   %%
-  % The initial state is given in battmofile::`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
+  % The initial state is given in :battmofile:`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
   %
   
   filename = 'ProtonicMembrane/jsonfiles/gas-supply-initialization.json';
   jsonstruct_initialization.GasSupply = parseBattmoJson(filename);
   
   %%
-  % The time stepping parameters are given in battmofile::`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
+  % The time stepping parameters are given in :battmofile:`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
   %
   
   filename = 'ProtonicMembrane/jsonfiles/cell-timestepping.json';
@@ -72,19 +72,19 @@ Source code for runProtonicCell
   % We setup the grid, by calling the function :battmo:`setupProtonicMembraneGasLayerGrid`
   %
   
-  % [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+  [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
   
   %% Model setup
   %
   % We setup the model for the full cell (electrolyser and a gas supply layer).
   
-  % model = ProtonicMembraneCell(inputparams);
+  model = ProtonicMembraneCell(inputparams);
   
   %%
   % The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
   %
   
-  % model = model.setupForSimulation();
+  model = model.setupForSimulation();
   
   %% Grid plots
   %
@@ -146,7 +146,7 @@ Source code for runProtonicCell
   %% Start simulation
   %
   % We start the simulation
-  % [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+  [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
   
   %% plotting setup
   %

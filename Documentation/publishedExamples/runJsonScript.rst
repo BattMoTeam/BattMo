@@ -49,7 +49,7 @@ We load the json structure for the geometrical properties
 
 .. code-block:: matlab
 
-  jsonfilename = fullfile('Examples', 'jsondatafiles', 'cc_discharge_control.json');
+  jsonfilename = fullfile('Examples', 'jsondatafiles', 'ie_control.json');
   jsonstruct_control = parseBattmoJson(jsonfilename);
 
 
@@ -89,7 +89,7 @@ We adjust the total time with respect to the given CRate.
 
   CRate = jsonstruct.Control.CRate;
   jsonstruct.TimeStepping.totalTime = 1.4*hour/CRate;
-  jsonstruct.TimeStepping.numberOfTimeSteps = 40;
+  jsonstruct.TimeStepping.N = 40;
 
 
 We start the simulation

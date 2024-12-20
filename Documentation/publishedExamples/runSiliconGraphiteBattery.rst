@@ -1,14 +1,15 @@
-
 .. _runSiliconGraphiteBattery:
 
+
+====================================
 Composite Silicon Graphite electrode
---------------------------------------------------------------------
+====================================
 *Generated from runSiliconGraphiteBattery.m*
 
 
 
 Import the required modules from MRST
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=====================================
 load MRST modules
 
 .. code-block:: matlab
@@ -17,7 +18,7 @@ load MRST modules
 
 
 Shortcuts
-^^^^^^^^^
+=========
 We define shorcuts for the sub-models.
 
 .. code-block:: matlab
@@ -37,12 +38,12 @@ We define shorcuts for the sub-models.
 
 
 Setup the properties of the battery
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===================================
 We load the property of a composite silicon graphite electrode, see :ref:`compositeElectrode`
 
 .. code-block:: matlab
 
-  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
+  jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon_graphite.json');
 
 For the remaining properties, we consider a standard data set
 
@@ -74,49 +75,49 @@ We instantiate the battery :code:`InputParams` object
 
 .. code-block:: matlab
 
-  inputparams = BatteryInputParams(jsonstruct);
+  paramobj = BatteryInputParams(jsonstruct);
 
 We set the mass fractions of the different material in the coating of the negative electrode. This information could have been passed in the json file earlier (:ref:`compositeElectrode`)
 
 .. code-block:: matlab
 
-  inputparams.(ne).(co).(am1).massFraction = 0.9;
-  inputparams.(ne).(co).(am2).massFraction = 0.08;
-  inputparams.(ne).(co).(bd).massFraction  = 0.01;
-  inputparams.(ne).(co).(ad).massFraction  = 0.01;
+  paramobj.(ne).(co).(am1).massFraction = 0.9;
+  paramobj.(ne).(co).(am2).massFraction = 0.08;
+  paramobj.(ne).(co).(bd).massFraction  = 0.01;
+  paramobj.(ne).(co).(ad).massFraction  = 0.01;
 
 We change the given CRate
 
 .. code-block:: matlab
 
-  inputparams.Control.CRate = 0.1;
+  paramobj.Control.CRate = 0.1;
 
 We validate the :code:`InputParams` using the method :code:`validateInputParams` which belongs to the parent class. This step
 
 .. code-block:: matlab
 
-  Inputparams = inputparams.validateInputParams();
+  Paramobj = paramobj.validateInputParams();
   
-  gen = BatteryGeneratorP2D();
+  gen = BatteryGenerator1D();
 
-Now, we update the inputparams with the properties of the mesh.
+Now, we update the paramobj with the properties of the mesh.
 
 .. code-block:: matlab
 
-  inputparams = gen.updateBatteryInputParams(inputparams);
+  paramobj = gen.updateBatteryInputParams(paramobj);
 
 
 Model Instantiation
-^^^^^^^^^^^^^^^^^^^
+===================
 We instantiate the model
 
 .. code-block:: matlab
 
-  model = Battery(inputparams);
+  model = Battery(paramobj);
 
 
 Setup schedule (control and time stepping)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================================
 We will simulate two consecutive periods: a discharge followed by a charge.
 We start with the charge period
 
@@ -134,13 +135,13 @@ We start with the charge period
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               model.Control.Imax, ...
                                               model.Control.lowerCutoffVoltage);
-  control = struct('src', srcfunc, 'CCDischarge', true);
+  control = struct('src', srcfunc, 'IEswitch', true);
   
   schedule = struct('control', control, 'step', step);
 
 
 Setup the initial state of the model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+====================================
 We use the default initialisation given by a method in the model
 
 .. code-block:: matlab
@@ -149,7 +150,7 @@ We use the default initialisation given by a method in the model
 
 
 Setup the properties of the nonlinear solver
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+============================================
 We adjust some settings for the nonlinear solver
 
 .. code-block:: matlab
@@ -188,7 +189,7 @@ We use verbosity
 
 
 Run the simulation for the discharge
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+====================================
 
 .. code-block:: matlab
 
@@ -198,7 +199,7 @@ Run the simulation for the discharge
 
 
 Setup charge schedule
-^^^^^^^^^^^^^^^^^^^^^
+=====================
 We use the last computed state of the discharge as the initial state for the charge period.
 
 .. code-block:: matlab
@@ -212,12 +213,12 @@ We use a new control. Note the minus sign in front of :code:`model.Control.Imax`
   srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
                                               -model.Control.Imax, ...
                                               model.Control.upperCutoffVoltage);
-  control = struct('src', srcfunc, 'CCDischarge', true);
+  control = struct('src', srcfunc, 'IEswitch', true);
   schedule = struct('control', control, 'step', step);
 
 
 Run the simulation for the charge perios
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+========================================
 
 .. code-block:: matlab
 
@@ -227,7 +228,7 @@ Run the simulation for the charge perios
 
 
 Visualisation
-^^^^^^^^^^^^^
+=============
 We concatenate the states we have computed
 
 .. code-block:: matlab

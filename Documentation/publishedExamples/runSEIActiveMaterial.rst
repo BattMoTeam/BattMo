@@ -11,7 +11,7 @@ Particle simulation with SEI layer growth
 .. code-block:: matlab
 
   % clear the workspace and close open figures
-  clear
+  clear all
   close all
 
 
@@ -54,6 +54,8 @@ Setup the model
 
   % We use a stand alone model for the particle
   paramobj.standAlone = true;
+  
+  paramobj = paramobj.validateInputParams();
   
   % We initiate the model
   model = SEIActiveMaterial(paramobj);
@@ -152,7 +154,7 @@ Run simulation
 .. code-block:: matlab
 
   model.verbose = true;
-  [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+  [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 
 Plotting
