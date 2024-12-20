@@ -35,7 +35,7 @@ state0 = model.setupInitialState();
 
 %% Schedule
 % We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
-% control and the current equal to zero (see :battmofile:`here<ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
+% control and the current equal to zero (see :battmofile:`here <ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
 %
 % We compute the steady-state solution and the time stepping here does not correspond to time values but should be seen
 % as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which

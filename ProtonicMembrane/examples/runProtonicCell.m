@@ -80,22 +80,25 @@ model = model.setupForSimulation();
 %
 % We plot the different regions with their grids.
 
-figure('position', [337, 757, 3068, 557])
-hold on
 %%
 % To resolve the non-linearity in the electrolyte, we need a very fine mesh. Plotting the full mesh including the edges
 % for this domain will hide its structure. Therefore we set the option :code:`edgecolor` to :code:`none`.
 %
+figure('position', [337, 757, 3068, 557])
+hold on
 plotGrid(model.grid, 'edgecolor', 'none')
 plotGrid(model.Electrolyser.grid, 'facecolor', 'red', 'edgecolor', 'none')
-plotGrid(model.GasSupply.grid, 'facecolor', 'blue')
+plotGrid(model.GasSupply.grid, 'facecolor', 0.9*[0 1 1], 'edgealpha', 0.2)
 %%
 % We plot the boundary and interface faces
-opts = {'linewidth', 5, ...
-        'edgecolor', 'yellow'};
-hold off
+s = spring(10);
+opts = {'linewidth', 10, ...
+        'edgecolor', s(8, :)};
 %%
 % we plot the inlet faces
+figure('position', [337, 757, 3068, 557])
+plotGrid(model.Electrolyser.grid, 'facecolor', 'none', 'edgecolor', 'none')
+plotGrid(model.GasSupply.grid, 'facecolor', 'none', 'edgealpha', 0.2)
 plotFaces(model.GasSupply.grid, model.GasSupply.couplingTerms{1}.couplingfaces, opts{:});
 %%
 % we add the outlet faces
@@ -103,8 +106,6 @@ plotFaces(model.GasSupply.grid, model.GasSupply.couplingTerms{2}.couplingfaces, 
 %%
 % we add the interface faces
 plotFaces(model.GasSupply.grid, model.couplingTerm.couplingfaces(:, 1) , opts{:});
-
-return
 
 %% Setup initial state
 %
