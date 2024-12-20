@@ -129,17 +129,24 @@ classdef ProtonicMembraneCell < BaseModel
             an     = 'Anode';
             ct     = 'Cathode';
             ctrl   = 'Control';
+
+            % We setup an equivalent 1D problem to obtain the scaling
+
+            jsonstruct_elyser = jsonstruct.(elyser);
+            jsonstruct_elyser.Geometry.type = '1D';
+            jsonstruct_elyser.(elyte).faceArea = inputparams.(elyser).(ctrl).area;
+
+            inputparams_elyser = ProtonicMembraneInputParams(jsonstruct_elyser);
+            [inputparams_elyser, gen] = setupProtonicMembraneGrid(inputparams_elyser, jsonstruct_elyser);
             
-            elysermodel = ProtonicMembrane(inputparams.(elyser));
-            elysermodel = elysermodel.setupForSimulation();
+            model_elyser = ProtonicMembrane(inputparams_elyser);
+            model_elyser = model_elyser.setupForSimulation();
 
-            initElyserState = elysermodel.setupInitialState();
+            initElyserState = model_elyser.setupInitialState();
 
-            initElyserState.Control.I = 0;
-
-            drivingforces.src = @(time, I) pmControlFunc(time, I, 1, 2, 'order', 'I-first');
-            initElyserState = elysermodel.evalVarName(initElyserState, {elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
-            initElyserState = elysermodel.evalVarName(initElyserState, {elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
+            drivingforces.src = @(time, I) pmControlFunc(time, I, 0.5, 1, 'order', 'I-first');
+            initElyserState = model_elyser.evalVarName(initElyserState, {elyte, 'sigmaEl'}, {{'drivingForces', drivingforces}});
+            initElyserState = model_elyser.evalVarName(initElyserState, {elyte, 'sigmaHp'}, {{'drivingForces', drivingforces}});
 
             sigmaHp = initElyserState.(elyte).sigmaHp(1);
             sigmaEl = initElyserState.(elyte).sigmaEl(1);
@@ -162,12 +169,23 @@ classdef ProtonicMembraneCell < BaseModel
                               {{elyser, ctrl , 'controlEquation'}, sEl}, ...
                               {{elyser, 'anodeChargeCons'}       , sEl}};
 
-            schedule = elysermodel.Control.setupSchedule(jsonstruct.(elyser));
+            schedule = model_elyser.Control.setupSchedule(jsonstruct.(elyser));
+            
+            ts = IterationCountTimeStepSelector('targetIterationCount', 5);
 
-            [~, states, report] = simulateScheduleAD(initElyserState, elysermodel, schedule);
+            nls = NonLinearSolver();
+            nls.timeStepSelector   = ts;
+            nls.maxIterations      = 10;
+            nls.errorOnFailure     = false;
 
+            model_elyser.nonlinearTolerance = 1e-5;
+
+            fprintf('1D pre-simulation of the membrane to compute the equation scalings...\n');
+            [~, states, report] = simulateScheduleAD(initElyserState, model_elyser, schedule, 'NonLinearSolver', nls);
+            fprintf('done with 1d pre-simulation\n');
+            
             state = states{end};
-            state = elysermodel.addVariables(state, schedule.control);
+            state = model_elyser.addVariables(state, schedule.control);
 
             molfluxref = abs(sum(state.Anode.iHp)/PhysicalConstants.F); % in mol/second
 
@@ -175,7 +193,6 @@ classdef ProtonicMembraneCell < BaseModel
             
             gasInd = model.(gs).gasInd;
             pH2O = jsonstruct.(gs).initialState.pressure;
-
 
             switch jsonstruct.Geometry.type
               case '2D'
@@ -193,7 +210,6 @@ classdef ProtonicMembraneCell < BaseModel
                           {{gs, 'Control', 'rateEq'}, scalRateEq}              , ...
                           {{gs, 'GasSupplyBc', 'bcFluxEquations', 1}, scalFlux}, ...
                           {{gs, 'GasSupplyBc', 'bcFluxEquations', 2}, scalFlux}};
-
 
             model.scalings = horzcat(elyserScalings, gsScalings);
             
@@ -550,7 +566,7 @@ classdef ProtonicMembraneCell < BaseModel
             steps1 = diff(t1);
 
             dt2 = (T - timeswitch)/N2;
-            steps2 = rampupTimesteps(totaltime - timeswitch, dt2, 5);
+            steps2 = rampupTimesteps(T - timeswitch, dt2, 5);
 
             step.val = [steps1; steps2];
             step.control = ones(numel(step.val), 1);
