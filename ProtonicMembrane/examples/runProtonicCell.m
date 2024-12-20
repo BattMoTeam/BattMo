@@ -22,10 +22,15 @@ jsonstruct_geometry = parseBattmoJson(filename);
 filename = 'ProtonicMembrane/jsonfiles/gas-supply-initialization.json';
 jsonstruct_initialization.GasSupply = parseBattmoJson(filename);
 
-jsonstruct = mergeJsonStructs({jsonstruct_material, ...
-                               jsonstruct_geometry, ...
-                               jsonstruct_initialization});
+filename = 'ProtonicMembrane/jsonfiles/cell-timestepping.json';
+jsonstruct_timestepping = parseBattmoJson(filename);
 
+jsonstruct = mergeJsonStructs({jsonstruct_material      , ...
+                               jsonstruct_geometry      , ...
+                               jsonstruct_initialization, ...
+                               jsonstruct_timestepping});
+
+jsonstruct.Electrolyser.Control.currentDensity = 0.1*ampere/((centi*meter)^2);
 
 %% Input parameter setup
 %
@@ -49,6 +54,7 @@ model = ProtonicMembraneCell(inputparams);
 
 %%
 % The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
+%
 
 model = model.setupForSimulation();
 
@@ -69,7 +75,7 @@ plotGrid(model.GasSupply.grid, model.couplingTerm.couplingcells(:, 1) );
 
 %% Setup initial state
 %
-
+% The initial state for the cell is used using the initial state of the gas layer that have been loaded (see :battmofile:`here <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`)
 initstate = model.setupInitialState(jsonstruct);
 
 %% Setup schedule
@@ -77,7 +83,6 @@ initstate = model.setupInitialState(jsonstruct);
 
 schedule = model.setupSchedule(jsonstruct);
 
-return
 
 %% Setup nonlinear solver
 
@@ -95,28 +100,7 @@ model.verbose = true;
 
 %% Start simulation
 
-dopack = true;
-clearSimulation = true;
-
-if dopack
-
-    name = 'testwholecell';
-    problem = packSimulationProblem(initstate, model, schedule, []             , ...
-                                    'ExtraArguments', {'OutputMinisteps', true}, ...
-                                    'Name'           , name                    , ...
-                                    'NonLinearSolver', nls);
-    if clearSimulation
-        %% clear previously computed simulation
-        clearPackedSimulatorOutput(problem, 'prompt', false);
-    end
-    simulatePackedProblem(problem);
-    [globvars, states, reports] = getPackedSimulatorOutput(problem);
-    
-else
-    
-    [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-end
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 %% plotting
 
@@ -124,6 +108,11 @@ close all
 
 set(0, 'defaultlinelinewidth', 3);
 set(0, 'defaultaxesfontsize', 15);
+
+
+elyser = 'Electrolyser';
+elyte  = 'Electrolyte';
+gs     = 'GasSupply';
 
 N = gen.nxElectrolyser;
 xc = model.(elyser).(elyte).grid.cells.centroids(1 : N, 1);
