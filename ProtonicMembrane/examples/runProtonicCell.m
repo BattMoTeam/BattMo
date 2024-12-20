@@ -17,21 +17,21 @@ jsonstruct_material = removeJsonStructFields(jsonstruct_material, ...
                                              {'Electrolyser', 'Electrolyte', 'xlength'});
 
 %%
-% The geometrical property of the cell is given in battmofile::`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
+% The geometrical property of the cell is given in :battmofile:`2d-cell-geometry.json <ProtonicMembrane/jsonfiles/2d-cell-geometry.json>`
 %
 
 filename = 'ProtonicMembrane/jsonfiles/2d-cell-geometry.json';
 jsonstruct_geometry = parseBattmoJson(filename);
 
 %%
-% The initial state is given in battmofile::`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
+% The initial state is given in :battmofile:`gas-supply-initialization.json <ProtonicMembrane/jsonfiles/gas-supply-initialization.json>`
 %
 
 filename = 'ProtonicMembrane/jsonfiles/gas-supply-initialization.json';
 jsonstruct_initialization.GasSupply = parseBattmoJson(filename);
 
 %%
-% The time stepping parameters are given in battmofile::`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
+% The time stepping parameters are given in :battmofile:`cell-timestepping.json <ProtonicMembrane/jsonfiles/cell-timestepping.json>`
 %
 
 filename = 'ProtonicMembrane/jsonfiles/cell-timestepping.json';
