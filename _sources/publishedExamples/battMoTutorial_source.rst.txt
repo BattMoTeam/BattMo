@@ -33,7 +33,7 @@ Source code for battMoTutorial
   % negative electrode, a positive electrode and an electrolyte. *BattMo*
   % comes with some pre-defined models which can be loaded from JSON files.
   % Here we will load the basic lithium-ion model JSON file which comes with
-  % Battmo. We use :battmo:`parseBattmoJson` to parse the file, see :todo:`add link to doc`
+  % Battmo. We use :battmo:`parseBattmoJson` to parse the file.
   
   fname = fullfile('ParameterData','BatteryCellParameters',...
                    'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
@@ -86,21 +86,21 @@ Source code for battMoTutorial
   % various parts of the simulator during the simulation. This class is
   % instantiated using the jsonstruct we just created:
   
-  paramobj = BatteryInputParams(jsonstruct);
+  inputparams = BatteryInputParams(jsonstruct);
   
   %%
-  % It is also possible to update the properties of this paramobj in a
+  % It is also possible to update the properties of this inputparams in a
   % similar way to updating the jsonstruct. Here we set the discretisation
   % level for the diffusion model. Other input parameters for the full diffusion
   % model can be found here:
   % :battmo:`FullSolidDiffusionModelInputParams`.
   
-  paramobj.(ne).(co).(am).(sd).N = 5;
-  paramobj.(pe).(co).(am).(sd).N = 5;
+  inputparams.(ne).(co).(am).(sd).N = 5;
+  inputparams.(pe).(co).(am).(sd).N = 5;
   
   % We can also change how the battery is operated, for example setting
   % the cut off voltage.
-  paramobj.(ctrl).lowerCutoffVoltage = 2.5;
+  inputparams.(ctrl).lowerCutoffVoltage = 2.5;
   
   %% Setting up the geometry
   % Here, we setup the 1D computational grid that will be used for the
@@ -111,14 +111,14 @@ Source code for battMoTutorial
   gen = BatteryGeneratorP2D();
   
   %%
-  % Now, we update the paramobj with the properties of the grid. This function
-  % will update relevent parameters in the paramobj object and make sure we have
+  % Now, we update the inputparams with the properties of the grid. This function
+  % will update relevent parameters in the inputparams object and make sure we have
   % all the required parameters for the model geometry chosen.
   
-  paramobj = gen.updateBatteryInputParams(paramobj);
+  inputparams = gen.updateBatteryInputParams(inputparams);
   
   %% Initialising the battery model object
-  % The battery model is initialized by sending paramobj to the Battery class
+  % The battery model is initialized by sending inputparams to the Battery class
   % constructor. see :battmo:`Battery`.
   %
   % In BattMo a battery model is actually a collection of submodels:
@@ -126,7 +126,7 @@ Source code for battMoTutorial
   % Model. The battery class contains all of these submodels and various other
   % parameters necessary to run the simulation.
   
-  model = Battery(paramobj);
+  model = Battery(inputparams);
   
   %% Plotting the OCP curves against state of charge
   % We can inspect the model object to find out which parameters are being
@@ -162,36 +162,22 @@ Source code for battMoTutorial
   legend(eldes, 'location', 'nw')
   
   %% Controlling the simulation
-  % The control model specifies how the battery is operated, i.e., how
-  % the simulation is controlled.
+  % The control model specifies how the battery is operated, i.e., how the simulation is controlled.
   %
-  % In the first instance we use CCDischarge control policy.
-  % We set the total time scaled by the CRate in the model.
-  % The CRate has been set by the json file. We can access it here:
+  % The input parameters for the control have been given as part of the json structure
+  % :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`. The
+  % total simulation time is setup for us, computed from the DRate value. We use the method :code:`setupScheduleStep` in
+  % :battmo:`ControlModel` to setup the :code:`step` structure.
   
-  CRate = model.Control.CRate;
-  total = 1.1*hour/CRate;
-  
-  %%
-  % We want to break this total time into 100 timesteps. To begin with we
-  % will use equal values for each timestep.
-  %
-  % We create a structure containing the length of each step in seconds
-  % ('val') and also which control to use for each step ('control').
-  %
-  % In this case we use control 1 for all steps. This means that the functions
-  % used to setup the control values are the same at each step.
-  
-  n  = 100;
-  dt = total/n;
-  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
+  step = model.Control.setupScheduleStep();
   
   %%
   % We create a control structure containing the source function and
   % and a stopping criteria. The control parameters have been given in the json file
   % :battmofile:`ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json`
   %
-  % The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule structure setup below.
+  % The :code:`setupScheduleControl` method contains the code to setup the control structure that is used in the schedule
+  % structure setup below.
   
   control = model.Control.setupScheduleControl();
   
@@ -211,7 +197,6 @@ Source code for battMoTutorial
   % equilibrium concentration based on theta0, theta100 and cmax.
   
   initstate = model.setupInitialState();
-  
   
   %% Running the simulation
   % Once we have the initial state, the model and the schedule, we can call
@@ -246,13 +231,12 @@ Source code for battMoTutorial
   
   subplot(1,2,2)
   plot(time/hour, I)
-  ylim([0, 0.02])
   xlabel('time  / h')
   ylabel('Cell Current  / A')
   
   
   %{
-  Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
   and SINTEF Digital, Mathematics & Cybernetics.
   
   This file is part of The Battery Modeling Toolbox BattMo

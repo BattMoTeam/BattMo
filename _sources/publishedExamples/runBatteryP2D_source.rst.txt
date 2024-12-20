@@ -28,7 +28,7 @@ Source code for runBatteryP2D
   % used to initialize the simulation and it propagates all the parameters
   % throughout the submodels. The input parameters can be set manually or
   % provided in json format. All the parameters for the model are stored in
-  % the paramobj object.
+  % the inputparams object.
   
   jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
   
@@ -47,19 +47,22 @@ Source code for runBatteryP2D
   jsonstruct.use_thermal = false;
   jsonstruct.include_current_collectors = false;
   
-  paramobj = BatteryInputParams(jsonstruct);
+  inputparams = BatteryInputParams(jsonstruct);
   
-  use_cccv = false;
+  use_cccv = true;
   if use_cccv
-      cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                           'initialControl'    , 'discharging', ...
-                           'CRate'             , 1         , ...
-                           'lowerCutoffVoltage', 2.4       , ...
-                           'upperCutoffVoltage', 4.1       , ...
-                           'dIdtLimit'         , 0.01      , ...
-                           'dEdtLimit'         , 0.01);
-      cccvparamobj = CcCvControlModelInputParams(cccvstruct);
-      paramobj.Control = cccvparamobj;
+      inputparams.SOC = 0;
+      cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
+                           'initialControl'    , 'charging', ...
+                           'numberOfCycles'    , 2            , ...
+                           'CRate'             , 1.5          , ...
+                           'DRate'             , 1            , ...
+                           'lowerCutoffVoltage', 3            , ...
+                           'upperCutoffVoltage', 4            , ...
+                           'dIdtLimit'         , 1e-2         , ...
+                           'dEdtLimit'         , 1e-4);
+      cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+      inputparams.Control = cccvinputparams;
   end
   
   
@@ -69,16 +72,14 @@ Source code for runBatteryP2D
   % in the class BatteryGeneratorP2D.
   gen = BatteryGeneratorP2D();
   
-  % Now, we update the paramobj with the properties of the grid.
-  paramobj = gen.updateBatteryInputParams(paramobj);
+  % Now, we update the inputparams with the properties of the grid.
+  inputparams = gen.updateBatteryInputParams(inputparams);
   
   
   %%  Initialize the battery model.
-  % The battery model is initialized by sending paramobj to the Battery class
+  % The battery model is initialized by sending inputparams to the Battery class
   % constructor. see :class:`Battery <Battery.Battery>`.
-  model = Battery(paramobj);
-  
-  model.AutoDiffBackend= AutoDiffBackend();
+  model = GenericBattery(inputparams);
   
   inspectgraph = false;
   if inspectgraph
@@ -86,32 +87,13 @@ Source code for runBatteryP2D
       return
   end
   
-  %% Compute the nominal cell capacity and choose a C-Rate
-  % The nominal capacity of the cell is calculated from the active materials.
-  % This value is then combined with the user-defined C-Rate to set the cell
-  % operational current.
   
-  CRate = model.Control.CRate;
+  %% Setup the schedule
+  %
   
-  %% Setup the time step schedule
-  % Smaller time steps are used to ramp up the current from zero to its
-  % operational value. Larger time steps are then used for the normal
-  % operation.
-  switch model.(ctrl).controlPolicy
-    case 'CCCV'
-      total = 3.5*hour/CRate;
-    case 'CCDischarge'
-      total = 1.4*hour/CRate;
-    otherwise
-      error('control policy not recognized');
-  end
+  timestep.timeStepDuration = 100;
   
-  n  = 100;
-  dt = total/n;
-  step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-  
-  % we setup the control by assigning a source and stop function.
-  
+  step    = model.Control.setupScheduleStep(timestep);
   control = model.Control.setupScheduleControl();
   
   % This control is used to set up the schedule
@@ -150,9 +132,16 @@ Source code for runBatteryP2D
   nls.maxIterations = 10;
   % Change default behavior of nonlinear solver, in case of error
   nls.errorOnFailure = false;
-  nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+  % nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
   % Change default tolerance for nonlinear solver
-  model.nonlinearTolerance = 1e-3*model.Control.Imax;
+  nls.maxTimestepCuts = 6;
+  
+  if use_cccv
+      Imax = (model.(ctrl).ImaxDischarge + model.(ctrl).ImaxCharge);
+  else
+      Imax = model.(ctrl).Imax;
+  end
+  model.nonlinearTolerance = 1e-6*Imax;
   % Set verbosity
   model.verbose = true;
   
@@ -170,10 +159,16 @@ Source code for runBatteryP2D
   time = cellfun(@(x) x.time, states);
   
   figure
-  plot(time/hour, E);
+  plot(time/hour, E, '*-');
   grid on
   xlabel 'time  / h';
   ylabel 'potential  / V';
+  
+  figure
+  plot(time/hour, I, '*-');
+  grid on
+  xlabel 'time  / h';
+  ylabel 'Current  / A';
   
   writeh5 = false;
   if writeh5
@@ -182,7 +177,7 @@ Source code for runBatteryP2D
   
   
   %{
-  Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
   and SINTEF Digital, Mathematics & Cybernetics.
   
   This file is part of The Battery Modeling Toolbox BattMo

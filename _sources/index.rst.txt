@@ -15,8 +15,7 @@
    advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
-   Protonic Membrane <publishedExamples/runProtonicMembrane>
-   Gas Supply <publishedExamples/runGasSupply>
+   protonicmembrane
    app
    Computational Graph <computationalGraph/graphdoc>
    seealso

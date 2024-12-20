@@ -25,15 +25,15 @@ Source code for runProtonicMembrane
   %% Input structure setup
   % We setup the input parameter structure which will we be used to instantiate the model
   
-  inputparams = ProtonicMembraneCellInputParams(jsonstruct);
+  inputparams = ProtonicMembraneInputParams(jsonstruct);
   
   %%
-  % We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneCellGrid`
-  [inputparams, gen] = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
+  % We setup the grid, which is done by calling the function :battmo:`setupProtonicMembraneGrid`
+  [inputparams, gen] = setupProtonicMembraneGrid(inputparams, jsonstruct);
   
   %% Model setup
   % We instantiate the model for the protonic membrane cell
-  model = ProtonicMembraneCell(inputparams);
+  model = ProtonicMembrane(inputparams);
   
   %%
   % The model is equipped for simulation using the following command (this step may become unnecessary in future versions)
@@ -45,13 +45,13 @@ Source code for runProtonicMembrane
   
   %% Schedule
   % We setup the schedule, which means the timesteps and also the control we want to use. In this case we use current
-  % control and the current equal to zero (see :battmofile:`here<ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
+  % control and the current equal to zero (see :battmofile:`here <ProtonicMembrane/jsonfiles/protonicMembrane.json#118>`).
   %
   % We compute the steady-state solution and the time stepping here does not correspond to time values but should be seen
   % as step-wise increase of the effect of the non-linearity (in particular in the expression of the conductivity which
   % includes highly nonlineaer effect with the exponential terms. We do not detail here the method).
   
-  schedule = model.Control.setupSchedule(inputparams.jsonstruct);
+  schedule = model.Control.setupSchedule(jsonstruct);
   
   %% Simulation
   % We run the simulation

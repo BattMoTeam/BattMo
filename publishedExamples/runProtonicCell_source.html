@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Source code for runProtonicCell &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+
+  
+    <link rel="shortcut icon" href="../_static/battmologo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BattMo
+              <img src="../_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#show-the-dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-states">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#plot-a-result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-control-parameters">Change Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-material-parameters">Change Material Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#notebooks">Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate.html">Intermediate usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../intermediate.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../intermediate.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../intermediate.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../intermediate.html#visualize-results">Visualize Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../intermediate.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">BattMo Model Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../json.html">JSON input specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#simulation-schema">Simulation Schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#material-parameters">Material Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#electrode">Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#thermal-model">Thermal Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#geometry-setup">Geometry Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#simulation-control-parameters">Simulation Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#solver-parameters">Solver Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html#output-parameters">Output Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../geometryinput.html">Battery Geometries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp2d">BatteryGeneratorP2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp3d">BatteryGeneratorP3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advancedtopics.html">Advanced Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modelinitialisation.html">The Battery Simulation Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../controlinput.html">Control models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../controlinput.html#json-input-control-interface">Json input control interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../controlinput.html#control-model-description">Control model description</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../soliddiffusion.html">Solid Diffusion Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../thermal.html">Thermal Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimisation.html">Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../optimisation.html#parameter-identification-example">Parameter identification example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../optimisation.html#optimization-example">Optimization example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../octave.html">Octave</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../juliabridge.html">BattMo Julia bridge</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#start-server">Start Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#send-simulation-parameters">Send simulation parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#post-process-the-output">Post process the output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runElectrolyser.html">Electrolyser simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-input">Setup input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-model">Setup model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../protonicmembrane.html">Protonic Membrane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html">Protonic Membrane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#model-overview">Model overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runProtonicMembrane.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runProtonicMembrane.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#schedule">Schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#model-overview">Model overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runGasSupply.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runProtonicCell.html">Full Cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#json-input-data">json input data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#grid-plots">Grid plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#setup-schedule">Setup schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#start-simulation">Start simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#plotting-setup">plotting setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runProtonicCell.html#interface-results">Interface results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../app.html">BattMoApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../app_features.html">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#download-input-data">Download Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#upload-input-data">Upload Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html#upload-your-previous-results">Upload your previous results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app_troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../app_unnatural_artifacts.html">Unnatural artifacts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_unnatural_artifacts.html#discritization-issues">Discritization issues</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../app_unsuccessful_simulation.html">Unsuccessful simulation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_unsuccessful_simulation.html#using-lifepo4-datasets">Using LiFePO4 datasets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../computationalGraph/graphdoc.html">Computational Graph</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#a-simple-introduction-example">A simple introduction example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#graph-composition">Graph composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../seealso.html">See Also</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#mrst">MRST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#visualization">Visualization Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#id2">Grid Factory Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#fair-data">FAIR Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Source code for runProtonicCell</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/publishedExamples/runProtonicCell_source.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="source-code-for-runprotoniccell">
+<span id="runprotoniccell-source"></span><h1>Source code for runProtonicCell<a class="headerlink" href="#source-code-for-runprotoniccell" title="Permalink to this heading"></a></h1>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% PEM electrolyser with Gas Supply</span>
+<span class="c">%</span>
+
+<span class="c">%% json input data</span>
+<span class="c">%</span>
+<span class="c">% We load the input data that is given by json structures. The physical properties of the supply gas layer is given in</span>
+<span class="c">% the json file :battmofile:`gas-supply-whole-cell.json &lt;ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json&gt;`</span>
+
+<span class="nb">clear</span><span class="w"> </span><span class="n">jsonstruct_material</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">GasSupply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/protonicMembrane.json&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">Electrolyser</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">removeJsonStructFields</span><span class="p">(</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Electrolyser&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Nx&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Electrolyser&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;xlength&#39;</span><span class="p">});</span>
+
+<span class="c">%%</span>
+<span class="c">% The geometrical property of the cell is given in :battmofile:`2d-cell-geometry.json &lt;ProtonicMembrane/jsonfiles/2d-cell-geometry.json&gt;`</span>
+<span class="c">%</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/2d-cell-geometry.json&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The initial state is given in :battmofile:`gas-supply-initialization.json &lt;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&gt;`</span>
+<span class="c">%</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct_initialization</span><span class="p">.</span><span class="n">GasSupply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The time stepping parameters are given in :battmofile:`cell-timestepping.json &lt;ProtonicMembrane/jsonfiles/cell-timestepping.json&gt;`</span>
+<span class="c">%</span>
+
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/cell-timestepping.json&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct_timestepping</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% We merge all the json struct we have created to obtain a complete json structure that can be use to setup the model</span>
+<span class="c">%</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_geometry</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_initialization</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_timestepping</span><span class="p">});</span>
+
+<span class="c">%%</span>
+<span class="c">% We change the value of the current density to the value we want to use in this simulation</span>
+
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">currentDensity</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">0.1</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">);</span>
+
+<span class="c">%% Input parameter setup</span>
+<span class="c">%</span>
+<span class="c">% We setup the input parameter structure which will we be used to instantiate the model</span>
+<span class="c">%</span>
+
+<span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneCellInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% We setup the grid, by calling the function :battmo:`setupProtonicMembraneGasLayerGrid`</span>
+<span class="c">%</span>
+
+<span class="p">[</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">gen</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupProtonicMembraneCellGrid</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Model setup</span>
+<span class="c">%</span>
+<span class="c">% We setup the model for the full cell (electrolyser and a gas supply layer).</span>
+
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembraneCell</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The model is equipped for simulation using the following command (this step may become unnecessary in future versions)</span>
+<span class="c">%</span>
+
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupForSimulation</span><span class="p">();</span>
+
+<span class="c">%% Grid plots</span>
+<span class="c">%</span>
+<span class="c">% We plot the different regions with their grids.</span>
+
+<span class="c">%%</span>
+<span class="c">% To resolve the non-linearity in the electrolyte, we need a very fine mesh. Plotting the full mesh including the edges</span>
+<span class="c">% for this domain will hide its structure. Therefore we set the option :code:`edgecolor` to :code:`none`.</span>
+<span class="c">%</span>
+<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
+<span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.9</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
+<span class="c">%%</span>
+<span class="c">% We plot the boundary and interface faces</span>
+<span class="n">s</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">spring</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="n">opts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">        </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="p">:)};</span>
+<span class="c">%%</span>
+<span class="c">% we plot the inlet faces</span>
+<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">{:});</span>
+<span class="c">%%</span>
+<span class="c">% we add the outlet faces</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">2</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">{:});</span>
+<span class="c">%%</span>
+<span class="c">% we add the interface faces</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">couplingTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">{:});</span>
+
+<span class="c">%% Setup initial state</span>
+<span class="c">%</span>
+<span class="c">% The initial state for the cell is used using the initial state of the gas layer that have been loaded (see</span>
+<span class="c">% :battmofile:`here &lt;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&gt;`)</span>
+<span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Setup schedule</span>
+<span class="c">%</span>
+<span class="c">% We setup the time stepping. We are computing the steady state solution, using the the time evolution equation. Note</span>
+<span class="c">% that we also use a numerical method which gradually introduces the high nonlinearities inherent to the problem (in</span>
+<span class="c">% particular the exponential dependence of the electronic conductivity in the membrane). Therefore, the intermediate</span>
+<span class="c">% solutions (i.e. those computed before the final step) should be considered with care.</span>
+
+<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupSchedule</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+
+<span class="c">%% Setup nonlinear solver</span>
+<span class="c">%</span>
+<span class="c">% We use an adaptive time stepping. In this case, the solver will try to keep the number of timesteps equal to 5, based</span>
+<span class="c">% on the timestepping history.</span>
+
+<span class="n">ts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">IterationCountTimeStepSelector</span><span class="p">(</span><span class="s">&#39;targetIterationCount&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+
+<span class="n">nls</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">NonLinearSolver</span><span class="p">();</span>
+<span class="n">nls</span><span class="p">.</span><span class="n">timeStepSelector</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ts</span><span class="p">;</span>
+<span class="n">nls</span><span class="p">.</span><span class="n">maxIterations</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="mi">15</span><span class="p">;</span>
+
+<span class="c">%% Start simulation</span>
+<span class="c">%</span>
+<span class="c">% We start the simulation</span>
+<span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;OutputMinisteps&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
+
+<span class="c">%% plotting setup</span>
+<span class="c">%</span>
+<span class="c">%</span>
+<span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
+
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultfigureposition&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
+
+<span class="n">elyser</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyser&#39;</span><span class="p">;</span>
+<span class="n">elyte</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
+<span class="n">gs</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;GasSupply&#39;</span><span class="p">;</span>
+
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
+<span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+
+<span class="c">%% Electrolyte results</span>
+<span class="c">% We plot the electrostatic potential :math:`\phi` (we need to remove the plotting of the grid edges, otherwise due to</span>
+<span class="c">% the grid refinement, they will hide completely the color of the field)</span>
+<span class="c">%</span>
+
+<span class="nb">figure</span>
+<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electrostatic Potential \phi / V&#39;</span><span class="p">)</span>
+<span class="nb">colorbar</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% We want also to plot the result as a surface plot. Then, we need to manipulate the output and make it suitable to the</span>
+<span class="c">% :code:`surf` function of matlab (we do not explain those details here)</span>
+
+<span class="n">N</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">gen</span><span class="p">.</span><span class="n">nxElectrolyser</span><span class="p">;</span>
+<span class="n">xc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="n">X</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">);</span>
+<span class="n">Y</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">);</span>
+
+<span class="n">figure</span>
+<span class="s">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">;</span>
+<span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;\phi / V&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">view</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">)</span>
+<span class="nb">colorbar</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% We produce a surface plot of the electromotive potential :math:`\pi`.</span>
+
+<span class="nb">figure</span>
+<span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">;</span>
+<span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;pi / V&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">view</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">)</span>
+<span class="nb">colorbar</span>
+
+<span class="c">%% Gas Layer results</span>
+<span class="c">%</span>
+<span class="c">% We plot the H2O mass fraction in the gas diffusion layer. We observe how the water is being first consumed close to</span>
+<span class="c">% the inlet (inlet is at bottom, outlet at top).</span>
+<span class="c">%</span>
+
+<span class="nb">figure</span>
+<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;H2O mass fraction / -&#39;</span><span class="p">)</span>
+<span class="nb">colorbar</span>
+
+
+<span class="c">%%</span>
+<span class="c">% We plot the same result as a surface plot</span>
+<span class="c">%</span>
+<span class="n">N</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">gen</span><span class="p">.</span><span class="n">nxGasSupply</span><span class="p">;</span>
+
+<span class="n">X</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">);</span>
+<span class="n">Y</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">);</span>
+
+
+<span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
+<span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
+
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="n">colorbar</span>
+<span class="s">title(&#39;Mass Fraction H2O&#39;)</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">51</span><span class="p">]);</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% We plot the O2 mass fraction</span>
+<span class="c">%</span>
+
+<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
+
+<span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
+<span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
+
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="n">colorbar</span>
+<span class="s">title(&#39;Mass Fraction O2&#39;)</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">51</span><span class="p">]);</span>
+
+<span class="c">%% Interface results</span>
+<span class="c">%</span>
+<span class="c">% Current density in the anode. We recover the current on each face along the anode.</span>
+<span class="c">%</span>
+
+<span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">i</span><span class="p">;</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% From the current values at each face, we compute the current density by dividing with the face areas.</span>
+
+<span class="n">ind</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="n">yc</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">centroids</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="n">areas</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">areas</span><span class="p">(</span><span class="n">ind</span><span class="p">);</span>
+
+<span class="n">u</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">);</span>
+<span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span><span class="nb">i</span><span class="o">./</span><span class="n">areas</span><span class="p">)</span><span class="o">/</span><span class="n">u</span><span class="p">;</span><span class="w"> </span><span class="c">% We convert to A/cm^2</span>
+
+<span class="nb">figure</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">yc</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="nb">i</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current in Anode / A/cm^2&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% We do the same but now for the proton current.</span>
+<span class="c">%</span>
+
+<span class="n">iHp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">iHp</span><span class="p">;</span>
+
+<span class="n">ind</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="n">yc</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">centroids</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="n">areas</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">areas</span><span class="p">(</span><span class="n">ind</span><span class="p">);</span>
+
+<span class="n">u</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">);</span>
+<span class="n">iHp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span><span class="n">iHp</span><span class="o">./</span><span class="n">areas</span><span class="p">)</span><span class="o">/</span><span class="n">u</span><span class="p">;</span>
+
+<span class="n">figure</span>
+<span class="s">plot(yc/(milli*meter),</span><span class="w"> </span><span class="s">iHp)</span><span class="p">;</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;iHp in Anode / A/cm^2&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+
+<span class="c">%%</span>
+<span class="c">%</span>
+<span class="c">% By dividing the proton current density with the total current density, we obtain the Faradic efficiency.</span>
+
+<span class="c">% drivingForces.src = schedule.control.src;</span>
+<span class="c">% state = model.evalVarName(state, &#39;Electrolyser.Anode.iHp&#39;, {{&#39;drivingForces&#39;, drivingForces}});</span>
+
+<span class="nb">i</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">i</span><span class="p">;</span>
+<span class="n">iHp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">iHp</span><span class="p">;</span>
+
+<span class="n">ind</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="n">yc</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">faces</span><span class="p">.</span><span class="n">centroids</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+
+<span class="n">figure</span>
+<span class="s">plot(yc/(milli*meter),</span><span class="w"> </span><span class="s">iHp./i)</span><span class="p">;</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Faradic efficiency&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
