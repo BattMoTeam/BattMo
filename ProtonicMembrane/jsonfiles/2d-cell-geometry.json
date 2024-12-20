@@ -4,12 +4,12 @@
   "ylength" : 1.5e-3},
  "Electrolyser" : {
    "Electrolyte": {
-     "Nx" : 10,
+     "Nx" : 1000,
      "xlength" : {
        "value" : 22,
        "unit" : "micro*meter"}}},
  "GasSupply" : {
-   "Nx" : 50,
+   "Nx" : 40,
    "xlength" : {
      "value" : 0.5,
      "unit" : "milli*meter"}}
