@@ -120,7 +120,7 @@ we plot the inlet faces
 .. code-block:: matlab
 
   figure('position', [337, 757, 3068, 557])
-  plotGrid(model.Electrolyser.grid, 'facecolor', 'none', 'edgecolor', 'none')
+  plotGrid(model.Electrolyser.grid, 'facecolor', 'red', 'edgecolor', 'none')
   plotGrid(model.GasSupply.grid, 'facecolor', 'none', 'edgealpha', 0.2)
   plotFaces(model.GasSupply.grid, model.GasSupply.couplingTerms{1}.couplingfaces, opts{:});
 
