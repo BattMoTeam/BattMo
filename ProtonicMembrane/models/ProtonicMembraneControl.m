@@ -28,6 +28,8 @@ classdef ProtonicMembraneControl < BaseModel
 
             if model.useCurrentDensity
                 model.I = model.currentDensity*model.area;
+            else
+                model.currentDensity = model.I/model.area;
             end
             
         end
