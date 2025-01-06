@@ -40,7 +40,7 @@
         "electronicConductivity": 0.01,
         "Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/LFP/LFP.json"
+          "filename": "ParameterData/MaterialProperties/LFP/LFP_Xu2015.json"
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
