@@ -1174,10 +1174,11 @@ classdef GenericBattery < BaseModel
                 I    = state.(ctrl).I;
                 time = state.time;
 
+                ctrlType = 'constantCurrent';
+
                 if model.(ctrl).useCVswitch
 
-                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E), Imax);
-                    state.(ctrl).ctrlType = ctrltype;
+                    [ctrlVal, ctrlType] = drivingForces.src(time, value(I), value(E), Imax);
 
                 else
                     
@@ -1186,7 +1187,8 @@ classdef GenericBattery < BaseModel
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
-
+                state.(ctrl).ctrlType = ctrlType;
+                
               case 'CC'
 
                 time = state.time;
