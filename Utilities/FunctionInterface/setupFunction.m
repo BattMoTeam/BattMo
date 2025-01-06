@@ -4,7 +4,9 @@ function fn = setupFunction(jsonstruct)
         
       case 'tabulated'
 
-        switch jsonstruct.numberOfArguments
+        numberOfArguments = numel(jsonstruct.argumentList);
+        
+        switch numberOfArguments
 
           case 1
             
