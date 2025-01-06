@@ -60,7 +60,6 @@
             "argumentList": ["guestStoichiometry"],
           },
           "referenceTemperature": 298.15,
-          "includeEntropyChange" : true,
           "entropyChange" : {
             "functionFormat": "named function",
             "functionName" : "computeEntropyChange_Graphite_Torchio",

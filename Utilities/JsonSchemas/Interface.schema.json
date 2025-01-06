@@ -87,7 +87,7 @@
           "argumentList": {
             "type" : "array",
             "prefixItems": [{"const": "guestStoichiometry"}]}}}]}],
-      "description": "Entropy change function"
+      "description": "Entropy change function. If not set, it will be evaluated to zero."
     },
     "chargeTransferCoefficient": {
       "$ref": "PhysicalQuantity.schema.json",

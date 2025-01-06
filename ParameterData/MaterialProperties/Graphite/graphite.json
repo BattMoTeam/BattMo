@@ -12,7 +12,6 @@
     "functionName" : "computeOCP_Graphite_Torchio",
     "argumentList" : ["guestStoichiometry"]
   },
-  "includeEntropyChange" : true,
   "entropyChange" : {
     "functionFormat": "named function",
     "functionName" : "computeEntropyChange_Graphite_Torchio",

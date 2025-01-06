@@ -34,9 +34,6 @@ classdef Interface < BaseModel
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
 
-        % flag which determines if entropy change should be computed and included
-        includeEntropyChange
-        
         % A function to determine the entropy change
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
         entropyChange
@@ -56,10 +53,12 @@ classdef Interface < BaseModel
 
         %% Computed parameters at model setup
 
-        computeOCPFunc     % Function object to compute the OCP (see setupFunction)
+        computeOCPFunc           % Function object to compute the OCP (see setupFunction)
+        includeEntropyChange     % flag which determines if entropy change should be computed and included
         computeEntropyChangeFunc % Function object to compute dUdT (see setupFunction)
-        useJ0Func          % true if we use a function to compute the function computeJ0Func to compute the exchange current density
-        computeJ0Func      % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
+        useJ0Func                % true if we use a function to compute the function computeJ0Func to compute the exchange current density
+        computeJ0Func            % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
+        
 
     end
 
@@ -91,7 +90,7 @@ classdef Interface < BaseModel
 
             model.computeOCPFunc = setupFunction(inputparams.openCircuitPotential);
 
-            if model.includeEntropyChange
+            if ~isempty(model.entropyChange)
                 model.computeEntropyChangeFunc = setupFunction(inputparams.entropyChange);
             end
             
