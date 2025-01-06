@@ -74,8 +74,7 @@ inputparams.(ctrl).useCVswitch = true;
 %% Model Instantiation
 % We instantiate the model
 
-model = Battery(inputparams);
-
+model = GenericBattery(inputparams);
 
 %% Setup schedule (control and time stepping)
 % We will simulate two consecutive periods: a discharge followed by a
@@ -134,7 +133,7 @@ jsonstruct = setJsonStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCha
 inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
 inputparams.(ctrl).CRate = DRate;
 
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 step    = model.(ctrl).setupScheduleStep();
 control = model.(ctrl).setupScheduleControl();
