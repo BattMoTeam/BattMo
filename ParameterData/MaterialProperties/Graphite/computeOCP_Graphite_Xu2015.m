@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_Graphite_Torchio_Xu2015(c, T, cmax)
+function [OCP, dUdT] = computeOCP_Graphite_Xu2015(c, T, cmax)
 %% TODO : implement function model to avoid reading
     
     data = [0.00, 1.28683
