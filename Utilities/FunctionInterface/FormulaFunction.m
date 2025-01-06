@@ -3,7 +3,7 @@ classdef StringExpFunction < Function
     
     properties
         
-        stringExpression % Expression that should be evaluated
+        formula % Expression that should be evaluated
         variableNames % Names of the variables in the expression stringExpression, which corresponds to the order given in the argument list
 
         %%
@@ -12,7 +12,8 @@ classdef StringExpFunction < Function
         
         %% helper
 
-        formattedStringExpression 
+        formattedStringExpression
+        
     end
 
     methods
@@ -21,7 +22,7 @@ classdef StringExpFunction < Function
 
             fn = fn@Function(jsonstruct);
             
-            fdnames = {'stringExpression', ...
+            fdnames = {'formula', ...
                        'variableNames'};
 
             fn = dispatchParams(fn, jsonstruct, fdnames);
