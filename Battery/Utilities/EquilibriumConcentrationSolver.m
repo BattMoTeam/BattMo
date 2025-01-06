@@ -189,7 +189,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                         thetaMins(iam)   = comodel.(am).(itf).(gsmin);
                         vfs(iam)         = comodel.volumeFractions(indam)*comodel.volumeFraction;
                         vs(iam)          = sum(comodel.G.getVolumes()*vfs(iam));
-                        computeOCPs{iam} = @(c) comodel.(am).(itf).computeOCPFunc(c, model.T, satConcs(iam));
+                        computeOCPs{iam} = @(c) comodel.(am).(itf).computeOCPFunc.eval(c/satConcs(iam));
 
                     end
 

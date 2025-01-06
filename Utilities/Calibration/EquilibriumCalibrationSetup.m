@@ -436,14 +436,14 @@ classdef EquilibriumCalibrationSetup
 
             theta = ecs.computeTheta(t, pe, 0, theta100, alpha);
             cmax = vals.(pe).cmax;
-            fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc.eval(theta);
 
             theta100 = vals.(ne).theta100;
             alpha    = vals.(ne).alpha;
 
             theta = ecs.computeTheta(t, ne, 0, theta100, alpha);
             cmax = vals.(ne).cmax;
-            fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc.eval(theta);
 
             f = fpe - fne;
 
@@ -745,11 +745,11 @@ classdef EquilibriumCalibrationSetup
                 s = smax.*linspace(0, 1, N + 1)';
                 c = (1 - s).*c0 + s.*cT;
 
-                props.(elde).dischargeFunc = @(s) ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c, T, cmax);
+                props.(elde).dischargeFunc = @(s) ecs.model.(elde).(co).(am).(itf).computeOCPFunc.eval(c/cmax);
 
                 energies.(elde) = cap*smax/N*sum(props.(elde).dischargeFunc(s));
 
-                props.(elde).U = ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c0, T, cmax);
+                props.(elde).U = ecs.model.(elde).(co).(am).(itf).computeOCPFunc.eval(c0/cmax);
 
             end
 
