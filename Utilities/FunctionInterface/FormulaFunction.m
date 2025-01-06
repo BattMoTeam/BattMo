@@ -33,9 +33,11 @@ classdef FormulaFunction < Function
                 
             elseif isfield(jsonstruct, 'expressions')
 
-                nexpr = numel(expressions);
+                nexpr = numel(jsonstruct.expressions);
                 iexpr = 1;
 
+                found = false;
+                
                 while ~found && iexpr <= nexpr
                 
                     % depending on json parsing, we get an struct-array or a cell-array 
