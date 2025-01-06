@@ -35,7 +35,7 @@
           "chargeTransferCoefficient": 0.5,
           "openCircuitPotential" : {"functionFormat": "named function",
                                     "functionName" : "computeOCP_Graphite_Torchio",
-                                    "argumentlist" : ["stoichiometry"]
+                                    "argumentList" : ["stoichiometry"]
                                    }
         },
         "diffusionModelType": "full",
@@ -95,7 +95,7 @@
           "chargeTransferCoefficient" : 0.5,
           "openCircuitPotential" : {"functionFormat" : "named function",
                                     "functionName" : "computeOCP_NMC111",
-                                    "argumentlist" : ["concentration", "temperature", "cmax"]}
+                                    "argumentList" : ["stoichiometry"]}
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
