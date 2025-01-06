@@ -30,7 +30,7 @@
           "openCircuitPotential": {
             "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_Torchio",
-            "argumentList": ["guestStoichiometry"]}
+            "argumentList": ["stoichiometry"]}
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {

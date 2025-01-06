@@ -12,7 +12,7 @@
     "openCircuitPotential" : {
       "functionFormat" : "named function",
       "functionName" : "computeOCP_Graphite_Torchio",
-      "argumentList" : ["concentration", "temperature", "cmax"]}},
+      "argumentList" : ["stoichiometry"]}},
   "diffusionModelType": "full",
   "SolidDiffusion" : {
     "activationEnergyOfDiffusion": 0,
