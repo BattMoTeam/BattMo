@@ -1,8 +1,9 @@
-
 .. _runBatteryP2D:
 
+
+======================================================
 Pseudo-Two-Dimensional (P2D) Lithium-Ion Battery Model
---------------------------------------------------------------------------
+======================================================
 *Generated from runBatteryP2D.m*
 
 
@@ -16,7 +17,7 @@ This example demonstrates how to setup a P2D model of a Li-ion battery and run a
 
 
 Import the required modules from MRST
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=====================================
 load MRST modules
 
 .. code-block:: matlab
@@ -25,7 +26,7 @@ load MRST modules
 
 
 Setup the properties of Li-ion battery materials and cell design
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+================================================================
 The properties and parameters of the battery cell, including the architecture and materials, are set using an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is used to initialize the simulation and it propagates all the parameters throughout the submodels. The input parameters can be set manually or provided in json format. All the parameters for the model are stored in the inputparams object.
 
 .. code-block:: matlab
@@ -49,23 +50,25 @@ The properties and parameters of the battery cell, including the architecture an
   
   inputparams = BatteryInputParams(jsonstruct);
   
-  use_cccv = false;
+  use_cccv = true;
   if use_cccv
-      cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
-                           'initialControl'    , 'discharging', ...
-                           'numberOfCycles'    , 1            , ...
-                           'CRate'             , 1            , ...
-                           'lowerCutoffVoltage', 2.4          , ...
-                           'upperCutoffVoltage', 4.1          , ...
-                           'dIdtLimit'         , 0.01         , ...
-                           'dEdtLimit'         , 0.01);
+      inputparams.SOC = 0;
+      cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
+                           'initialControl'    , 'charging', ...
+                           'numberOfCycles'    , 2            , ...
+                           'CRate'             , 1.5          , ...
+                           'DRate'             , 1            , ...
+                           'lowerCutoffVoltage', 3            , ...
+                           'upperCutoffVoltage', 4            , ...
+                           'dIdtLimit'         , 1e-2         , ...
+                           'dEdtLimit'         , 1e-4);
       cccvinputparams = CcCvControlModelInputParams(cccvstruct);
       inputparams.Control = cccvinputparams;
   end
 
 
 Setup the geometry and computational grid
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================================
 Here, we setup the 1D computational grid that will be used for the simulation. The required discretization parameters are already included in the class BatteryGeneratorP2D.
 
 .. code-block:: matlab
@@ -77,12 +80,12 @@ Here, we setup the 1D computational grid that will be used for the simulation. T
 
 
 Initialize the battery model.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=============================
 The battery model is initialized by sending inputparams to the Battery class constructor. see :class:`Battery <Battery.Battery>`.
 
 .. code-block:: matlab
 
-  model = Battery(inputparams);
+  model = GenericBattery(inputparams);
   
   inspectgraph = false;
   if inspectgraph
@@ -91,21 +94,12 @@ The battery model is initialized by sending inputparams to the Battery class con
   end
 
 
-Compute the nominal cell capacity and choose a C-Rate
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The nominal capacity of the cell is calculated from the active materials. This value is then combined with the user-defined C-Rate to set the cell operational current.
-
-.. code-block:: matlab
-
-  CRate = model.Control.CRate;
-
-
 Setup the schedule
-^^^^^^^^^^^^^^^^^^
+==================
 
 .. code-block:: matlab
 
-  timestep.numberOfTimeSteps = 20;
+  timestep.timeStepDuration = 100;
   
   step    = model.Control.setupScheduleStep(timestep);
   control = model.Control.setupScheduleControl();
@@ -115,7 +109,7 @@ Setup the schedule
 
 
 Setup the initial state of the model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+====================================
 The initial state of the model is setup using the model.setupInitialState() method.
 
 .. code-block:: matlab
@@ -124,7 +118,7 @@ The initial state of the model is setup using the model.setupInitialState() meth
 
 
 Setup the properties of the nonlinear solver
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+============================================
 
 .. code-block:: matlab
 
@@ -139,10 +133,10 @@ Setup the properties of the nonlinear solver
       nls.maxIterations = 10;
       nls.verbose = 10;
     case 'battery'
-      nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
-                                                  'reduceToCell', true, ...
-                                                  'verbosity'   , 3    , ...
-                                                  'reuse_setup' , false, ...
+      nls.LinearSolver = LinearSolverBatteryExtra('verbose'     , false, ...
+                                                  'reduceToCell', true, ...
+                                                  'verbosity'   , 3    , ...
+                                                  'reuse_setup' , false, ...
                                                   'method'      , 'direct');
       nls.LinearSolver.tolerance = 1e-4;
     case 'direct'
@@ -155,15 +149,22 @@ Setup the properties of the nonlinear solver
   nls.maxIterations = 10;
   % Change default behavior of nonlinear solver, in case of error
   nls.errorOnFailure = false;
-  nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+  % nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
   % Change default tolerance for nonlinear solver
-  model.nonlinearTolerance = 1e-3*model.Control.Imax;
+  nls.maxTimestepCuts = 6;
+  
+  if use_cccv
+      Imax = (model.(ctrl).ImaxDischarge + model.(ctrl).ImaxCharge);
+  else
+      Imax = model.(ctrl).Imax;
+  end
+  model.nonlinearTolerance = 1e-6*Imax;
   % Set verbosity
   model.verbose = true;
 
 
 Run the simulation
-^^^^^^^^^^^^^^^^^^
+==================
 
 .. code-block:: matlab
 
@@ -171,7 +172,7 @@ Run the simulation
 
 
 Process output and recover the output voltage and current from the output states.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=================================================================================
 
 .. code-block:: matlab
 
@@ -185,10 +186,16 @@ Process output and recover the output voltage and current from the output states
   time = cellfun(@(x) x.time, states);
   
   figure
-  plot(time/hour, E);
+  plot(time/hour, E, '*-');
   grid on
   xlabel 'time  / h';
   ylabel 'potential  / V';
+  
+  figure
+  plot(time/hour, I, '*-');
+  grid on
+  xlabel 'time  / h';
+  ylabel 'Current  / A';
   
   writeh5 = false;
   if writeh5
@@ -196,6 +203,9 @@ Process output and recover the output voltage and current from the output states
   end
 
 .. figure:: runBatteryP2D_01.png
+  :figwidth: 100%
+
+.. figure:: runBatteryP2D_02.png
   :figwidth: 100%
 
 

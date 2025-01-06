@@ -24,10 +24,19 @@ function loadModule(modulenames, varargin)
             modulename = modulenames{k};
             try
                 dispif(mrstVerbose, 'Loading module %s\n', modulename);
-                mod = py.importlib.import_module(modulename);
+                py.importlib.import_module(modulename);
 
                 if opt.reload
-                    py.importlib.reload(mod);
+
+                    sys = py.importlib.import_module('sys');
+                    if isfield(sys.modules, modulename)
+                        remove(sys.modules, modulename);
+                    else
+                        warning('Module %s was not loaded before, so it cannot be reloaded.', modulename);
+                    end
+
+                    py.importlib.import_module(modulename);
+
                 end
 
             catch e

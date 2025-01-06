@@ -1,8 +1,9 @@
-
 .. _runSEIActiveMaterial:
 
+
+=========================================
 Particle simulation with SEI layer growth
---------------------------------------------------------------------
+=========================================
 *Generated from runSEIActiveMaterial.m*
 
 
@@ -10,12 +11,12 @@ Particle simulation with SEI layer growth
 .. code-block:: matlab
 
   % clear the workspace and close open figures
-  clear
+  clear all
   close all
 
 
 Import the required modules from MRST
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=====================================
 load MRST modules
 
 .. code-block:: matlab
@@ -24,7 +25,7 @@ load MRST modules
 
 
 Setup the properties of Li-ion battery materials and cell design
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+================================================================
 
 .. code-block:: matlab
 
@@ -40,27 +41,28 @@ Setup the properties of Li-ion battery materials and cell design
   sr    = 'SideReaction';
   elyte = 'Electrolyte';
   
-  inputparams = SEIActiveMaterialInputParams(jsonstruct);
+  paramobj = SEIActiveMaterialInputParams(jsonstruct);
   
-  inputparams.(sd).N  = 10;
-  inputparams.(sei).N = 10;
+  paramobj.(sd).N  = 10;
+  paramobj.(sei).N = 10;
 
 
 Setup the model
-^^^^^^^^^^^^^^^
+===============
 
 .. code-block:: matlab
 
   % We use a stand alone model for the particle
-  inputparams.isRootSimulationModel = true;
+  paramobj.standAlone = true;
+  
+  paramobj = paramobj.validateInputParams();
   
   % We initiate the model
-  model = SEIActiveMaterial(inputparams);
-  model = model.setupForSimulation();
+  model = SEIActiveMaterial(paramobj);
 
 
 Setup initial state
-^^^^^^^^^^^^^^^^^^^
+===================
 
 .. code-block:: matlab
 
@@ -110,7 +112,7 @@ Setup initial state
 
 
 Setup schedule
-^^^^^^^^^^^^^^
+==============
 
 .. code-block:: matlab
 
@@ -136,7 +138,7 @@ Setup schedule
 
 
 Setup non-linear solver
-^^^^^^^^^^^^^^^^^^^^^^^
+=======================
 
 .. code-block:: matlab
 
@@ -147,16 +149,16 @@ Setup non-linear solver
 
 
 Run simulation
-^^^^^^^^^^^^^^
+==============
 
 .. code-block:: matlab
 
   model.verbose = true;
-  [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+  [wellSols, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 
 Plotting
-^^^^^^^^
+========
 
 .. code-block:: matlab
 

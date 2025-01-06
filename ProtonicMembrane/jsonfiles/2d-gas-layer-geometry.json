@@ -1,0 +1,8 @@
+{"Geometry" :
+ {"type" : "2D",
+  "Nx" : 50,
+  "Ny" : 50,
+  "xlength" : {"value" : 0.5,
+               "unit" : "milli*meter"},
+  "ylength" : {"value" : 1.5,
+               "unit" : "milli*meter"}}}

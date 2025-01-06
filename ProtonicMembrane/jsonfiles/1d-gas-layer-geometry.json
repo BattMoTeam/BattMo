@@ -1,0 +1,7 @@
+{"Geometry" :
+ {"type" : "2D",
+  "Nx" : 1000,
+  "xlength" : {"value" : 1.5,
+               "unit" : "meter"},
+  "faceArea" : {"value" : 0.5,
+                "unit" : "milli*meter"}}}

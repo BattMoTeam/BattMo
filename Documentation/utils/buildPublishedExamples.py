@@ -65,15 +65,15 @@ def parse_publish_to_xml(exfile):
                         sect =  ".. _" + examplename + ":\n\n"
                     else:
                         sect = ""
-                    sect = sect + "".join(paragraphs.itertext());
-                    tit_length = len(sect);
+                    tit = "".join(paragraphs.itertext());
+                    tit_length = len(tit);
                     if headcount == 0:
                         # Make heading
-                        ch = '-';
-
+                        ch = '='
+                        sect = sect + '\n' + ch * tit_length + '\n' + tit + '\n' + ch * tit_length + '\n'
                     else:
-                        ch = '^'
-                    sect = '\n' + sect + '\n' + ch * tit_length + '\n'
+                        ch = '='
+                        sect = sect + '\n' + tit + '\n' + ch * tit_length + '\n'                    
                     if headcount == 0:
                         sect = sect + '*Generated from ' + example_filename + '*\n\n'
                         sect = sect + includeRstDescriptionFile

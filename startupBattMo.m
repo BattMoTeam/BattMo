@@ -46,7 +46,8 @@ dirnames = {'Battery'         , ...
             'Tests'           , ...
             'Electrolyser'    , ...
             'SeaWater'        , ...
-            'JuliaBridge'};
+            'JuliaBridge'     , ...
+            'ProtonicMembrane'};
 
 for ind = 1 : numel(dirnames)
     dirname = fullfile(rootdirname, dirnames{ind});
@@ -87,7 +88,8 @@ if mrstPlatform('octave')
 
 end
 
-mrstModule add ad-core mpfa
+mrstModule add ad-core mpfa mrst-gui
+
 end
 
 %{

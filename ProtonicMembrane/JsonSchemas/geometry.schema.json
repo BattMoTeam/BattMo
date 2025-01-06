@@ -1,0 +1,48 @@
+{
+  "$id": "file://./Geometry.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Specification of the geometry including the discretization parameters",
+  "type": "object",
+  "properties" : {
+    "Geometry" :
+    {"type" : "object",
+     "properties" : {
+       "case" : {
+         "type" : "string",
+         "enum" : ["1D", "2D"]}}}
+  },
+
+  "anyOf" : [{"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "1D"}}}},
+              "$ref" : "#/$defs/1D"},
+             {"properties" : {"Geometry" : {"properties" : {"case" : {"const" : "2D"}}}},
+              "$ref" : "#/$defs/2D"}
+            ],
+
+  "$defs" : {
+    "1D" : {
+      "type" : "object",
+      "properties" : {
+        "Electrolyte" : {
+          "type" : "object",
+          "properties" : {
+            "length" : {"type" : "number"},
+            "faceArea" : {"type" : "number"},            
+            "N" : {"type" : "number"}}}}},
+
+    "2D" : {
+      "type" : "object",
+      "properties" : {
+        "Geometry" : {
+          "type" : "object",
+          "properties" : {
+            "ylength" : {
+              "type" : "number"},
+            "Ny" : {
+              "type" : "number"}}},
+        "Electrolyte" : {
+          "type" : "object",
+          "properties" : {
+            "xlength" : {"type" : "number"},
+            "Nx" : {"type" : "number"}}}}}}}
+
+  

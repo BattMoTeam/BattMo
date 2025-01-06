@@ -1,0 +1,130 @@
+{"T": 873.15,
+  "Anode": {
+    "R_ct_0": {
+      "value" : 12e-7,
+      "unit" : "ohm*((centi*meter)^2)",
+      "description" : "Anode standard charge transfer resistance"},
+    "ilc": {
+      "value" : 4,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description": "limited current cathodic direction"},
+    "ila": {
+      "value" : -2,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description": "limited current anodic direction" },
+    "beta": {
+      "value" : 0.4,
+      "unit" : "1",
+      "description" : "symmetry factor"},
+    "n": {
+      "value" : 1,
+      "unit" : "1",
+      "description": "number electrons in charge transfer step"},
+    "E_0": {
+      "value" : 1.253,
+      "unit" : "volt",
+      "description" : "standard potential"},
+    "Ea_ct": {
+      "value" : 85000,
+      "unit" : "SI",
+      "description" : "activation energy charge transfer resistance"},
+    "SU": {
+      "value" : 0.05,
+      "unit" : "1",
+      "description" : "Steam utilization. fraction of converted steam"},
+    "O2_conc_feed": {
+      "value" : 0.2,
+      "unit" : "1",
+      "description" : "Oxygen concentration in feed"},
+    "steam_ratio": {
+      "value" : 0.5,
+      "unit" : "1",
+      "description" : "Fraction of steam in anode gas inlet"},
+    "Ptot": {
+      "value" : 10,
+      "unit" : "barsa",
+      "description" : "Total pressure"},
+    "gasSupplyType" : "coupled"
+  },
+  "Electrolyte": {
+    "xlength": {
+      "value" : 22,
+      "unit" : "micro*meter"
+    },
+    "Nx": 10000,
+    "sigma_n0": {
+      "value" : 1e-5,
+      "unit" : "siemens/(centi*meter)",
+      "description" : "pre-exponential n-type electronic conductivity"
+    },
+    "dS_hyd": {
+      "value" : -119,
+      "unit" : "SI",
+      "description" : "Entropy of hydration"},
+    "dH_hyd": {
+      "value" : -90,
+      "unit" : "1",
+      "description" : "Entalpy of hydration"},
+    "Y": {
+      "value" : 0.085,
+      "unit" : "1",
+      "description" : "Acceptor concentration"},
+    "Am": {
+      "value" : 68,
+      "unit" : "1",
+      "description" : "Pre-exponential coefficient for p-type mobility"},
+    "dH_ox": {
+      "value" : 101000,
+      "unit" : "SI",
+      "description" : "Activation energy for p-type conductivity"},
+    "E_0": {
+      "value" : 1.253,
+      "unit" : "volt",
+      "description" : "Standard potential"},
+    "steam_ratio": {
+      "value" : 0.5,
+      "unit" : "1",
+      "description" : "fraction of steam in anode gas inlet"},
+    "Ptot": {
+      "value" : 10,
+      "unit" : "barsa",
+      "description" : "Total pressure"},
+    "SU": {
+      "value" : 0.05,
+      "unit" : "1",
+      "description" : "Steam utilization in fraction"},
+    "Ea_prot": {
+      "value" : 47.7,
+      "unit" : "SI",
+      "description" : "Activation energy for proton diffusion"}
+  },
+  "Cathode": {
+    "E_0": {
+      "value" : 0,
+      "unit" : "volt",
+      "description" : "standard potential"},
+    "R_ct_H": {
+      "value" : 1e-2,
+      "unit" : "ohm*((centi*meter)^2)",
+      "description" : "charge transfer resistance"},
+    "Ptot": {
+      "value": 10,
+      "unit" : "barsa",
+      "description" : "total pressure"}
+  },
+  "Control": {
+    "controlType": "current",
+    "useCurrentDensity" : true,
+    "description" : "If useDensity is true, then we use the value of currentDensity. Otherwise, a value for I the total current should be given.",
+    "currentDensity" : {
+      "value" : 0,
+      "unit" : "ampere/((centi*meter)^2)",
+      "description" : "input current density"}
+  },
+  "TimeStepping" : {
+    "numberOfTimeSteps": 40,
+    "useSwitch" : true,
+    "fractionSwitch" : 0.5,
+    "orderSwitch" : "I-first"
+  }
+}

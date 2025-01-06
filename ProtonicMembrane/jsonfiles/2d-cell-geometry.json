@@ -1,0 +1,16 @@
+{"Geometry" :
+ {"type" : "2D",
+  "Ny" : 30,
+  "ylength" : 1.5e-3},
+ "Electrolyser" : {
+   "Electrolyte": {
+     "Nx" : 1000,
+     "xlength" : {
+       "value" : 22,
+       "unit" : "micro*meter"}}},
+ "GasSupply" : {
+   "Nx" : 40,
+   "xlength" : {
+     "value" : 0.5,
+     "unit" : "milli*meter"}}
+}

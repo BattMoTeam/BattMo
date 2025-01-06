@@ -40,7 +40,8 @@ classdef ServerManager < handle
             addParameter(p , 'debug'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'reset'              , false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
             addParameter(p , 'updateJuliaPackages', false       , @(x) validateattributes(x, {'logical'}, {'scalar'}));
-            
+            addParameter(p , 'extra_args'         , ''          , @ischar);
+
             parse(p, varargin{:});
             manager.options = p.Results;
 
@@ -55,6 +56,8 @@ classdef ServerManager < handle
             [st, result] = mkdir(manager.use_folder);
             assert(st == 1, 'Unable to use mkdir: %s', result);
 
+            manager.options.extra_args = [' ', manager.options.extra_args, ' '];
+
             % Save options in file to be read in Julia
             op = manager.options;
             opt_file = fullfile(manager.use_folder, 'options.mat');
@@ -66,7 +69,8 @@ classdef ServerManager < handle
             manager.base_call = [manager.options.julia, ' '                              , ...
                                  '--startup-file='    , manager.options.startup_file, ' ', ...
                                  '--project='         , manager.options.project     , ' ', ...
-                                 '--threads='         , num2str(manager.options.threads)];
+                                 '--threads='         , num2str(manager.options.threads), ...
+                                 manager.options.extra_args];
 
             if isunix
                 
