@@ -24,7 +24,7 @@ function fn = setupFunction(jsonstruct)
         
       case 'string expression'
 
-        fn = StringExpFunction(jsonstruct);
+        fn = FormulaFunction(jsonstruct);
         
       case 'named function'
         

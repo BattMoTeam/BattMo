@@ -1,10 +1,10 @@
-classdef StringExpFunction < Function
+classdef FormulaFunction < Function
 % The function is given by a string
     
     properties
         
         formula % Expression that should be evaluated
-        variableNames % Names of the variables in the expression stringExpression, which corresponds to the order given in the argument list
+        variableNames % Names of the variables in the expression formula, which corresponds to the order given in the argument list
 
         %%
         
@@ -18,15 +18,53 @@ classdef StringExpFunction < Function
 
     methods
 
-        function fn = StringExpFunction(jsonstruct)
+        function fn = FormulaFunction(jsonstruct)
 
             fn = fn@Function(jsonstruct);
+
+            if isfield(jsonstruct, 'expression')
+
+                if isfield(jsonstruct.expression, 'language')
+                    assert(strcmp(jsonstruct.expression.language, 'matlab'), 'The language should be matlab');
+                end
+
+                fn.formula       = jsonstruct.expression.formula;
+                fn.variableNames = jsonstruct.expression.variableNames;
+                
+            elseif isfield(jsonstruct, 'expressions')
+
+                nexpr = numel(expressions);
+                iexpr = 1;
+
+                while ~found && iexpr <= nexpr
+                
+                    % depending on json parsing, we get an struct-array or a cell-array 
+                    if iscell(jsonstruct.expressions)
+                        expr = jsonstruct.expressions{iexpr};
+                    else
+                        expr = jsonstruct.expressions(iexpr);
+                    end
+
+                    if strcmp(expr.language, 'matlab')
+
+                        found = true;
+                        fn.formula = expr.formula;
+                        fn.variableNames = expr.variableNames;
+                        
+                    end
+
+                    iexpr = iexpr + 1;
+                    
+                end
+
+                assert(found, 'could not find an expression for matlab');
+                
+            else
+                
+                error('missing expressions')
+                
+            end
             
-            fdnames = {'formula', ...
-                       'variableNames'};
-
-            fn = dispatchParams(fn, jsonstruct, fdnames);
-
             varnames = fn.variableNames;
             nvars    = numel(varnames);
 
@@ -42,7 +80,7 @@ classdef StringExpFunction < Function
 
             fmtstr = join(fmtstrs);
 
-            fmtstr = sprintf('%s; %s = %s;', fmtstr{1}, fn.outputVarName, fn.stringExpression);
+            fmtstr = sprintf('%s; %s = %s;', fmtstr{1}, fn.outputVarName, fn.formula);
 
             fn.formattedStringExpression = fmtstr;
             
