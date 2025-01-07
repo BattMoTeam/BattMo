@@ -52,10 +52,7 @@ testCases = {
     'TestRunExamples'
             };
 
-% Execute tests
-% suite = testsuite(testCases);
-
-
+% Setup test suite
 for itestcase = 1 : numel(testCases)
 
     testCase = testCases{itestcase};
@@ -91,6 +88,8 @@ if stopOnError
     import matlab.unittest.plugins.StopOnFailuresPlugin;
     runner.addPlugin(StopOnFailuresPlugin);
 end
+
+% Run tests
 
 if runTestsInParallel
     results = runner.runInParallel(suite);
