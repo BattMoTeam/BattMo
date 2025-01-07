@@ -8,7 +8,7 @@ input = struct();
 runSimulation   = true;
 clearSimulation = true;
 
-input.precipitation = false;
+input.precipitation = true;
 
 output = run_magnesium_1D_battery(input, ...
                                   'runSimulation', runSimulation, ...
