@@ -24,7 +24,8 @@
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/design-tabs.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"packages": {"[+]": ["mhchem"]}}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -197,6 +198,7 @@
 </ul>
 </li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Full Cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#model-coupling">Model coupling</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#json-input-data">json input data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#input-parameter-setup">Input parameter setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#model-setup">Model setup</a></li>
@@ -283,6 +285,27 @@
   <section id="pem-electrolyser-with-gas-supply">
 <span id="runprotoniccell"></span><h1>PEM electrolyser with Gas Supply<a class="headerlink" href="#pem-electrolyser-with-gas-supply" title="Permalink to this heading"></a></h1>
 <p><em>Generated from runProtonicCell.m</em></p>
+<section id="model-coupling">
+<h2>Model coupling<a class="headerlink" href="#model-coupling" title="Permalink to this heading"></a></h2>
+<p>We couple the <a class="reference internal" href="runGasSupply.html#rungassupply"><span class="std std-ref">gas supply layer</span></a> with the anode of the <a class="reference internal" href="runProtonicMembrane.html#runprotonicmembrane"><span class="std std-ref">protonic membrane</span></a>. The coupling occurs at the interface of the two regions. Along the anode, we assume a constant
+voltage, that is, we neglect the potential loss in this part.</p>
+<p>The chemical reaction at the interface is</p>
+<div class="math notranslate nohighlight">
+\[\ce{1/2 H2O &lt;-&gt; H^+ + e^- + 1/4 O2}\]</div>
+<p>It relates the mass fluxes in the gas supply layer and inside the anode in the following way</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{array}{rcl}
+ j_\ce{H2O}\cdot n &amp;=&amp; 2j_{\ce{H^+}}\cdot n\\
+ j_{\ce{O2}}\cdot n &amp;=&amp; -4j_{\ce{H^+}}\cdot n
+\end{array}\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(n\)</span> denotes the normal at the interface (same orientation in the whole expression), so that, for example,
+<span class="math notranslate nohighlight">\(j_\ce{H2O}\cdot n\)</span> denotes the mass of <span class="math notranslate nohighlight">\(\ce{H2O}\)</span> leaving the gas layer in <span class="math notranslate nohighlight">\(kg/m^2/s\)</span> (for a 3D
+model). For the gas layer, the fluxes are given by the sum of the convection and diffusion fluxes, so that, for
+<span class="math notranslate nohighlight">\(\ce{H2O}\)</span>, we have</p>
+<div class="math notranslate nohighlight">
+\[j_\ce{H2O}\cdot n = -D \nabla(\rho x_{\ce{H2O}})\cdot n - \frac{K}{\mu}\rho x_i \nabla p\cdot n\]</div>
+<p>and a similar expression for the flux of <span class="math notranslate nohighlight">\(\ce{O2}\)</span> at the interface.</p>
+</section>
 <section id="json-input-data">
 <h2>json input data<a class="headerlink" href="#json-input-data" title="Permalink to this heading"></a></h2>
 <p>We load the input data that is given by json structures. The physical properties of the supply gas layer is given in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json">gas-supply-whole-cell.json</a></p>
