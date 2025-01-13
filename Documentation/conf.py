@@ -47,6 +47,11 @@ extensions = ['sphinxcontrib.globalsubs',
 
 bibtex_bibfiles = ['refs.bib']
 
+mathjax3_config = {
+  'loader': {'load': ['[tex]/mhchem']},
+  'tex': {'packages': {'[+]': ['mhchem']}}
+}
+
 autosectionlabel_prefix_document = True
 
 global_substitutions = {
