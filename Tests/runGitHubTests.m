@@ -52,6 +52,8 @@ testCases = {
     'TestRunExamples', ...
     'TestMagnesium'};
 
+testCases = {'TestJsonFiles'};
+
 % Setup test suite
 for itestcase = 1 : numel(testCases)
 
