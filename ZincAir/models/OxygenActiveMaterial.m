@@ -1,4 +1,4 @@
-classdef HydrogenActiveMaterial < ZincAirActiveMaterial
+classdef OxygenActiveMaterial < ZincAirActiveMaterial
 
     properties
         Asurf % 
@@ -6,7 +6,7 @@ classdef HydrogenActiveMaterial < ZincAirActiveMaterial
     
     methods
         
-        function model = HydrogenActiveMaterial(inputparams)
+        function model = OxygenActiveMaterial(inputparams)
             
             model = model@ZincAirActiveMaterial(inputparams);
             fdnames = {'Asurf'};
@@ -18,11 +18,11 @@ classdef HydrogenActiveMaterial < ZincAirActiveMaterial
 
             model = registerVarAndPropfuncNames@ZincAirActiveMaterial(model);
             
-            fn = @() HydrogenActiveMaterial.updateENernst;
+            fn = @() OxygenActiveMaterial.updateENernst;
             inputnames = {'T', 'cElectrolyte'};
             model = model.registerPropFunction({'ENernst', fn, inputnames});
             
-            fn = @() HydrogenActiveMaterial.updateReactionRate;
+            fn = @() OxygenActiveMaterial.updateReactionRate;
             inputnames = {'eta', 'T'};
             model = model.registerPropFunction({'R', fn, inputnames});
             
