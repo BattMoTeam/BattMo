@@ -1,4 +1,4 @@
-classdef HydrogenActiveMaterial < SeaWaterActiveMaterial
+classdef HydrogenActiveMaterial < ZincAirActiveMaterial
 
     properties
         Asurf % 
@@ -8,7 +8,7 @@ classdef HydrogenActiveMaterial < SeaWaterActiveMaterial
         
         function model = HydrogenActiveMaterial(inputparams)
             
-            model = model@SeaWaterActiveMaterial(inputparams);
+            model = model@ZincAirActiveMaterial(inputparams);
             fdnames = {'Asurf'};
             model = dispatchParams(model, inputparams, fdnames);
             
@@ -16,7 +16,7 @@ classdef HydrogenActiveMaterial < SeaWaterActiveMaterial
         
         function model = registerVarAndPropfuncNames(model)
 
-            model = registerVarAndPropfuncNames@SeaWaterActiveMaterial(model);
+            model = registerVarAndPropfuncNames@ZincAirActiveMaterial(model);
             
             fn = @() HydrogenActiveMaterial.updateENernst;
             inputnames = {'T', 'cElectrolyte'};

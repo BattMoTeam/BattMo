@@ -1,4 +1,4 @@
-classdef HydrogenActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
+classdef OxygenActiveMaterialInputParams < ZincAirActiveMaterialInputParams
 
     properties
         
@@ -8,9 +8,9 @@ classdef HydrogenActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
 
     methods
 
-        function inputparams = HydrogenActiveMaterialInputParams(jsonstruct)
+        function inputparams = OxygenActiveMaterialInputParams(jsonstruct)
             
-            inputparams = inputparams@SeaWaterActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@ZincAirActiveMaterialInputParams(jsonstruct);
             
         end
         

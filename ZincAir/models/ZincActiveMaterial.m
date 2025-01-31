@@ -1,4 +1,4 @@
-classdef MagnesiumActiveMaterial < SeaWaterActiveMaterial
+classdef ZincActiveMaterial < ZincAirActiveMaterial
 
     
     properties
@@ -7,9 +7,9 @@ classdef MagnesiumActiveMaterial < SeaWaterActiveMaterial
     
     methods
 
-        function model = MagnesiumActiveMaterial(inputparams)
+        function model = ZincActiveMaterial(inputparams)
             
-            model = model@SeaWaterActiveMaterial(inputparams);
+            model = model@ZincAirActiveMaterial(inputparams);
             fdnames = {'Asurf', ...
                        'etaMax'};
             model = dispatchParams(model, inputparams, fdnames);
@@ -18,7 +18,7 @@ classdef MagnesiumActiveMaterial < SeaWaterActiveMaterial
         
         function model = registerVarAndPropfuncNames(model)
         
-            model = registerVarAndPropfuncNames@SeaWaterActiveMaterial(model);
+            model = registerVarAndPropfuncNames@ZincAirActiveMaterial(model);
         
             varnames = {};
             
@@ -26,11 +26,11 @@ classdef MagnesiumActiveMaterial < SeaWaterActiveMaterial
             
             model = model.registerVarNames(varnames);
             
-            fn = @MagnesiumActiveMaterial.updateENernst;
+            fn = @ZincActiveMaterial.updateENernst;
             inputnames = {'T', 'cElectrolyte'};
             model = model.registerPropFunction({'ENernst', fn, inputnames});
             
-            fn = @MagnesiumActiveMaterial.updateReactionRate;
+            fn = @ZincActiveMaterial.updateReactionRate;
             inputnames = {'eta', 'T', 'specificSurfaceArea'};
             model = model.registerPropFunction({'R', fn, inputnames}); 
             

@@ -1,4 +1,4 @@
-classdef ZincActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
+classdef ZincActiveMaterialInputParams < ZincAirActiveMaterialInputParams
 
     properties
 
@@ -10,7 +10,7 @@ classdef ZincActiveMaterialInputParams < SeaWaterActiveMaterialInputParams
 
         function inputparams = ZincActiveMaterialInputParams(jsonstruct)
     
-            inputparams = inputparams@SeaWaterActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@ZincAirActiveMaterialInputParams(jsonstruct);
             
         end
         

@@ -64,11 +64,11 @@ classdef ZincAirBattery < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             % Setup Anode
-            model = model.ZincElectrode(inputparams.Anode);
-            % Setup Anode Active Material            
-            model = model.ZincActiveMaterial(inputparams.AnodeActiveMaterial);
+            model.Anode = ZincElectrode(inputparams.Anode);
+            % Setup Anode Active Matesrial            
+            model.AnodeActiveMaterial = ZincActiveMaterial(inputparams.AnodeActiveMaterial);
             % Setup Electrolyte
-            model = model.setupElectrolyte(inputparams);
+            model.Electrolyte = ZincAirElectrolyte(inputparams.Electrolyte);
             % Setup Cathode Active Material                        
             model.CathodeActiveMaterial = OxygenActiveMaterial(inputparams.CathodeActiveMaterial);
             % Setup Cathode
