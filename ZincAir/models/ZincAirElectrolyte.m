@@ -126,7 +126,11 @@ classdef ZincAirElectrolyte < ElectronicComponent
             varnames{end + 1} = VarName({}, 'qpMassCons', nqp);
             % quasi particle mass conservations
             varnames{end + 1} = VarName({}, 'atomicMassCons', nqp);
-
+            % volume fraction equation
+            varnames{end + 1} = 'volumeFractionEquation';
+            % solid volume fraction
+            varnames{end + 1} = 'solidVolumeFraction';
+            
             model = model.registerVarNames(varnames);
 
             fn = @() ZincAirElectrolyte.updateFromLogConcentration;
