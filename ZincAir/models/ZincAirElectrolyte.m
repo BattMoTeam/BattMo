@@ -65,7 +65,12 @@ classdef ZincAirElectrolyte < ElectronicComponent
             
         end
 
+        function model = setupMainIonIndex(model)
 
+            model.mainIonIndex = 1;
+
+        end
+        
         function model = setupReactionRates(model, inputparams)
             Kdata = inputparams.K;
 
