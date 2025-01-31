@@ -20,4 +20,6 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 %% Setup model
 
 model = ZincAirBattery(inputparams);
-model = model.setupComputationalGraph(); % needed later to evaluate values using evalVarName (we want only to setup it once)
+
+cgt = model.cgt;
+cgp = model.cgp;

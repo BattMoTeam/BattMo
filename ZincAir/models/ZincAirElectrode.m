@@ -1,8 +1,10 @@
 classdef ZincAirElectrode < ElectronicComponent
 
     properties
+        
         V                    % Molar Volume
         externalCouplingTerm %
+        
     end
 
     methods
