@@ -1,10 +1,10 @@
-classdef OxygenElectrodeInputParams < ZincElectrodeInputParams
+classdef OxygenElectrodeInputParams < ZincAirElectrodeInputParams
     
     methods
         
         function inputparams = OxygenElectrodeInputParams(jsonstruct)
             
-            inputparams = inputparams@ZincElectrodeInputParams(jsonstruct);
+            inputparams = inputparams@ZincAirElectrodeInputParams(jsonstruct);
             
         end
 

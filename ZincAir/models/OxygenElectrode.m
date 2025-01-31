@@ -1,4 +1,4 @@
-classdef OxygenElectrode < ZincElectrode
+classdef OxygenElectrode < ZincAirElectrode
 
     
     methods
@@ -8,11 +8,11 @@ classdef OxygenElectrode < ZincElectrode
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
             
-            model = registerVarAndPropfuncNames@ZincElectrode(model);
+            model = registerVarAndPropfuncNames@ZincAirElectrode(model);
             
             model = model.registerVarName('E');
             
-            fn = @() ZincElectrode.updatePotential;
+            fn = @() OxygenElectrode.updatePotential;
             inputnames = {'E'};
             model = model.registerPropFunction({'phi', fn, inputnames});
             

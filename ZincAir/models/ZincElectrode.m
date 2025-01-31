@@ -1,85 +1,42 @@
-classdef ZincElectrode < ElectronicComponent
-
-    properties
-        V                    % Molar Volume
-        externalCouplingTerm %
-    end
+classdef ZincElectrode < ZincAirElectrode
 
     methods
-
+        
         function model = ZincElectrode(inputparams)
-
-            model = model@ElectronicComponent(inputparams);
-
-            fdnames = {'V', ...
-                       'externalCouplingTerm'};
-            model = dispatchParams(model, inputparams, fdnames);
-
+            
+            model = model@ZincAirElectrode(inputparams);
+            
         end
-
+        
         function model = registerVarAndPropfuncNames(model)
-
+            
             %% Declaration of the Dynamical Variables and Function of the model
             % (setup of varnameList and propertyFunctionList)
+            
+            model = registerVarAndPropfuncNames@ZincAirElectrode(model);
+            
+            model = model.registerVarName('E');
+            
+            fn = @() ZincElectrode.updatePotential;
+            inputnames = {'E'};
+            model = model.registerPropFunction({'phi', fn, inputnames});
+            
+       end
 
-            model = registerVarAndPropfuncNames@ElectronicComponent(model);
-
-            varnames = {};
-            % Volume fraction
-            varnames{end + 1} = 'volumeFraction';
-            % Accumulation term for active component
-            varnames{end + 1} = 'accumTerm';
-            % Source term for mass conservation equation
-            varnames{end + 1} = 'sourceTerm';
-            % Mass conservation equation
-            varnames{end + 1} = 'massCons';
-
-            model = model.registerVarNames(varnames);
-
-            fn = @() ZincElectrode.updateMassCons;
-            inputnames = {'accumTerm', 'sourceTerm'};
-            model = model.registerPropFunction({'massCons', fn, inputnames});
-
-            fn = @() ZincElectrode.updateConductivity;
-            inputnames = {'volumeFraction'};
-            model = model.registerPropFunction({'conductivity', fn, inputnames});
-
-            fn = @() ZincElectrode.updateAccumTerm;
-            fn = {fn, @(propfunc) PropFunction.accumFuncCallSetupFn(propfunc)};
-            inputnames = {'volumeFraction'};
-            model = model.registerPropFunction({'accumTerm', fn, inputnames});
-
+       
+        function state = updatePotential(model, state)
+        % this is a special setup : We impose given potential and assume infinite conductivity in hydrogen electrode
+        % (likely to change later)
+            nc = model.G.getNumberOfCells();
+            
+            E = state.E;
+            
+            state.phi = E.*ones(nc, 1);
         end
-
-        function state = updateAccumTerm(model, state, state0, dt)
-
-            vols = model.G.getVolumes();
-            state.accumTerm = 1/dt*vols.*(state.volumeFraction - state0.volumeFraction);
-
-        end
-
-
-
-        function state = updateConductivity(model, state)
-
-            sigma = model.EffectiveElectricalConductivity; % this prefix "Effective" should be changed in this property name
-
-            vf = state.volumeFraction;
-
-            state.conductivity = (vf.^1.5).*sigma;
-
-        end
-
-
-        function state = updateMassCons(model, state)
-            accumTerm = state.accumTerm;
-            sourceTerm = state.sourceTerm;
-
-            state.massCons = accumTerm - sourceTerm;
-        end
-
+        
+        
     end
-
+    
 end
 
 

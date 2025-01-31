@@ -23,7 +23,7 @@ classdef ZincAirBatteryInputParams < ComponentInputParams
             
             inputparams.Cathode               = OxygenElectrodeInputParams(jsonstruct.Cathode);
             inputparams.CathodeActiveMaterial = ZincAirActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
-            inputparams.Anode                 = ZincElectrodeInputParams(jsonstruct.Anode);
+            inputparams.Anode                 = ZincAirElectrodeInputParams(jsonstruct.Anode);
             inputparams.AnodeActiveMaterial   = ZincActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
             if inputparams.include_precipitation
                 inputparams.Electrolyte = ZincAirElectrolyteInputParams(jsonstruct.Electrolyte);

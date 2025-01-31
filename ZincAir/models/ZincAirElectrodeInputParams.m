@@ -1,4 +1,4 @@
-classdef ZincElectrodeInputParams < ElectronicComponentInputParams
+classdef ZincAirElectrodeInputParams < ElectronicComponentInputParams
     
     properties
         
@@ -11,7 +11,7 @@ classdef ZincElectrodeInputParams < ElectronicComponentInputParams
     
     methods
         
-        function inputparams = ZincElectrodeInputParams(jsonstruct)
+        function inputparams = ZincAirElectrodeInputParams(jsonstruct)
             
             inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
