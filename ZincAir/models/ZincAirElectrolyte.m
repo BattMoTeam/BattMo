@@ -14,12 +14,14 @@ classdef ZincAirElectrolyte < ElectronicComponent
         solutedict % dictionary with key={solute names} and value={index in solute species cell array}
         soliddict  % dictionary with key={solid names} and value={index in solid species cell array}
 
+        % We store the size of the dictionaries above, for convenience
         nsp     % number of species
-        nlogsp  % number of main species (those given by logarithm)
         nqp     % number of quasi-particles
+        nlogsp  % number of main species (those given by logarithm)
         nsolute % number of solute species
         nsolid  % number of solid species (those coming from precipitate, if any)
 
+        % We store the following mappings for convenience
         indmainsp   % index mapping between main species and species index
         indsolutesp % index mapping between solute species index (solutedict) and global species index (spdict)
         indspsolute % index mapping between global species index (spdict) and solute species index (solutedict). The index
@@ -43,7 +45,6 @@ classdef ZincAirElectrolyte < ElectronicComponent
     end
 
     methods
-
 
         function model = ZincAirElectrolyte(inputparams)
 
