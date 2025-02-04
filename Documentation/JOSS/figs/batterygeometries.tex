@@ -1,0 +1,25 @@
+\documentclass{standalone}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning, calc, patterns, backgrounds, arrows.meta, matrix}
+\usetikzlibrary{graphs, graphdrawing, graphdrawing.layered}
+
+\graphicspath{{./},{../../img/}}
+
+\def\insertpic #1{\node{\includegraphics[width=0.3\textwidth]{#1}};}
+
+\begin{document}
+\begin{tikzpicture}
+  \matrix {\insertpic{3dmodel} & \insertpic{coincell}\\
+    \insertpic{jellyrollmodel} &\insertpic{multilayerpouch} \\
+  };
+\end{tikzpicture}
+\end{document}
+
+% Local Variables:
+% TeX-engine: luatex
+% eval: (defun LaTeX-item-beamer () (TeX-insert-macro "item") (delete-horizontal-space) (insert " ") (indent-according-to-mode))
+% eval: (cl-delete "beamer" TeX-active-styles :test 'equal)
+% eval: (TeX-run-style-hooks "beamer")
+% End:
+  
