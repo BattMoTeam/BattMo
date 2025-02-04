@@ -78,10 +78,14 @@ particles. This pseudo-two-dimensional (P2D) approach has been widely used in th
 relatively inexpensive way to get greater insight about the evolution of key quantities like concentration, temperature,
 and electric potential during cell operation. However, the simplified P2D mesh cannot resolve the effects of the cell
 geometry (e.g. current collector tabs). Furthermore, these approaches focus almost exclusively on lithium-ion cell
-chemistry. Fully coupled thermal and electro-chemical equations
+chemistry. Fully coupled thermal and electro-chemical equations.
+
+Other battery chemistru
+
+- Sea Water model
 
 Other electrochemical systems
-- Sea Water model
+
 - Electrolysis models
 - Protonic membrane
 
@@ -93,7 +97,7 @@ Other electrochemical systems
 - Visualization
 - Model parameterization routines
 - Design optimization
-- protocol support
+- Support for standard protocols (control switching)
 
 # Numerical Methods
 
