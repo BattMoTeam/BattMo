@@ -67,7 +67,6 @@ technologies and can simulate the performance of battery cells in full three-dim
 this direction have been taken. PyBaMM includes a lead-acid battery extension for a python-based P2D framework, while
 cideMOD utilizes the Fenics finite element package to simulate Li-ion pouch cells in 3D.
 
-
 Flexible and adaptable modelling frameworks are a connerstone of battery digitalization. High-quality battery models can
 be labor-intensive to develop from scratch. 
 
@@ -79,37 +78,45 @@ particles. This pseudo-two-dimensional (P2D) approach has been widely used in th
 relatively inexpensive way to get greater insight about the evolution of key quantities like concentration, temperature,
 and electric potential during cell operation. However, the simplified P2D mesh cannot resolve the effects of the cell
 geometry (e.g. current collector tabs). Furthermore, these approaches focus almost exclusively on lithium-ion cell
-chemistry.
+chemistry. Fully coupled thermal and electro-chemical equations
 
-- PXD model (Newman)
-- Fully coupled thermal and electro-chemical equations
+Other electrochemical systems
 - Sea Water model
 - Electrolysis models
+- Protonic membrane
 
 # Functionalities
 
-- Standard data input (json based)
-- Different battery format (geometry)
-- Flexible tool 
+- Standard data input (json based with schema)
+- Library of battery format (to be extended)
+- Flexible model design 
 - Visualization
+- Model parameterization routines
+- Design optimization
 
-# Numerical method
+# Numerical Methods
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@MRST:2025] which provides a reliable foundation for meshing
 intricate geometries, efficiently solving large systems of equations, and visualizing the results.
 
-- Finite volume method
-- Implicit time integrator for robustness (work in progress for matlab ode solver)
+- Finite volume method (for strict local mass conservation)
+- Implicit time integrator for robustness 
 - Assembly based on automatic differentiation
 - Setup for adjoint computation
-- AGMG preconditioner and linear solver
+- AGMG preconditioner and linear solver based on AMGCL
 - Computational graph model development
 
-# Geometry
+# Battery Format library
 
 ![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
-# Optimization
+# Model parameterization and design optimization
+
+Using adjoint/gradient-based algorithm, we reach the optimal value for the cathode length using 10 simulations (5
+iterations for the last line search)
+
+![Optimization \label{fig:optimization}](figs/optimexample.png){width=100%}
+
 
 # Example
 
