@@ -93,6 +93,7 @@ Other electrochemical systems
 - Visualization
 - Model parameterization routines
 - Design optimization
+- protocol support
 
 # Numerical Methods
 
@@ -112,6 +113,13 @@ intricate geometries, efficiently solving large systems of equations, and visual
 
 # Model parameterization and design optimization
 
+Optimize design of a LNMO-SiGr cell. The Design parameters are the Electrodes' thickness and porosity with given NP
+ratio. The goal function is the specific output energy for a given CRate (we choose CRate = 1) given by
+\begin{equation*} 
+G(p) = \frac{\int_0^{T(p)} U(t, p)I(t, p)\,dt}{\text{mass}(p)} 
+\end{equation*}
+where we can see that the design parameters impact all the terms.
+      
 Using adjoint/gradient-based algorithm, we reach the optimal value for the cathode length using 10 simulations (5
 iterations for the last line search)
 
