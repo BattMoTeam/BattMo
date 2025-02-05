@@ -1618,7 +1618,7 @@ classdef GenericBattery < BaseModel
 
 
         function forces = getValidDrivingForces(model)
-
+        %% Mainly assignement to have the simulator from MRST running (nothing is done here)
             forces = getValidDrivingForces@PhysicalModel(model);
 
             forces.src = [];
