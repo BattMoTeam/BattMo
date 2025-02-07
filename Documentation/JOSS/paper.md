@@ -68,7 +68,25 @@ this direction have been taken. PyBaMM includes a lead-acid battery extension fo
 cideMOD utilizes the Fenics finite element package to simulate Li-ion pouch cells in 3D.
 
 Flexible and adaptable modelling frameworks are a connerstone of battery digitalization. High-quality battery models can
-be labor-intensive to develop from scratch. 
+be labor-intensive to develop from scratch.
+
+Optimization and calibration is important and difficult. It has been a problem for the physic-based model. 
+
+# Functionality overview
+
+The default and easiest way to send the input parameters for the simulator is by using a json file. The json format is a
+text based format, which means that the file can be read directly by the user and easily modify. The keywords used in a
+BattMo json input file are all specified through a set of Json schema. The keywords provide 
+
+
+- Standard data input (json based with schema)
+- Library of battery format (to be extended)
+- Flexible model design 
+- Visualization
+- Model parameterization routines
+- Design optimization
+- Support for standard protocols (control switching)
+
 
 # Physical models
 
@@ -80,7 +98,7 @@ and electric potential during cell operation. However, the simplified P2D mesh c
 geometry (e.g. current collector tabs). Furthermore, these approaches focus almost exclusively on lithium-ion cell
 chemistry. Fully coupled thermal and electro-chemical equations.
 
-Other battery chemistru
+Other battery chemistry
 
 - Sea Water model
 
@@ -89,15 +107,6 @@ Other electrochemical systems
 - Electrolysis models
 - Protonic membrane
 
-# Functionalities
-
-- Standard data input (json based with schema)
-- Library of battery format (to be extended)
-- Flexible model design 
-- Visualization
-- Model parameterization routines
-- Design optimization
-- Support for standard protocols (control switching)
 
 # Numerical Methods
 
