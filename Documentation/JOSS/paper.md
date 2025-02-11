@@ -113,7 +113,13 @@ using a simple set of parameters (the gridding is included in the setup).
 
 # Example 1D
 
+We use Chen data. We match pybamm simulation. 
+
+Example where we can easily change chemistry
+
 # Example 3D
+
+Multipouch cell, includes thermal, boundary conditions
 
 # Acknowledgements
 
