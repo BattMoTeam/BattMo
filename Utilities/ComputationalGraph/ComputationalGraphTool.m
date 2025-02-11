@@ -18,9 +18,14 @@ classdef ComputationalGraphTool
 
         model
 
+        functionDocs % cell array. Each cell contains a struct describing the function documentation, with fields
+                     % - name      : function name
+                     % - docstring : string describing the function
+
     end
 
     properties
+        
         adjencyMatrix    % Adjency matrix for the computational graph
                          % - column index      : output variable index (as in cgt.varNameList)
                          % - row index         : input variable (as in cgt.varNameList)
@@ -385,7 +390,7 @@ classdef ComputationalGraphTool
 
         function nodestaticnames = getStaticVarNames(cgt)
 
-            % add the variables that are updated with no input arguments
+        % add the variables that are updated with no input arguments
             propfunctions = cgt.model.propertyFunctionList;
             varnames = {};
             for iprop = 1 : numel(propfunctions)
@@ -836,6 +841,258 @@ classdef ComputationalGraphTool
 
             end
 
+        end
+        
+        function help(cgt, varargin)
+        % print help to terminal to get an overview of all the interactive functions
+
+            cgt = cgt.setupFuncDocs();
+            
+            functionDocs = cgt.functionDocs;
+            names = cellfun(@(functionDoc) functionDoc.name, functionDocs, 'un', false);
+
+            
+            if nargin > 1
+
+                option = varargin{1};
+                
+                parsed = false;
+
+                if ismember(option, {'printAll', 'oneline', 'help', 'printFunctions'})
+                    parsed = true;
+                    if strcmp(option, 'oneline')
+                        oneline = true;
+                        option = 'printAll';
+                    end
+                end
+
+                if ~parsed
+
+                    funcinds = regexpSelect(names, option);
+                    if  ~isempty(inds)
+                        option = 'printSelected'
+                        parsed = true;
+                    end
+
+                end
+
+                assert(parsed, 'option could not be parsed');
+
+            else
+                option = 'printAll';
+            end
+
+            if nargin > 1 && strcmp(varargin{end}, 'oneline')
+                oneline = true;
+            else
+                oneline = false;
+            end
+            
+            parfill = ParagraphFiller('parlength', 80);
+            if oneline
+                parfill.parlength = Inf;
+            end
+            
+            if ismember(option, {'printAll', 'help'})
+
+                fprintf('Help for interactive use of the computational graph tool\n\n');
+
+                str = 'The computational graph can be used interactively to discover and help the design of new models.';
+                parfill.print(str);
+                fprintf('\n');
+
+                str = 'The help function can take the following arguments:';
+                parfill.print(str);
+                fprintf('\n');
+
+                args = {};
+
+                arg.name = 'help';
+                arg.str = 'print only instruction for the help function';
+                args{end + 1} = arg;
+                
+                arg.name = 'printAll';
+                arg.str = 'print everything, particular help for all of the interactive functions. This is the default argument.';
+                args{end + 1} = arg;                
+                
+                arg.name = 'interactive_function';
+                arg.str = 'print the help for te given interactive function. A substring can be given resulting in printing all the functions that match this substring.';
+                args{end + 1} = arg;
+
+                largs    = cellfun(@(arg) strlength(arg.name), args);
+                maxlargs = max(largs) + 2;
+                
+                for iarg = 1 : numel(largs)
+
+                    arg = args{iarg};
+                    
+                    lines = parfill.getLines(arg.str);
+
+                    formatstr = sprintf('%%-%ds %%s\n', maxlargs);
+                    fprintf(formatstr, ['''', arg.name, ''''], lines{1});
+                    for iline = 2 : numel(lines)
+                        fprintf(formatstr, '', lines{iline});
+                    end
+                    if ~oneline
+                        fprintf('\n');
+                    end
+
+                end
+
+                fprintf('\n');
+                str = 'if the string ''online'' is added at the end of the argument list, the output will not be formated but written as a single line (shorter output)';
+                parfill.print(str);
+                
+            end
+
+            if ismember(option, {'printAll', 'printFunctions'})
+                
+                option   = 'printSelected';
+                funcinds = (1 : numel(functionDocs));
+                
+            end
+
+            if strcmp(option, 'printSelected')
+
+                fprintf('\n')
+                parfill.print('Description of interactive functions for  the computational graph');
+                fprintf('\n')                
+                
+                functionDocs = functionDocs(funcinds);
+
+                callstrs  = cellfun(@(functionDoc) functionDoc.callstr, functionDocs, 'un', false);
+                lcallstrs = cellfun(@(callstr) strlength(callstr), callstrs(funcinds));
+                maxl      = max(lcallstrs);
+
+                if ~oneline
+                    parfill.parlength = 60;
+                end
+
+                for ifunc = 1 : numel(functionDocs)
+
+                    functionDoc = functionDocs{ifunc};
+                    
+                    lines = parfill.getLines(functionDoc.docstring);
+
+                    formatstr = sprintf('%%-%ds %%s\n', maxl);
+                    fprintf(formatstr, functionDoc.callstr, lines{1});
+                    for iline = 2 : numel(lines)
+                        fprintf(formatstr, '', lines{iline});
+                    end
+                    if ~oneline
+                        fprintf('\n');
+                    end
+
+                end
+            end
+            
+        end
+
+        function cgt = setupFuncDocs(cgt)
+
+            functionDocs = {};
+
+            % printVarNames
+
+            docstring = 'This function lists the name of all the variables declared in the model. They corresponds to the name of the nodes in the computational graph. When the function is called with an argument, it select the variables whose name is matched by the argument, in the sense that the argument is a substring of the variable name';
+
+            functionDoc.name      = 'printVarNames';
+            functionDoc.callstr   = 'cgt.printVarNames';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % openPropFunction(cgt, nodename)
+
+            docstring = 'This function sends you in the matlab editor to the place in the code where the variable is updated. If the namedoes not match a unique variable name, a list of matching ones is given and the user should enter the number given in the list for the variable he/she is interested in';
+
+            functionDoc.name      = 'openPropFunction';
+            functionDoc.callstr   = 'cgt.openPropFunction(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printRootVariables
+
+            docstring = 'This function prints the name of the variables that are detected as roots in the graph. Those variables will correspond to the primary variables, except those that have been declared as static. The static variables are not updated by the Newton solver as they are not considered as unknown. The developper should take care of updating those explicitly';
+
+            functionDoc.name      = 'printRootVariables';
+            functionDoc.callstr   = 'cgt.printRootVariables';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printTailVariables
+
+            docstring = 'This function prints the name of the variables that are detected as the tails in the graph. Those variables will correspond to the equations, except those that have been declared as extra variables. An equation variable, also called residual, is a variable that the solver will seek for its value to equal zero. We use Newton algorithm for that. The extra variables are variables that do not enter into the evaluation of the residuals but are usefull in a postprocessing of the solution.';
+
+            functionDoc.name      = 'printTailVariables';
+            functionDoc.callstr   = 'cgt.printTailVariables';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printChildDependencyList
+
+            docstring = 'This functions prints the list of the function calls that will be used to update all the variables up to the residuals. The list is ordered to obey the dependency relationships that are declared in the graph';
+
+            functionDoc.name      = 'printOrderedFunctionCallList';
+            functionDoc.callstr   = 'cgt.printOrderedFunctionCallList';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+            
+            % printChildDependencyList
+
+            docstring = 'Given a variable, prints the list of the variables that depends on it (children in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
+
+            functionDoc.name      = 'printChildDependencyList';
+            functionDoc.callstr   = 'cgt.printChildDependencyList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+            
+            % printParentDependencyList
+
+            docstring = 'Given a variable, prints the list of the variables that the variables depends on (parents in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
+
+            functionDoc.name      = 'printParentDependencyList';
+            functionDoc.callstr   = 'cgt.printParentDependencyList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printPropFunctionCallList
+
+            docstring = 'Given a variable name, this function prints the list of the function calls that will be used to update this variables. The list is ordered to obey the dependency relationships that are declared in the graph';
+
+            functionDoc.name      = 'printPropFunctionCallList';
+            functionDoc.callstr   = 'cgt.printPropFunctionCallList(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printPropFunction
+
+            docstring = 'Given a variable name, this function prints the correponding PropFunction object attached to this variable. It includes the function call and the list of the arguments the function depends on';
+
+            functionDoc.name      = 'printPropFunction';
+            functionDoc.callstr   = 'cgt.printPropFunction(name)';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            % printSubModelNames
+
+            docstring = 'This function prints the list of the sub-models that constitutes the main model';
+
+            functionDoc.name      = 'printSubModelNames';
+            functionDoc.callstr   = 'cgt.printSubModelNames';
+            functionDoc.docstring = docstring;
+
+            functionDocs{end + 1} = functionDoc;
+
+            cgt.functionDocs = functionDocs;
         end
 
     end

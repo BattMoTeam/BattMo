@@ -76,7 +76,11 @@ classdef MagnesiumBattery < SeaWaterBattery
                                               {elde, 'jBcSource'}});
             end
 
-            model = model.removeVarName({ct, 'volumeFraction'});
+            if ~model.include_precipitation
+
+                model = model.removeVarName({ct, 'volumeFraction'});
+                
+            end
             
         end
 

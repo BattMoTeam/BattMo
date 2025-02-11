@@ -211,7 +211,7 @@ function output = run_magnesium_1D_battery(input, varargin)
 
     % Run simulation
 
-    dopacked = true;
+    dopacked = false;
     if dopacked
         simname = md5sum(input);
         dataFolder = opt.directory;
@@ -245,9 +245,13 @@ function output = run_magnesium_1D_battery(input, varargin)
         [~, states, report] = getPackedSimulatorOutput(problem);
         output.states = states;
     else
-        [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
-                                                        nls);
-        output.states = states;
+        
+        if opt.runSimulation
+            [~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', ...
+                                                     nls);
+            output.states = states;
+        end
+        
     end
 
 end

@@ -1,0 +1,25 @@
+{"molecularWeights" : [
+  {"value" : 18.01528, 
+   "unit" : "gram/mol"
+  },
+  {"value" : 31.9988,
+   "unit" : "gram/mol"
+  }],
+ "permeability" : 1e-8,
+ "viscosity" : {
+   "value" : 0.018369247,
+   "unit" : "centi*poise"
+ },
+ "diffusionCoefficients" : [1e-4, 1e-4],
+ "comment" : "One value for each component.",
+ "T" : 298,
+ "control" : [{"name" : "External input",
+               "type" : "rate-composition",
+               "values" : [1e-4, 0.4]},
+              {"name" : "External output",
+               "type" : "pressure-zero mass fraction flux",
+               "values" : [1.7e5]}
+             ]
+}
+  
+

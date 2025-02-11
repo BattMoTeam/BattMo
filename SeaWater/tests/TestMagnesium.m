@@ -1,19 +1,24 @@
-function [jExternal, jFaceExternal] = setupExternalCoupling(model, phi, phiExternal, conductivity, coupterm)
+classdef TestMagnesium < matlab.unittest.TestCase
 
-    jExternal = phi*0.0; %NB hack to initialize zero ad
+    properties (TestParameter)
 
-    faces = coupterm.couplingfaces;
-    bcval = phiExternal;
-    [t, cells, sgn] = model.G.getBcTrans(faces);
-    current = conductivity.*t.*(bcval - phi(cells));
-    jExternal = subsetPlus(jExternal, current, cells);
-    G = model.G;
-    nf = G.topology.faces.num;
-    zeroFaceAD = model.AutoDiffBackend.convertToAD(zeros(nf, 1), phi);
-    jFaceExternal = zeroFaceAD;
-    jFaceExternal = subsasgnAD(jFaceExternal, faces, -sgn.*current);
+        include_precipitation = {true, false};
+    end
 
-    %assert(~any(isnan(sgn(faces))));
+    methods (Test)
+
+        function testRunMagnesium(test, include_precipitation)
+
+            run(fullfile(battmoDir, 'startupBattMo.m'));
+
+            set(0, 'defaultFigureVisible', 'off');
+            input.precipitation = include_precipitation;
+            run_magnesium_1D_battery(input);
+            set(0, 'defaultFigureVisible', 'on');
+
+        end
+
+    end
 
 end
 

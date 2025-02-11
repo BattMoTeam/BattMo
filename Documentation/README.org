@@ -66,8 +66,8 @@
      then the extra rST file should be named ~myexamplePreamble.rst~
 ** Guidelines
    - To make sure that a comment you include in matlab example file appears as a comment in rST output (and not at a
-     comment in the matlab code formatting), start a cell with eventually no title. In Matlab cells start with ~%%~ and
-     a title
+     comment in the matlab code formatting), start a cell with eventually no title. Include only *one* white-space
+     betwen ~%~ sign and text (otherwise ~publish~ routine exports differently).
    - The directive ~.. automodule::~ makes sure a directory is parsed. 
 * Interesting Manuals
 ** sphinx manual

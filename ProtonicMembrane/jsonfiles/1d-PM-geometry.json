@@ -1,0 +1,5 @@
+{"Geometry" :
+ {"type" : "1D",
+  "Nx" : 1000},
+ "Electrolyte" : {
+    "faceArea" : 1}}

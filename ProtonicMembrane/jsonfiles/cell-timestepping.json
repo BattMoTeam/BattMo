@@ -1,0 +1,8 @@
+{"TimeStepping" : {
+  "numberOfTimeSteps": 40,
+  "totalTime" : {"value" : 10,
+                 "unit" : "minute"},
+  "fractionSwitch" : 0.1,
+  "orderSwitch" : "alpha-equal-beta",
+  "description" : "strategy used to introduce the non-linearities"
+}}

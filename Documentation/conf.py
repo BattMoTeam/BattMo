@@ -47,6 +47,11 @@ extensions = ['sphinxcontrib.globalsubs',
 
 bibtex_bibfiles = ['refs.bib']
 
+mathjax3_config = {
+  'loader': {'load': ['[tex]/mhchem']},
+  'tex': {'packages': {'[+]': ['mhchem']}}
+}
+
 autosectionlabel_prefix_document = True
 
 global_substitutions = {
@@ -66,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BattMo'
-copyright = '2021-2023'
+copyright = '2021-2024'
 author = 'Simon Clark'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -320,7 +325,7 @@ add_module_names=False
 
 
 repo_url    = 'https://github.com/BattMoTeam/BattMo'
-branch_name = 'dev'
+branch_name = 'main'
 
 def find_battmo_file(filename):
     ignored_dirs = ['output', 'Externals', '.git', '.github']
@@ -392,8 +397,8 @@ class BattMoRawFileRole(ReferenceRole):
 roles.register_local_role('battmorawfile', BattMoRawFileRole())
 
 
-mrst_repo_url    = 'https://bitbucket.org/mrst/'
-mrst_branch_name = 'battmo-dev'
+mrst_repo_url    = 'https://github.com/SINTEF-AppliedCompSci/MRST'
+mrst_branch_name = 'battmo'
 
 
 class MrstFileRole(ReferenceRole):
@@ -405,12 +410,9 @@ class MrstFileRole(ReferenceRole):
             target, lineno = docutils.utils.unescape(target).split("#", 1)
         else:
             lineno = None
-        reponame = target.split('/')
-        target = '/'.join(reponame[1:])
-        reponame = reponame[0]
-        target = mrst_repo_url + reponame + '/src/' + mrst_branch_name + '/' + target
+        target = mrst_repo_url + '/blob/' + mrst_branch_name + '/' + target
         if lineno is not None:
-            target += "#lines-"+lineno
+            target += "#L"+lineno
         node = docutils.nodes.reference(self.rawtext, title, refuri=target)
         return [node], []
 

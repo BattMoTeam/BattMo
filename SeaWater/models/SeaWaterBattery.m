@@ -235,6 +235,7 @@ classdef SeaWaterBattery < BaseModel
                 cleanState.(an).volumeFraction    = state.(an).volumeFraction;
                 cleanState.(elyte).volumeFraction = state.(elyte).volumeFraction;
                 cleanState.(elyte).cs{indsol}     = state.(elyte).cs{indsol};
+                
             end
             
         end

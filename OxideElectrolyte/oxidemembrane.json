@@ -1,0 +1,27 @@
+{
+  "T": 1273.15,
+  "Anode": {
+    "Rct": {"value" : 0.1,
+            "unit" : "ohm*(centi*meter)^2"},
+    "pO2": 1e-5
+  },
+  "Cathode": {
+    "Rct": {"value" : 0.05,
+            "unit" : "ohm*(centi*meter)^2"},
+    "pO2": 0.2
+  },
+  "Electrolyte": {
+    "muEl0": 7e4,
+    "length": {"value" : 200,
+               "unit" : "micro*meter"},
+    "faceArea": 1,
+    "N": 40,
+    "Dh": 1e-12,
+    "De": 1e-12,
+    "sigmaO2": 0.01,
+    "Keh": 1
+  },
+  "Control": {
+    "controlType": "current"
+  }
+}

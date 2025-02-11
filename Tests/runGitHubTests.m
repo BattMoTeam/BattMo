@@ -11,14 +11,10 @@ disp(version)
 testdir = pwd;
 [~, res] = system('git rev-parse --short HEAD');
 fprintf('%s %s', pwd, res);
-
-dirs = {'autodiff', 'core', 'model-io', 'solvers', 'visualization'};
-for k = 1:numel(dirs)
-    cd(sprintf('../Externals/mrst/%s', dirs{k}));
-    [~, res] = system('git rev-parse --short HEAD');
-    fprintf('%s %s', pwd, res);
-    cd(testdir)
-end
+cd('../Externals/mrst');
+[~, res] = system('git rev-parse --short HEAD');
+fprintf('%s', res);
+cd(testdir)
 
 disp(pyenv)
 try
@@ -51,15 +47,12 @@ doAssertSuccess    = true;
 
 % Define which test cases to run
 testCases = {
-    'TestJsonFiles', ...
-    'TestChen2020', ...
-    'TestRunExamples'
-            };
+    'TestJsonFiles'  , ...
+    'TestChen2020'   , ...
+    'TestRunExamples', ...
+    'TestMagnesium'};
 
-% Execute tests
-% suite = testsuite(testCases);
-
-
+% Setup test suite
 for itestcase = 1 : numel(testCases)
 
     testCase = testCases{itestcase};
@@ -95,6 +88,8 @@ if stopOnError
     import matlab.unittest.plugins.StopOnFailuresPlugin;
     runner.addPlugin(StopOnFailuresPlugin);
 end
+
+% Run tests
 
 if runTestsInParallel
     results = runner.runInParallel(suite);

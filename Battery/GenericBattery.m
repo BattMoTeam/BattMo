@@ -1185,10 +1185,11 @@ classdef GenericBattery < BaseModel
                 I    = state.(ctrl).I;
                 time = state.time;
 
+                ctrlType = 'constantCurrent';
+
                 if model.(ctrl).useCVswitch
 
-                    [ctrlVal, ctrltype] = drivingForces.src(time, value(I), value(E), Imax);
-                    state.(ctrl).ctrlType = ctrltype;
+                    [ctrlVal, ctrlType] = drivingForces.src(time, value(I), value(E), Imax);
 
                 else
                     
@@ -1197,7 +1198,8 @@ classdef GenericBattery < BaseModel
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
-
+                state.(ctrl).ctrlType = ctrlType;
+                
               case 'CC'
 
                 time = state.time;
@@ -1524,7 +1526,8 @@ classdef GenericBattery < BaseModel
                 sigma = state.(ne).(cc).conductivity;
 
                 coupterm = model.(ne).(cc).externalCouplingTerm;
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(cc), phi, 0, sigma, coupterm);
+                bcfaces = coupterm.couplingfaces;
+                [jExternal, jFaceExternal] = assembleBoundarySource(model.(ne).(cc), phi, 0, sigma, bcfaces);
 
                 state.(ne).(cc).jExternal     = jExternal;
                 state.(ne).(cc).jFaceExternal = jFaceExternal;
@@ -1537,7 +1540,8 @@ classdef GenericBattery < BaseModel
                 sigma = state.(ne).(co).conductivity;
 
                 coupterm = model.(ne).(co).externalCouplingTerm;
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(ne).(co), phi, 0, sigma, coupterm);
+                bcfaces = coupterm.couplingfaces;
+                [jExternal, jFaceExternal] = assembleBoundarySource(model.(ne).(co), phi, 0, sigma, bcfaces);
 
                 state.(ne).(co).jExternal     = jExternal;
                 state.(ne).(co).jFaceExternal = jFaceExternal;
@@ -1565,7 +1569,8 @@ classdef GenericBattery < BaseModel
                 sigma = state.(pe).(cc).conductivity;
 
                 coupterm = model.(pe).(cc).externalCouplingTerm;
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(cc), phi, E, sigma, coupterm);
+                bcfaces = coupterm.couplingfaces;
+                [jExternal, jFaceExternal] = assembleBoundarySource(model.(pe).(cc), phi, E, sigma, bcfaces);
 
                 state.(pe).(cc).jExternal     = jExternal;
                 state.(pe).(cc).jFaceExternal = jFaceExternal;
@@ -1577,7 +1582,8 @@ classdef GenericBattery < BaseModel
                 sigma = state.(pe).(co).conductivity;
 
                 coupterm = model.(pe).(co).externalCouplingTerm;
-                [jExternal, jFaceExternal] = setupExternalCoupling(model.(pe).(co), phi, E, sigma, coupterm);
+                bcfaces = coupterm.couplingfaces;
+                [jExternal, jFaceExternal] = assembleBoundarySource(model.(pe).(co), phi, E, sigma, bcfaces);
 
                 state.(pe).(co).jExternal     = jExternal;
                 state.(pe).(co).jFaceExternal = jFaceExternal;
