@@ -959,8 +959,8 @@ classdef GenericBattery < BaseModel
               case 'Generic'
 
                 % set first step
-                initstate.(ctrl).ctrlStepNumber = 1;
-                initstate.(ctrl).I              = 0;
+                initstate.(ctrl).ctrlStepIndex = 1;
+                initstate.(ctrl).I             = 0;
                 
               otherwise
                 
@@ -1864,6 +1864,13 @@ classdef GenericBattery < BaseModel
 
             end
 
+        end
+
+        function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+        % Returns the current time-step and control index
+
+            [dt, done, currControl] = model.Control.getTimeStep(itstep, schedule, state);
+            
         end
 
         function outputvars = extractGlobalVariables(model, states)

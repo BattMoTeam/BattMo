@@ -142,6 +142,23 @@ classdef ControlModel < BaseModel
                               'control', control);
             
         end
+
+    function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+    % Returns the current time-step and control index
+
+        done = (itstep > numel(schedule.step.val));
+
+        if done
+            dt = [];
+            currControl = [];
+        else
+            % Get the current time-step
+            dt          = schedule.step.val(itstep);
+            currControl = schedule.step.control(itstep);
+        end
+        
+    end
+
         
     end
     
