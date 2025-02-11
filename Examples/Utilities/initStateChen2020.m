@@ -1,5 +1,9 @@
 function initstate = initStateChen2020(model, c_ne, c_pe)
-
+    
+% This function is a reimplementation of the initial state setup function implemented in the base model
+% GenericBattery. As the generic one, it compute the equilibrium state but in this case, it takes the concentration of
+% the negative and positive electrode as input, instead of a given SOC in the generic case.
+    
     % Some shorthands used for the sub-models
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';
@@ -37,10 +41,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
     end
     initstate.(ne).(co).(am).(sd).cSurface = c_ne*ones(nenp, 1);
 
-    initstate.(ne).(co).(am) = model.(ne).(co).(am).updateConcentrations(initstate.(ne).(co).(am));
-
     initstate = model.evalVarName(initstate, {ne, co, am, itf, 'OCP'});
-    initstate.(ne).(co).(am).(itf) = nitf.updateOCP(initstate.(ne).(co).(am).(itf));
     OCP = initstate.(ne).(co).(am).(itf).OCP;
     ref = OCP(1);
 
@@ -65,10 +66,7 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
 
     initstate.(pe).(co).(am).(sd).cSurface = c_pe*ones(penp, 1);
 
-    initstate.(pe).(co).(am) = model.(pe).(co).(am).updateConcentrations(initstate.(pe).(co).(am));
-
     initstate = model.evalVarName(initstate, {pe, co, am, itf, 'OCP'});
-    initstate.(pe).(co).(am).(itf) = pitf.updateOCP(initstate.(pe).(co).(am).(itf));
     OCP = initstate.(pe).(co).(am).(itf).OCP;
     initstate.(pe).(co).phi = OCP - ref;
 
