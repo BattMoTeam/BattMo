@@ -41,43 +41,53 @@ bibliography: paper.bib
 
 # Summary
 
-New high-performance battery designs are essential to achieve the goals of the electric energy transition. Across the
-industrial landscape, companies are adopting battery systems with ever increasing requirements for performance,
-lifetime, and cost. Market demand for batteries is projected to reach 390 GWh/year in 2030, and is growing so quickly
-that it may strain global supply chains. At the same time, research institutions are generating an abundance of data and
-new modelling approaches in the pursuit of novel battery materials and chemistries. Developing rigorous digital
-workflows can help industrial and research institutions reduce the need for costly physical prototyping and derive
-greater insight and knowledge from their data.
-
 This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework for
 simulating the performance of electrochemical cells. BattMo can quickly setup and solve models for a variety of battery
-chemistries, even considering complex designs like cylindical and prismatic cell jelly rolls. Furthermore, the parameter
-and result files are supplemented by annotated metadata using the Battery Interface Ontology (BattINFO) to support
-semantic interoperability in accordance with the FAIR principles. 
+chemistries, even considering complex designs like cylindical and prismatic cell jelly rolls.
+
+The simulation input parameters, including the material parameters and geometric descriptions, are specified through
+json schemas. In this respect, we follow the guidelines of the Battery Interface Ontology (BattINFO) to support semantic
+interoperability in accordance with the FAIR principles. 
+
+The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
+thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth) and the use of composite
+material, such as a mixture of Silicon and graphite.
+
+The models are setup in a hierarchical way, for clarity and modularity. Each model corresponds to a computational graph,
+which indroduces a set of variables (the nodes) and functional relationship (the edges). This design enables the
+flexibility for changing and designing new models. This flexibility is also illustrated in the implementation of an
+electrolyser model.
+
+The solver in BattMo uses automatic differentiation and support adjoint computation. We can therefore computute the
+derivative of objective functions with respect to all parameters in a very efficient way. Gradient-based optimization
+routine can be used to compute parameters from experimental data by minimizing the difference between observed and
+predicted results.
 
 # Statement of need
 
-Recently, a variety of open-source battery modelling codes have been released including PyBaMM [@sulzer2021python],
-cideMOD [@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], PETLion [@Berliner_2021], and MPET, among others. These
+New high-performance battery designs are essential to achieve the goals of the electric energy transition. Developing
+rigorous digital workflows can help industrial and research institutions reduce the need for costly physical prototyping
+and derive greater insight and knowledge from their data.
+
+There is a clear need for a battery modelling framework which can be adapted for both Li-ion and post-Li-ion
+technologies and can simulate the performance of battery cells in full three-dimensional designs. Recently, a variety of
+open-source battery modelling codes have been released including PyBaMM [@sulzer2021python], cideMOD
+[@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], PETLion [@Berliner_2021], and MPET, among others. These
 open-source modelling frameworks help the battery community reduce the cost of model development and help ensure the
 validity and the reproducibility of findings.
 
-There is a clear need for a battery modelling framework which can be adapted for both Li-ion and post-Li-ion
-technologies and can simulate the performance of battery cells in full three-dimensional designs. Some initial steps in
-this direction have been taken. PyBaMM includes a lead-acid battery extension for a python-based P2D framework, while
-cideMOD utilizes the Fenics finite element package to simulate Li-ion pouch cells in 3D.
+BattMo prolongs this effort by supporting fully 3D geometry and includes the possibility to easily modify the underlying
+equations. We provide a library of standard battery geometry which is parameterize. Design optimization can also be done
+on the geometry, which is an essential part of the design.
 
-Flexible and adaptable modelling frameworks are a connerstone of battery digitalization. High-quality battery models can
-be labor-intensive to develop from scratch.
-
-Optimization and calibration is important and difficult. It has been a problem for the physic-based model. 
+A challenge for physically based model for battery is the difficulty to calibrate the parameters. With an adjoint-based
+approach, we can effectively calibrate the models from experiments in a reasonable computationtime.
 
 # Functionality overview
 
 The default and easiest way to send the input parameters for the simulator is by using a json file. The json format is a
 text based format, which means that the file can be read directly by the user and easily modify. The keywords used in a
 BattMo json input file are all specified through a set of Json schema. The keywords provide 
-
 
 - Standard data input (json based with schema)
 - Library of battery format (to be extended)
@@ -87,59 +97,23 @@ BattMo json input file are all specified through a set of Json schema. The keywo
 - Design optimization
 - Support for standard protocols (control switching)
 
-
-# Physical models
-
-Most physics-based continuum models implement some version of the Doyle-Fuller-Newman approach for Li-ion batteries. The
-cell is typically approximated as a one-dimensional mesh with additional discretization along the radius of the active
-particles. This pseudo-two-dimensional (P2D) approach has been widely used in the battery modelling community as a
-relatively inexpensive way to get greater insight about the evolution of key quantities like concentration, temperature,
-and electric potential during cell operation. However, the simplified P2D mesh cannot resolve the effects of the cell
-geometry (e.g. current collector tabs). Furthermore, these approaches focus almost exclusively on lithium-ion cell
-chemistry. Fully coupled thermal and electro-chemical equations.
-
-Other battery chemistry
-
-- Sea Water model
-
-Other electrochemical systems
-
-- Electrolysis models
-- Protonic membrane
-
-
-# Numerical Methods
+# Software dependencies
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@MRST:2025] which provides a reliable foundation for meshing
-intricate geometries, efficiently solving large systems of equations, and visualizing the results.
-
-- Finite volume method (for strict local mass conservation)
-- Implicit time integrator for robustness 
-- Assembly based on automatic differentiation
-- Setup for adjoint computation
-- AGMG preconditioner and linear solver based on AMGCL
-- Computational graph model development
+intricate geometries, efficiently solving large systems of equations, and visualizing the results. It is implemented in
+Matlab/Octave. We do not rely on extra packages in matlab so that the basic license is enough. We use AMG open-source
+preconditionner from AMGCL [@Demidov2020].
 
 # Battery Format library
 
+We support coin cell, multipouch cell and prismatic jelly roll cell. The geometry are parameterized and can be modified
+using a simple set of parameters (the gridding is included in the setup).
+
 ![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
-# Model parameterization and design optimization
+# Example 1D
 
-Optimize design of a LNMO-SiGr cell. The Design parameters are the Electrodes' thickness and porosity with given NP
-ratio. The goal function is the specific output energy for a given CRate (we choose CRate = 1) given by
-\begin{equation*} 
-G(p) = \frac{\int_0^{T(p)} U(t, p)I(t, p)\,dt}{\text{mass}(p)} 
-\end{equation*}
-where we can see that the design parameters impact all the terms.
-      
-Using adjoint/gradient-based algorithm, we reach the optimal value for the cathode length using 10 simulations (5
-iterations for the last line search)
-
-![Optimization \label{fig:optimization}](figs/optimexample.png){width=100%}
-
-
-# Example
+# Example 3D
 
 # Acknowledgements
 
