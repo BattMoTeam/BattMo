@@ -27,24 +27,25 @@ classdef GenericControlModel < ControlModel
       % - 'current'
       % - 'voltage'
       varnames{end + 1} = 'ctrlType';
-      varnames{end + 1} = 'ctrlStepNumber';
+      % Control step index : integer that indicates the current control step in the controlsteps array
+      varnames{end + 1} = 'ctrlStepIndex';
       
       model = model.registerVarNames(varnames);
       
-      model = model.setAsStaticVarName('ctrlStepNumber');
+      model = model.setAsStaticVarName('ctrlStepIndex');
       
       % Register the functions
-      fn = @CcCvControlModel.updateControlType;
-      model = model.registerPropFunction({'ctrlType', fn, {'ctrlStepNumber'}});
+      fn = @GenericControlModel.updateControlType;
+      model = model.registerPropFunction({'ctrlType', fn, {'ctrlStepIndex'}});
       
-      fn = @CcCvControlModel.updateControlEquation;
+      fn = @GenericControlModel.updateControlEquation;
       model = model.registerPropFunction({'controlEquation', fn, {'ctrlType', 'E', 'I'}});
       
     end
     
     function cleanState = addStaticVariables(model, cleanState, state)
       
-      cleanState.ctrlStepNumber = state.ctrlStepNumber;
+      cleanState.ctrlStepIndex = state.ctrlStepIndex;
       
     end
     
@@ -75,7 +76,7 @@ classdef GenericControlModel < ControlModel
     
     function state = updateControlType(model, state)
       
-      istep = state.ctrlStepNumber;
+      istep = state.ctrlStepIndex;
       
       ctrlstep = model.controlsteps{istep};
       
@@ -90,7 +91,7 @@ classdef GenericControlModel < ControlModel
       % one, and proceed with the Newton algorithm
       
       ctrlType  = state.ctrlType;
-      ictrlstep = state.ctrlStepNumber;
+      ictrlstep = state.ctrlStepIndex;
       
       ctrlstep = model.controlsteps{ictrlstep};
       termination = ctrlstep.termination;
@@ -126,7 +127,7 @@ classdef GenericControlModel < ControlModel
       end
       
       if doswitch
-        state.ctrlStepNumber = state.ctrlStepNumber + 1;
+        state.ctrlStepIndex = state.ctrlStepIndex + 1;
         state = model.updateValueFromControl(state);
       end
       
@@ -143,7 +144,7 @@ classdef GenericControlModel < ControlModel
     function state = updateValueFromControl(model, state)
       % From the given control type, set the corresponding control variable to the expected value
       
-      ictrlstep = state.ctrlStepNumber;
+      ictrlstep = state.ctrlStepIndex;
       controlstep = model.controlsteps{ictrlstep};
       ctrlType = controlstep.controltype;
       
@@ -176,7 +177,7 @@ classdef GenericControlModel < ControlModel
     function state = updateControlEquation(model, state)
         
       ctrlType  = state.ctrlType;
-      ictrlstep = state.ctrlStepNumber;
+      ictrlstep = state.ctrlStepIndex;
       
       controlstep = model.controlsteps{ictrlstep};
       
