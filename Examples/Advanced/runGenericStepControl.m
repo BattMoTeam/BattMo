@@ -2,35 +2,21 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-
-%% Setup the properties of Li-ion battery materials and cell design
-% The properties and parameters of the battery cell, including the
-% architecture and materials, are set using an instance of
-% :class:`BatteryInputParams <Battery.BatteryInputParams>`. This class is
-% used to initialize the simulation and it propagates all the parameters
-% throughout the submodels. The input parameters can be set manually or
-% provided in json format. All the parameters for the model are stored in
-% the inputparams object.
-
-% The input parameters can be given in json format. The json file is read and used to populate the inputparams object.
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
+% jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'flat_generic_step_control.json'));
+jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 
-jsonstruct_control = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'flat_generic_step_control.json'));
-jsonstruct_material = removeJsonStructFields(jsonstruct_material, ...
-    {'Control', 'DRate'}        , ...
-    {'Control', 'controlPolicy'}, ...
-    {'Control', 'upperCutoffVoltage'}    , ...
-    {'Control', 'dIdtLimit'}    , ...
-    {'Control', 'rampupTime'}   , ...
-    {'Control', 'lowerCutoffVoltage'});
+jsonstruct_material = removeJsonStructFields(jsonstruct_material              , ...
+                                             {'Control', 'DRate'}             , ...
+                                             {'Control', 'controlPolicy'}     , ...
+                                             {'Control', 'upperCutoffVoltage'}, ...
+                                             {'Control', 'rampupTime'}        , ...
+                                             {'Control', 'lowerCutoffVoltage'});
 
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
-    jsonstruct_geometry, jsonstruct_control});
+                               jsonstruct_geometry, ...
+                               jsonstruct_control});
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
