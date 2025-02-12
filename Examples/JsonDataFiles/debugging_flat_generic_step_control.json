@@ -1,0 +1,18 @@
+{"Control" :
+ { "controlPolicy": "Generic",
+  "controlsteps" : [
+    {"controltype" : "current",
+     "value" : 1,
+     "direction" : "discharge",
+     "termination" : {"value" : 3.0,
+                      "terminationtype" : "voltage"},
+     "timeStepSize" : 600 
+    },
+    {"controltype" : "voltage",
+     "value" : 3.0,
+     "termination" : {"value" : 1e-2,
+                      "terminationtype" : "current"},
+     "timeStepSize" : 600
+    }]
+ }}
+
