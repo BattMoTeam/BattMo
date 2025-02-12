@@ -5,7 +5,6 @@ close all
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'debugging_flat_generic_step_control.json'));
-% jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 
 jsonstruct_material = removeJsonStructFields(jsonstruct_material              , ...
                                              {'Control', 'DRate'}             , ...

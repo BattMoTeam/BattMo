@@ -145,7 +145,17 @@ classdef GenericBattery < BaseModel
 
             eldes = {ne, pe};
 
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge', 'CC', 'CCCV', 'Impedance'}
+                % do nothing
+              case {'Generic', 'timeControl'}
+                model = model.registerVarName('time');
+                model = model.setAsStaticVarName('time');
+              otherwise
+                error('controlPolicy not recognized');
+            end
 
+            
             %% Temperature dispatch functions
             fn = @GenericBattery.updateTemperature;
 
@@ -231,6 +241,16 @@ classdef GenericBattery < BaseModel
                 error('controlPolicy not recognized');
             end
 
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl', 'CCCV', 'Impedance'}
+                % do nothing
+              case {'Generic'}
+                fn = @GenericBattery.updateControlTime;
+                model = model.registerPropFunction({{ctrl, 'time'}, fn, {'time'}});
+              otherwise
+                error('controlPolicy not recognized');
+            end
+            
             %% Function that update the Thermal Ohmic Terms
 
             if model.use_thermal
@@ -959,8 +979,10 @@ classdef GenericBattery < BaseModel
               case 'Generic'
 
                 % set first step
-                initstate.(ctrl).ctrlStepIndex = 1;
-                initstate.(ctrl).I             = 0;
+                initstate.(ctrl).ctrlStepIndex  = 1;
+                initstate.(ctrl).ctrlSwitchTime = 0;
+                initstate.(ctrl).I              = 0;
+                initstate.time                  = 0;
                 
               otherwise
                 
@@ -1159,7 +1181,6 @@ classdef GenericBattery < BaseModel
 
         end
 
-
         function state = updateControl(model, state, drivingForces)
 
             ctrl = "Control";
@@ -1219,6 +1240,12 @@ classdef GenericBattery < BaseModel
 
         end
 
+        function state = updateControlTime(model, state)
+
+            state.Control.time = state.time;
+            
+        end
+        
         function state = updateThermalOhmicSourceTerms(model, state)
         % Assemble the ohmic source term :code:`state.jHeatOhmSource`, see :cite:t:`Latz2016`
 
