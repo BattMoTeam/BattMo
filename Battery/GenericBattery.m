@@ -1869,7 +1869,7 @@ classdef GenericBattery < BaseModel
         function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
         % Returns the current time-step and control index
 
-            [dt, done, currControl] = model.Control.getTimeStep(itstep, schedule, state);
+            [dt, done, currControl] = model.Control.getTimeStep(itstep, schedule, state.Control);
             
         end
 

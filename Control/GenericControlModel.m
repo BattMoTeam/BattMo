@@ -73,6 +73,26 @@ classdef GenericControlModel < ControlModel
       step.control = ones(600, 1);
       
     end
+
+    function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+    % Returns the current time-step and control
+
+        ctrlsteps = model.controlsteps;
+
+        ctrlind   = state.ctrlStepIndex;
+        
+        if ctrlind > length(ctrlsteps)
+            done = true;
+            dt = [];
+            currControl = [];
+            return
+        end
+
+        dt = ctrlsteps{ctrlind}.timeStepSize;
+        done = false;
+        currControl = 1;
+        
+    end
     
     function state = updateControlType(model, state)
       
