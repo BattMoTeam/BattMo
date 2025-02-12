@@ -3,8 +3,7 @@
    "controlsteps" : [
      {"controltype" : "rest",
       "termination" : {"quantity": "time",
-                       "value": 4000.0,
-                       "comparison": "above"
+                       "value": 4000.0
                       },
       "timeStepSize" : 600 
      },
@@ -23,6 +22,22 @@
                        "quantity" : "current",
                        "comparison" : "absolute value below"},
       "timeStepSize" : 600
-     }]
+     },
+     {"controltype" : "current",
+      "value" : 1,
+      "direction" : "charge",
+      "termination" : {"quantity": "voltage",
+                       "value": 4.0,
+                       "comparison": "above"
+                      },
+      "timeStepSize" : 600 
+     },
+     {"controltype" : "rest",
+      "termination" : {"quantity": "time",
+                       "value": 4000
+                      },
+      "timeStepSize" : 600 
+     }     
+   ]
  }}
 
