@@ -88,13 +88,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             output = spiralGrid(gen);
 
             G = output.G;
-            
+
             % Transform to differentiable Grid structure.
             parentGrid = Grid(G);
             G          = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
 
             gen.parentGrid = parentGrid;
-            
+
             % Assign properties
             gen.tag                     = output.tag;
             gen.tagdict                 = output.tagdict;
@@ -115,7 +115,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
         function UGrids = setupUnRolledGrids(gen, inputparams)
 
-            G            = gen.G;
+            G            = inputparams.G;
+
             widthLayer   = gen.widthLayer;
             nWidthLayer  = gen.nWidthLayer;
             heightLayer  = gen.heightLayer;
@@ -125,16 +126,16 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             nwindings    = gen.nwindings;
             celltbl      = gen.celltbl;
 
-            cartG = cartGrid([nas*nwindings, sum(nWidthLayer), nL]);
+            cartG = cartGrid([nas*nwindings, sum(nWidthLayer), nL]); % NB: will be Grid() later
 
             vecttbl.vect = (1 : cartG.griddim)';
             vecttbl = IndexArray(vecttbl)';
 
-            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.getNumberOfCells())');
+            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.cells.num)');
             cartcelltbl.indi = indi;
             cartcelltbl.indj = indj;
             cartcelltbl.indk = indk;
-            cartcelltbl.cells = (1 : cartG.getNumberOfCells())';
+            cartcelltbl.cells = (1 : cartG.cells.num)';
             cartcelltbl = IndexArray(cartcelltbl);
 
             cellindjtbl.indj = (1 : sum(nWidthLayer))';
@@ -242,12 +243,15 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             tag     = gen.tag;
 
             clear celltbl
-            celltbl.cartcells = (1 : cartG.getNumberOfCells())';
+            celltbl.cartcells = (1 : cartG.cells.num)';
             celltbl.cells = cartInd;
             celltbl = IndexArray(celltbl);
 
             UGrids.G = cartG;
             UGrids.G.mappings.ind = cartInd;
+
+            % Convert to Grid()
+            cartG = Grid(cartG);
 
             compG = inputparams.(pe).(cc).G;
             comptag = tagdict('PositiveCurrentCollector');
@@ -271,7 +275,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             Gs.CurrentCollector = compCartG;
 
             compG = inputparams.(ne).(co).G;
-            comptag = tagdict('NegativeActiveMaterial');
+            comptag = tagdict('NegativeCoating');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.Coating = compCartG;
