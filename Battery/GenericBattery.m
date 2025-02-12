@@ -1874,6 +1874,16 @@ classdef GenericBattery < BaseModel
             
         end
 
+        function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
+
+            doend = triggerSimulationEnd@BaseModel(model, state, state0_inner, drivingForces);
+            if isfield(drivingForces, 'Control')
+                doend = model.Control.triggerSimulationEnd(state.Control, state0_inner.Control, drivingForces.Control);
+            end
+        
+        end
+        
+
         function outputvars = extractGlobalVariables(model, states)
 
             ns = numel(states);

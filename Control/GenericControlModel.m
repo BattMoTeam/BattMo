@@ -83,12 +83,54 @@ classdef GenericControlModel < ControlModel
     
     function state = updateControlType(model, state)
       
-      istep = state.ctrlStepIndex;
-      
+      istep    = model.getControlStep(state);
       ctrlstep = model.controlsteps{istep};
       
       state.ctrlType = ctrlstep.controltype;
       
+    end
+
+    function [isCtrlDone, isLastControl] = isControlTerminated(model, state, state0)
+
+        if ~isfield(state, 'ctrlType')
+            state = model.updateControlType(state);
+        end
+        ctrlType  = state.ctrlType;
+        [ictrlstep, isLastControl] = model.getControlStep(state);
+        
+        ctrlstep = model.controlsteps{ictrlstep};
+        termination = ctrlstep.termination;
+        
+        isCtrlDone = false;
+        
+        switch termination.terminationtype
+          case 'current'
+            I = state.I;
+            tI = termination.value;
+            if abs(I) < tI
+                isCtrlDone = true;
+            end
+          case 'voltage'
+            E = state.E;
+            switch ctrlstep.direction
+              case 'discharge'
+                Emin = termination.value;
+                if E < Emin
+                    isCtrlDone = true;
+                end
+              case 'charging'
+                Emax = termination.value
+                if E > Emax
+                    isCtrlDone = true;
+                end
+              otherwise
+                error('direction not recognized');
+            end
+          case 'time'
+          otherwise
+            error('termination type not recognized')
+        end
+
     end
     
     function state = updateControlState(model, state, state0, dt)
@@ -97,48 +139,15 @@ classdef GenericControlModel < ControlModel
       % "termination" criteria from the control If the termination criteria is met, we increment the control step by
       % one, and proceed with the Newton algorithm
       
-      ctrlType  = state.ctrlType;
-      ictrlstep = state.ctrlStepIndex;
-      
-      ctrlstep = model.controlsteps{ictrlstep};
-      termination = ctrlstep.termination;
-      
-      doswitch = false;
-      
-      switch termination.terminationtype
-        case 'current'
-          I = state.I;
-          tI = termination.value;
-          if abs(I) < tI
-            doswitch = true;
-          end
-        case 'voltage'
-          E = state.E;
-          switch ctrlstep.direction
-            case 'discharge'
-              Emin = termination.value;
-              if E < Emin
-                doswitch = true;
-              end
-            case 'charging'
-              Emax = termination.value
-              if E > Emax
-                doswitch = true;
-              end
-            otherwise
-              error('direction not recognized');
-          end
-        case 'time'
-        otherwise
-          error('termination type not recognized')
-      end
-      
-      if doswitch
-        state.ctrlStepIndex = state.ctrlStepIndex + 1;
-        state = model.updateValueFromControl(state);
-      end
-      
+        [isCtrlDone, isLastControl] = model.isControlTerminated(state, state0);
+        
+        if isCtrlDone && ~isLastControl
+            state.ctrlStepIndex = state.ctrlStepIndex + 1;
+            state = model.updateValueFromControl(state);
+        end
+        
     end
+
     
     function  [arefulfilled, state] = checkConstraints(model, state, state0, dt)
       
@@ -147,38 +156,57 @@ classdef GenericControlModel < ControlModel
       
     end
     
+    function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
+
+        [isCtrlDone, isLastControl] = model.isControlTerminated(state, state0_inner);
+        
+        doend = (isCtrlDone && isLastControl);
+        
+    end
     
     function state = updateValueFromControl(model, state)
-      % From the given control type, set the corresponding control variable to the expected value
-      
-      ictrlstep = state.ctrlStepIndex;
-      controlstep = model.controlsteps{ictrlstep};
-      ctrlType = controlstep.controltype;
-      
-      state.ctrlType = ctrlType;
-      
-      switch ctrlType
+    % From the given control type, set the corresponding control variable to the expected value
         
-        case 'rest'
-          
-          state.I = 0
-          
-        case 'current'
-          
-          givenI = controlstep.value;
-          state.I = givenI;
-          
-        case 'voltage'
-          
-          givenE = controlstep.value;
-          state.E = givenE;
-          
-        otherwise
-          
-          error('control type not recognized');
-          
-      end
-      
+        ictrlstep   = model.getControlStep(state);
+        controlstep = model.controlsteps{ictrlstep};
+        ctrlType    = controlstep.controltype;
+        
+        state.ctrlType = ctrlType;
+        
+        switch ctrlType
+            
+          case 'rest'
+            
+            state.I = 0
+            
+          case 'current'
+            
+            givenI = controlstep.value;
+            state.I = givenI;
+            
+          case 'voltage'
+            
+            givenE = controlstep.value;
+            state.E = givenE;
+            
+          otherwise
+            
+            error('control type not recognized');
+            
+        end
+        
+    end
+
+    function [ictrlstep, isLastControl] = getControlStep(model, state)
+        
+        ctrlsteps = model.controlsteps;
+        ictrlstep = state.ctrlStepIndex;
+
+        isLastControl = false;
+        if ictrlstep == length(ctrlsteps)
+            isLastControl = true;
+        end
+
     end
     
     function state = updateControlEquation(model, state)
