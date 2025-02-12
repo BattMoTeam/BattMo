@@ -22,6 +22,7 @@ function jsonstruct = convertPyBaMMtoJson(experiment)
             step_dict.timeStepSize = 600;
 
         elseif containsi(step, 'Discharge') || containsi(step, 'Charge')
+
             if containsi(step, 'Discharge')
                 direction = 'discharge';
             else
@@ -30,7 +31,7 @@ function jsonstruct = convertPyBaMMtoJson(experiment)
 
             [values, units] = extract_numeric_values(step);
             [value1, quantity1] = type_to_unit(values(1), units{1});
-            assert(strcmpi(quantity1, 'current'), 'Cannot %s with %s, can only use current for now', direction, quantity1);
+            assert(strcmpi(quantity1, 'current'), 'Cannot %s with %s, can only use current', direction, quantity1);
             step_dict.controltype = quantity1;
 
             [value2, quantity2] = type_to_unit(values(2), units{2});
