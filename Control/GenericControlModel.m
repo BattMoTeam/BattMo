@@ -229,7 +229,9 @@ classdef GenericControlModel < ControlModel
               case 'current'
                 
                 givenI = controlstep.value;
-                
+                if strcmp(controlstep.direction, 'charge')
+                    givenI = -givenI;
+                end
                 ctrleq = state.I - givenI;
                 
               case 'voltage'
