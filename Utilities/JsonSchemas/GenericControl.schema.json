@@ -95,7 +95,7 @@
             "termination": {
               "type": "object",
               "properties": {
-                "terminationtype": {
+                "quantity": {
                   "type": "string",
                   "const": "time"
                 },
@@ -122,15 +122,21 @@
     "termination": {
       "type": "object",
       "properties": {
-        "terminationtype": {
+        "quantity": {
           "type": "string",
           "enum": ["time", "voltage", "current"]
+        },
+        "comparison" : {
+          "$ref" : "#/$defs/comparison"
         },
         "value": {
           "type": "number",
           "description": "Termination value (time or value)"
         }
       }
-    }
+    },
+    "comparison" : {"type" : "string",
+                    "enum" : ["above", "below", "absolute value above", "absolute value below"]}
+    
   }
 }
