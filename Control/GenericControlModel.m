@@ -55,25 +55,12 @@ classdef GenericControlModel < ControlModel
       
     end
     
-    function control = setupScheduleControl(model)
-      
-      control = setupScheduleControl@ControlModel(model);
-      control.Generic = true;
-      
+    function schedule = setupSchedule(model, jsonstruct)
+
+        schedule.is_used = false;
+
     end
     
-    function step = setupScheduleStep(model, timeSteppingParams)
-      
-      % Setup and a return the step structure that is part of the schedule which is used as input for
-      % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
-      % why we include this method here, for convenience. It can be overloaded by derived classes. The
-      % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
-      
-      step.val     = 10*minute*ones(600, 1);
-      step.control = ones(600, 1);
-      
-    end
-
     function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
     % Returns the current time-step and control
 

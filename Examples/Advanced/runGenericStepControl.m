@@ -43,13 +43,13 @@ inputparams = BatteryInputParams(jsonstruct);
 
 model = GenericBattery(inputparams);
 
-timestep.timeStepDuration = 100;
+% timestep.timeStepDuration = 100;
 
-step    = model.Control.setupScheduleStep(timestep);
-control = model.Control.setupScheduleControl();
+% step    = model.Control.setupScheduleStep(timestep);
+% control = model.Control.setupScheduleControl();
 
 % This control is used to set up the schedule
-schedule = struct('control', control, 'step', step);
+schedule = model.Control.setupSchedule();
 
 %% Setup the initial state of the model
 % The initial state of the model is setup using the model.setupInitialState() method.

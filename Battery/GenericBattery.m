@@ -1627,8 +1627,9 @@ classdef GenericBattery < BaseModel
         %% Mainly assignement to have the simulator from MRST running (nothing is done here)
             forces = getValidDrivingForces@PhysicalModel(model);
 
-            forces.src = [];
-
+            forces.src     = [];
+            forces.Control = [];
+            
             ctrl = 'Control';
             ctrlpol = model.(ctrl).controlPolicy;
             forces.(ctrlpol) = true;
