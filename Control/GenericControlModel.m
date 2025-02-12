@@ -146,7 +146,7 @@ classdef GenericControlModel < ControlModel
             
             if isCtrlDone && ~isLastControl
                 state.ctrlStepIndex  = state.ctrlStepIndex + 1;
-                state.ctrlSwitchTime = 0;
+                state.ctrlSwitchTime = state.time;
                 state = model.updateValueFromControl(state);
             end
             
@@ -276,7 +276,18 @@ classdef GenericControlModel < ControlModel
         function termination = setupComparisonFunction(termination)
         % return a function that takes state as argument and returns true if the termination condition is fullfilled.
 
-            comparison = termination.comparison;
+            if isfield(termination, 'comparison')
+                comparison = termination.comparison;
+            else
+                switch termination.quantity
+                  case {'current', 'voltage'}
+                    error('include a comparison field for the given termination control')
+                  case 'time'
+                    comparison = 'above';
+                  otherwise
+                    error('termination quantity not recognized')
+                end
+            end
             
             switch termination.quantity
               case 'current'
