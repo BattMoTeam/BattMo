@@ -127,6 +127,7 @@ classdef GenericControlModel < ControlModel
                 state = model.updateControlType(state);
             end
             ctrlType  = state.ctrlType;
+            
             [ictrlstep, isLastControl] = model.getControlStep(state);
             
             ctrlstep = model.controlsteps{ictrlstep};
@@ -181,7 +182,7 @@ classdef GenericControlModel < ControlModel
                 
               case 'rest'
                 
-                state.I = 0
+                state.I = 0;
                 
               case 'current'
                 
@@ -300,7 +301,7 @@ classdef GenericControlModel < ControlModel
                 tTime = termination.value;
                 termination.function = @(state) GenericControlModel.basicComparison(state.ctrlTime, tTime, comparison);
               otherwise
-                error('termination type not recognized')
+                error('termination quantity not recognized')
             end
 
         end

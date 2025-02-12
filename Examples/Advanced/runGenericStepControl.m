@@ -75,13 +75,13 @@ Tmax = cellfun(@(x) max(x.ThermalModel.T), states);
 time = cellfun(@(x) x.time, states);
 
 figure
-plot(time/hour, E, '*-');
+plot(time/hour, E, '*-', 'linewidth', 3);
 grid on
 xlabel 'time  / h';
 ylabel 'potential  / V';
 
 figure
-plot(time/hour, I, '*-');
+plot(time/hour, I, '*-', 'linewidth', 3);
 grid on
 xlabel 'time  / h';
 ylabel 'Current  / A';
