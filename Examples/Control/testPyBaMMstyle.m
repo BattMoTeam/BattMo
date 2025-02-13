@@ -20,7 +20,11 @@ experiment = {
              };
 
 for itest = 1:numel(experiment)
-    json = convertPyBaMMtoJson(experiment{itest});
+    jsonstruct = convertPyBaMMtoJson(experiment{itest});
     disp(experiment{itest});
-    printer(json);
+    printer(jsonstruct);
+
+    schema = fullfile(battmoDir, 'Utilities', 'JsonSchemas', 'GenericControl.schema.json');
+    validateJsonStruct(jsonstruct, 'useTmpFile', false, 'schema', schema);
+
 end
