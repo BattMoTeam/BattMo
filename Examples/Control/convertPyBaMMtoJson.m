@@ -24,9 +24,11 @@ function jsonstruct = convertPyBaMMtoJson(experiment)
         elseif containsi(step, 'Discharge') || containsi(step, 'Charge')
 
             if containsi(step, 'Discharge')
-                direction = 'discharge';
+                direction  = 'discharge';
+                comparison = 'below';
             else
-                direction = 'charge';
+                direction  = 'charge';
+                comparison = 'above';
             end
 
             [values, units] = extract_numeric_values(step);
@@ -40,7 +42,7 @@ function jsonstruct = convertPyBaMMtoJson(experiment)
             step_dict.direction = direction;
             step_dict.termination = struct('quantity', quantity2, ...
                                            'value', value2, ...
-                                           'comparison', 'below');
+                                           'comparison', comparison);
             step_dict.timeStepSize = 600;
 
         elseif containsi(step, 'Hold')
