@@ -10,7 +10,7 @@
         "direction" : "discharge",
         "termination" : {"value" : 3.0,
                          "terminationtype" : "voltage"},
-        "timeStepSize" : 60 
+        "timeStepSize" : 60
        },
        {"controltype" : "voltage",
         "value" : 3.0,
@@ -23,12 +23,11 @@
         "direction" : "charge",
         "termination" : {"value" : 4,
                          "terminationtype" : "voltage"},
-        "timeStepSize" : 60 
-       },
+        "timeStepSize" : 60
+       }
      ]
     },
     {"controltype" : "rest",
-     "termination" : {"value" : 1000, 
+     "termination" : {"value" : 1000,
                       "terminationtype" : "time"}}]
   }
-
