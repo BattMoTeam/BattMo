@@ -180,6 +180,10 @@ classdef GenericBattery < BaseModel
                     model = model.registerPropFunction({{elde, co, amc, itf, 'phiElectrolyte'}, fn, inputnames});
                     model = model.registerPropFunction({{elde, co, amc, itf, 'cElectrolyte'}  , fn, inputnames});
 
+                    if model.(elde).(co).(amc).(itf).useJ0Func
+                        model = model.removeVarName({elde, co, amc, itf, 'cElectrolyte'});
+                    end
+
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
                       case {'none', 'Bolay'}
                         % nothing more to add
@@ -403,11 +407,11 @@ classdef GenericBattery < BaseModel
 
             scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
             scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
                 if model.include_current_collectors
@@ -1179,14 +1183,14 @@ classdef GenericBattery < BaseModel
                     [ctrlVal, ctrlType] = drivingForces.src(time, value(I), value(E), Imax);
 
                 else
-                    
+
                     ctrlVal = drivingForces.src(time, Imax);
-                    
+
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrlType;
-                
+
               case 'CC'
 
                 time = state.time;
@@ -1236,7 +1240,7 @@ classdef GenericBattery < BaseModel
                     cc_jsq   = cc_model.G.getCellFluxNorm(cc_j);
 
                     src = subsetPlus(src, cc_vols .* cc_jsq ./ cc_econd, cc_map);
-                    
+
                 end
 
                 co_model = model.(elde).(co);
@@ -1368,7 +1372,7 @@ classdef GenericBattery < BaseModel
             nc = model.G.getNumberOfCells();
 
             T = state.(thermal).T;
-            
+
             src = zeros(nc, 1);
 
             for ind = 1 : numel(eldes)
@@ -1431,7 +1435,7 @@ classdef GenericBattery < BaseModel
 
                 itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
                 % itf_src = n*F*vols.*Rvol.*eta;
-                
+
                 src = subsetPlus(src, itf_src, co_map);
 
             end
@@ -1703,7 +1707,7 @@ classdef GenericBattery < BaseModel
             state.(elyte).c = max(cmin, state.(elyte).c);
 
             eldes = {ne, pe};
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1731,7 +1735,7 @@ classdef GenericBattery < BaseModel
 
                 end
             end
-            
+
             report = [];
 
         end
@@ -1760,7 +1764,7 @@ classdef GenericBattery < BaseModel
             ctrl = 'Control';
 
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt);
-            
+
             if strcmp(model.(ctrl).controlPolicy, 'powerControl')
                 state.(ctrl).time = state.time;
             end
@@ -1832,7 +1836,7 @@ classdef GenericBattery < BaseModel
                 ctrl = 'Control';
                 state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
             end
-            
+
             if report.Converged
 
                 if ismember(model.(ctrl).controlPolicy, {'CCCV'})
