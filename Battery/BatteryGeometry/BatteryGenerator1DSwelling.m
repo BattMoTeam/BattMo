@@ -43,11 +43,11 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
             gen = gen@BatteryGenerator();  
         end
             
-        function [paramobj, gen] = updateBatteryInputParams(gen, paramobj)
+        function [inputparams, gen] = updateBatteryInputParams(gen, inputparams)
 
-            gen.include_current_collectors = paramobj.include_current_collectors;
-            gen.use_thermal = paramobj.use_thermal;
-            paramobj = gen.setupBatteryInputParams(paramobj, []);
+            gen.include_current_collectors = inputparams.include_current_collectors;
+            gen.use_thermal = inputparams.use_thermal;
+            inputparams = gen.setupBatteryInputParams(inputparams, []);
 
             % We define some shorthand names for simplicity.
             ne      = 'NegativeElectrode';
@@ -59,26 +59,26 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
             cc      = 'CurrentCollector';
 
             % we update all the grids to adjust grid to faceArea
-            paramobj.G               = gen.adjustGridToFaceArea(paramobj.G);
-            paramobj.(elyte).G       = gen.adjustGridToFaceArea(paramobj.(elyte).G);
-            paramobj.(elyte).(sep).G = gen.adjustGridToFaceArea(paramobj.(elyte).(sep).G);
+            inputparams.G               = gen.adjustGridToFaceArea(inputparams.G);
+            inputparams.(elyte).G       = gen.adjustGridToFaceArea(inputparams.(elyte).G);
+            inputparams.(elyte).(sep).G = gen.adjustGridToFaceArea(inputparams.(elyte).(sep).G);
             
             eldes = {ne, pe};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
-                paramobj.(elde).(am).G = gen.adjustGridToFaceArea(paramobj.(elde).(am).G);
+                inputparams.(elde).(am).G = gen.adjustGridToFaceArea(inputparams.(elde).(am).G);
                 if gen.include_current_collectors
-                    paramobj.(elde).(cc).G = gen.adjustGridToFaceArea(paramobj.(elde).(cc).G);
+                    inputparams.(elde).(cc).G = gen.adjustGridToFaceArea(inputparams.(elde).(cc).G);
                 end
             end
             
             if gen.use_thermal
-                paramobj.(thermal).G = gen.adjustGridToFaceArea(paramobj.(thermal).G);                
+                inputparams.(thermal).G = gen.adjustGridToFaceArea(inputparams.(thermal).G);                
             end
             
         end
 
-        function [paramobj, gen] = setupGrid(gen, paramobj, ~)
+        function [inputparams, gen] = setupGrid(gen, inputparams, ~)
             
             sepnx  = gen.sepnx;
             nenx   = gen.nenx;
@@ -102,8 +102,12 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
             G = tensorGrid(x);
             G = computeGeometry(G); 
             
-            paramobj.G = G;
-            gen.G = G;
+            parentGrid = Grid(G, 'faceArea', gen.faceArea);
+
+            G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
+
+            inputparams.G  = G;
+            gen.parentGrid = parentGrid;
             
         end
 
@@ -119,7 +123,7 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
             
         end
             
-        function paramobj = setupElectrolyte(gen, paramobj, params)
+        function inputparams = setupElectrolyte(gen, inputparams, params)
             
             if gen.include_current_collectors
                 params.cellind = gen.ccnenx + (1 : (gen.nenx + gen.sepnx + gen.penx))';
@@ -128,10 +132,10 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
                 params.cellind = (1 : (gen.nenx + gen.sepnx + gen.penx))';
                 params.Separator.cellind = gen.nenx + (1 : gen.sepnx)';
             end
-            paramobj = setupElectrolyte@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrolyte@BatteryGenerator(gen, inputparams, params);
         end
         
-        function paramobj = setupElectrodes(gen, paramobj, params)
+        function inputparams = setupElectrodes(gen, inputparams, params)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -191,15 +195,15 @@ classdef BatteryGenerator1DSwelling < BatteryGenerator
                 
             end
             
-            paramobj = setupElectrodes@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupElectrodes@BatteryGenerator(gen, inputparams, params);
 
         end
                 
-        function paramobj = setupThermalModel(gen, paramobj, params)
+        function inputparams = setupThermalModel(gen, inputparams, params)
 
             params.couplingfaces = [];
             params.couplingcells = (1 : gen.G.cells.num)';
-            paramobj = setupThermalModel@BatteryGenerator(gen, paramobj, params);
+            inputparams = setupThermalModel@BatteryGenerator(gen, inputparams, params);
             
         end
 

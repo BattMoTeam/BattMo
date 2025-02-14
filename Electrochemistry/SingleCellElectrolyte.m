@@ -15,9 +15,9 @@ classdef SingleCellElectrolyte < BaseModel
         function model = SingleCellElectrolyte(inputparams)
             model = model@BaseModel();
 
-            model.G     = paramobj.G;
-            model.cInit = paramobj.cInit;
-            model.phiInit = paramobj.phiInit;
+            model.G     = inputparams.G;
+            model.cInit = inputparams.cInit;
+            model.phiInit = inputparams.phiInit;
         end
 
         function model = registerVarAndPropfuncNames(model)

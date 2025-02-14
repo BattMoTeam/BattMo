@@ -12,22 +12,22 @@ classdef SwellingMaterial < ActiveMaterial
     
     methods
         
-        function model = SwellingMaterial(paramobj)
+        function model = SwellingMaterial(inputparams)
 
-            model = model@ActiveMaterial(paramobj)
+            model = model@ActiveMaterial(inputparams)
             fdnames = {'molarMass'};
             
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 
-        function model = setupDiffusionModel(model, paramobj)
+        function model = setupDiffusionModel(model, inputparams)
 
             model.use_particle_diffusion = true;
             model.use_interparticle_diffusion = false;
-            paramobj.SolidDiffusion.np = model.G.cells.num;
-            paramobj.SolidDiffusion.cmax = paramobj.Interface.cmax;
-            model.SolidDiffusion = FullSolidDiffusionSwellingModel(paramobj.SolidDiffusion);
+            inputparams.SolidDiffusion.np = model.G.cells.num;
+            inputparams.SolidDiffusion.cmax = inputparams.Interface.cmax;
+            model.SolidDiffusion = FullSolidDiffusionSwellingModel(inputparams.SolidDiffusion);
             
         end
 

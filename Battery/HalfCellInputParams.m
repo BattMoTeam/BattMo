@@ -20,9 +20,9 @@ classdef HalfCellInputParams < InputParams
     
     methods
         
-        function paramobj = HalfCellInputParams(jsonstruct)
+        function inputparams = HalfCellInputParams(jsonstruct)
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
 
             elyte = 'Electrolyte';
             am    = 'ActiveMaterial';
@@ -30,11 +30,11 @@ classdef HalfCellInputParams < InputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            paramobj.(am)    = ActiveMaterialInputParams(pick(am));
-            paramobj.(elyte) = SingleCellElectrolyteInputParams(pick(elyte));
-            paramobj.(ctrl)  = IEswitchControlModelInputParams(pick(ctrl));
+            inputparams.(am)    = ActiveMaterialInputParams(pick(am));
+            inputparams.(elyte) = SingleCellElectrolyteInputParams(pick(elyte));
+            inputparams.(ctrl)  = IEswitchControlModelInputParams(pick(ctrl));
 
-            paramobj = paramobj.validateInputParams();
+            inputparams = inputparams.validateInputParams();
             
         end
 

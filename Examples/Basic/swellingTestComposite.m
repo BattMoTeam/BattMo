@@ -81,13 +81,13 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 jsonstruct.(ne).use_swelling_material = true;
 
-paramobj = CompositeBatteryInputParams(jsonstruct);
-paramobj = paramobj.validateInputParams();
+inputparams = CompositeBatteryInputParams(jsonstruct);
+inputparams = inputparams.validateInputParams();
 
-paramobj.scenario = 'discharge';
+inputparams.scenario = 'discharge';
 
 %%%
-% It is also possible to update the properties of this paramobj in a
+% It is also possible to update the properties of this inputparams in a
 % similar way to updating the jsonstruct. Here we set the discretisation
 % level for the diffusion model. Other input parameters for the full diffusion
 % model can be found here:
@@ -104,17 +104,17 @@ paramobj.scenario = 'discharge';
 gen = BatteryGenerator1DSwelling();
 
 %%%
-% Now, we update the paramobj with the properties of the mesh. This function
-% will update relevent parameters in the paramobj object and make sure we have
+% Now, we update the inputparams with the properties of the mesh. This function
+% will update relevent parameters in the inputparams object and make sure we have
 % all the required parameters for the model geometry chosen.
 
-paramobj = gen.updateBatteryInputParams(paramobj);
+inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%% Initialising the battery model object
-% The battery model is initialized by sending paramobj to the Battery class
+% The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
-model = CompositeBattery(paramobj);
+model = CompositeBattery(inputparams);
 
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;

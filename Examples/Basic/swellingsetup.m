@@ -19,7 +19,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 % used to initialize the simulation and it propagates all the parameters
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
-% the paramobj object.
+% the inputparams object.
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json'));
 
@@ -42,24 +42,24 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 
 jsonstruct.use_particle_diffusion = true;
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
-paramobj.(ne).(am).InterDiffusionCoefficient = 0;
-paramobj.(pe).(am).InterDiffusionCoefficient = 0;
+inputparams.(ne).(am).InterDiffusionCoefficient = 0;
+inputparams.(pe).(am).InterDiffusionCoefficient = 0;
 
-paramobj.(ne).(am).(sd).N = 5;
-paramobj.(pe).(am).(sd).N = 5;
+inputparams.(ne).(am).(sd).N = 5;
+inputparams.(pe).(am).(sd).N = 5;
 
-paramobj = paramobj.validateInputParams();
+inputparams = inputparams.validateInputParams();
 
 gen = BatteryGenerator1D();
 
-% Now, we update the paramobj with the properties of the mesh. 
-paramobj = gen.updateBatteryInputParams(paramobj);
+% Now, we update the inputparams with the properties of the mesh. 
+inputparams = gen.updateBatteryInputParams(inputparams);
 
-paramobj = paramobj.(ne).(am);
+inputparams = inputparams.(ne).(am);
 
-model = SwellingMaterial(paramobj);
+model = SwellingMaterial(inputparams);
 
 model = model.setupComputationalGraph();
 

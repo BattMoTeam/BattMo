@@ -6,8 +6,8 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
     methods
 
-        function model = FullSolidDiffusionSwellingModel(paramobj)
-            model = model@FullSolidDiffusionModel(paramobj);
+        function model = FullSolidDiffusionSwellingModel(inputparams)
+            model = model@FullSolidDiffusionModel(inputparams);
         end
 
         function model = registerVarAndPropfuncNames(model)

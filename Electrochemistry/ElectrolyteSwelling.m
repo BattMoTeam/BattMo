@@ -6,9 +6,9 @@ classdef ElectrolyteSwelling < Electrolyte
 
     methods
 
-        function model = ElectrolyteSwelling(paramobj)
-        % paramobj is instance of ElectrolyteInputParams or a derived class
-            model = model@Electrolyte(paramobj);
+        function model = ElectrolyteSwelling(inputparams)
+        % inputparams is instance of ElectrolyteInputParams or a derived class
+            model = model@Electrolyte(inputparams);
         end
 
         %% Declaration of the Dynamical Variables and Function of the model (setup of varnameList and propertyFunctionList)

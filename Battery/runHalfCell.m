@@ -24,15 +24,15 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(pe).(am).diffusionModelType = 'full';
 jsonstruct.(ne).(am).diffusionModelType = 'full';
 
-paramobj = BatteryInputParams(jsonstruct);
+inputparams = BatteryInputParams(jsonstruct);
 
 gen = BatteryGenerator1D();
 
-% Now, we update the paramobj with the properties of the mesh. 
-paramobj = gen.updateBatteryInputParams(paramobj);
-G = paramobj.(ne).(am).G;
+% Now, we update the inputparams with the properties of the mesh. 
+inputparams = gen.updateBatteryInputParams(inputparams);
+G = inputparams.(ne).(am).G;
 
-batterymodel = Battery(paramobj);
+batterymodel = Battery(inputparams);
 batterymodel = batterymodel.setupComputationalGraph();
 cgtbattery   = batterymodel.computationalGraph;
 
@@ -41,10 +41,10 @@ hcjsonstruct.(elyte) = jsonstruct.Electrolyte;
 hcjsonstruct.(ctrl) = jsonstruct.(ctrl);
 
 
-paramobj = HalfCellInputParams(hcjsonstruct);
-paramobj.(am).G    = G;
+inputparams = HalfCellInputParams(hcjsonstruct);
+inputparams.(am).G    = G;
 
-model = HalfCell(paramobj);
+model = HalfCell(inputparams);
 
 %% Defining the SOC
 model.SOC = 0.99;

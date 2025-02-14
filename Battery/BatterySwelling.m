@@ -13,9 +13,9 @@ classdef BatterySwelling < Battery
     
     methods
         
-        function model = BatterySwelling(paramobj)
+        function model = BatterySwelling(inputparams)
             
-            model = model@Battery(paramobj)
+            model = model@Battery(inputparams)
             
         end
 
@@ -47,9 +47,9 @@ classdef BatterySwelling < Battery
 
         end
         
-        function model = setupElectrolyte(model, paramobj)
+        function model = setupElectrolyte(model, inputparams)
             
-            model.Electrolyte = ElectrolyteSwelling(paramobj.Electrolyte);
+            model.Electrolyte = ElectrolyteSwelling(inputparams.Electrolyte);
             
         end
 
@@ -311,23 +311,23 @@ classdef BatterySwelling < Battery
             
         end
 
-        function control = setupControl(model, paramobj)
+        function control = setupControl(model, inputparams)
 
             C = computeCellCapacity(model, 'isSwellingMaterial', true);
 
-            switch paramobj.controlPolicy
+            switch inputparams.controlPolicy
               case "IEswitch"
-                control = IEswitchControlModel(paramobj); 
+                control = IEswitchControlModel(inputparams); 
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
               case "CCCV"
-                control = CcCvControlModel(paramobj);
+                control = CcCvControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
               case "powerControl"
-                control = PowerControlModel(paramobj);
+                control = PowerControlModel(inputparams);
               case "CC"
-                control = CcControlModel(paramobj);
+                control = CcControlModel(inputparams);
                 CRate = control.CRate;
                 control.Imax = (C/hour)*CRate;
               otherwise

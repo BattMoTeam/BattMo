@@ -25,14 +25,14 @@ classdef HalfCell < BaseModel
     
     methods
         
-        function model = HalfCell(paramobj)
+        function model = HalfCell(inputparams)
             
             model = model@BaseModel()
 
-            model.Electrolyte    = Electrolyte(paramobj.Electrolyte);
-            model.ActiveMaterial = ActiveMaterial(paramobj.ActiveMaterial);
+            model.Electrolyte    = Electrolyte(inputparams.Electrolyte);
+            model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
             
-            model.Control        = IEswitchControlModel(paramobj.Control);
+            model.Control        = IEswitchControlModel(inputparams.Control);
 
             model.initT = 298;
             

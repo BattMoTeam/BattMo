@@ -2,19 +2,19 @@ classdef SwellingMaterialInputParams < ActiveMaterialInputParams
 
     methods
 
-        function paramobj = SwellingMaterialInputParams(jsonstruct)
+        function inputparams = SwellingMaterialInputParams(jsonstruct)
 
-            paramobj = paramobj@ActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
 
         end
 
-        function paramobj = validateInputParams(paramobj)
+        function inputparams = validateInputParams(inputparams)
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            paramobj = mergeParameters(paramobj, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
-            paramobj = validateInputParams@ActiveMaterialInputParams(paramobj);
+            inputparams = mergeParameters(inputparams, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
+            inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
 
         end
         
