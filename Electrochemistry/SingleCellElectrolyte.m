@@ -1,9 +1,23 @@
 classdef SingleCellElectrolyte < BaseModel
+
+
+    properties
+
+        cInit % concentration in electrolyte
+        phiInit % concentration in electrolyte
+
+        volumeFraction
+        
+    end
     
     methods
         
         function model = SingleCellElectrolyte(inputparams)
             model = model@BaseModel();
+
+            model.G     = paramobj.G;
+            model.cInit = paramobj.cInit;
+            model.phiInit = paramobj.phiInit;
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -13,12 +27,30 @@ classdef SingleCellElectrolyte < BaseModel
             varnames = {};
             % Electrolyte potential
             varnames{end + 1} = 'phi';
+            % Electrolyte potential
+            varnames{end + 1} = 'c';
             % Mass conservation equation (sum of ion flux  from cathode and anode vanishes)
             varnames{end + 1} = 'massCons';
 
             model = model.registerVarNames(varnames);
+
+            fn = @SingleCellElectrolyte.updateConcentration;
+            model = model.registerPropFunction({'c', fn, {}});
             
+            fn = @SingleCellElectrolyte.updatePotential;
+            model = model.registerPropFunction({'phi', fn, {}});            
         end
+
+        function state = updateConcentration(model, state)
+
+            state.c = model.cInit;
+        end
+        
+        function state = updatePotential(model, state)
+
+            state.phi = model.phiInit;
+        end
+        
         
     end
     

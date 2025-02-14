@@ -1,0 +1,106 @@
+{
+  "G": null,
+  "SOC": 1,
+  "initT": 298.15,
+  "use_thermal": false,
+  "include_current_collectors": false,
+  "Control" : {
+    "controlPolicy" : "CCDischarge",
+    "DRate" : 0.1,
+    "lowerCutoffVoltage" : 2.4,
+    "upperCutoffVoltage" : 4.2,
+    "dIdtLimit" : 1,
+    "dEdtLimit" : 0.1
+  },
+  "NegativeElectrode": {
+    "Coating" : {
+      "ActiveMaterial": {
+        "massFraction": 0.94,
+        "density": 2240,
+        "Comment on the sources" : "electricalConductivity is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
+        "specificHeatCapacity": 710,
+        "thermalConductivity": 149,
+        "molarMass": 28.0855e-3,
+        "InterDiffusionCoefficient": 1e-14,
+        "electricalConductivity": 33,
+        "BruggemanCoefficient": 1.5,
+        "isSwellingMaterial": 1,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
+        },
+        "diffusionModelType" : "full",
+        "SolidDiffusion" : {
+          "Sources" : "D0 and rp are from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-16,
+          "particleRadius": 60e-9,
+          "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius",
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": {
+          "value": 1.1,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      },
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.95,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.03,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      }
+    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Copper/copper.json"
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "effectiveDensity": 3500,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "massFraction": 0.95,
+        "density": 4650,
+        "specificHeatCapacity": 700.0,
+        "thermalConductivity": 2.1,
+        "electricalConductivity": 100,
+        "BruggemanCoefficient": 1.5,
+        "isSwellingMaterial": 0,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
+        },
+        "diffusionModelType" : "full",
+        "SolidDiffusion": {
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-14,
+          "particleRadius": 1e-06,
+          "N": 10
+        }
+      },
+      "CurrentCollector": {
+        "isFile": true,
+        "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"
+      }
+    },
+    "Electrolyte": {
+      "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
+      "isFile": true
+    },
+    "ThermalModel": {
+      "externalHeatTransferCoefficient": 1000.0,
+      "externalTemperature": 298.15
+    }
+  }
+}
