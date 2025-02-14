@@ -21,8 +21,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Advanced parameters
 
-        np             % Number of particles
-        N              % Discretization parameters in spherical direction
+        np % Number of particles
+        N  % Discretization parameters in spherical direction
 
 
         %% Computed parameters at model setup

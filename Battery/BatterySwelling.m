@@ -9,30 +9,28 @@ classdef BatterySwelling < GenericBattery
         end
 
         function model = registerVarAndPropfuncNames(model)
-            model = registerVarAndPropfuncNames@Battery(model);
+
+            model = registerVarAndPropfuncNames@GenericBattery(model);
 
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             sd      = 'SolidDiffusion';
             itf     = 'Interface';
 
-            varnames = {{elyte, 'volumeFraction'} ,...
-                        {elyte, 'convFlux'}};
-
-            model = model.registerVarNames(varnames);
-
             fn = @BatterySwelling.updateElectrolyteVolumeFraction;
-            inputNames = {{ne,am, 'porosity'}};
+            inputNames = {{ne, co, am, 'porosity'}};
             model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
 
             fn = @BatterySwelling.updateConvFlux;
-            inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne,am,sd, 'cAverage'}, {ne,am,itf, 'volumetricSurfaceArea'}};
+            inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne, co, am, sd, 'cAverage'}, {ne, co, am, itf, 'volumetricSurfaceArea'}};
             model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
 
             fn = @BatterySwelling.updateAccumTerm;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({{elyte, 'massAccum'}, fn, {{elyte,'c'},{elyte, 'volumeFraction'},{ne, am, 'porosity'}}});
+            inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}, {ne, co, am, 'porosity'}};
+            model = model.registerPropFunction({{elyte, 'massAccum'}, fn, inputNames});
 
         end
         
@@ -57,7 +55,7 @@ classdef BatterySwelling < GenericBattery
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
             ne_cells = elyte_cells(model.(ne).(am).G.mappings.cellmap);
             vf0 = vf;
-            porosity0 = state0.(ne).(am).porosity;
+            porosity0 = state0.(ne).(co).(am).porosity;
             vf0 = subsasgnAD(vf0, ne_cells, porosity0);
             
 
@@ -95,9 +93,9 @@ classdef BatterySwelling < GenericBattery
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if isa(model.(elde).(am), 'SwellingMaterial')
-                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(am).porosity);
+                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), state.(elde).(co).(am).porosity);
                 else
-                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(am).porosity);
+                    state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, elyte_cells(model.(elde).(am).G.mappings.cellmap), model.(elde).(co).(am).porosity);
                 end
             end
 
@@ -161,140 +159,12 @@ classdef BatterySwelling < GenericBattery
         end
 
         %% Same initialisation as for Battery but includes the porosity initialisation
-        function initstate = setupInitialState(model)
-            nc = model.G.cells.num;
-
-            SOC = model.SOC;
-            T   = model.initT;
+        function initstate = setupInitialState(model, jsonstruct)
             
-            bat = model;
-            elyte   = 'Electrolyte';
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
-            itf     = 'Interface';
-            sd      = 'SolidDiffusion';
-            cc      = 'CurrentCollector';
-            thermal = 'ThermalModel';
-            ctrl    = 'Control';
-            
-            initstate.(thermal).T = T*ones(nc, 1);
-
-            %% Synchronize temperatures
-            initstate = model.updateTemperature(initstate);
-
-            %% Setup initial state for electrodes
-            
-            eldes = {ne, pe};
-            
-            for ind = 1 : numel(eldes)
-                
-                elde = eldes{ind};
-                
-                elde_itf = bat.(elde).(am).(itf); 
-
-                theta = SOC*(elde_itf.theta100 - elde_itf.theta0) + elde_itf.theta0;
-                c     = theta*elde_itf.cmax;
-
-                nc    = elde_itf.G.cells.num;
-
-                initstate.(elde).(am).(sd).cSurface = c*ones(nc, 1);
-                N = model.(elde).(am).(sd).N;
-                np = model.(elde).(am).(sd).np; % Note : we have by construction np = nc
-                initstate.(elde).(am).(sd).c = c*ones(N*np, 1);
-
-                initstate.(elde).(am) = model.(elde).(am).updateConcentrations(initstate.(elde).(am));
-                initstate.(elde).(am).(itf) = elde_itf.updateOCP(initstate.(elde).(am).(itf));
-
-                OCP = initstate.(elde).(am).(itf).OCP;
-                if ind == 1
-                     % The value in the first cell is used as reference.
-                     ref = OCP(1);
-                end
-                    
-                initstate.(elde).(am).phi = OCP - ref;
-                    
-            end
-
-            %% Setup initial Electrolyte state
-
-            initstate.(elyte).phi = zeros(bat.(elyte).G.cells.num, 1)-ref;
-            initstate.(elyte).c = 1000*ones(bat.(elyte).G.cells.num, 1);
-
-            %% Setup initial Current collectors state
-
-            if model.(ne).include_current_collectors
-                OCP = initstate.(ne).(am).(itf).OCP;
-                OCP = OCP(1) .* ones(bat.(ne).(cc).G.cells.num, 1);
-                initstate.(ne).(cc).phi = OCP - ref;
-            end
-            
-            if model.(pe).include_current_collectors
-                OCP = initstate.(pe).(am).(itf).OCP;
-                OCP = OCP(1) .* ones(bat.(pe).(cc).G.cells.num, 1);
-                initstate.(pe).(cc).phi = OCP - ref;
-            end
-            
-            initstate.(ctrl).E = OCP(1) - ref;
-            
-
-            switch model.(ctrl).controlPolicy
-              case 'CCCV'
-                switch model.(ctrl).initialControl
-                  case 'discharging'
-                    initstate.(ctrl).ctrlType = 'CC_discharge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_discharge1';
-                    initstate.(ctrl).I = model.(ctrl).Imax;
-                  case 'charging'
-                    initstate.(ctrl).ctrlType     = 'CC_charge1';
-                    initstate.(ctrl).nextCtrlType = 'CC_charge1';
-                    initstate.(ctrl).I = - model.(ctrl).Imax;
-                  otherwise
-                    error('initialControl not recognized');
-                end
-              case 'IEswitch'
-                initstate.(ctrl).ctrlType = 'constantCurrent';
-                switch model.(ctrl).initialControl
-                  case 'discharging'
-                    initstate.(ctrl).I = model.(ctrl).Imax;
-                  case 'charging'
-                    initstate.(ctrl).I = model.(ctrl).Imax;
-                    %error('to implement (should be easy...)')
-                  otherwise
-                    error('initialControl not recognized');
-                end
-              case 'powerControl'
-                switch model.(ctrl).initialControl
-                  case 'discharging'
-                    error('to implement (should be easy...)')
-                  case 'charging'
-                    initstate.(ctrl).ctrlType = 'charge';
-                    E = initstate.(ctrl).E;
-                    P = model.(ctrl).chargingPower;
-                    initstate.(ctrl).I = -P/E;
-                  otherwise
-                    error('initialControl not recognized');
-                end
-              case 'CC'
-                % this value will be overwritten after first iteration 
-                initstate.(ctrl).I = 0;
-                switch model.(ctrl).initialControl
-                  case 'discharging'
-                    initstate.(ctrl).ctrlType = 'discharge';
-                  case 'charging'
-                    initstate.(ctrl).ctrlType = 'charge';
-                  otherwise
-                    error('initialControl not recognized');
-                end
-              otherwise
-                error('control policy not recognized');
-            end
-
-            initstate.time = 0;
-            if isa(model.(ne).(am), 'SwellingMaterial')
-                vf = model.(ne).(am).(itf).volumeFraction;
-                ADstruc = model.(ne).(am).porosity ./ model.(ne).(am).porosity;
-                initstate.(ne).(am).porosity = (1 - vf) .* ADstruc;
+            if isa(model.(ne).(co).(am), 'SwellingMaterial')
+                vf = model.(ne).(co).(am).(itf).volumeFraction;
+                ADstruc = model.(ne).(co).(am).porosity ./ model.(ne).(co).(am).porosity;
+                initstate.(ne).(co).(am).porosity = (1 - vf) .* ADstruc;
             end
 
             
@@ -306,21 +176,47 @@ classdef BatterySwelling < GenericBattery
             C = computeCellCapacity(model);
             
             switch inputparams.controlPolicy
-              case "IEswitch"
-                control = IEswitchControlModel(inputparams); 
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+
+              case 'timeControl'
+
+                control = TimeControlModel(inputparams);
+
+              case "Impedance"
+
+                control = ImpedanceControlModel(inputparams);
+
+              case "CCDischarge"
+
+                control = CCDischargeControlModel(inputparams);
+                rate = control.DRate;
+                control.Imax = (C/hour)*rate;
+
+              case 'CCCharge'
+
+                control = CCChargeControlModel(inputparams);
+                if isempty(control.Imax)
+                    rate = control.CRate;
+                    control.Imax = (C/hour)*rate;
+                end
+
               case "CCCV"
+
                 control = CcCvControlModel(inputparams);
                 CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+                DRate = control.DRate;
+                control.ImaxCharge    = (C/hour)*CRate;
+                control.ImaxDischarge = (C/hour)*DRate;
+
               case "powerControl"
+
                 control = PowerControlModel(inputparams);
+
               case "CC"
-                control = CcControlModel(inputparams);
-                CRate = control.CRate;
-                control.Imax = (C/hour)*CRate;
+
+                control = CCcontrolModel(inputparams);
+
               otherwise
+
                 error('Error controlPolicy not recognized');
             end
             
@@ -328,41 +224,7 @@ classdef BatterySwelling < GenericBattery
 
 
         %% Assembly of the governing equation (same as for Battery but taking into account porosity variations)
-        function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
-            
-            opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false); 
-            opts = merge_options(opts, varargin{:});
-            
-            time = state0.time + dt;
-            if(not(opts.ResOnly) && not(opts.reverseMode))
-                state = model.initStateAD(state);
-            elseif(opts.reverseMode)
-                disp('No AD initatlization in equation old style')
-                state0 = model.initStateAD(state0);
-            else
-                assert(opts.ResOnly);
-            end
-            
-            %% We call the assembly equations ordered from the graph
-            
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-            
-            % Shorthands used in this function
-            battery = model;
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            am      = 'ActiveMaterial';
-            cc      = 'CurrentCollector';
-            elyte   = 'Electrolyte';
-            am      = 'ActiveMaterial';
-            itf     = 'Interface';
-            sd      = "SolidDiffusion";
-            thermal = 'ThermalModel';
-            ctrl    = 'Control';
+        function [problem, state] = setupScalingFix(model, state0, state, dt, drivingForces, varargin)
             
 
             massConsScaling = model.con.F;
@@ -385,7 +247,7 @@ classdef BatterySwelling < GenericBattery
             names{end + 1} = 'ei.elyte_chargeCons';
             
             % Equation name : 'ne_am_chargeCons';
-            eqs{end + 1} =  state.(ne).(am).chargeCons;
+            eqs{end + 1} =  state.(ne).(co).(am).chargeCons;
             names{end + 1} = 'ei.ne_am_chargeCons';
 
             % Equation name : 'pe_am_chargeCons';
@@ -398,27 +260,27 @@ classdef BatterySwelling < GenericBattery
                 eqs{end + 1} = state.(pe).(am).volumeCons;
                 names{end + 1} = 'ei.pe_am_volumeCons';
             end
-            if isa(battery.(ne).(am), 'SwellingMaterial')
+            if isa(battery.(ne).(co).(am), 'SwellingMaterial')
                 % Equation name : 'ne_am_volumeCons';
-                eqs{end + 1} = V_scaling * state.(ne).(am).volumeCons;
+                eqs{end + 1} = V_scaling * state.(ne).(co).(am).volumeCons;
                 names{end + 1} = 'ei.ne_am_volumeCons';
             end
 
             % Equation name : 'ne_am_sd_massCons';
-            n    = model.(ne).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
+            n    = model.(ne).(co).(am).(itf).n; % number of electron transfer (equal to 1 for Lithium)
             F    = model.con.F;
             
-            vol  = model.(ne).(am).operators.pv;
-            rp   = model.(ne).(am).(sd).rp;
-            vsf  = model.(ne).(am).Interface.volumetricSurfaceArea;
+            vol  = model.(ne).(co).(am).operators.pv;
+            rp   = model.(ne).(co).(am).(sd).rp;
+            vsf  = model.(ne).(co).(am).Interface.volumetricSurfaceArea;
 
             surfp = 4.*pi.*rp.^2;
             
             scalingcoef = (vsf.*vol(1).*n.*F)./surfp;
-            eqs{end + 1} = scalingcoef.*state.(ne).(am).(sd).solidDiffusionEq;
+            eqs{end + 1} = scalingcoef.*state.(ne).(co).(am).(sd).solidDiffusionEq;
             names{end + 1} = 'ei.ne_am_sd_soliddiffeq';
             
-            eqs{end + 1}    = M_scaling .* scalingcoef.*state.(ne).(am).(sd).massCons;
+            eqs{end + 1}    = M_scaling .* scalingcoef.*state.(ne).(co).(am).(sd).massCons;
             names{end + 1} = 'ei.ne_am_sd_massCons';
             
 
@@ -474,43 +336,18 @@ classdef BatterySwelling < GenericBattery
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
             
         end
-        
 
         %% cap concentrations and porosity to reasonnable values
         function [state, report] = updateState(model, state, problem, dx, drivingForces)
 
             [state, report] = updateState@Battery(model, state, problem, dx, drivingForces);
             
-            ne      = 'NegativeElectrode';
-            am      = 'ActiveMaterial';
+            ne = 'NegativeElectrode';
+            am = 'ActiveMaterial';
+            co = 'Coating';
 
-            state.(ne).(am).porosity = min(1, state.(ne).(am).porosity);
-            state.(ne).(am).porosity = max(0, state.(ne).(am).porosity);
-            
-        end
-        
-        function primaryvarnames = getPrimaryVariableNames(model)
-
-            primaryvarnames = model.primaryVarNames;
-            
-        end
-        
-
-        function model = validateModel(model, varargin)
-
-            model.PositiveElectrode.ActiveMaterial = model.PositiveElectrode.ActiveMaterial.setupDependentProperties();
-            model.NegativeElectrode.ActiveMaterial = model.NegativeElectrode.ActiveMaterial.setupDependentProperties();
-            model.Electrolyte.Separator = model.Electrolyte.Separator.setupDependentProperties();
-            
-            model = model.setupElectrolyteModel();
-
-            if isempty(model.computationalGraph)
-                model = model.setupComputationalGraph();
-            end
-            
-            cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
-            model.funcCallList = cgt.getOrderedFunctionCallList();
+            state.(ne).(co).(am).porosity = min(1, state.(ne).(co).(am).porosity);
+            state.(ne).(co).(am).porosity = max(0, state.(ne).(co).(am).porosity);
             
         end
         

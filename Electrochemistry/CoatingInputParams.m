@@ -50,6 +50,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
             
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
             
             [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
                                                                    {'activeMaterialModelSetup', 'SEImodel'}, ...
@@ -78,7 +79,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            if jsonstruct.activeMaterialModelSetup.composite
+            if isComposite
                 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
@@ -86,24 +87,35 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
             else
-                
+
+                isSwelling = getJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'});
+
                 am = 'ActiveMaterial';
 
-                switch jsonstruct.activeMaterialModelSetup.SEImodel
+                if isSwelling
 
-                  case {'none', 'Bolay'}
+                        inputparams.(am) = SwellingMaterialInputParams(jsonstruct.(am));
+        
+                else
 
-                    inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
-                    
-                  case 'Safari'
+                    switch jsonstruct.activeMaterialModelSetup.SEImodel
 
-                    inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
+                      case {'none', 'Bolay'}
 
-                  otherwise
-                    
-                    error('active material modelSEI layer model not recognized');
-                    
+                        inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                        
+                      case 'Safari'
+
+                        inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
+
+                      otherwise
+                        
+                        error('active material modelSEI layer model not recognized');
+                        
+                    end
+
                 end
+                
             end
             
             inputparams.Binder             = BinderInputParams(pick('Binder'));

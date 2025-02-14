@@ -210,28 +210,34 @@ classdef Coating < ElectronicComponent
 
             else
 
-                switch model.activeMaterialModelSetup.SEImodel
-                    
-                  case {'none', 'Bolay'}
-                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                if model.activeMaterialModelSetup.swelling
                     if strcmp(inputparams.(am).diffusionModelType, 'full')
                         inputparams.(am).(sd).np = np;
                     end
-                    model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
-                
-                  case 'Safari'
-                    
-                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                    inputparams.(am).(sd).np  = np;
-                    inputparams.(am).(sei).np = np;
-                    model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
-                    
-                  otherwise
-                    
-                    error('SEI model not recognized')
-                    
+                    model.ActiveMaterial = SwellingMaterial(inputparams.ActiveMaterial);
+                else
+                    switch model.activeMaterialModelSetup.SEImodel
+                        
+                      case {'none', 'Bolay'}
+                        inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                        if strcmp(inputparams.(am).diffusionModelType, 'full')
+                            inputparams.(am).(sd).np = np;
+                        end
+                        model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
+                        
+                      case 'Safari'
+                        
+                        inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                        inputparams.(am).(sd).np  = np;
+                        inputparams.(am).(sei).np = np;
+                        model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
+                        
+                      otherwise
+                        
+                        error('SEI model not recognized')
+                        
+                    end
                 end
-
             end
 
             model.Binder             = Binder(inputparams.Binder);

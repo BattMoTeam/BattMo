@@ -16,6 +16,7 @@
     "Coating" : {
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
+      "activeMaterialModelSetup" : {"swelling": true},      
       "ActiveMaterial": {
         "massFraction": 0.94,
         "density": 2240,
@@ -26,7 +27,6 @@
         "InterDiffusionCoefficient": 1e-14,
         "electronicConductivity": 33,
         "BruggemanCoefficient": 1.5,
-        "isSwellingMaterial": 1,
         "Interface": {
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"

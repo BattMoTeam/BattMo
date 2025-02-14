@@ -18,6 +18,8 @@ classdef SwellingMaterial < ActiveMaterial
             fdnames = {'molarMass'};
             
             model = dispatchParams(model, inputparams, fdnames);
+
+            model.SolidDiffusion = FullSolidDiffusionSwellingModel(inputparams.SolidDiffusion);
             
         end
 
@@ -56,7 +58,8 @@ classdef SwellingMaterial < ActiveMaterial
             model = model.registerPropFunction({'porosityAccum', fn, {'porosity','volumeFraction'}});
 
             fn = @SwellingMaterial.updatePorositySource;
-            model = model.registerPropFunction({'porositySource', fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}, {sd, 'cAverage'},{sd,'radius'}}});
+            inputparams = {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}, {sd, 'cAverage'}, {sd,'radius'}};
+            model = model.registerPropFunction({'porositySource', fn, inputparams});
 
             fn = @SwellingMaterial.updatePorosityFlux;
             model = model.registerPropFunction({'porosityFlux', fn, {}});

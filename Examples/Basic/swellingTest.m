@@ -158,81 +158,51 @@ model = BatterySwelling(inputparams);
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
-CRate = model.Control.CRate;
-total = 1.4*hour/CRate;
+timestep.timeStepDuration = 100;
 
-%%%
-% We want to break this total time into 100 timesteps. To begin with we
-% will use equal values for each timestep. 
+step    = model.Control.setupScheduleStep(timestep);
+control = model.Control.setupScheduleControl();
 
-%%%
-% We create a structure containing the length of each step in seconds 
-% ('val') and also which control to use for each step ('control'). 
-
-%%%
-% In this case we use control 1 for all steps. This means that the functions 
-% used to setup the control values are the same at each step.
-
-n  = 100;
-dt = total/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-%%%
-% For the IESwitch control we will switch between controlling the current
-% or the voltage based on some max and min values. We do this using the
-% rampupSwitchControl function. 
-
-%%%
-% Smaller time steps are used to ramp up the current from zero to its
-% operational value. Larger time steps are then used for the normal
-% operation. 
-
-%%%
-% This function also contains the logic about when to switch
-% using constant current to constant voltage.
-
-%%%
-% First we set a parameter to control how the current values increase
-% between zero and the desired value. Then we assign the
-% rampupSwitchControl function to a variable as an anonymous function.
+% This control is used to set up the schedule
+schedule = struct('control', control, 'step', step);
 
 
-tup = 0.1;
-switch model.Control.controlPolicy
-  case 'IEswitch'
-      switch model.Control.initialControl
-      case 'discharging'
-        inputI = model.Control.Imax;
-        inputE = model.Control.lowerCutoffVoltage;
-      case {'charging', 'first-charge'}
-        inputI = -model.Control.Imax;
-        inputE = model.Control.upperCutoffVoltage;
-      otherwise
-        error('initCase not recognized')
-    end
-    srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                inputI, ...
-                                                inputE);
-    control.IEswitch = true;
-    control = struct('src', srcfunc, 'IEswitch', true);
-  case 'CC'
-    srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
-    control.CC = true;
-  otherwise
-    error('control policity not recognized');
-end
+% tup = 0.1;
+% switch model.Control.controlPolicy
+%   case 'IEswitch'
+%       switch model.Control.initialControl
+%       case 'discharging'
+%         inputI = model.Control.Imax;
+%         inputE = model.Control.lowerCutoffVoltage;
+%       case {'charging', 'first-charge'}
+%         inputI = -model.Control.Imax;
+%         inputE = model.Control.upperCutoffVoltage;
+%       otherwise
+%         error('initCase not recognized')
+%     end
+%     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+%                                                 inputI, ...
+%                                                 inputE);
+%     control.IEswitch = true;
+%     control = struct('src', srcfunc, 'IEswitch', true);
+%   case 'CC'
+%     srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
+%     control.CC = true;
+%   otherwise
+%     error('control policity not recognized');
+% end
 
 %%%
 % We create a control structure containing the source function and
 % specifying that we want to use IESwitch control:
 
-control.src = srcfunc;
+% control.src = srcfunc;
 
 %%%
 % Finally we collect the control and step structures together in a schedule
 % struct which is the schedule which the simulation will follow:
 
-schedule = struct('control', control, 'step', step); 
+% schedule = struct('control', control, 'step', step); 
 
 
 %%% Setting the initial state of the battery
