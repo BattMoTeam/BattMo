@@ -302,8 +302,9 @@ classdef BatterySwelling < GenericBattery
 
         function control = setupControl(model, inputparams)
 
-            C = computeCellCapacity(model, 'isSwellingMaterial', true);
-
+            % C = computeCellCapacity(model, 'isSwellingMaterial', true);
+            C = computeCellCapacity(model);
+            
             switch inputparams.controlPolicy
               case "IEswitch"
                 control = IEswitchControlModel(inputparams); 
