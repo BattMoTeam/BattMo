@@ -40,12 +40,6 @@ jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
 %%%
-% Our model will simulate diffusion so we set use_particle_diffusion to
-% true:
-
-jsonstruct.use_particle_diffusion = true;
-
-%%%
 % The structure created in the jsonstruct follows the same hierarchy as the
 % fields in the JSON input file. These can be referenced by name in the
 % jsonstruct. To make life easier for ourselves we define some shorthand
@@ -83,7 +77,6 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 jsonstruct.(ne).use_swelling_material = true;
 
 inputparams = BatteryInputParams(jsonstruct);
-inputparams = inputparams.validateInputParams();
 
 %%%
 % It is also possible to update the properties of this inputparams in a
@@ -101,7 +94,7 @@ inputparams.(pe).(co).(am).(sd).N = 5;
 % in the class BatteryGenerator1D. Classes for generating other geometries can
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
-gen = BatteryGenerator1DSwelling();
+gen = BatteryGeneratorP2D();
 
 %%%
 % Now, we update the inputparams with the properties of the mesh. This function

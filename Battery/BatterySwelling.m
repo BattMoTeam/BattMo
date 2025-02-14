@@ -1,21 +1,10 @@
-classdef BatterySwelling < Battery
+classdef BatterySwelling < GenericBattery
 % 
-% Used when at least one of the two electrodes is a swelling Material.
-% It functions as the Battery class but implements a new equation necessary because of the particle swelling :
-% the volume Conservation equation 
-%
-    properties
-        
-        primaryVarNames
-        funcCallList
-        
-    end
-    
     methods
         
         function model = BatterySwelling(inputparams)
             
-            model = model@Battery(inputparams)
+            model = model@GenericBattery(inputparams)
             
         end
 
@@ -47,7 +36,7 @@ classdef BatterySwelling < Battery
 
         end
         
-        function model = setupElectrolyte(model, inputparams)
+        function model = setupElectrolyteModel(model, inputparams)
             
             model.Electrolyte = ElectrolyteSwelling(inputparams.Electrolyte);
             
