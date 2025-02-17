@@ -47,6 +47,8 @@ classdef EquilibriumCalibrationSetup
         % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
         % case 3           : The calibration parameters are theta100, theta0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
 
+        lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute theta0. if not given the value is
+                           % computed from expdata
 
         %% Helper structures, assigned during setup
 
@@ -72,6 +74,10 @@ classdef EquilibriumCalibrationSetup
             ecs.model     = model;
 
             ecs = ecs.setupCalibrationCase(1, 'verbose', false);
+
+            if isempty(ecs.lowerCutoffVoltage)
+                ecs.lowerCutoffVoltage = min(ecs.expU);
+            end
 
         end
 
@@ -427,7 +433,7 @@ classdef EquilibriumCalibrationSetup
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            T     = ecs.Temperature;
+            T = ecs.Temperature;
 
             vals = ecs.updateThetas(X, 'includeTheta0', false);
 
@@ -625,8 +631,23 @@ classdef EquilibriumCalibrationSetup
 
                 if opt.includeTheta0
 
-                    % We compute theta0 in cathode as the lithiation at end of discharge in
-                    vals.(pe).theta0 = ecs.computeTheta(totalTime, pe, 0, vals.(pe).theta100, vals.(pe).alpha);
+                    [~, fcomp] = ecs.setupfunction();
+                    tend = totalTime;
+                    done = false;
+                    while ~done
+                        Uend = fcomp(tend, X);
+                        if Uend < ecs.lowerCutoffVoltage
+                            done = true;
+                        else
+                            tend = 1.5*tend;
+                        end
+                    end
+                    t = linspace(0, tend, 10000);
+
+                    tend = t(fcomp(t, X) > ecs.lowerCutoffVoltage);
+                    tend = tend(end);
+                    
+                    vals.(pe).theta0 = ecs.computeTheta(tend, pe, 0, vals.(pe).theta100, vals.(pe).alpha);
 
                     % vals.(ne).theta0 = ecs.computeTheta(totalTime, ne, 0, vals.(ne).theta100, vals.(ne).alpha);
 
@@ -634,6 +655,10 @@ classdef EquilibriumCalibrationSetup
                     np_ratio = data.np_ratio;
 
                     vals.(ne).theta0 = vals.(ne).theta100 - np_ratio*(vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).theta0 - vals.(pe).theta100);
+                    if vals.(ne).theta0 < 0
+                        vals.(ne).theta0 = 0;
+                        vals.np_ratio = vals.(ne).theta100/((vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).theta0 - vals.(pe).theta100));
+                    end
 
                 else
 
