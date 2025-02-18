@@ -81,6 +81,12 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
 
     switch model.(ctrl).controlPolicy
 
+      case {'timeControl'}
+
+        %  We initiate to some values, but they should be overriden as the simulation starts
+        initstate.(ctrl).I        = 0;
+        initstate.(ctrl).ctrlType = 'constantCurrent';
+
       case {'CCDischarge', 'CCCharge'}
 
         initstate.(ctrl).ctrlType = 'constantCurrent';
