@@ -31,7 +31,11 @@
       {"if": {
         "properties": {"controlPolicy" : {"const" : "powerControl"}},
         "then": {
-          "$ref" : "#/$defs/powerControl"}}}
+          "$ref" : "#/$defs/powerControl"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "timeControl"}},
+        "then": {
+          "$ref" : "#/$defs/timeControl"}}}
     ],
 
   "$defs" : {
@@ -122,6 +126,51 @@
           "upperCutoffPower" : {"type" : "number"}
         }
         }
-      ]}
-  }
+      ]},
+    "timeControl" : {
+      "properties" : {
+        "usetable"  : {
+          "type" : "boolean",
+          "description" :  "true if tabulated data is used. See below for the description of this type of input"},
+        "times"  : {
+          "type" : "array"
+          "items" : {"type" : "number"},
+          "description" : "Array with time value.  If this array is set, then  no durations array shoud be given. The array should include the end time at the end"},
+        "durations"  : {
+          "type" : "array"
+          "items" : {"type" : "number"},          
+          "description" : "Array with duration value. If this array is set, then no times array should be given"},
+        "values"  : {
+          "type" : "array",
+          "items" : {"type" : "number"},          
+          "description" : " Array with the control values, either current or voltage, see controltypes array below"},
+        "controltypes"  : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "description" : "Array with control type. The convention is 1 for current and 2 for voltage"},
+        "usefunction"  : {
+          "type" : "boolean"
+          "description" : "true if we use a matlab function instead of a table"},
+        "functionname"  : {
+          "type" : "string"
+          "description" : "function name, should be in matlab path"},
+        "controltype"  : {
+          "type" : "string",
+          "enum" : ["voltage", "current"]
+          "description" : "control type when a function is given"},
+      },
+      "oneOf" : [
+        {"allOf" :
+         [{"properties" : {
+           "usetable" : {"const": true}}},
+          {"required" : ["values", "controltypes"]},
+          {"oneOf" : [
+            {"required" : ["times"]},
+            {"required" : ["durations"]}            
+          ]}]},
+        {"allOf" :
+         [{"properties" : {
+           "usefunction" : {"const": true}}},
+          {"required" : ["functionname", "controltype"]}
+         ]}]}}
 }
