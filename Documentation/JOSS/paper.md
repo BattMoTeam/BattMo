@@ -38,7 +38,7 @@ affiliations:
 date: 4 February 2025
 bibliography: paper.bib
 ---
-
+<!-- To compile this file, after installing docker, from this directory, run : docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara  -->
 # Summary
 
 This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework for
@@ -87,15 +87,21 @@ approach, we can effectively calibrate the models from experiments in a reasonab
 
 The default and easiest way to send the input parameters for the simulator is by using a json file. The json format is a
 text based format, which means that the file can be read directly by the user and easily modify. The keywords used in a
-BattMo json input file are all specified through a set of Json schema. The keywords provide 
+BattMo json input file are all specified through a set of Json schema. 
+
+List of features
 
 - Standard data input (json based with schema)
 - Library of battery format (to be extended)
 - Flexible model design 
 - Visualization
-- Model parameterization routines
+- Parameter calibration
 - Design optimization
-- Support for standard protocols (control switching)
+- Support for standard protocols (control switching, to be soon merged...)
+- SEI layer growth model
+- Composite material model
+- Material database
+- Silicon swelling (to be soon merged...)
 
 # Software dependencies
 
@@ -111,13 +117,13 @@ using a simple set of parameters (the gridding is included in the setup).
 
 ![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
-# Example 1D
+# Baseline P2D example
 
 We use Chen data. We match pybamm simulation. 
 
 Example where we can easily change chemistry
 
-# Example 3D
+# Thermal P4D fully coupled simulation
 
 Multipouch cell, includes thermal, boundary conditions
 
