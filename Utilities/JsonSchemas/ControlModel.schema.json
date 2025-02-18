@@ -133,11 +133,11 @@
           "type" : "boolean",
           "description" :  "true if tabulated data is used. See below for the description of this type of input"},
         "times"  : {
-          "type" : "array"
+          "type" : "array",
           "items" : {"type" : "number"},
           "description" : "Array with time value.  If this array is set, then  no durations array shoud be given. The array should include the end time at the end"},
         "durations"  : {
-          "type" : "array"
+          "type" : "array",
           "items" : {"type" : "number"},          
           "description" : "Array with duration value. If this array is set, then no times array should be given"},
         "values"  : {
@@ -149,15 +149,15 @@
           "items" : {"type" : "number"},
           "description" : "Array with control type. The convention is 1 for current and 2 for voltage"},
         "usefunction"  : {
-          "type" : "boolean"
+          "type" : "boolean",
           "description" : "true if we use a matlab function instead of a table"},
         "functionname"  : {
-          "type" : "string"
+          "type" : "string",
           "description" : "function name, should be in matlab path"},
         "controltype"  : {
           "type" : "string",
-          "enum" : ["voltage", "current"]
-          "description" : "control type when a function is given"},
+          "enum" : ["voltage", "current"],
+          "description" : "control type when a function is given"}
       },
       "oneOf" : [
         {"allOf" :
