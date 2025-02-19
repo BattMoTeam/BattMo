@@ -15,6 +15,7 @@ classdef GenericControlModel < ControlModel
             fdnames = {'controlsteps'};
             model = dispatchParams(model, inputparams, fdnames);
 
+            model = model.parseControlSteps();
             model = model.setupTerminationFunctions();
             
         end
@@ -66,6 +67,14 @@ classdef GenericControlModel < ControlModel
             newstate.ctrlTime = state.ctrlTime;
             
         end
+
+
+        function model = parseControlSteps(model)
+
+            model.controlsteps = GenericControlModel.unfoldCycle(model.controlsteps);
+            
+        end
+
         
         function model = setupTerminationFunctions(model)
 
@@ -304,6 +313,25 @@ classdef GenericControlModel < ControlModel
                 error('termination quantity not recognized')
             end
 
+        end
+
+        function controlsteps = unfoldCycle(controlsteps)
+
+            for icontrol = 1 : numel(controlsteps)
+
+                control = controlsteps{icontrol};
+                
+                if strcmp(control.controltype, 'cycle')
+
+                    ncycle  = control.numberOfcycles;
+                    control = control.cycleControlSteps;
+                    control = GenericControlModel.unfoldCycle(control);
+                    control = repmat(control, ncycle, 1);
+                    controlsteps = [controlsteps(1:icontrol-1); control; controlsteps(icontrol+1:end)];
+                end
+
+            end
+            
         end
     end
 
