@@ -40,7 +40,8 @@
               "type": "number"
             },
             "termination": {
-              "$ref": "#/$defs/termination"
+              "$ref": "#/$defs/termination",
+              "description": "Termination condition for the cycle. Not implemented yet. The cycle will run for the specified number of cycles."
             },
             "cycleControlSteps": {
               "$ref": "#/$defs/controlsteps"
