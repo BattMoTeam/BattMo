@@ -113,7 +113,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         end
 
 
-        function UGrids = setupUnRolledGrids(gen, inputparams)
+        function UGrids = setupUnRolledGrids(gen, inputparams, varargin)
+
+        % Allow for setting the size of the unrolled grid
+            opt = struct('setX', [], ...
+                         'setY', [], ...
+                         'setZ', []);
+            opt = merge_options(opt, varargin{:});
 
             G            = inputparams.G;
 
@@ -225,6 +231,18 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             map = map.setup();
 
             znode = map.eval(znode);
+
+            if ~isempty(opt.setX)
+                assert(abs(min(xnode)) < eps);
+                assert(abs(max(xnode)) > eps);
+                xnode = xnode / max(xnode) * opt.setX;
+            end
+            if ~isempty(opt.setY)
+                error('Not implemented');
+            end
+            if ~isempty(opt.setZ)
+                error('Not implemented');
+            end
 
             cartG.nodes.coords = [xnode, ynode, znode];
             cartG = computeGeometry(cartG);
