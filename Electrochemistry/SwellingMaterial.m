@@ -67,9 +67,6 @@ classdef SwellingMaterial < ActiveMaterial
             fn = @SwellingMaterial.updateVolumeConservation;
             model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
             
-            fn = @SwellingMaterial.updateConductivity;
-            model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});
-                                               
             fn = @SwellingMaterial.updateHydrostaticStress;
             model = model.registerPropFunction({'hydrostaticStress', fn, {{sd, 'cAverage'}, {itf, 'cElectrodeSurface'}}});
             
@@ -81,7 +78,6 @@ classdef SwellingMaterial < ActiveMaterial
             model = model.registerPropFunction({{itf, 'volumetricSurfaceArea'}, fn, {{sd, 'radius'}, 'volumeFraction'}});
 
             fn =  @SwellingMaterial.updateRvol;
-            model = model.registerPropFunction({'Rvol', fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}}});
             model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {itf, 'volumetricSurfaceArea'}}});
 
             fn  = @SwellingMaterial.updateReactionRate;
@@ -91,7 +87,6 @@ classdef SwellingMaterial < ActiveMaterial
             fn  = @SwellingMaterial.updateReactionRateCoefficient;
             inputnames = {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}, {sd, 'radius'}, {itf, 'T'}};
             model = model.registerPropFunction({{itf, 'j0'}, fn, inputnames});
-
 
             fn  = @SwellingMaterial.updateVolumeFraction;
             model = model.registerPropFunction({'volumeFraction', fn, {'porosity'}});
@@ -105,14 +100,11 @@ classdef SwellingMaterial < ActiveMaterial
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            am_fraction  = model.activeMaterialFraction;
-
             vsa = state.(itf).volumetricSurfaceArea;
             R   = state.(itf).R;
             
-            Rvol = am_fraction.*vsa.*R;
+            Rvol = vsa.*R;
 
-            state.Rvol = Rvol;
             state.(sd).Rvol = Rvol;
             
         end
@@ -186,29 +178,6 @@ classdef SwellingMaterial < ActiveMaterial
             
             state.Interface.j0 = j0;
 
-        end
-
-
-        function state = updateConductivity(model, state)
-            
-            brugg = model.BruggemanCoefficient;
-
-            vf    = state.volumeFraction;
-            
-            % setup effective electrical conductivity using Bruggeman approximation
-            state.conductivity = model.electricalConductivity.*vf.^brugg;
-            
-        end
-
-        function state = updateCurrentSource(model, state)
-            
-            F    = model.Interface.constants.F;
-            vols = model.G.cells.volumes;
-            n    = model.Interface.n;
-            Rvol = state.Rvol;
-
-            state.eSource = - vols.*Rvol*n*F; % C/s
-            
         end
 
         function state = updateReactionRate(model, state)

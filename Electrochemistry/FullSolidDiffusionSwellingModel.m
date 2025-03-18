@@ -31,7 +31,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             inputnames = {'c', 'D','radius'};
             model = model.registerPropFunction({'flux', fn, inputnames});
 
-            model = model.removeFromExtraVarName('cAverage');
+            model = model.unsetAsExtraVarName('cAverage');
             
         end
         
@@ -85,7 +85,6 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             op  = model.operators;
             rp0 = model.rp;
-            amf = model.activeMaterialFraction;
 
             vf = state.volumeFraction;
 
@@ -96,7 +95,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             % rate for a non swelling particle (using a = 3*vf/rp), which is the rate i used in the 
             % equation 6. We then multiply it by the scalingCoeff defined in [ref3]
 
-            massSource = - Rvol.*((4*pi* radius.^2 .* rp0)./(3*vf.*amf));
+            massSource = - Rvol.*((4*pi* radius.^2 .* rp0)./(3*vf));
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;

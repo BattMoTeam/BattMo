@@ -414,6 +414,11 @@ classdef Coating < ElectronicComponent
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
 
+            if model.activeMaterialModelSetup.swelling
+                fn = @Coating.updateConductivity;
+                model = model.registerPropFunction({'conductivity', fn, {{am, 'volumeFraction'}}});
+            end
+                                                   
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
@@ -483,6 +488,17 @@ classdef Coating < ElectronicComponent
             rho = sum(massfractions)*vf;
 
             model.effectiveDensity = rho;
+
+        end
+
+        function state = updateConductivity(model, state)
+
+            brugg = model.BruggemanCoefficient;
+
+            vf = state.volumeFraction;
+            
+            % setup effective electrical conductivity using Bruggeman approximation
+            state.conductivity = model.electricalConductivity.*vf.^brugg;
 
         end
 
