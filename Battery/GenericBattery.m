@@ -1162,7 +1162,6 @@ classdef GenericBattery < BaseModel
             
         end
 
-        %% Assign at each step the convective flux in the electrolyte region
         function state = updateSwellingElectrolyteConvFlux(model, state)
 
             elyte   = 'Electrolyte';
@@ -1173,6 +1172,7 @@ classdef GenericBattery < BaseModel
             itf     = 'Interface';
             eldes = {ne, pe};
 
+            % ad-hoc AD compatible initialization
             j = state.(elyte).j;
             state.(elyte).convFlux = 0 .* j;
 
@@ -1186,13 +1186,14 @@ classdef GenericBattery < BaseModel
                 if model.(elde).coatingModelSetup.swelling
 
                     G  = model.(elyte).G;
-                    Gp = G.mappings.parentGrid;
+                    Gp = G.parentGrid;
 
                     cmax        = model.(elde).(co).(am).(itf).saturationConcentration;
                     theta0      = model.(elde).(co).(am).(itf).guestStoichiometry0;
                     densitySi   = model.(elde).(co).(am).(itf).density;
                     molarMassSi = model.(elde).(co).molarMass;
-                    F           = model.(elde).(co).(am).(itf).constants.F;
+
+                    F = model.(elde).(co).(am).(itf).constants.F;
                     s = -1;
                     n = 1;
 
@@ -1200,16 +1201,16 @@ classdef GenericBattery < BaseModel
 
                     theta = c./cmax;
                     
-                    molarVolumeLithiated   = model.(elde).(am).computeMolarVolumeLithiated(theta);
-                    molarVolumeDelithiated = model.(elde).(am).computeMolarVolumeLithiated(theta0);
+                    molarVolumeLithiated   = model.(elde).(co).computeMolarVolumeLithiated(theta);
+                    molarVolumeDelithiated = model.(elde).(co).computeMolarVolumeLithiated(theta0);
 
-                    a = state.(elde).(am).Interface.volumetricSurfaceArea;
+                    a = state.(elde).(co).(am).(itf).volumetricSurfaceArea;
                     j = state.(elyte).j;
-                    j = j(model.(elde).G.mappings.cellmap);
+                    j = j(model.(elde).(co).G.mappings.cellmap);
                     c = state.(elyte).c;
-                    c = c(model.(elde).G.mappings.cellmap);
+                    c = c(model.(elde).(co).G.mappings.cellmap);
 
-                    elyte_cells = zeros(Gp.cells.num-1, 1);
+                    elyte_cells = zeros(Gp.cells.num - 1, 1);
                     elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
                     elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
 
