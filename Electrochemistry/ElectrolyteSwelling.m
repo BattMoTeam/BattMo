@@ -92,29 +92,11 @@ classdef ElectrolyteSwelling < Electrolyte
         %% Update the mass flux which is the sum of the three fluxes defines above.
         function state = updateMassFlux(model, state)
 
-            sp = model.sp;
+            state = updateMassFlux@Electrolyte(model, state);
             
-            % We assume that the current and the diffusion coefficient D has been updated when this function is called
-            c = state.c;
-            j = state.j;
-            D = state.D;
-
-            %% 1. Flux from diffusion
-            diffFlux = assembleFlux(model, c, D);
-            state.diffFlux = diffFlux;
-
-            %% 2. Flux from electrical forces
-            F = model.constants.F;
-            fluxE = sp.t ./ (sp.z .* F) .* j;
-
-            %% 3. Flux from the convective term to be taken into account for swelling materials(cf eq 6, paper Analysis of the Lithium-ion Insertion
-            % Silicon composite electrode/separator/lithium foil cell of Rajeswari Chandrasekaran and Thomas F. Fuller
             convFlux = state.convFlux;
 
-            %% 3. Sum the two flux contributions
-            flux = diffFlux + fluxE + convFlux;
-
-            state.massFlux = flux;
+            state.massFlux = state.massFlux + convFlux;
 
         end
 

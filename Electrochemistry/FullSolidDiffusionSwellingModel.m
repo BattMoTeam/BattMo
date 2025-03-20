@@ -86,7 +86,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
         % Thomas F. Fuller ([ref 3])
 
             op  = model.operators;
-            rp0 = model.rp;
+            rp0 = model.particleRadius;
 
             vf = state.volumeFraction;
 

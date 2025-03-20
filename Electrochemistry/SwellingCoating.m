@@ -187,9 +187,9 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            n     = model.(am).(itf).n;
+            n     = model.(am).(itf).numberOfElectronsTransferred;
             F     = model.(am).(itf).constants.F;
-            alpha = model.(am).(itf).alpha;
+            alpha = model.(am).(itf).chargeTransferCoefficient;
 
             T     = state.(am).(itf).T;
             j0    = state.(am).(itf).j0;
@@ -199,7 +199,7 @@ classdef SwellingCoating < Coating
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
 
             r  = state.(am).(sd).radius;
-            r0 = model.(am).(sd).rp; %.* (r0./r).^2
+            r0 = model.(am).(sd).particleRadius; %.* (r0./r).^2
 
             state.(am).(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
 
@@ -283,8 +283,8 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            cmax   = model.(am).(itf).cmax;
-            theta0 = model.(am).(itf).theta0;
+            cmax   = model.(am).(itf).saturationConcentration;
+            theta0 = model.(am).(itf).guestStoichiometry0;
             
             R  = state.(am).(itf).R;
             a  = state.(am).(itf).volumetricSurfaceArea;       
