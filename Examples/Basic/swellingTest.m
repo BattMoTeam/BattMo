@@ -74,10 +74,7 @@ jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 % various parts of the simulator during the simulation. This class is
 % instantiated using the jsonstruct we just created:
 
-jsonstruct.(ne).coatingModelSetup.swelling = true;
-
 inputparams = BatteryInputParams(jsonstruct);
-
 
 %%%
 % It is also possible to update the properties of this inputparams in a
