@@ -6,9 +6,7 @@
   
   "properties" : {
     "Coating" : {"$ref" : "Coating.schema.json"},
-    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"},
-    "use_normed_current_collector" : {"type" : "boolean",
-                                    "description" : "Use special solver setup for current collector to avoid floating point error when there are very small voltage difference. It is only needed for the positive electrode. Default is true but we set it to false for the moment when we use an iterative linear solver"}
+    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"}
   }
 
 }

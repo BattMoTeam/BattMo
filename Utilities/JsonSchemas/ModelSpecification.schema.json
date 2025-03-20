@@ -12,69 +12,25 @@
       "type": "boolean",
       "description": "include thermal effects. Default is false"
     },
-    "PositiveElectrode" : {
-      "type": "object",
+    "PositiveElectrode" : {"$ref" : "#/$def/Electrode"},
+    "NegativeElectrode" : {"$ref" : "#/$def/Electrode"}
+}}
+  }
+  "$defs" : {
+    "Electrode" : {
+      "type" : "object"
       "properties" : {
         "use_normed_current_collector" : {
           "type" : "boolean",
           "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
-        }}},
-    "NegativeElectrode" : {
-      "type": "object",
-      "properties" : {
-        "use_normed_current_collector" : {
-          "type" : "boolean",
-          "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
-        }}}
-  },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "use_thermal": {
-            "const": true
-          }
         },
-        "required": [
-          "use_thermal"
-        ]
-      },
-      "then": {
-        "required": [
-          "ThermalModel"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "include_current_collectors": {
-            "const": true
+        "coatingModelSetup" : {
+          "type" : "object"
+          "properties" : {
+            "swelling" : {"type" : "boolean",
+                          "description": "if true, use a swelling model"}
           }
         }
-      },
-      "then": {
-        "anyOf": [
-          {
-            "properties": {
-              "NegativeElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          },
-          {
-            "properties": {
-              "PositiveElectrode": {
-                "required": [
-                  "CurrentCollector"
-                ]
-              }
-            }
-          }
-        ]
       }
     }
-  ]
 }
