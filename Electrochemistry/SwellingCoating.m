@@ -338,8 +338,8 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            molarVolumeSi = model.constants.molarVolumeSi;
-            molarVolumeLi = model.constants.molarVolumeLi;
+            molarVolumeSi = 1.2e-05;
+            molarVolumeLi = 9e-06;
 
             molarVolumeLithiated = (4/15)*(molarVolumeSi + 3.75*theta*molarVolumeLi);
             
