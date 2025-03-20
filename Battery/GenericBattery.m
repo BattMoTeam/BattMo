@@ -1176,6 +1176,9 @@ classdef GenericBattery < BaseModel
             j = state.(elyte).j;
             state.(elyte).convFlux = 0 .* j;
 
+            % For the moment we neglect the convection flux
+            return
+            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
