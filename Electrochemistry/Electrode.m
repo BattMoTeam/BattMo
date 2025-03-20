@@ -15,6 +15,11 @@ classdef Electrode < BaseModel
 
         couplingTerm
 
+        %% coating model setup structure
+
+        coatingModelSetup % structure that determines the type of coating with field
+                          % - swelling : boolean, true if swelling coating is used
+        
         %% Computed parameters at setup
 
         include_current_collectors
@@ -36,10 +41,15 @@ classdef Electrode < BaseModel
                        'couplingTerm'                , ...
                        'include_current_collectors'  , ...
                        'use_normed_current_collector', ...
+                       'coatingModelSetup'           , ...
                        'use_thermal'};
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.Coating = Coating(inputparams.Coating);
+            if model.coatingModelSetup.swelling
+                model.Coating = SwellingCoating(inputparams.Coating);
+            else
+                model.Coating = Coating(inputparams.Coating);
+            end
 
             if inputparams.include_current_collectors
                 model.include_current_collectors = true;

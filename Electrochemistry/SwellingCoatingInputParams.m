@@ -1,10 +1,10 @@
-classdef SwellingMaterialInputParams < ActiveMaterialInputParams
+classdef SwellingCoatingInputParams < CoatingInputParams
 
     methods
 
-        function inputparams = SwellingMaterialInputParams(jsonstruct)
+        function inputparams = SwellingCoatingInputParams(jsonstruct)
 
-            inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
+            inputparams = inputparams@CoatingInputParams(jsonstruct);
 
         end
 
@@ -12,9 +12,13 @@ classdef SwellingMaterialInputParams < ActiveMaterialInputParams
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
+            am  = 'ActiveMaterial';
             
-            inputparams = mergeParameters(inputparams, {{sd, 'cmax'}, {itf, 'cmax'}}, 'force', false);
-            inputparams = validateInputParams@ActiveMaterialInputParams(inputparams);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {am, 'diffusionModelType'}, 'swelling');
+            diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
+            assert(strcmp(diffusionModelType, 'swelling'), 'swelling input parameters are expected.')
+            
+            inputparams = validateInputParams@CoatingInputParams(inputparams);
 
         end
         

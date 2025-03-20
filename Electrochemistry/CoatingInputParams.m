@@ -92,29 +92,22 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
                 am = 'ActiveMaterial';
 
-                if isSwelling
+                switch jsonstruct.activeMaterialModelSetup.SEImodel
 
-                        inputparams.(am) = SwellingMaterialInputParams(jsonstruct.(am));
-        
-                else
+                  case {'none', 'Bolay'}
 
-                    switch jsonstruct.activeMaterialModelSetup.SEImodel
+                    inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
+                    
+                  case 'Safari'
 
-                      case {'none', 'Bolay'}
+                    inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
 
-                        inputparams.(am) = ActiveMaterialInputParams(jsonstruct.(am));
-                        
-                      case 'Safari'
-
-                        inputparams.(am) = SEIActiveMaterialInputParams(jsonstruct.(am));
-
-                      otherwise
-                        
-                        error('active material modelSEI layer model not recognized');
-                        
-                    end
-
+                  otherwise
+                    
+                    error('active material modelSEI layer model not recognized');
+                    
                 end
+
                 
             end
             

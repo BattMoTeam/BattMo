@@ -32,6 +32,7 @@ classdef GenericBattery < BaseModel
         % flag that decide the model setup
         use_thermal
         include_current_collectors
+        use_swelling
 
         % We write here the jsonstruct that has been process when constructing inputparams
         jsonstruct
@@ -229,6 +230,23 @@ classdef GenericBattery < BaseModel
             end
             model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
 
+            if model.use_swelling
+
+                fn = @GenericBattery.updateSwellingElectrolyteAccumTerm;
+                fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}, {ne, co, 'porosity'}};
+                model = model.registerPropFunction({{elyte, 'massAccum'}, fn, inputNames});
+
+                fn = @GenericBattery.updateSwellingElectrolyteVolumeFraction;
+                inputNames = {{ne, co, 'porosity'}};
+                model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
+
+                fn = @GenericBattery.updateSwellingElyteConvFlux;
+                inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne, co, am, sd, 'cAverage'}, {ne, co, am, itf, 'volumetricSurfaceArea'}};
+                model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
+                
+            end
+            
             %% Function that update the Thermal Ohmic Terms
 
             if model.use_thermal
@@ -438,7 +456,7 @@ classdef GenericBattery < BaseModel
                         D0  = model.(elde).(co).(amc).(sd).referenceDiffusionCoefficient;
                         scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, rp*RvolRef/(5*vsa*D0)};
 
-                      case 'full'
+                      case {'full', 'swelling'}
 
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
 
@@ -699,7 +717,13 @@ classdef GenericBattery < BaseModel
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
 
-            model.(elyte) = Electrolyte(inputparams.(elyte));
+            if inputparams.(ne).coatingModelSetup.swelling || inputparams.(pe).coatingModelSetup.swelling
+                model.use_swelling = true;
+                model.(elyte) = ElectrolyteSwelling(inputparams.(elyte));
+            else
+                model.use_swelling = false;
+                model.(elyte) = Electrolyte(inputparams.(elyte));
+            end
 
         end
 
@@ -771,7 +795,7 @@ classdef GenericBattery < BaseModel
                       case 'simple'
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
-                      case 'full'
+                      case {'full', 'swelling'}
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         N = model.(elde).(co).(amc).(sd).N;
                         np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
@@ -885,6 +909,15 @@ classdef GenericBattery < BaseModel
             end
 
             initstate.(ctrl).E = OCP(1) - ref;
+
+            if model.use_swelling
+                
+                vf = model.(ne).(co).volumeFraction;
+                nc = model.(ne).(co).G.getNumberOfCells();
+                
+                initstate.(ne).(co).porosity = (1 - vf) .* ones(nc, 1);
+                
+            end
 
             switch model.(ctrl).controlPolicy
 
@@ -1058,6 +1091,128 @@ classdef GenericBattery < BaseModel
 
             state.(pe).(cc).phiRef = state.(ctrl).E;
 
+        end
+
+        %% Update at each step the electrolyte volume fractions in the different regions (neg_elde, elyte, pos_elde)
+        function state = updateSwellingElectrolyteVolumeFraction(model, state)
+
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            co    = 'Coating';
+            am    = 'ActiveMaterial';
+            sep   = 'Separator';
+
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells)';
+            
+            % Define the volumeFraction in the electrodes
+            eldes = {ne, pe};
+            % Initialisation of AD for the porosity of the elyte
+            state.(elyte).volumeFraction = 0 * state.(elyte).c;
+
+            % Define the porosity in the separator
+            sep_cells = elyte_cells(model.(sep).G.mappings.cellmap);
+            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, sep_cells, model.(sep).porosity);
+            
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if model.(elde).coatingModelSetup.swelling
+                    porosity = state.(elde).(co).porosity;
+                else
+                    porosity = 1 - model.(elde).(co).volumeFraction;
+                end
+                state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction                     , ...
+                                                          elyte_cells(model.(elde).(co).G.mappings.cellmap), ...
+                                                          porosity);                    
+            end
+
+            if model.use_thermal
+                warning('swelling model not in sync with thermal simulation yet...')
+                model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
+            end
+
+        end
+
+        
+        %% Definition of the accumulation term (dc/dt)
+        function state = updateSwellingElectrolyteAccumTerm(model, state, state0, dt)
+
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            am      = 'ActiveMaterial';
+
+            c         = state.(elyte).c;
+            vf        = state.(elyte).volumeFraction;
+            c0        = state0.(elyte).c;
+            porosity0 = state0.(ne).(co).(am).porosity;
+
+            elyte_cells = zeros(model.G.cells.num, 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+            
+            ne_cells = elyte_cells(model.(ne).(am).G.mappings.cellmap);
+             
+            vf0 = vf;
+            vf0 = subsasgnAD(vf0, ne_cells, porosity0);
+
+            cdotcc = (vf .* c - vf0 .* c0)/dt;
+            vols = model.(elyte).G.cells.volumes;
+
+            state.(elyte).massAccum  = vols.*cdotcc;
+            
+        end
+
+        %% Assign at each step the convective flux in the electrolyte region
+        function state = updateSwellingElectrolyteConvFlux(model, state)
+
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            am      = 'ActiveMaterial';
+            itf     = 'Interface';
+            eldes = {ne, pe};
+
+            j = state.(elyte).j;
+            state.(elyte).convFlux = 0 .* j;
+
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if isa(model.(elde).(am), 'SwellingMaterial')
+
+                    G              = model.(elyte).G;
+                    Gp             = G.mappings.parentGrid;
+
+                    cmax           = model.(elde).(am).(itf).cmax;
+                    theta0         = model.(elde).(am).(itf).theta0;
+                    densitySi      = model.(elde).(am).(itf).density;
+                    molarMassSi    = model.(elde).(am).molarMass;
+                    F              = model.(elde).(am).(itf).constants.F;
+                    s = -1;
+                    n = 1;
+
+                    c = state.(elde).(am).SolidDiffusion.cAverage;
+
+                    theta = c./cmax;
+                    
+                    molarVolumeLithiated = model.(elde).(am).computeMolarVolumeLithiated(theta);
+                    molarVolumeDelithiated = model.(elde).(am).computeMolarVolumeLithiated(theta0);
+
+                    a = state.(elde).(am).Interface.volumetricSurfaceArea;
+                    j = state.(elyte).j;
+                    j = j(model.(elde).G.mappings.cellmap);
+                    c = state.(elyte).c;
+                    c = c(model.(elde).G.mappings.cellmap);
+
+                    elyte_cells = zeros(Gp.cells.num-1, 1);
+                    elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+                    elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
+
+                    averageVelocity = (s./(n.*F)).*(molarVolumeLithiated - molarVolumeDelithiated).*j;
+                    Flux = c .* averageVelocity;
+
+                    state.(elyte).convFlux(elyte_cells_elde) = Flux;
+                end
+            end
         end
 
         function state = updateTemperature(model, state)
@@ -1730,6 +1885,14 @@ classdef GenericBattery < BaseModel
                     end
 
                 end
+
+                co = 'Coating';
+
+                if model.(elde).coatingModeSetup.swelling
+                    state.(elde).(co).(am).porosity = min(1, state.(elde).(co).(am).porosity);
+                    state.(elde).(co).(am).porosity = max(0, state.(elde).(co).(am).porosity);
+                end
+                
             end
             
             report = [];

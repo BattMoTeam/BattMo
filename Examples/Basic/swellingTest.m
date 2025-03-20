@@ -20,7 +20,7 @@ close all
 % Battmo.
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
-    'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+                 'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
 jsonstruct = parseBattmoJson(fname);
 
 %%%
@@ -60,8 +60,8 @@ cc      = 'CurrentCollector';
 % Now we can set the diffusion model type for the active material (am) in the
 % positive (pe) and negative (ne) electrodes to 'full'.
 
-jsonstruct.(pe).(am).diffusionModelType = 'full';
-jsonstruct.(ne).(am).diffusionModelType = 'full';
+jsonstruct.(ne).(co).(am).diffusionModelType = 'swelling';
+jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
 %%%
 % To see which other types of diffusion model are available one can view 
@@ -74,9 +74,10 @@ jsonstruct.(ne).(am).diffusionModelType = 'full';
 % various parts of the simulator during the simulation. This class is
 % instantiated using the jsonstruct we just created:
 
-jsonstruct.(ne).use_swelling_material = true;
+jsonstruct.(ne).coatingModelSetup.swelling = true;
 
 inputparams = BatteryInputParams(jsonstruct);
+
 
 %%%
 % It is also possible to update the properties of this inputparams in a
@@ -107,7 +108,7 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
 
-model = BatterySwelling(inputparams);
+model = GenericBattery(inputparams);
 
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
@@ -213,8 +214,7 @@ schedule = struct('control', control, 'step', step);
 % Here we take the state of charge (SOC) given in the input and calculate
 % equilibrium concentration based on theta0, theta100 and cmax.
 
-initstate = model.setupInitialState();
-
+initstate = model.setupInitialState(jsonstruct);
 
 
 %%% Running the simulation

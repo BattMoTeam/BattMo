@@ -198,6 +198,7 @@ classdef Coating < ElectronicComponent
             np = inputparams.G.getNumberOfCells();
 
             if model.activeMaterialModelSetup.composite
+                
                 ams = {am1, am2};
                 for iam = 1 : numel(ams)
                     amc = ams{iam};
@@ -209,34 +210,35 @@ classdef Coating < ElectronicComponent
                 end
 
             else
+                
+                switch model.activeMaterialModelSetup.SEImodel
+                    
+                  case {'none', 'Bolay'}
 
-                if model.activeMaterialModelSetup.swelling
-                    if strcmp(inputparams.(am).diffusionModelType, 'full')
+                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+
+                    switch inputparams.(am).diffusionModelType
+                      case {'full', 'swelling'}
                         inputparams.(am).(sd).np = np;
-                    end
-                    model.ActiveMaterial = SwellingMaterial(inputparams.ActiveMaterial);
-                else
-                    switch model.activeMaterialModelSetup.SEImodel
-                        
-                      case {'none', 'Bolay'}
-                        inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                        if strcmp(inputparams.(am).diffusionModelType, 'full')
-                            inputparams.(am).(sd).np = np;
-                        end
-                        model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
-                        
-                      case 'Safari'
-                        
-                        inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                        inputparams.(am).(sd).np  = np;
-                        inputparams.(am).(sei).np = np;
-                        model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
-                        
+                      case {'simple'}
+                        % do nothing
                       otherwise
-                        
-                        error('SEI model not recognized')
-                        
+                        error('diffusion model type not recognized')
                     end
+                    
+                    model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
+                    
+                  case 'Safari'
+                    
+                    inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
+                    inputparams.(am).(sd).np  = np;
+                    inputparams.(am).(sei).np = np;
+                    model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
+                    
+                  otherwise
+                    
+                    error('SEI model not recognized')
+                    
                 end
             end
 
@@ -413,11 +415,6 @@ classdef Coating < ElectronicComponent
             if model.use_thermal
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
-
-            if model.activeMaterialModelSetup.swelling
-                fn = @Coating.updateConductivity;
-                model = model.registerPropFunction({'conductivity', fn, {{am, 'volumeFraction'}}});
-            end
                                                    
         end
 
@@ -488,17 +485,6 @@ classdef Coating < ElectronicComponent
             rho = sum(massfractions)*vf;
 
             model.effectiveDensity = rho;
-
-        end
-
-        function state = updateConductivity(model, state)
-
-            brugg = model.BruggemanCoefficient;
-
-            vf = state.volumeFraction;
-            
-            % setup effective electrical conductivity using Bruggeman approximation
-            state.conductivity = model.electricalConductivity.*vf.^brugg;
 
         end
 

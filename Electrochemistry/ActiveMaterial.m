@@ -22,7 +22,7 @@ classdef ActiveMaterial < BaseModel
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % either 'full' or 'simple'
+        diffusionModelType     % either 'full', 'simple', 'swelling'
 
         %% SEI layer model choice
         SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
@@ -73,6 +73,8 @@ classdef ActiveMaterial < BaseModel
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(inputparams.SolidDiffusion);
               case 'full'
                 model.SolidDiffusion = FullSolidDiffusionModel(inputparams.SolidDiffusion);
+              case 'swelling'
+                model.SolidDiffusion = FullSolidDiffusionSwellingModel(inputparams.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end

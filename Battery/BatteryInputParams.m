@@ -37,7 +37,7 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            jsontruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
 
             jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors'      , ...
                                                                {ne, 'include_current_collectors'}, ...
@@ -67,7 +67,6 @@ classdef BatteryInputParams < InputParams
                 assert(~iscomp1 && ~iscomp2, 'We do not support for the moment thermal simulation for composite materials');
 
             end
-
 
             inputparams = inputparams@InputParams(jsonstruct);
 

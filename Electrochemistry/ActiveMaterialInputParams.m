@@ -22,7 +22,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % diffusion model type, either 'full' or 'simple'
+        diffusionModelType     % diffusion model type, either 'full', 'simple' or 'swelling'
 
         %% SEI layer model choice
         SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
@@ -58,7 +58,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
                 jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
                 
-              case 'full'
+              case {'full', 'swelling'}
                 
                 jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
 
@@ -74,6 +74,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                         jsonstruct = equalizeJsonStructField(jsonstruct, {sd, paramname}, {itf, paramname});
                     end
                     
+                end
+
+                if strcmp(diffusionModelType, 'swelling')
+                    jsonstruct = equalizeJsonStructField(jsonstruct, {sd, 'saturationConcentration'}, {itf, 'saturationConcentration'});
                 end
 
               otherwise
@@ -126,10 +130,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
                 inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
                 
-              case 'full'
-
+              case {'full', 'swelling'}
+                % same parameter set for the swelling case
                 inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
-                
+
               otherwise
                 
                 error('Unknown diffusionModelType %s', diffusionModelType);

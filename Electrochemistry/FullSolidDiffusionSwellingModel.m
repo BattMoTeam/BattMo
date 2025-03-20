@@ -7,7 +7,9 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
     methods
 
         function model = FullSolidDiffusionSwellingModel(inputparams)
+
             model = model@FullSolidDiffusionModel(inputparams);
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -39,8 +41,8 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
         % eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
         % Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
 
-            R_delith = model.rp;
-            cmax     = model.cmax;
+            R_delith = model.particleRadius;
+            cmax     = model.saturationConcentration;
 
             cAverage = state.cAverage;
 
@@ -58,7 +60,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             
             useDFunc = model.useDFunc;
             op = model.operators;
-            r0 = model.rp;
+            r0 = model.particleRadius;
             
             c = state.c;
             D = state.D;

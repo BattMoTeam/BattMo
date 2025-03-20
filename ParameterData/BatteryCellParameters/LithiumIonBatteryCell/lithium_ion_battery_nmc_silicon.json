@@ -99,5 +99,9 @@
   "Electrolyte": {
     "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
     "isFile": true
+  },
+  "Separator": {
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "isFile": true
   }
 }

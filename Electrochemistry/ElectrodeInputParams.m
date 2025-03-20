@@ -13,6 +13,11 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         couplingTerm
 
+        %% coating model setup structure
+
+        coatingModelSetup % structure that determines the type of coating with field
+                          % - swelling : boolean, true if swelling coating is used
+
         %% Parameters assigned at setup
 
         include_current_collectors
@@ -28,6 +33,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         function inputparams = ElectrodeInputParams(jsonstruct)
 
             co = 'Coating';
+            am = 'ActiveMaterial';
             cc = 'CurrentCollector';
 
             jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
@@ -40,6 +46,14 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             if include_current_collectors
                 jsonstruct = setDefaultJsonStructField(jsonstruct, {'use_normed_current_collector'}, false);
+            end
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'}, false);
+
+            is_swelling = getJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
+
+            if is_swelling
+                jsonstruct = setJsonStructField(jsonstruct, {co, am, 'diffusionModelType'}, 'swelling');
             end
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);

@@ -37,9 +37,6 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
-jsonstruct.(pe).(am).diffusionModelType = 'full';
-jsonstruct.(ne).(am).diffusionModelType = 'full';
-
 jsonstruct.use_particle_diffusion = true;
 
 inputparams = BatteryInputParams(jsonstruct);
