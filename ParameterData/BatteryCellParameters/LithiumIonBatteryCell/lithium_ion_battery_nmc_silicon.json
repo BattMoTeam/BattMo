@@ -13,17 +13,17 @@
     "dEdtLimit" : 0.1
   },
   "NegativeElectrode": {
+    "coatingModelSetup" : {"swelling": true},            
     "Coating" : {
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
-      "activeMaterialModelSetup" : {"swelling": true},      
+      "molarMass": 28.0855e-3,        
       "ActiveMaterial": {
         "massFraction": 0.94,
         "density": 2240,
         "Comment on the sources" : "electronicConductivity is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
         "specificHeatCapacity": 710,
         "thermalConductivity": 149,
-        "molarMass": 28.0855e-3,
         "InterDiffusionCoefficient": 1e-14,
         "electronicConductivity": 33,
         "BruggemanCoefficient": 1.5,
