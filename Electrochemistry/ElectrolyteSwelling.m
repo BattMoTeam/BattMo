@@ -44,11 +44,11 @@ classdef ElectrolyteSwelling < Electrolyte
         %% Update the diffusion coefficient which vary at each step as the volumeFraction is no more constant
         function state = updateDiffusionCoefficient(model, state)
 
-            brcoef = model.BruggemanCoefficient; 
+            brcoef = model.bruggemanCoefficient; 
             computeD = model.computeDiffusionCoefficientFunc;
 
-            c = state.c;
-            T = state.T;
+            c  = state.c;
+            T  = state.T;
             vf = state.volumeFraction;
             
             D = computeD(c, T);
@@ -58,36 +58,35 @@ classdef ElectrolyteSwelling < Electrolyte
 
         end
 
-        %% Update the current in the electrolyte (due to the movement of the ions)
         function state  = updateCurrent(model, state)
+        % Same implementation as Electrolyte base class, except that the volumeFraction is now fetched from state
+            bg      = model.bruggemanCoefficient;
+            con     = model.constants;
+            sp      = model.species;
 
-            ncomp  = model.ncomp;
-            sp     = model.sp;
-            R      = model.constants.R;
-            F      = model.constants.F;
-            brcoef = model.BruggemanCoefficient;
-            
+            t = sp.transferenceNumber;
+
             dmudcs       = state.dmudcs;
             phi          = state.phi;
             T            = state.T;
             c            = state.c;
             conductivity = state.conductivity;
-            vf = state.volumeFraction;
+            volfrac      = state.volumeFraction;
 
             % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*vf.^brcoef;
+            conductivityeff = conductivity.*volfrac.^bg;
 
             state.conductivityeff = conductivityeff;
             j = assembleFlux(model, phi, conductivityeff);
 
             sum_dmudc = dmudcs{1} + dmudcs{2};
-            coef = (1/F)*(1 - sp.t(1))*conductivityeff.*sum_dmudc;
+            coef = (1/con.F)*(1 - t)*conductivityeff.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
 
             j = j - jchem;
 
             state.j = j;
-
+            
         end
 
         %% Update the mass flux which is the sum of the three fluxes defines above.

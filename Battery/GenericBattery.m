@@ -241,7 +241,7 @@ classdef GenericBattery < BaseModel
                 inputNames = {{ne, co, 'porosity'}};
                 model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
 
-                fn = @GenericBattery.updateSwellingElyteConvFlux;
+                fn = @GenericBattery.updateSwellingElectrolyteConvFlux;
                 inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne, co, am, sd, 'cAverage'}, {ne, co, am, itf, 'volumetricSurfaceArea'}};
                 model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
                 
@@ -1140,25 +1140,25 @@ classdef GenericBattery < BaseModel
 
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
 
             c         = state.(elyte).c;
             vf        = state.(elyte).volumeFraction;
             c0        = state0.(elyte).c;
-            porosity0 = state0.(ne).(co).(am).porosity;
+            porosity0 = state0.(ne).(co).porosity;
 
-            elyte_cells = zeros(model.G.cells.num, 1);
-            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.cells.num)';
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
             
-            ne_cells = elyte_cells(model.(ne).(am).G.mappings.cellmap);
+            ne_cells = elyte_cells(model.(ne).(co).G.mappings.cellmap);
              
-            vf0 = vf;
-            vf0 = subsasgnAD(vf0, ne_cells, porosity0);
+            vf0 = model.(elyte).volumeFraction;
+            vf0(ne_cells) = porosity0;
 
-            cdotcc = (vf .* c - vf0 .* c0)/dt;
-            vols = model.(elyte).G.cells.volumes;
+            vols = model.(elyte).G.getVolumes();
 
-            state.(elyte).massAccum  = vols.*cdotcc;
+            state.(elyte).massAccum  = vols.*(vf.*c - vf0.*c0)/dt;
             
         end
 
@@ -1168,6 +1168,7 @@ classdef GenericBattery < BaseModel
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
+            co      = 'Coating';
             am      = 'ActiveMaterial';
             itf     = 'Interface';
             eldes = {ne, pe};
@@ -1176,17 +1177,19 @@ classdef GenericBattery < BaseModel
             state.(elyte).convFlux = 0 .* j;
 
             for ielde = 1 : numel(eldes)
+
                 elde = eldes{ielde};
-                if isa(model.(elde).(am), 'SwellingMaterial')
 
-                    G              = model.(elyte).G;
-                    Gp             = G.mappings.parentGrid;
+                if model.(elde).coatingModelSetup.swelling
 
-                    cmax           = model.(elde).(am).(itf).cmax;
-                    theta0         = model.(elde).(am).(itf).theta0;
-                    densitySi      = model.(elde).(am).(itf).density;
-                    molarMassSi    = model.(elde).(am).molarMass;
-                    F              = model.(elde).(am).(itf).constants.F;
+                    G  = model.(elyte).G;
+                    Gp = G.mappings.parentGrid;
+
+                    cmax        = model.(elde).(co).(am).(itf).saturationConcentration;
+                    theta0      = model.(elde).(co).(am).(itf).guestStoichiometry0;
+                    densitySi   = model.(elde).(co).(am).(itf).density;
+                    molarMassSi = model.(elde).(co).molarMass;
+                    F           = model.(elde).(co).(am).(itf).constants.F;
                     s = -1;
                     n = 1;
 
@@ -1194,7 +1197,7 @@ classdef GenericBattery < BaseModel
 
                     theta = c./cmax;
                     
-                    molarVolumeLithiated = model.(elde).(am).computeMolarVolumeLithiated(theta);
+                    molarVolumeLithiated   = model.(elde).(am).computeMolarVolumeLithiated(theta);
                     molarVolumeDelithiated = model.(elde).(am).computeMolarVolumeLithiated(theta0);
 
                     a = state.(elde).(am).Interface.volumetricSurfaceArea;
@@ -1211,8 +1214,11 @@ classdef GenericBattery < BaseModel
                     Flux = c .* averageVelocity;
 
                     state.(elyte).convFlux(elyte_cells_elde) = Flux;
+                    
                 end
+                
             end
+            
         end
 
         function state = updateTemperature(model, state)

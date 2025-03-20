@@ -64,8 +64,7 @@ classdef SwellingCoating < Coating
             model = model.registerPropFunction({{am, sd, 'volumeFraction'}, fn, {'porosity'}});
 
             fn = @SwellingCoating.updateVolumetricSurfaceArea;
-            model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radius'}, 'volumeFraction'}});
-
+            model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radius'}, {am, sd, 'volumeFraction'}}});
             fn =  @SwellingCoating.updateRvol;
             model = model.registerPropFunction({{am, sd, 'Rvol'}, fn, {{am, itf, 'R'}, {am, itf, 'volumetricSurfaceArea'}}});
 
@@ -113,24 +112,16 @@ classdef SwellingCoating < Coating
 
         end
 
-        % Same as in Active Material but for a non constant volumeFraction    
-        function state = updateAverageConcentration(model, state)
+        function state = updateCurrent(model, state)
+        % Assemble electrical current which is stored in :code:`state.j`
 
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
+            sigma = state.conductivity;
+            phi   = state.phi;
 
-            vols     = model.G.cells.volumes;
-            am_frac  = model.activeMaterialFraction;
+            j = assembleFlux(model, phi, sigma);
 
-            vf       = state.volumeFraction;
-            c        = state.(am).(sd).cAverage;
+            state.j = j;
 
-            vols = am_frac.*vf.*vols;
-
-            cAverage = sum(c.*vols)/sum(vols);
-
-            state.cAverage = cAverage;
-            
         end
 
         function state = updateReactionRateCoefficient(model, state)
@@ -139,15 +130,15 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            if model.Interface.useJ0Func
+            if model.(am).(itf).useJ0Func
 
                 error('not checked');
                 
-                computeJ0       = model.Interface.computeJ0Func;
-                cmax            = model.Interface.cmax;
+                computeJ0 = model.(am).(itf).computeJ0Func;
+                cmax      = model.(am).(itf).cmax;
                 
-                c = state.Interface.cElectrodeSurface;
-                R = state.radius;
+                c = state.(am).(itf).cElectrodeSurface;
+                R = state.(am).(sd).radius;
 
                 theta = c/cmax;
                 
@@ -157,18 +148,18 @@ classdef SwellingCoating < Coating
                 
                 Tref = 298.15;  % [K]
 
-                cmax          = model.(itf).cmax;
-                k0            = model.(itf).k0;
-                Eak           = model.(itf).Eak;
-                n             = model.(itf).n;
-                F             = model.(itf).constants.F;
-                R             = model.(itf).constants.R;
-                R_delithiated = model.(sd).particleRadius;
+                cmax          = model.(am).(itf).saturationConcentration;
+                k0            = model.(am).(itf).reactionRateConstant;
+                Eak           = model.(am).(itf).activationEnergyOfReaction;
+                n             = model.(am).(itf).numberOfElectronsTransferred;
+                F             = model.(am).(itf).constants.F;
+                R             = model.(am).(itf).constants.R;
+                R_delithiated = model.(am).(sd).particleRadius;
 
-                T      = state.(itf).T;
-                cElyte = state.(itf).cElectrolyte;
-                c      = state.(itf).cElectrodeSurface;
-                radius = state.(sd).radius;
+                T      = state.(am).(itf).T;
+                cElyte = state.(am).(itf).cElectrolyte;
+                c      = state.(am).(itf).cElectrodeSurface;
+                radius = state.(am).(sd).radius;
                 
                 % Calculate reaction rate constant
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
@@ -176,7 +167,7 @@ classdef SwellingCoating < Coating
                 %k = k.*(R_delithiated./radius).^2;
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3* cmax;
+                th = 1e-3*cmax;
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
                 
@@ -184,7 +175,7 @@ classdef SwellingCoating < Coating
                 
             end
             
-            state.(itf).j0 = j0;
+            state.(am).(itf).j0 = j0;
 
         end
 
@@ -196,21 +187,21 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            n     = model.(itf).n;
-            F     = model.(itf).constants.F;
-            alpha = model.(itf).alpha;
+            n     = model.(am).(itf).n;
+            F     = model.(am).(itf).constants.F;
+            alpha = model.(am).(itf).alpha;
 
-            T     = state.(itf).T;
-            j0    = state.(itf).j0;
-            eta   = state.(itf).eta;
+            T     = state.(am).(itf).T;
+            j0    = state.(am).(itf).j0;
+            eta   = state.(am).(itf).eta;
             sigma = state.hydrostaticStress;
             
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
 
-            r = state.(sd).radius;
-            r0 = model.(sd).rp; %.* (r0./r).^2
+            r  = state.(am).(sd).radius;
+            r0 = model.(am).(sd).rp; %.* (r0./r).^2
 
-            state.(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
+            state.(am).(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
 
@@ -220,13 +211,15 @@ classdef SwellingCoating < Coating
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-
+            
+            amf = model.volumeFractions(model.compInds.(am));
+            
             porosity = state.porosity;
 
             vf = 1 - porosity;
 
-            state.volumeFraction                = vf;
-            state.(sd).volumeFraction = vf;
+            state.volumeFraction           = vf;
+            state.(am).(sd).volumeFraction = amf*vf;
             
         end
 
@@ -241,14 +234,10 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            amf = model.activeMaterialFraction;
-            
-            vf     = state.volumeFraction;
-            radius = state.(sd).radius;
+            vf     = state.(am).(sd).volumeFraction;
+            radius = state.(am).(sd).radius;
 
-            vsa = (3.*vf*amf)./radius;
-
-            state.(itf).volumetricSurfaceArea = vsa;
+            state.(am).(itf).volumetricSurfaceArea = (3.*vf)./radius;
             
         end
         
@@ -265,8 +254,8 @@ classdef SwellingCoating < Coating
             nu    = 0.27;
             Omega = 4.25e-06;
 
-            cSurface  = state.(itf).cElectrodeSurface;
-            cAverage  = state.(sd).cAverage;
+            cSurface  = state.(am).(itf).cElectrodeSurface;
+            cAverage  = state.(am).(sd).cAverage;
 
             sigma = ( (2.* E.* Omega)/(9.*(1-nu)) ) .* (cAverage - cSurface);
 
@@ -294,12 +283,12 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            cmax   = model.(itf).cmax;
-            theta0 = model.(itf).theta0;
+            cmax   = model.(am).(itf).cmax;
+            theta0 = model.(am).(itf).theta0;
             
-            R  = state.(itf).R;
-            a  = state.(itf).volumetricSurfaceArea;       
-            c  = state.(sd).cAverage;
+            R  = state.(am).(itf).R;
+            a  = state.(am).(itf).volumetricSurfaceArea;       
+            c  = state.(am).(sd).cAverage;
 
             theta = c/cmax;
             
@@ -341,8 +330,7 @@ classdef SwellingCoating < Coating
             
         end
 
-
-        %% Useful Functions    
+        %% Useful Functions
         function molarVolumeLithiated = computeMolarVolumeLithiated(model, theta)
         % cf equation 2 in [ref1]
 
