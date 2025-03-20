@@ -15,20 +15,19 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 
     c_ratio = c./cmax;
     
-    R_delith = 60e-09;
+    R_delith      = 60e-09;
+    
     molarVolumeSi = 1.2e-05;
     molarVolumeLi = 9e-06;
 
     Q = (3.75.*molarVolumeLi)./(molarVolumeSi);
 
-    radius = computeRadius(c,cmax,R_delith);
+    radius = computeRadius(c, cmax, R_delith);
 
-    soc = c_ratio .* ((radius ./ R_delith).^3) ./(1+Q);
-
+    soc = c_ratio .* ((radius ./ R_delith).^3) ./(1 + Q);
 
     z = soc;
 
-    
     % Calculate the open-circuit potential at the reference temperature for the given lithiation
     refOCP = (0.62 ...
               - 1.94 .* z ...
