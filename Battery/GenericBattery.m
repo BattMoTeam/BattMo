@@ -1887,7 +1887,7 @@ classdef GenericBattery < BaseModel
                       case 'simple'
                         state.(elde).(co).(amc).(sd).cAverage = max(cmin, state.(elde).(co).(amc).(sd).cAverage);
                         state.(elde).(co).(amc).(sd).cAverage = min(cmax, state.(elde).(co).(amc).(sd).cAverage);
-                      case 'full'
+                      case {'full', 'swelling'}
                         state.(elde).(co).(amc).(sd).c = max(cmin, state.(elde).(co).(amc).(sd).c);
                         state.(elde).(co).(amc).(sd).c = min(cmax, state.(elde).(co).(amc).(sd).c);
                       otherwise
@@ -1898,9 +1898,9 @@ classdef GenericBattery < BaseModel
 
                 co = 'Coating';
 
-                if model.(elde).coatingModeSetup.swelling
-                    state.(elde).(co).(am).porosity = min(1, state.(elde).(co).(am).porosity);
-                    state.(elde).(co).(am).porosity = max(0, state.(elde).(co).(am).porosity);
+                if model.(elde).coatingModelSetup.swelling
+                    state.(elde).(co).porosity = min(1, state.(elde).(co).porosity);
+                    state.(elde).(co).porosity = max(0, state.(elde).(co).porosity);
                 end
                 
             end
