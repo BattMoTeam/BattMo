@@ -61,7 +61,10 @@ classdef EquilibriumCalibrationSetup
                % - upper
 
         calibrationParameters
-
+        
+        vals0 % initial values of the calibration parameters
+        X0    % initial values of the calibration parameters in the form of a vector
+        
     end
 
     methods
@@ -119,8 +122,11 @@ classdef EquilibriumCalibrationSetup
                 ecs.printVariableChoice();
             end
 
-            ecs = ecs.setupDefaultVariableBounds('verbose', opt.verbose);
+            ecs.vals0 = ecs.getDefaultValue();
+            ecs.X0    = ecs.assignToX(ecs.vals0);
 
+            ecs = ecs.setupDefaultVariableBounds('verbose', opt.verbose);
+            
         end
 
 
@@ -150,7 +156,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function X = getDefaultValue(ecs)
+        function vals0 = getDefaultValue(ecs)
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -172,9 +178,10 @@ classdef EquilibriumCalibrationSetup
 
                     vol = sum(coating.G.getVolumes());
                     
-                    vals.(elde).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
-                    vals.(elde).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
-                    vals.(elde).totalAmount           = vol*coating.volumeFraction*coating.volumeFractions(amInd);
+                    vals0.(elde).guestStoichiometry100   = coating.(am).(itf).guestStoichiometry100;
+                    vals0.(elde).guestStoichiometry0     = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
+                    vals0.(elde).saturationConcentration = coating.(am).(itf).saturationConcentration; % used in computation of OCP.
+                    vals0.(elde).totalAmount             = vol*coating.volumeFraction*coating.volumeFractions(amInd)*coating.(am).(itf).saturationConcentration;
                     
                 end
 
@@ -191,15 +198,17 @@ classdef EquilibriumCalibrationSetup
                 amInd = coating.compInds.(am);
 
                 vol = sum(coating.G.getVolumes());
-                vals.(ne).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
-                vals.(ne).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
-                vals.(ne).totalAmount           = vol.*coating.volumeFraction*coating.volumeFractions(amInd);
+                vals0.(ne).guestStoichiometry100   = coating.(am).(itf).guestStoichiometry100;
+                vals0.(ne).guestStoichiometry0     = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
+                vals0.(ne).saturationConcentration = coating.(am).(itf).saturationConcentration; % used in computation of OCP.
+                vals0.(ne).totalAmount             = vol.*coating.volumeFraction*coating.volumeFractions(amInd)*coating.(am).(itf).saturationConcentration;
 
                 coating = ecs.model.(pe).(co);
                 amInd = coating.compInds.(am);
                 
                 vol = sum(coating.G.getVolumes());
-                vals.(pe).totalAmount = vol.*coating.volumeFraction*coating.volumeFractions(amInd);
+                vals0.(pe).saturationConcentration = coating.(am).(itf).saturationConcentration; % used in computation of OCP.
+                vals0.(pe).totalAmount = vol.*coating.volumeFraction*coating.volumeFractions(amInd)*coating.(am).(itf).saturationConcentration;
 
               case 3
 
@@ -217,9 +226,10 @@ classdef EquilibriumCalibrationSetup
                     amInd   = coating.compInds.(am);
 
                     vol = sum(coating.G.getVolumes());
-                    vals.(elde).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
-                    vals.(elde).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0;
-                    vals.(elde).totalAmount           = vol*coating.volumeFraction*coating.volumeFractions(amInd);
+                    vals0.(elde).guestStoichiometry100   = coating.(am).(itf).guestStoichiometry100;
+                    vals0.(elde).guestStoichiometry0     = coating.(am).(itf).guestStoichiometry0;
+                    vals0.(elde).saturationConcentration = coating.(am).(itf).saturationConcentration; % used in computation of OCP.
+                    vals0.(elde).totalAmount             = vol*coating.volumeFraction*coating.volumeFractions(amInd)*coating.(am).(itf).saturationConcentration;
                     
                 end
 
@@ -228,8 +238,6 @@ classdef EquilibriumCalibrationSetup
                 error('calibrationCase not recognized')
                 
             end
-
-            X = ecs.assignToX(vals);
 
         end
 
@@ -240,7 +248,7 @@ classdef EquilibriumCalibrationSetup
               case 1
                 fprintf('\nThe calibration parameters are guestStoichiometry100 and total amount Lithium for both electrodes\n');
               case 2
-                fprintf('\nThe calibration parameters are guestStoichiometry100 for the negative electrode\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100 for the pegative electrode\n');
                 fprintf('The total amount Lithium for both electrodes\n');
               case 3
                 fprintf('\nThe calibration parameters are guestStoichiometry100, guestStoichiometry0, and total amount Lithium for both electrodes\n');
@@ -434,18 +442,21 @@ classdef EquilibriumCalibrationSetup
 
             T = ecs.Temperature;
 
+            vals  = ecs.assignFromX(X);
+            vals0 = ecs.vals0;
+            
             guestStoichiometry100 = vals.(pe).guestStoichiometry100;
             totalAmount           = vals.(pe).totalAmount;
 
             theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals.(pe).cmax;
+            cmax  = vals0.(pe).saturationConcentration;
             fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             guestStoichiometry100 = vals.(ne).guestStoichiometry100;
             totalAmount           = vals.(ne).totalAmount;
 
             theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals.(ne).cmax;
+            cmax  = vals0.(ne).saturationConcentration;
             fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             f = fpe - fne;
@@ -566,6 +577,7 @@ classdef EquilibriumCalibrationSetup
                 error('ecs.calibrationCase not recognized');
 
             end
+            
         end
 
 
@@ -716,7 +728,7 @@ classdef EquilibriumCalibrationSetup
 
                 cap = (cM - cm)/cmax*totalAmount*ecs.F;
 
-                vals.(elde).cmax = cmax;
+                vals.(elde).saturationConcentration = cmax;
                 vals.(elde).cap  = cap;
 
             end
@@ -757,7 +769,7 @@ classdef EquilibriumCalibrationSetup
                 elde = eldes{ielde};
 
                 smax = props.(elde).r;
-                cmax = props.(elde).cmax;
+                cmax = props.(elde).saturationConcentration;
                 c0   = props.(elde).guestStoichiometry100*cmax;
                 cT   = props.(elde).guestStoichiometry0*cmax;
                 cap  = props.(elde).cap;
@@ -799,7 +811,7 @@ classdef EquilibriumCalibrationSetup
 
         function [Xopt, hist] = runUnitBoxBFGS(ecs, varargin)
 
-            opt = struct('X0', ecs.getDefaultValue());
+            opt = struct('X0', ecs.X0);
             [opt, extra] = merge_options(opt, varargin{:});
 
             f = @(X) ecs.objective(X);
@@ -825,7 +837,7 @@ classdef EquilibriumCalibrationSetup
 
         function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
-            X0 = ecs.getDefaultValue();
+            X0 = ecs.X0;
 
             funcs.objective         = @(x) ecs.objective_func(x);
             funcs.gradient          = @(x) ecs.gradient_func(x);
@@ -877,11 +889,11 @@ classdef EquilibriumCalibrationSetup
 
             switch ecs.calibrationCase
               case 1
-                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'total amount Lithium');
+                fprintf('%-25s%25s%25s\n', '', 'guestStoichiometry100', 'total amount Lithium');
                 thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
-                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).totalAmount);
+                fprintf('%-25s%25s%25.5f \n', ne, thetastr, vals.(ne).totalAmount);
                 thetastr = sprintf('%6.5f', vals.(pe).guestStoichiometry100);
-                fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).totalAmount);
+                fprintf('%-25s%25s%25.5f \n', pe, thetastr, vals.(pe).totalAmount);
               case 2
                 fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'total amount Lithium');
                 thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
@@ -932,8 +944,7 @@ classdef EquilibriumCalibrationSetup
             
             vals = ecs.updateGuestStoichiometries(X, 'includeGuestStoichiometry0', true);
 
-            X0    = ecs.getDefaultValue();
-            vals0 = ecs.assignFromX(X0);
+            vals0 = ecs.vals0;
 
             for ielde = 1 : numel(eldes)
 
