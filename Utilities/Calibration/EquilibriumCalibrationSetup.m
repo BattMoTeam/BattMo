@@ -1,7 +1,7 @@
 classdef EquilibriumCalibrationSetup
 %% The goal of this class is to solve the following calibration problem:
 % Given a discharge curve, find the set of parameters that give the better match.
-% By default (calibrationCase = 1), the calibration parameters are the guest stoichiometry at discharge start and the volume fraction, for both electrodes.
+% By default (calibrationCase = 1), the calibration parameters are the guest stoichiometry at discharge start and the total amount Lithium, for both electrodes.
 %
 %  Usage description :
 %  1. Instantiate object using model and expdata
@@ -40,12 +40,12 @@ classdef EquilibriumCalibrationSetup
         calibrationCase = 1
         % different calibration case depending on the parameters that are chosen. See method printVariableChoice below
         % At the moment, the following is implemented
-        % case 1 (default) : The calibration parameters are guestStoichiometry100 and volume fraction for both electrodes
+        % case 1 (default) : The calibration parameters are guestStoichiometry100 and total amount Lithium for both electrodes
         %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve
         %                    guestStoichiometry0 for the negative electrode is computed to match a given NP ration (default value 1.1)
         %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
-        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the volume fractions for both electrodes
-        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
+        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the total amount Lithium for both electrodes
+        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and total amount Lithium for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
 
         lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
@@ -123,8 +123,8 @@ classdef EquilibriumCalibrationSetup
         function ecs = setupDefaultVariableBounds(ecs, varargin)
 
             opt = struct('verbose', true, ...
-                         'lower', 1e-3, ...
-                         'upper', 1);
+                         'lower'  , 1e-3, ...
+                         'upper'  , 1);
             opt = merge_options(opt, varargin{:});
 
             N = numel(ecs.getDefaultValue());
@@ -226,12 +226,12 @@ classdef EquilibriumCalibrationSetup
 
             switch ecs.calibrationCase
               case 1
-                fprintf('\nThe calibration parameters are guestStoichiometry100 and volume fraction for both electrodes\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100 and total amount Lithium for both electrodes\n');
               case 2
                 fprintf('\nThe calibration parameters are guestStoichiometry100 for the negative electrode\n');
-                fprintf('The volume fractions for both electrodes\n');
+                fprintf('The total amount Lithium for both electrodes\n');
               case 3
-                fprintf('\nThe calibration parameters are guestStoichiometry100, guestStoichiometry0, and volume fraction for both electrodes\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100, guestStoichiometry0, and total amount Lithium for both electrodes\n');
                 fprintf('In addition we have a given np_ratio as a constraint\n');
               otherwise
                 error('calibrationCase not recognized');
@@ -258,9 +258,9 @@ classdef EquilibriumCalibrationSetup
                 %% recall : ordering of parameters
                 %
                 % X(1) : guestStoichiometry100 anode
-                % X(2) : volume fraction anode
+                % X(2) : total amount Lithium anode
                 % X(3) : guestStoichiometry100 cathode
-                % X(4) : volume fraction cathode
+                % X(4) : total amount Lithium cathode
 
                 X = nan(4, 1);
 
@@ -275,8 +275,8 @@ classdef EquilibriumCalibrationSetup
                 %% recall : ordering of parameters
                 %
                 % X(1) : guestStoichiometry100 anode
-                % X(2) : volume fraction anode
-                % X(3) : volume fraction cathode
+                % X(2) : total amount Lithium anode
+                % X(3) : total amount Lithium cathode
 
 
                 X(1) = vals.(ne).guestStoichiometry100;
@@ -287,10 +287,10 @@ classdef EquilibriumCalibrationSetup
 
                 % X(1) : guestStoichiometry100 anode
                 % X(2) : guestStoichiometry0 anode
-                % X(3) : volume fraction anode
+                % X(3) : total amount Lithium anode
                 % X(4) : guestStoichiometry100 cathode
                 % X(5) : guestStoichiometry0 cathode
-                % X(6) : volume fraction cathode
+                % X(6) : total amount Lithium cathode
 
                 X = nan(6, 1);
 
@@ -347,9 +347,9 @@ classdef EquilibriumCalibrationSetup
                 %% recall : ordering of parameters
                 %
                 % X(1) : guestStoichiometry100 anode
-                % X(2) : volume fraction anode
+                % X(2) : total amount Lithium anode
                 % X(3) : guestStoichiometry100 cathode
-                % X(4) : volume fraction cathode
+                % X(4) : total amount Lithium cathode
 
                 for ielde = 1 : numel(eldes)
 
@@ -365,8 +365,8 @@ classdef EquilibriumCalibrationSetup
                 %% recall : ordering of parameters
                 %
                 % X(1) : guestStoichiometry100 anode
-                % X(2) : volume fraction anode
-                % X(3) : volume fraction cathode
+                % X(2) : total amount Lithium anode
+                % X(3) : total amount Lithium cathode
 
                 vals.(ne).guestStoichiometry100       = X(1);
                 vals.(ne).totalAmount = X(2);
@@ -376,10 +376,10 @@ classdef EquilibriumCalibrationSetup
 
                 % X(1) : guestStoichiometry100 anode
                 % X(2) : guestStoichiometry0 anode
-                % X(3) : volume fraction anode
+                % X(3) : total amount Lithium anode
                 % X(4) : guestStoichiometry100 cathode
                 % X(5) : guestStoichiometry0 cathode
-                % X(6) : volume fraction cathode
+                % X(6) : total amount Lithium cathode
 
 
                 for ielde = 1 : numel(eldes)
@@ -894,18 +894,18 @@ classdef EquilibriumCalibrationSetup
 
             switch ecs.calibrationCase
               case 1
-                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'volume fraction');
+                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'total amount Lithium');
                 thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
                 fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).totalAmount);
                 thetastr = sprintf('%6.5f', vals.(pe).guestStoichiometry100);
                 fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).totalAmount);
               case 2
-                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'volume fraction');
+                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'total amount Lithium');
                 thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
                 fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).totalAmount);
                 fprintf('%-25s%20s%20.5f \n', pe, '', vals.(pe).totalAmount);
               case 3
-                fprintf('%-25s%20s%20s%20s\n', '', 'guestStoichiometry100', 'guestStoichiometry0', 'volume fraction');
+                fprintf('%-25s%20s%20s%20s\n', '', 'guestStoichiometry100', 'guestStoichiometry0', 'total amount Lithium');
                 fprintf('%-25s%20.5f%20.5f%20.5f \n', ne, vals.(ne).guestStoichiometry100, vals.(ne).guestStoichiometry0, vals.(ne).totalAmount);
                 fprintf('%-25s%20.5f%20.5f%20.5f \n', pe, vals.(pe).guestStoichiometry100, vals.(pe).guestStoichiometry0, vals.(pe).totalAmount);
               otherwise
