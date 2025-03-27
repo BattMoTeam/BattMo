@@ -221,9 +221,10 @@ classdef EquilibriumCalibrationSetup
                     vals0.(elde).guestStoichiometry0     = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
                     vals0.(elde).saturationConcentration = coating.(am).(itf).saturationConcentration; % used in computation of OCP.
                     vals0.(elde).totalAmount             = vol*coating.volumeFraction*coating.volumeFractions(amInd)*coating.(am).(itf).saturationConcentration;
-                    
                 end
 
+                vals0.np_ratio = (vals0.(ne).totalAmount*(vals0.(ne).guestStoichiometry0 - vals0.(ne).guestStoichiometry100))./(vals0.(pe).totalAmount*(vals0.(pe).guestStoichiometry100 - vals0.(pe).guestStoichiometry0));
+                
               case 2
 
                 %% recall : ordering of parameters
@@ -552,7 +553,7 @@ classdef EquilibriumCalibrationSetup
             pe  = 'PositiveElectrode';
 
             vals = ecs.updateGuestStoichiometries(X, 'includeGuestStoichiometry0', true);
-            
+                
             np_ratio = (vals.(ne).totalAmount*(vals.(ne).guestStoichiometry0 - vals.(ne).guestStoichiometry100))./(vals.(pe).totalAmount*(vals.(pe).guestStoichiometry100 - vals.(pe).guestStoichiometry0));
 
         end
