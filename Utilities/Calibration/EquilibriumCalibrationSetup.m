@@ -50,9 +50,9 @@ classdef EquilibriumCalibrationSetup
         lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
 
-        totalAmountVariableChoice = 'volumeFraction' % variable that is chosen to adjust the total amount of lithium in the electrode. The choices are
-                                                     % - 'volumeFraction'          : the volume fraction of the active material
-                                                     % - 'saturationConcentration' : the saturation concentration of the electrode
+        totalAmountVariableChoice  % variable that is chosen to adjust the total amount of lithium in the electrode. The choices are
+                                   % - 'volumeFraction'          : the volume fraction of the active material
+                                   % - 'saturationConcentration' : the saturation concentration of the electrode
         
         %% Helper structures, assigned during setup
 
@@ -973,6 +973,9 @@ classdef EquilibriumCalibrationSetup
             opt = struct('guestStoichiometries0', []);
             opt = merge_options(opt, varargin{:});
 
+            assert(~isempty(ecs.totalAmountVariableChoice), 'The total amount of Lithium is given by the product of the volume, the volume fraction, the active material volume fraction and the saturation concentration. To setup the model, we have to choose one of these variables. The choice is made by setting the field totalAmountVariableChoice in the EquilibriumCalibrationSetup structure. You can either set it to  ''volumeFraction'' or ''saturationConcentration''');
+
+            
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             co  = 'Coating';
@@ -985,13 +988,15 @@ classdef EquilibriumCalibrationSetup
 
             vals0 = ecs.vals0;
 
+            jsonstruct = struct();
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
                 guestStoichiometry100 = vals.(elde).guestStoichiometry100;
                 
-                if isAssigned(opt.guestStoichiometry0, {elde})
-                    guestStoichiometry0 = opt.guestStoichiometry0.(elde);
+                if isAssigned(opt.guestStoichiometries0, {elde})
+                    guestStoichiometry0 = opt.guestStoichiometries0.(elde);
                 else
                     guestStoichiometry0 = vals.(elde).guestStoichiometry0;
                 end
@@ -999,20 +1004,20 @@ classdef EquilibriumCalibrationSetup
                 totalAmount  = vals.(elde).totalAmount;
                 totalAmount0 = vals0.(elde).totalAmount;
                 
-                jsonstruct = struct();
-
                 jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry100);
-                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry0);
+                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry0'}, guestStoichiometry0);
                 
                 switch ecs.totalAmountVariableChoice
                     
                   case 'volumeFraction'
 
-                    jsonstruct.(elde).(co).volumeFraction = (totalAmount/totalAmount0) * ecs.model.(elde).(co).volumeFraction;
+                    jsonstruct = setJsonStructField(jsonstruct, {elde, co, 'volumeFraction'}, ...
+                                                    (totalAmount/totalAmount0) * ecs.model.(elde).(co).volumeFraction);
 
                   case 'saturationConcentration'
 
-                    jsonstruct.(elde).(co).(am).(itf).saturationConcentration = (totalAmount/totalAmount0)*ecs.model.(elde).(co).(am).(itf).saturationConcentration;
+                    jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'saturationConcentration'}, ...
+                                                    (totalAmount/totalAmount0)*ecs.model.(elde).(co).(am).(itf).saturationConcentration);
 
                   otherwise
 
