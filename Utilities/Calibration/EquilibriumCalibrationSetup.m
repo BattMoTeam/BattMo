@@ -132,16 +132,55 @@ classdef EquilibriumCalibrationSetup
 
         function ecs = setupDefaultVariableBounds(ecs, varargin)
 
-            opt = struct('verbose', true, ...
-                         'lower'  , 1e-3, ...
-                         'upper'  , 1);
-            opt = merge_options(opt, varargin{:});
+            opt = struct('verbose'      , true, ...
+                         'relativeLower', 1e-1, ...
+                         'relativeUpper', 1e1);
+            
+            opt = merge_options(opt , varargin{:});
 
-            N = numel(ecs.getDefaultValue());
+            ne  = 'NegativeElectrode';
+            pe  = 'PositiveElectrode';
+            co  = 'Coating';
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
 
-            lower = opt.lower * ones(N, 1);
-            upper = opt.upper * ones(N, 1);
+            eldes = {ne, pe};
 
+            vals0 = ecs.vals0;
+
+            
+            % lower bound
+            
+            vals = vals0;
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
+                
+                vals.(elde).guestStoichiometry100 = 0;
+                vals.(elde).guestStoichiometry0   = 0;
+                vals.(elde).totalAmount         = vals0.(elde).totalAmount*opt.relativeLower;
+                
+            end
+            
+            lower = ecs.assignToX(vals);
+
+            % upper bound
+            
+            vals = vals0;
+            for ielde = 1 : numel(eldes)
+                
+                elde = eldes{ielde};
+                
+                vals.(elde).guestStoichiometry100 = 1;
+                vals.(elde).guestStoichiometry0   = 1;
+                vals.(elde).totalAmount         = vals0.(elde).totalAmount*opt.relativeUpper;
+                
+            end
+            
+            upper = ecs.assignToX(vals);
+
+            % assign to ecs
+            
             ecs.bounds = struct('lower', lower, ...
                                 'upper', upper);
 
