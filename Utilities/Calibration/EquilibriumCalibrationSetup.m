@@ -40,14 +40,14 @@ classdef EquilibriumCalibrationSetup
         calibrationCase = 1
         % different calibration case depending on the parameters that are chosen. See method printVariableChoice below
         % At the moment, the following is implemented
-        % case 1 (default) : The calibration parameters are theta100 and volume fraction for both electrodes
-        %                    Theta0 for the positive electrode is computed from the end point of the discharge curve
-        %                    Theta0 for the negative electrode is computed to match a given NP ration (default value 1.1)
+        % case 1 (default) : The calibration parameters are guestStoichiometry100 and volume fraction for both electrodes
+        %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve
+        %                    guestStoichiometry0 for the negative electrode is computed to match a given NP ration (default value 1.1)
         %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
-        % case 2           : The calibration parameters are theta100 for the negative electrode, the volume fractions for both electrodes
-        % case 3           : The calibration parameters are theta100, theta0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
+        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the volume fractions for both electrodes
+        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and volume fraction for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
 
-        lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute theta0. if not given the value is
+        lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
 
         %% Helper structures, assigned during setup
@@ -164,42 +164,42 @@ classdef EquilibriumCalibrationSetup
                     elde     = eldes{ielde};
                     compInds = ecs.model.(elde).(co).compInds;
 
-                    vals.(elde).theta100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).volumeFraction = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
+                    vals.(elde).guestStoichiometry100 = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
+                    vals.(elde).totalAmount        = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
                 end
 
               case 2
 
                 %% recall : ordering of parameters
                 %
-                % X(1) : theta100 anode
+                % X(1) : guestStoichiometry100 anode
                 % X(2) : volume fraction anode
                 % X(3) : volume fraction cathode
 
 
                 compInds = ecs.model.(ne).(co).compInds;
-                vals.(ne).theta100       = ecs.model.(ne).(co).(am).(itf).guestStoichiometry100;
-                vals.(ne).volumeFraction = ecs.model.(ne).(co).volumeFraction*ecs.model.(ne).(co).volumeFractions(compInds.(am));
+                vals.(ne).guestStoichiometry100       = ecs.model.(ne).(co).(am).(itf).guestStoichiometry100;
+                vals.(ne).totalAmount = ecs.model.(ne).(co).volumeFraction*ecs.model.(ne).(co).volumeFractions(compInds.(am));
 
                 compInds = ecs.model.(pe).(co).compInds;
-                vals.(pe).volumeFraction = ecs.model.(pe).(co).volumeFraction*ecs.model.(pe).(co).volumeFractions(compInds.(am));
+                vals.(pe).totalAmount = ecs.model.(pe).(co).volumeFraction*ecs.model.(pe).(co).volumeFractions(compInds.(am));
 
               case 3
 
-                % X(1) : theta100 anode
-                % X(2) : theta0 anode
+                % X(1) : guestStoichiometry100 anode
+                % X(2) : guestStoichiometry0 anode
                 % X(3) : volume fraction anode
-                % X(4) : theta100 cathode
-                % X(5) : theta0 cathode
+                % X(4) : guestStoichiometry100 cathode
+                % X(5) : guestStoichiometry0 cathode
                 % X(6) : volume fraction cathode
 
                 for ielde = 1 : numel(eldes)
                     elde     = eldes{ielde};
                     compInds = ecs.model.(elde).(co).compInds;
 
-                    vals.(elde).theta100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).theta0         = ecs.model.(elde).(co).(am).(itf).guestStoichiometry0;
-                    vals.(elde).volumeFraction = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
+                    vals.(elde).guestStoichiometry100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
+                    vals.(elde).guestStoichiometry0         = ecs.model.(elde).(co).(am).(itf).guestStoichiometry0;
+                    vals.(elde).totalAmount = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
                 end
 
               otherwise
@@ -215,12 +215,12 @@ classdef EquilibriumCalibrationSetup
 
             switch ecs.calibrationCase
               case 1
-                fprintf('\nThe calibration parameters are theta100 and volume fraction for both electrodes\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100 and volume fraction for both electrodes\n');
               case 2
-                fprintf('\nThe calibration parameters are theta100 for the negative electrode\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100 for the negative electrode\n');
                 fprintf('The volume fractions for both electrodes\n');
               case 3
-                fprintf('\nThe calibration parameters are theta100, theta0, and volume fraction for both electrodes\n');
+                fprintf('\nThe calibration parameters are guestStoichiometry100, guestStoichiometry0, and volume fraction for both electrodes\n');
                 fprintf('In addition we have a given np_ratio as a constraint\n');
               otherwise
                 error('calibrationCase not recognized');
@@ -246,48 +246,48 @@ classdef EquilibriumCalibrationSetup
 
                 %% recall : ordering of parameters
                 %
-                % X(1) : theta100 anode
+                % X(1) : guestStoichiometry100 anode
                 % X(2) : volume fraction anode
-                % X(3) : theta100 cathode
+                % X(3) : guestStoichiometry100 cathode
                 % X(4) : volume fraction cathode
 
                 X = nan(4, 1);
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    X(2*ielde - 1) = vals.(elde).theta100;
-                    X(2*ielde)     = vals.(elde).volumeFraction;
+                    X(2*ielde - 1) = vals.(elde).guestStoichiometry100;
+                    X(2*ielde)     = vals.(elde).totalAmount;
                 end
 
               case 2
 
                 %% recall : ordering of parameters
                 %
-                % X(1) : theta100 anode
+                % X(1) : guestStoichiometry100 anode
                 % X(2) : volume fraction anode
                 % X(3) : volume fraction cathode
 
 
-                X(1) = vals.(ne).theta100;
-                X(2) = vals.(ne).volumeFraction;
-                X(3) = vals.(pe).volumeFraction;
+                X(1) = vals.(ne).guestStoichiometry100;
+                X(2) = vals.(ne).totalAmount;
+                X(3) = vals.(pe).totalAmount;
 
               case 3
 
-                % X(1) : theta100 anode
-                % X(2) : theta0 anode
+                % X(1) : guestStoichiometry100 anode
+                % X(2) : guestStoichiometry0 anode
                 % X(3) : volume fraction anode
-                % X(4) : theta100 cathode
-                % X(5) : theta0 cathode
+                % X(4) : guestStoichiometry100 cathode
+                % X(5) : guestStoichiometry0 cathode
                 % X(6) : volume fraction cathode
 
                 X = nan(6, 1);
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    X(3*ielde - 2) = vals.(elde).theta100;
-                    X(3*ielde - 1) = vals.(elde).theta0;
-                    X(3*ielde)     = vals.(elde).volumeFraction;
+                    X(3*ielde - 2) = vals.(elde).guestStoichiometry100;
+                    X(3*ielde - 1) = vals.(elde).guestStoichiometry0;
+                    X(3*ielde)     = vals.(elde).totalAmount;
                 end
 
               otherwise
@@ -313,6 +313,7 @@ classdef EquilibriumCalibrationSetup
                 vol  = sum(ecs.model.(elde).(co).G.getVolumes());
                 cmax = ecs.model.(elde).(co).(am).(itf).saturationConcentration;
 
+                error('to be fixed');
                 vals.(elde).alpha = vals.(elde).volumeFraction*vol*cmax;
                 vals.(elde).cmax  = cmax;
 
@@ -334,17 +335,17 @@ classdef EquilibriumCalibrationSetup
 
                 %% recall : ordering of parameters
                 %
-                % X(1) : theta100 anode
+                % X(1) : guestStoichiometry100 anode
                 % X(2) : volume fraction anode
-                % X(3) : theta100 cathode
+                % X(3) : guestStoichiometry100 cathode
                 % X(4) : volume fraction cathode
 
                 for ielde = 1 : numel(eldes)
 
                     elde = eldes{ielde};
 
-                    vals.(elde).theta100       = X(2*ielde - 1);
-                    vals.(elde).volumeFraction = X(2*ielde);
+                    vals.(elde).guestStoichiometry100       = X(2*ielde - 1);
+                    vals.(elde).totalAmount = X(2*ielde);
 
                 end
 
@@ -352,21 +353,21 @@ classdef EquilibriumCalibrationSetup
 
                 %% recall : ordering of parameters
                 %
-                % X(1) : theta100 anode
+                % X(1) : guestStoichiometry100 anode
                 % X(2) : volume fraction anode
                 % X(3) : volume fraction cathode
 
-                vals.(ne).theta100       = X(1);
-                vals.(ne).volumeFraction = X(2);
-                vals.(pe).volumeFraction = X(3);
+                vals.(ne).guestStoichiometry100       = X(1);
+                vals.(ne).totalAmount = X(2);
+                vals.(pe).totalAmount = X(3);
 
               case 3
 
-                % X(1) : theta100 anode
-                % X(2) : theta0 anode
+                % X(1) : guestStoichiometry100 anode
+                % X(2) : guestStoichiometry0 anode
                 % X(3) : volume fraction anode
-                % X(4) : theta100 cathode
-                % X(5) : theta0 cathode
+                % X(4) : guestStoichiometry100 cathode
+                % X(5) : guestStoichiometry0 cathode
                 % X(6) : volume fraction cathode
 
 
@@ -374,9 +375,9 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
 
-                    vals.(elde).theta100       = X(3*ielde - 2);
-                    vals.(elde).theta0         = X(3*ielde - 1);
-                    vals.(elde).volumeFraction = X(3*ielde);
+                    vals.(elde).guestStoichiometry100       = X(3*ielde - 2);
+                    vals.(elde).guestStoichiometry0         = X(3*ielde - 1);
+                    vals.(elde).totalAmount = X(3*ielde);
 
                 end
 
@@ -435,19 +436,19 @@ classdef EquilibriumCalibrationSetup
 
             T = ecs.Temperature;
 
-            vals = ecs.updateThetas(X, 'includeTheta0', false);
+            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', false);
 
-            theta100 = vals.(pe).theta100;
+            guestStoichiometry100 = vals.(pe).guestStoichiometry100;
             alpha    = vals.(pe).alpha;
 
-            theta = ecs.computeTheta(t, pe, 0, theta100, alpha);
+            theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, alpha);
             cmax = vals.(pe).cmax;
             fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
-            theta100 = vals.(ne).theta100;
+            guestStoichiometry100 = vals.(ne).guestStoichiometry100;
             alpha    = vals.(ne).alpha;
 
-            theta = ecs.computeTheta(t, ne, 0, theta100, alpha);
+            theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, alpha);
             cmax = vals.(ne).cmax;
             fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
@@ -501,12 +502,12 @@ classdef EquilibriumCalibrationSetup
 
         function np_ratio = computeNPratio(ecs, X)
 
-            vals = ecs.updateThetas(X, 'includeTheta0', true);
+            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', true);
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
 
-            np_ratio = (vals.(ne).alpha*(vals.(ne).theta0 - vals.(ne).theta100))./(vals.(pe).alpha*(vals.(pe).theta100 - vals.(pe).theta0));
+            np_ratio = (vals.(ne).alpha*(vals.(ne).guestStoichiometry0 - vals.(ne).guestStoichiometry100))./(vals.(pe).alpha*(vals.(pe).guestStoichiometry100 - vals.(pe).guestStoichiometry0));
 
         end
 
@@ -538,7 +539,7 @@ classdef EquilibriumCalibrationSetup
                     elde = eldes{ielde};
 
                     alpha    = vals.(elde).alpha;
-                    theta100 = vals.(elde).theta100;
+                    guestStoichiometry100 = vals.(elde).guestStoichiometry100;
 
                     switch elde
                       case ne
@@ -547,7 +548,7 @@ classdef EquilibriumCalibrationSetup
                         sgn = 1;
                     end
 
-                    theta = theta100 + T*((sgn*I)./(ecs.F*alpha));
+                    theta = guestStoichiometry100 + T*((sgn*I)./(ecs.F*alpha));
 
                     y{end + 1} = theta;
                     y{end + 1} = 1 - theta;
@@ -612,7 +613,7 @@ classdef EquilibriumCalibrationSetup
 
         function vals = updateThetas(ecs, X, varargin)
 
-            opt = struct('includeTheta0', false);
+            opt = struct('includeGuestStoichiometry0', false);
             opt = merge_options(opt, varargin{:});
 
             totalTime = ecs.totalTime;
@@ -629,7 +630,7 @@ classdef EquilibriumCalibrationSetup
 
               case 1
 
-                if opt.includeTheta0
+                if opt.includeGuestStoichiometry0
 
                     [~, fcomp] = ecs.setupfunction();
                     tend = totalTime;
@@ -647,17 +648,17 @@ classdef EquilibriumCalibrationSetup
                     tend = t(fcomp(t, X) > ecs.lowerCutoffVoltage);
                     tend = tend(end);
                     
-                    vals.(pe).theta0 = ecs.computeTheta(tend, pe, 0, vals.(pe).theta100, vals.(pe).alpha);
+                    vals.(pe).guestStoichiometry0 = ecs.computeTheta(tend, pe, 0, vals.(pe).guestStoichiometry100, vals.(pe).alpha);
 
-                    % vals.(ne).theta0 = ecs.computeTheta(totalTime, ne, 0, vals.(ne).theta100, vals.(ne).alpha);
+                    % vals.(ne).guestStoichiometry0 = ecs.computeTheta(totalTime, ne, 0, vals.(ne).guestStoichiometry100, vals.(ne).alpha);
 
                     data = ecs.calibrationParameters;
                     np_ratio = data.np_ratio;
 
-                    vals.(ne).theta0 = vals.(ne).theta100 - np_ratio*(vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).theta0 - vals.(pe).theta100);
-                    if vals.(ne).theta0 < 0
-                        vals.(ne).theta0 = 0;
-                        vals.np_ratio = vals.(ne).theta100/((vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).theta0 - vals.(pe).theta100));
+                    vals.(ne).guestStoichiometry0 = vals.(ne).guestStoichiometry100 - np_ratio*(vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100);
+                    if vals.(ne).guestStoichiometry0 < 0
+                        vals.(ne).guestStoichiometry0 = 0;
+                        vals.np_ratio = vals.(ne).guestStoichiometry100/((vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100));
                     end
 
                 else
@@ -669,11 +670,11 @@ classdef EquilibriumCalibrationSetup
               case 2
 
                 data = ecs.calibrationParameters;
-                vals.(pe).theta100 = data.pe_theta;
+                vals.(pe).guestStoichiometry100 = data.pe_theta;
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    vals.(elde).theta0 = ecs.computeTheta(totalTime, elde, 0, vals.(elde).theta100, vals.(elde).alpha);
+                    vals.(elde).guestStoichiometry0 = ecs.computeTheta(totalTime, elde, 0, vals.(elde).guestStoichiometry100, vals.(elde).alpha);
                 end
 
               case 3
@@ -705,17 +706,17 @@ classdef EquilibriumCalibrationSetup
 
                 cmax  = ecs.model.(elde).(co).(am).(itf).saturationConcentration;
 
-                theta0   = vals.(elde).theta0;
-                theta100 = vals.(elde).theta100;
+                guestStoichiometry0   = vals.(elde).guestStoichiometry0;
+                guestStoichiometry100 = vals.(elde).guestStoichiometry100;
                 alpha    = vals.(elde).alpha;
 
                 switch elde
                   case ne
-                    cM = theta100*cmax;
-                    cm = theta0*cmax;
+                    cM = guestStoichiometry100*cmax;
+                    cm = guestStoichiometry0*cmax;
                   case pe
-                    cM = theta0*cmax;
-                    cm = theta100*cmax;
+                    cM = guestStoichiometry0*cmax;
+                    cm = guestStoichiometry100*cmax;
                 end
 
                 cap = (cM - cm)/cmax*alpha*ecs.F;
@@ -730,7 +731,7 @@ classdef EquilibriumCalibrationSetup
 
         function vals = computeCapacities(ecs, X)
 
-            vals = ecs.updateThetas(X, 'includeTheta0', true);
+            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', true);
             vals = ecs.computeCapacitiesFromVals(vals);
 
         end
@@ -763,8 +764,8 @@ classdef EquilibriumCalibrationSetup
 
                 smax = props.(elde).r;
                 cmax = props.(elde).cmax;
-                c0   = props.(elde).theta100*cmax;
-                cT   = props.(elde).theta0*cmax;
+                c0   = props.(elde).guestStoichiometry100*cmax;
+                cT   = props.(elde).guestStoichiometry0*cmax;
                 cap  = props.(elde).cap;
 
                 s = smax.*linspace(0, 1, N + 1)';
@@ -882,20 +883,20 @@ classdef EquilibriumCalibrationSetup
 
             switch ecs.calibrationCase
               case 1
-                fprintf('%-25s%20s%20s\n', '', 'theta100', 'volume fraction');
-                thetastr = sprintf('%6.5f', vals.(ne).theta100);
-                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
-                thetastr = sprintf('%6.5f', vals.(pe).theta100);
-                fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).volumeFraction);
+                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'volume fraction');
+                thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
+                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).totalAmount);
+                thetastr = sprintf('%6.5f', vals.(pe).guestStoichiometry100);
+                fprintf('%-25s%20s%20.5f \n', pe, thetastr, vals.(pe).totalAmount);
               case 2
-                fprintf('%-25s%20s%20s\n', '', 'theta100', 'volume fraction');
-                thetastr = sprintf('%6.5f', vals.(ne).theta100);
-                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).volumeFraction);
-                fprintf('%-25s%20s%20.5f \n', pe, '', vals.(pe).volumeFraction);
+                fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'volume fraction');
+                thetastr = sprintf('%6.5f', vals.(ne).guestStoichiometry100);
+                fprintf('%-25s%20s%20.5f \n', ne, thetastr, vals.(ne).totalAmount);
+                fprintf('%-25s%20s%20.5f \n', pe, '', vals.(pe).totalAmount);
               case 3
-                fprintf('%-25s%20s%20s%20s\n', '', 'theta100', 'theta0', 'volume fraction');
-                fprintf('%-25s%20.5f%20.5f%20.5f \n', ne, vals.(ne).theta100, vals.(ne).theta0, vals.(ne).volumeFraction);
-                fprintf('%-25s%20.5f%20.5f%20.5f \n', pe, vals.(pe).theta100, vals.(pe).theta0, vals.(pe).volumeFraction);
+                fprintf('%-25s%20s%20s%20s\n', '', 'guestStoichiometry100', 'guestStoichiometry0', 'volume fraction');
+                fprintf('%-25s%20.5f%20.5f%20.5f \n', ne, vals.(ne).guestStoichiometry100, vals.(ne).guestStoichiometry0, vals.(ne).totalAmount);
+                fprintf('%-25s%20.5f%20.5f%20.5f \n', pe, vals.(pe).guestStoichiometry100, vals.(pe).guestStoichiometry0, vals.(pe).totalAmount);
               otherwise
                 error('calibration case not recognized');
             end
@@ -916,9 +917,9 @@ classdef EquilibriumCalibrationSetup
             fprintf('%20s: %g [g]\n', 'packing mass (given)', ecs.packingMass/gram);
 
 
-            fprintf('%-25s%20s%20s\n', '', 'theta100', 'theta0');
-            fprintf('%-25s%20.5f%20.5f \n', ne, props.(ne).theta100, props.(ne).theta0);
-            fprintf('%-25s%20.5f%20.5f \n', pe, props.(pe).theta100, props.(pe).theta0);
+            fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'guestStoichiometry0');
+            fprintf('%-25s%20.5f%20.5f \n', ne, props.(ne).guestStoichiometry100, props.(ne).guestStoichiometry0);
+            fprintf('%-25s%20.5f%20.5f \n', pe, props.(pe).guestStoichiometry100, props.(pe).guestStoichiometry0);
 
             % fprintf('%20s: %g [-]\n', 'N/P ratio', props.NPratio);
         end
@@ -940,9 +941,9 @@ classdef EquilibriumCalibrationSetup
 
                 elde = eldes{ielde};
 
-                json.(elde).(co).(am).(itf).guestStoichiometry0   = props.(elde).theta0;
-                json.(elde).(co).(am).(itf).guestStoichiometry100 = props.(elde).theta100;
-                json.(elde).(co).volumeFraction                   = props.(elde).volumeFraction;
+                json.(elde).(co).(am).(itf).guestStoichiometry0   = props.(elde).guestStoichiometry0;
+                json.(elde).(co).(am).(itf).guestStoichiometry100 = props.(elde).guestStoichiometry100;
+                json.(elde).(co).totalAmount                      = props.(elde).totalAmount;
 
             end
 
