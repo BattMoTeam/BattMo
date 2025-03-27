@@ -551,6 +551,8 @@ classdef EquilibriumCalibrationSetup
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
 
+            vals = ecs.updateGuestStoichiometries(X, 'includeGuestStoichiometry0', true);
+            
             np_ratio = (vals.(ne).totalAmount*(vals.(ne).guestStoichiometry0 - vals.(ne).guestStoichiometry100))./(vals.(pe).totalAmount*(vals.(pe).guestStoichiometry100 - vals.(pe).guestStoichiometry0));
 
         end
