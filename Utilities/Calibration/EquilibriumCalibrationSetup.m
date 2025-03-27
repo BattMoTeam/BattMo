@@ -161,11 +161,16 @@ classdef EquilibriumCalibrationSetup
               case 1
 
                 for ielde = 1 : numel(eldes)
+                    
                     elde     = eldes{ielde};
-                    compInds = ecs.model.(elde).(co).compInds;
+                    coating  = ecs.model.(elde).(co);
+                    amInd = coating.compInds.(am);
 
-                    vals.(elde).guestStoichiometry100 = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).totalAmount        = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
+                    vol = sum(coating.G.getVolumes());
+                    
+                    vals.(elde).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
+                    vals.(elde).totalAmount           = vol*coating.volumeFraction*coating.volumeFractions(amInd);
+                    
                 end
 
               case 2
@@ -173,25 +178,31 @@ classdef EquilibriumCalibrationSetup
                 %% recall : ordering of parameters
                 %
                 % X(1) : guestStoichiometry100 anode
-                % X(2) : volume fraction anode
-                % X(3) : volume fraction cathode
+                % X(2) : total amount Lithium anode
+                % X(3) : total amount Lithium cathode
 
 
-                compInds = ecs.model.(ne).(co).compInds;
-                vals.(ne).guestStoichiometry100       = ecs.model.(ne).(co).(am).(itf).guestStoichiometry100;
-                vals.(ne).totalAmount = ecs.model.(ne).(co).volumeFraction*ecs.model.(ne).(co).volumeFractions(compInds.(am));
+                coating = ecs.model.(ne).(co);
+                amInd = coating.compInds.(am);
 
-                compInds = ecs.model.(pe).(co).compInds;
-                vals.(pe).totalAmount = ecs.model.(pe).(co).volumeFraction*ecs.model.(pe).(co).volumeFractions(compInds.(am));
+                vol = sum(coating.G.getVolumes());
+                vals.(ne).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
+                vals.(ne).totalAmount           = vol.*coating.volumeFraction*coating.volumeFractions(amInd);
+
+                coating = ecs.model.(pe).(co);
+                amInd = coating.compInds.(am);
+                
+                vol = sum(coating.G.getVolumes());
+                vals.(pe).totalAmount = vol.*coating.volumeFraction*coating.volumeFractions(amInd);
 
               case 3
 
                 % X(1) : guestStoichiometry100 anode
                 % X(2) : guestStoichiometry0 anode
-                % X(3) : volume fraction anode
+                % X(3) : total amount Lithium anode
                 % X(4) : guestStoichiometry100 cathode
                 % X(5) : guestStoichiometry0 cathode
-                % X(6) : volume fraction cathode
+                % X(6) : total amount Lithium cathode
 
                 for ielde = 1 : numel(eldes)
                     elde     = eldes{ielde};
