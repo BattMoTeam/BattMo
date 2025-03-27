@@ -50,6 +50,10 @@ classdef EquilibriumCalibrationSetup
         lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
 
+        totalAmountVariableChoice = 'volumeFraction' % variable that is chosen to adjust the total amount of lithium in the electrode. The choices are
+                                                     % - 'volumeFraction'          : the volume fraction of the active material
+                                                     % - 'saturationConcentration' : the saturation concentration of the electrode
+        
         %% Helper structures, assigned during setup
 
         bounds % Vector of variable bounds on the variables, with field
@@ -162,13 +166,14 @@ classdef EquilibriumCalibrationSetup
 
                 for ielde = 1 : numel(eldes)
                     
-                    elde     = eldes{ielde};
-                    coating  = ecs.model.(elde).(co);
-                    amInd = coating.compInds.(am);
+                    elde    = eldes{ielde};
+                    coating = ecs.model.(elde).(co);
+                    amInd   = coating.compInds.(am);
 
                     vol = sum(coating.G.getVolumes());
                     
                     vals.(elde).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
+                    vals.(elde).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
                     vals.(elde).totalAmount           = vol*coating.volumeFraction*coating.volumeFractions(amInd);
                     
                 end
@@ -187,6 +192,7 @@ classdef EquilibriumCalibrationSetup
 
                 vol = sum(coating.G.getVolumes());
                 vals.(ne).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
+                vals.(ne).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0; % just for reference, not used in the calibration
                 vals.(ne).totalAmount           = vol.*coating.volumeFraction*coating.volumeFractions(amInd);
 
                 coating = ecs.model.(pe).(co);
@@ -205,16 +211,22 @@ classdef EquilibriumCalibrationSetup
                 % X(6) : total amount Lithium cathode
 
                 for ielde = 1 : numel(eldes)
-                    elde     = eldes{ielde};
-                    compInds = ecs.model.(elde).(co).compInds;
+                    
+                    elde    = eldes{ielde};
+                    coating = ecs.model.(elde).(co);
+                    amInd   = coating.compInds.(am);
 
-                    vals.(elde).guestStoichiometry100       = ecs.model.(elde).(co).(am).(itf).guestStoichiometry100;
-                    vals.(elde).guestStoichiometry0         = ecs.model.(elde).(co).(am).(itf).guestStoichiometry0;
-                    vals.(elde).totalAmount = ecs.model.(elde).(co).volumeFraction*ecs.model.(elde).(co).volumeFractions(compInds.(am));
+                    vol = sum(coating.G.getVolumes());
+                    vals.(elde).guestStoichiometry100 = coating.(am).(itf).guestStoichiometry100;
+                    vals.(elde).guestStoichiometry0   = coating.(am).(itf).guestStoichiometry0;
+                    vals.(elde).totalAmount           = vol*coating.volumeFraction*coating.volumeFractions(amInd);
+                    
                 end
 
               otherwise
+                
                 error('calibrationCase not recognized')
+                
             end
 
             X = ecs.assignToX(vals);
@@ -306,33 +318,6 @@ classdef EquilibriumCalibrationSetup
             end
         end
 
-
-        function vals = setupAlphas(ecs, vals)
-
-            ne  = 'NegativeElectrode';
-            pe  = 'PositiveElectrode';
-            co  = 'Coating';
-            am  = 'ActiveMaterial';
-            itf = 'Interface';
-
-            eldes = {ne, pe};
-
-            for ielde = 1 : numel(eldes)
-
-                elde = eldes{ielde};
-
-                vol  = sum(ecs.model.(elde).(co).G.getVolumes());
-                cmax = ecs.model.(elde).(co).(am).(itf).saturationConcentration;
-
-                error('to be fixed');
-                vals.(elde).alpha = vals.(elde).volumeFraction*vol*cmax;
-                vals.(elde).cmax  = cmax;
-
-            end
-
-        end
-
-
         function vals = assignFromX(ecs, X)
 
             ne  = 'NegativeElectrode';
@@ -355,8 +340,8 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
 
-                    vals.(elde).guestStoichiometry100       = X(2*ielde - 1);
-                    vals.(elde).totalAmount = X(2*ielde);
+                    vals.(elde).guestStoichiometry100 = X(2*ielde - 1);
+                    vals.(elde).totalAmount           = X(2*ielde);
 
                 end
 
@@ -368,9 +353,9 @@ classdef EquilibriumCalibrationSetup
                 % X(2) : total amount Lithium anode
                 % X(3) : total amount Lithium cathode
 
-                vals.(ne).guestStoichiometry100       = X(1);
-                vals.(ne).totalAmount = X(2);
-                vals.(pe).totalAmount = X(3);
+                vals.(ne).guestStoichiometry100 = X(1);
+                vals.(ne).totalAmount           = X(2);
+                vals.(pe).totalAmount           = X(3);
 
               case 3
 
@@ -386,9 +371,9 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
 
-                    vals.(elde).guestStoichiometry100       = X(3*ielde - 2);
-                    vals.(elde).guestStoichiometry0         = X(3*ielde - 1);
-                    vals.(elde).totalAmount = X(3*ielde);
+                    vals.(elde).guestStoichiometry100 = X(3*ielde - 2);
+                    vals.(elde).guestStoichiometry0   = X(3*ielde - 1);
+                    vals.(elde).totalAmount           = X(3*ielde);
 
                 end
 
@@ -403,14 +388,16 @@ classdef EquilibriumCalibrationSetup
 
 
         function [fexp, fcomp] = setupfunction(ecs)
-        % Setup the function to compute the discharge curves, either for the experimental data or for the given set of parameter, using the model.
+        % Setup the function to compute the discharge curves, either for the experimental data or for the given set of
+        % parameter, using the model.
+            
             fcomp = @(t, X) ecs.computeF(t, X);
             fexp  = @(t) ecs.experimentalF(t);
 
         end
 
 
-        function theta = computeTheta(ecs, t, elde, tf, theta_tf, alpha)
+        function theta = computeTheta(ecs, t, elde, tf, theta_tf, totalAmount)
         % theta_tf is lithiation at time tf*totalTime
         % returns lithiation at time t
             ne      = 'NegativeElectrode';
@@ -426,7 +413,7 @@ classdef EquilibriumCalibrationSetup
                 sgn = 1;
             end
 
-            theta = theta_tf + (t - tf*T)*((sgn*I) ./ (ecs.F*alpha));
+            theta = theta_tf + (t - tf*T)*((sgn*I) ./ (ecs.F*totalAmount));
 
         end
 
@@ -447,20 +434,18 @@ classdef EquilibriumCalibrationSetup
 
             T = ecs.Temperature;
 
-            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', false);
-
             guestStoichiometry100 = vals.(pe).guestStoichiometry100;
-            alpha    = vals.(pe).alpha;
+            totalAmount           = vals.(pe).totalAmount;
 
-            theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, alpha);
-            cmax = vals.(pe).cmax;
+            theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, totalAmount);
+            cmax  = vals.(pe).cmax;
             fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             guestStoichiometry100 = vals.(ne).guestStoichiometry100;
-            alpha    = vals.(ne).alpha;
+            totalAmount           = vals.(ne).totalAmount;
 
-            theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, alpha);
-            cmax = vals.(ne).cmax;
+            theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, totalAmount);
+            cmax  = vals.(ne).cmax;
             fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
 
             f = fpe - fne;
@@ -513,12 +498,10 @@ classdef EquilibriumCalibrationSetup
 
         function np_ratio = computeNPratio(ecs, X)
 
-            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', true);
-
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
 
-            np_ratio = (vals.(ne).alpha*(vals.(ne).guestStoichiometry0 - vals.(ne).guestStoichiometry100))./(vals.(pe).alpha*(vals.(pe).guestStoichiometry100 - vals.(pe).guestStoichiometry0));
+            np_ratio = (vals.(ne).totalAmount*(vals.(ne).guestStoichiometry0 - vals.(ne).guestStoichiometry100))./(vals.(pe).totalAmount*(vals.(pe).guestStoichiometry100 - vals.(pe).guestStoichiometry0));
 
         end
 
@@ -536,7 +519,6 @@ classdef EquilibriumCalibrationSetup
                 T = ecs.totalTime;
 
                 vals = ecs.assignFromX(X);
-                vals = ecs.setupAlphas(vals);
 
                 ne  = 'NegativeElectrode';
                 pe  = 'PositiveElectrode';
@@ -549,7 +531,7 @@ classdef EquilibriumCalibrationSetup
 
                     elde = eldes{ielde};
 
-                    alpha    = vals.(elde).alpha;
+                    totalAmount           = vals.(elde).totalAmount;
                     guestStoichiometry100 = vals.(elde).guestStoichiometry100;
 
                     switch elde
@@ -559,7 +541,7 @@ classdef EquilibriumCalibrationSetup
                         sgn = 1;
                     end
 
-                    theta = guestStoichiometry100 + T*((sgn*I)./(ecs.F*alpha));
+                    theta = guestStoichiometry100 + T*((sgn*I)./(ecs.F*totalAmount));
 
                     y{end + 1} = theta;
                     y{end + 1} = 1 - theta;
@@ -622,7 +604,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function vals = updateThetas(ecs, X, varargin)
+        function vals = updateGuestStoichiometries(ecs, X, varargin)
 
             opt = struct('includeGuestStoichiometry0', false);
             opt = merge_options(opt, varargin{:});
@@ -630,7 +612,6 @@ classdef EquilibriumCalibrationSetup
             totalTime = ecs.totalTime;
 
             vals = ecs.assignFromX(X);
-            vals = ecs.setupAlphas(vals);
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -659,17 +640,20 @@ classdef EquilibriumCalibrationSetup
                     tend = t(fcomp(t, X) > ecs.lowerCutoffVoltage);
                     tend = tend(end);
                     
-                    vals.(pe).guestStoichiometry0 = ecs.computeTheta(tend, pe, 0, vals.(pe).guestStoichiometry100, vals.(pe).alpha);
-
-                    % vals.(ne).guestStoichiometry0 = ecs.computeTheta(totalTime, ne, 0, vals.(ne).guestStoichiometry100, vals.(ne).alpha);
+                    vals.(pe).guestStoichiometry0 = ecs.computeTheta(tend, pe, 0, vals.(pe).guestStoichiometry100, vals.(pe).totalAmount);
+                    if vals.(pe).guestStoichiometry0 > 1
+                        warning('Set guestStoichiometry0 of positive electrode to 1');
+                        vals.(pe).guestStoichiometry0 = 1;
+                    end
 
                     data = ecs.calibrationParameters;
                     np_ratio = data.np_ratio;
 
-                    vals.(ne).guestStoichiometry0 = vals.(ne).guestStoichiometry100 - np_ratio*(vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100);
+                    vals.(ne).guestStoichiometry0 = vals.(ne).guestStoichiometry100 - np_ratio*(vals.(pe).totalAmount/vals.(ne).totalAmount)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100);
                     if vals.(ne).guestStoichiometry0 < 0
+                        warning('Set guestStoichiometry0 of negative electrode to 0');
                         vals.(ne).guestStoichiometry0 = 0;
-                        vals.np_ratio = vals.(ne).guestStoichiometry100/((vals.(pe).alpha/vals.(ne).alpha)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100));
+                        vals.np_ratio = vals.(ne).guestStoichiometry100/((vals.(pe).totalAmount/vals.(ne).totalAmount)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100));
                     end
 
                 else
@@ -685,7 +669,7 @@ classdef EquilibriumCalibrationSetup
 
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
-                    vals.(elde).guestStoichiometry0 = ecs.computeTheta(totalTime, elde, 0, vals.(elde).guestStoichiometry100, vals.(elde).alpha);
+                    vals.(elde).guestStoichiometry0 = ecs.computeTheta(totalTime, elde, 0, vals.(elde).guestStoichiometry100, vals.(elde).totalAmount);
                 end
 
               case 3
@@ -719,7 +703,7 @@ classdef EquilibriumCalibrationSetup
 
                 guestStoichiometry0   = vals.(elde).guestStoichiometry0;
                 guestStoichiometry100 = vals.(elde).guestStoichiometry100;
-                alpha    = vals.(elde).alpha;
+                totalAmount    = vals.(elde).totalAmount;
 
                 switch elde
                   case ne
@@ -730,7 +714,7 @@ classdef EquilibriumCalibrationSetup
                     cm = guestStoichiometry100*cmax;
                 end
 
-                cap = (cM - cm)/cmax*alpha*ecs.F;
+                cap = (cM - cm)/cmax*totalAmount*ecs.F;
 
                 vals.(elde).cmax = cmax;
                 vals.(elde).cap  = cap;
@@ -739,10 +723,9 @@ classdef EquilibriumCalibrationSetup
 
         end
 
-
         function vals = computeCapacities(ecs, X)
 
-            vals = ecs.updateThetas(X, 'includeGuestStoichiometry0', true);
+            vals = ecs.updateGuestStoichiometries(X, 'includeGuestStoichiometry0', true);
             vals = ecs.computeCapacitiesFromVals(vals);
 
         end
@@ -914,7 +897,6 @@ classdef EquilibriumCalibrationSetup
 
         end
 
-
         function printProperties(ecs, X)
 
             props = ecs.computeProperties(X);
@@ -922,39 +904,71 @@ classdef EquilibriumCalibrationSetup
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
 
-            fprintf('%20s: %g [V]\n','initial voltage', props.U);
-            fprintf('%20s: %g [Ah]\n', 'Capacity', props.cap/(1*hour));
-            fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy', props.specEnergy/(1*hour));
-            fprintf('%20s: %g [g]\n', 'packing mass (given)', ecs.packingMass/gram);
+            fprintf('%20s: %g [V]\n'    , 'initial voltage'     , props.U);
+            fprintf('%20s: %g [Ah]\n'   , 'Capacity'            , props.cap/(1*hour));
+            fprintf('%20s: %g [Wh/kg]\n', 'Specific Energy'     , props.specEnergy/(1*hour));
+            fprintf('%20s: %g [g]\n'    , 'packing mass (given)', ecs.packingMass/gram);
 
 
-            fprintf('%-25s%20s%20s\n', '', 'guestStoichiometry100', 'guestStoichiometry0');
+            fprintf('%-25s%20s%20s\n'     , '', 'guestStoichiometry100'         , 'guestStoichiometry0');
             fprintf('%-25s%20.5f%20.5f \n', ne, props.(ne).guestStoichiometry100, props.(ne).guestStoichiometry0);
             fprintf('%-25s%20.5f%20.5f \n', pe, props.(pe).guestStoichiometry100, props.(pe).guestStoichiometry0);
 
             % fprintf('%20s: %g [-]\n', 'N/P ratio', props.NPratio);
         end
 
+        function jsonstruct = exportParameters(ecs, X, varargin)
 
-        function json = export(ecs, X)
+            opt = struct('guestStoichiometries0', []);
+            opt = merge_options(opt, varargin{:});
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
-            itf = 'Interface';
-            am  = 'ActiveMaterial';
             co  = 'Coating';
-
-            props = ecs.computeProperties(X);
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
 
             eldes = {ne, pe};
+            
+            vals = ecs.updateGuestStoichiometries(X, 'includeGuestStoichiometry0', true);
 
-            for ielde = 1:numel(eldes)
+            X0    = ecs.getDefaultValue();
+            vals0 = ecs.assignFromX(X0);
+
+            for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
+                guestStoichiometry100 = vals.(elde).guestStoichiometry100;
+                
+                if isAssigned(opt.guestStoichiometry0, {elde})
+                    guestStoichiometry0 = opt.guestStoichiometry0.(elde);
+                else
+                    guestStoichiometry0 = vals.(elde).guestStoichiometry0;
+                end
+                
+                totalAmount  = vals.(elde).totalAmount;
+                totalAmount0 = vals0.(elde).totalAmount;
+                
+                jsonstruct = struct();
 
-                json.(elde).(co).(am).(itf).guestStoichiometry0   = props.(elde).guestStoichiometry0;
-                json.(elde).(co).(am).(itf).guestStoichiometry100 = props.(elde).guestStoichiometry100;
-                json.(elde).(co).totalAmount                      = props.(elde).totalAmount;
+                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry100);
+                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry0);
+                
+                switch ecs.totalAmountVariableChoice
+                    
+                  case 'volumeFraction'
+
+                    jsonstruct.(elde).(co).volumeFraction = (totalAmount/totalAmount0) * ecs.model.(elde).(co).volumeFraction;
+
+                  case 'saturationConcentration'
+
+                    jsonstruct.(elde).(co).(am).(itf).saturationConcentration = (totalAmount/totalAmount0)*ecs.model.(elde).(co).(am).(itf).saturationConcentration;
+
+                  otherwise
+
+                    error('Unrecognized totalAmountVariableChoice %s', ecs.totalAmountVariableChoice);
+
+                end
 
             end
 
