@@ -3,7 +3,9 @@ classdef MLXnotebookExporter
     properties
 
         % list of registered notebooks
-        notebooknames = {'tutorial_1_a_simple_p2d_model_live.mlx'              , ...
+        notebooknames = {'part_1_battery_modeling_guide.mlx'                   , ...
+                         'part_2_battery_modeling_guide.mlx'                   , ...
+                         'tutorial_1_a_simple_p2d_model_live.mlx'              , ...
                          'tutorial_2_changing_control_protocol_live.mlx'       , ...
                          'tutorial_3_modify_structural_parameters_live.mlx'    , ...
                          'tutorial_4_modify_material_parameters_live.mlx'      , ...
@@ -19,24 +21,39 @@ classdef MLXnotebookExporter
     end
 
     methods
-        
-        function exportMLXtoMfile(mne, notebookname, varargin)
+
+        function exportMLX(mne, notebookname, varargin)
             
             opt = struct('format', 'm', ...
-                          'run', false);
-            opt = merge_options(opt, varargin{:});
+                         'run', false);
+            [opt, extra] = merge_options(opt, varargin{:});
+
+            ext = ['.', mne.getExtension(opt.format)];
             
             inputfile = fullfile(mne.inputdir, notebookname);
             
-            notebookname = strrep(notebookname, '.mlx', '.m');
+            notebookname = strrep(notebookname, '.mlx', ext);
             outputfile = fullfile(mne.outputdir, notebookname);
             
             optvals = cellfun(@(x) opt.(x), fieldnames(opt), 'uniformoutput', false);
             options = reshape(vertcat(fieldnames(opt)', optvals'), [], 1);
             
-            export(inputfile, outputfile, options{:});
+            export(inputfile, outputfile, options{:}, extra{:});
+
+        end
+        
+        function exportMLXtoMfile(mne, notebookname, varargin)
+            
+            mne.exportMLX(notebookname, 'format', 'm', varargin{:});
             
         end
+
+        function exportMLXtoHtml(mne, notebookname, varargin)
+
+            mne.exportMLX(notebookname, 'format', 'html', varargin{:});
+
+        end
+
 
         function openMfileSaveToMlx(mne, notebookname)
 
@@ -62,25 +79,6 @@ classdef MLXnotebookExporter
 
         end
 
-        function exportMLXtoHtml(mne, notebookname, varargin)
-
-            opt = struct('format', 'html', ...
-                          'run', false);
-            opt = merge_options(opt, varargin{:});
-            
-            inputfile = fullfile(mne.inputdir, notebookname);
-            
-            notebookname = strrep(notebookname, '.mlx', '.html');
-            outputfile = fullfile(mne.outputdir, notebookname);
-            
-            optvals = cellfun(@(x) opt.(x), fieldnames(opt), 'uniformoutput', false);
-            options = reshape(vertcat(fieldnames(opt)', optvals'), [], 1);
-
-            export(inputfile, outputfile, options{:});
-            
-        end
-
-
         function exportAll(mne)
             
             for inote = 1 : numel(mne.notebooknames)
@@ -98,7 +96,21 @@ classdef MLXnotebookExporter
 
 
     end
-    
+
+    methods (Static)
+
+        function ext = getExtension(format)
+            switch format
+              case {'m', 'html', 'ipynb'}
+                ext = format;
+              otherwise
+                error('Unknown format %s', format)
+
+            end
+            
+        end
+
+    end
 
 end
 
