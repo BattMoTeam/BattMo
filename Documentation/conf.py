@@ -29,9 +29,18 @@ autoclass_content = 'both'
 autodoc_member_order = 'bysource'
 
 nbsphinx_prolog = r"""
-{% set docname = env.doc2path(env.docname, base=None)|string %}
+{% set document_name = env.doc2path(env.docname, base=None)|string %}
+{% set document_name_no_ext = document_name.rsplit('.', 1)[0].rsplit('/')[-1] %}
 
-.. _{{ docname }}:
+.. _{{ document_name_no_ext }}:
+
+.. note::
+
+   This notebook is already available in your BattMo installation. In Matlab, run
+
+   .. code-block:: matlab
+
+      open {{ document_name_no_ext }}
 
 """
 
