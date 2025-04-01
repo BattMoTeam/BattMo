@@ -1,7 +1,7 @@
-% mne = MLXnotebookExporter();
-% mne.outputdir = '/home/xavier/Matlab/Projects/battmo/Documentation/utils/';
-% mne.exportMLX('part_1_battery_modeling_guide.mlx', 'run', false, 'format', 'ipynb');
-
+mne = MLXnotebookExporter();
+mne.outputdir = '/home/xavier/Matlab/Projects/battmo/Documentation/pynbnotebooks';
+mne.exportMLX('part_1_battery_modeling_guide.mlx', 'run', false, 'format', 'ipynb');
+return
 
 mne.outputdir = '/home/xavier/Matlab/Projects/battmo/Documentation/pynbnotebooks';
 
