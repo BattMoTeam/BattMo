@@ -8,6 +8,10 @@ jobs:
   pages:
     runs-on: ubuntu-latest
     steps:
+    - name: Install Pandoc
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pandoc      
     - id: deployment
       uses: sphinx-notes/pages@v3
       with:
