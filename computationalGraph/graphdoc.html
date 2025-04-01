@@ -1,30 +1,28 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Computation Graph Model Design ang Assembly &mdash; BattMo  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sphinx_collapse.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/battmologo.ico"/>
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script src="../_static/design-tabs.js"></script>
-        <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"packages": {"[+]": ["mhchem"]}}}</script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/design-tabs.js?v=36754332"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -71,6 +69,121 @@
 <li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-material-parameters">Change Material Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../basicusage.html#notebooks">Notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../basicusage.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html">Tutorial 1 - Your First BattMo Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Define-Parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Run-Simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Show-the-Dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-Output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-Grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-States">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Plot-a-Result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_2_changing_control_protocol_live.html">Tutorial 2 - Change the Control Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Explore-the-Control-Protocol">Explore the Control Protocol</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_3_modify_structural_parameters_live.html">Tutorial 3 - Modify Structural Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Explore-the-Structural-Parameters">Explore the Structural Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html">Tutorial 4 - Modify Material Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Explore-the-Material-Parameters">Explore the Material Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Make-a-Simple-Change">Make a Simple Change</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Swap-Active-Materials">Swap Active Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html">Tutorial 5 - Simulate CC-CV Cycling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Explore-the-Control-Definition">Explore the Control Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html">Tutorial 6 - Simulate Thermal Performance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Setup-material-properties">Setup material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Setup-the-geometry">Setup the geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Visualisation-of-the-results">Visualisation of the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Temperature-distribution-at-final-time">Temperature distribution at final time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#The-external-heat-transfer-coefficient">The external heat transfer coefficient</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html">Tutorial 8 - Simulate a Multilayer Pouch Cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html">Tutorial 9 - Simulate a cylindrical cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html">Part1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#1.3-Battery-Properties">1.3 Battery Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#1.4-Operational-Protocols"><strong>1.4 Operational Protocols</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#2.-Modelling-with-BattMo"><strong>2. Modelling with BattMo</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#2.1-P2D/P3D/P4D-Models"><strong>2.1 P2D/P3D/P4D Models</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#2.2-Influence-of-structural-and-material-parameters-on-the-capacity"><strong>2.2 Influence of structural and material parameters on the capacity</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#3.-Summary">3. Summary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_1_battery_modeling_guide.html#4.-References"><strong>4. References</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html">Part2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-2.-Mass-fraction-of-active-material-and-binder-in-electrode"><strong>Example 2. Mass</strong> fraction of active material and binder in electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-3.-Temperature">Example 3. Temperature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-4.-Saturation-concentration-of-the-material">Example 4. Saturation concentration of the material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-5.-Charge-transfer-coefficient,-anodic-and-cathodic-at-the-surface-of-the-active-particles:-Butler-Volmer-equation"><strong>Example 5.</strong> Charge transfer coefficient, anodic and cathodic at the surface of the active particles: Butler-Volmer equation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-6.-Reaction-rate-constant-at-the-surface-of-the-active-particles:-Butler-Volmer-equation-(exchange-current-density)"><strong>Example 6.</strong> Reaction rate constant at the surface of the active particles: Butler-Volmer equation (exchange current density)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-7.-Reference-diffusion-coefficient-(Solid-diffusion)">Example 7. Reference diffusion coefficient (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-8.-Active-particle-radius-(Solid-diffusion)"><strong>Example 8.</strong> Active particle radius (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-9.-Electronic-conductivity-of-the-active-material-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 9.</strong> Electronic conductivity of the active material in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-10.-Bruggeman-coefficient-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 10.</strong> Bruggeman coefficient in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-11.-Bruggeman-coefficient-in-the-electrolyte-(effective-ionic-conductivity)">Example 11. Bruggeman coefficient in the electrolyte (effective ionic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-12.-Initial-electrolyte-concentration-(electrolyte-diffusion)"><strong>Example 12. Initial e</strong>lectrolyte concentration (electrolyte diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pynbnotebooks/part_2_battery_modeling_guide.html#Example-13.-Transference-number-(electrolyte-diffusion)"><strong>Example 13.</strong> Transference number (electrolyte diffusion)</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate.html">Intermediate usage</a><ul>
@@ -282,7 +395,7 @@
            <div itemprop="articleBody">
              
   <section id="computation-graph-model-design-ang-assembly">
-<h1>Computation Graph Model Design ang Assembly<a class="headerlink" href="#computation-graph-model-design-ang-assembly" title="Permalink to this heading"></a></h1>
+<h1>Computation Graph Model Design ang Assembly<a class="headerlink" href="#computation-graph-model-design-ang-assembly" title="Link to this heading"></a></h1>
 <p>We essentially define a model as a computational graph. We have identified variables. Variables are dependent one from
 the other. The dependence can be explicit or implicit. In the explicit case, a variable can be directly computed from
 the other using a function evaluation. In the implicit case, such function does not exist in a simple form. The
@@ -303,7 +416,7 @@ functional dependency between the variables.</p>
 </li>
 </ol>
 <section id="a-simple-introduction-example">
-<h2>A simple introduction example<a class="headerlink" href="#a-simple-introduction-example" title="Permalink to this heading"></a></h2>
+<h2>A simple introduction example<a class="headerlink" href="#a-simple-introduction-example" title="Link to this heading"></a></h2>
 <p>Let us consider the example of a reaction model. The reaction rate <span class="math notranslate nohighlight">\(R\)</span> is given
 by</p>
 <div class="math notranslate nohighlight">
@@ -317,7 +430,7 @@ obtain from the equations above is</p>
 <figure class="align-center" id="reacmodelgraph">
 <a class="reference external image-reference" href="_images/reacmodelgraph.png"><img alt="../_images/reacmodelgraph.png" src="../_images/reacmodelgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Reaction model graph</span><a class="headerlink" href="#reacmodelgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Reaction model graph</span><a class="headerlink" href="#reacmodelgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>This graph has been obtained in BattMo after we implemented the model. We will explain later how this can be
@@ -346,10 +459,6 @@ the models. In our previous examples, the variables we have introduced have all 
 expert in the domains.</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 27%" />
-<col style="width: 73%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>R</p></td>
 <td><p>Reaction Rate</p></td>
@@ -378,7 +487,7 @@ expertise terminology (here electrochemistry).</p>
 <p>Let us now see how we can compose computational graph</p>
 </section>
 <section id="graph-composition">
-<h2>Graph composition<a class="headerlink" href="#graph-composition" title="Permalink to this heading"></a></h2>
+<h2>Graph composition<a class="headerlink" href="#graph-composition" title="Link to this heading"></a></h2>
 <p>This model representation as a graph brings also <strong>flexibility</strong> in model building and in particular <strong>code
 reusability</strong>. A user who wants to modify an existing model will typically be interested in keeping most of the
 existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
@@ -397,7 +506,7 @@ parameter belonging to the model, which we mentioned earlier.</p>
 <figure class="align-center" id="reacmodelgraph2">
 <a class="reference external image-reference" href="_images/reacmodelgraph2.png"><img alt="../_images/reacmodelgraph2.png" src="../_images/reacmodelgraph2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Reaction model graph with added temperature</span><a class="headerlink" href="#reacmodelgraph2" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Reaction model graph with added temperature</span><a class="headerlink" href="#reacmodelgraph2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Let us introduce an other model, at least its computational graph. We consider a simple heat equation</p>
@@ -408,10 +517,6 @@ column, we write the definition they will take after discretization. The operato
 <code class="code docutils literal notranslate"><span class="pre">grad</span></code> denotes the discrete differential operators used in the assembly.</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 85%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>accumTerm</p></td>
 <td><p><span class="math notranslate nohighlight">\(\alpha\frac{T - T^0}{\Delta t}\)</span></p></td>
@@ -432,7 +537,7 @@ column, we write the definition they will take after discretization. The operato
 <figure class="align-center" id="tempgraph">
 <a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Having now two models, we can illustrate how we can combine the corresponding computational graph to obtain a
@@ -443,7 +548,7 @@ included, as we presented earlier, as a additional temperature dependence of the
 <figure class="align-center" id="tempreacgraph">
 <a class="reference external image-reference" href="_images/tempreacgraph.png"><img alt="../_images/tempreacgraph.png" src="../_images/tempreacgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Coupled Temperature Reaction model graph</span><a class="headerlink" href="#tempreacgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Coupled Temperature Reaction model graph</span><a class="headerlink" href="#tempreacgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>In the node names, we recognize the origin of variable through a model name, either <code class="code docutils literal notranslate"><span class="pre">Reaction</span></code> or
@@ -470,16 +575,12 @@ chemical reactions.</p>
 <figure class="align-center" id="concgraph">
 <a class="reference external image-reference" href="_images/concgraph.png"><img alt="../_images/concgraph.png" src="../_images/concgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Concentration model graph</span><a class="headerlink" href="#concgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Concentration model graph</span><a class="headerlink" href="#concgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>where</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 76%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>masssAccum</p></td>
 <td><p><span class="math notranslate nohighlight">\(\frac{c - c^0}{\Delta t}\)</span></p></td>
@@ -502,7 +603,7 @@ graph.</p>
 <figure class="align-center" id="concreacgraph">
 <a class="reference external image-reference" href="_images/concreacgraph.png"><img alt="../_images/concreacgraph.png" src="../_images/concreacgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Coupled reaction-concentration model</span><a class="headerlink" href="#concreacgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Coupled reaction-concentration model</span><a class="headerlink" href="#concreacgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>We note that it becomes already difficult to read off the graph and it will become harder and harder as model
@@ -516,7 +617,7 @@ obtain the following</p>
 <figure class="align-center" id="tempconcreacgraph">
 <a class="reference external image-reference" href="_images/tempconcreacgraph.png"><img alt="../_images/tempconcreacgraph.png" src="../_images/tempconcreacgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Coupled Temperature-Concentration-Reaction graph</span><a class="headerlink" href="#tempconcreacgraph" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Coupled Temperature-Concentration-Reaction graph</span><a class="headerlink" href="#tempconcreacgraph" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>New computational graphs are thus obtained by connecting existing graph, using a hierarchy of model. In the
@@ -524,7 +625,7 @@ example above, the model hierarchy is given by</p>
 <figure class="align-center" id="tempconcreacgraphmodel">
 <a class="reference external image-reference" href="_images/tempconcreacgraphmodel.png"><img alt="../_images/tempconcreacgraphmodel.png" src="../_images/tempconcreacgraphmodel.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Model hierarchy</span><a class="headerlink" href="#tempconcreacgraphmodel" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Model hierarchy</span><a class="headerlink" href="#tempconcreacgraphmodel" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The graph of a parent model is essentially composed of the graphs of its child models with the addition of a
@@ -532,7 +633,7 @@ few new edges which connect the graphs of the child models. The graph of the par
 own new variables.</p>
 </section>
 <section id="graph-setup-and-implementation">
-<h2>Graph Setup and Implementation<a class="headerlink" href="#graph-setup-and-implementation" title="Permalink to this heading"></a></h2>
+<h2>Graph Setup and Implementation<a class="headerlink" href="#graph-setup-and-implementation" title="Link to this heading"></a></h2>
 <p>The implementation of a model can be decomposed into two steps.</p>
 <ol class="arabic simple">
 <li><p>We setup the computational graph.</p></li>
@@ -591,11 +692,6 @@ such as Python or Julia.</p>
 solid electrode takes different names</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 59%" />
-<col style="width: 28%" />
-<col style="width: 13%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>model</p></td>
 <td><p>namespace</p></td>
@@ -620,10 +716,6 @@ solid electrode takes different names</p>
 model</span></a>. Namespace is needed to distinguish between those,</p>
 <blockquote>
 <div><table class="docutils align-default">
-<colgroup>
-<col style="width: 63%" />
-<col style="width: 37%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>namespace</p></td>
 <td><p>name</p></td>
@@ -903,7 +995,7 @@ graph.</p>
 <figure class="align-center" id="tempgraphcopy">
 <a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraphcopy" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraphcopy" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>We can use the <code class="code docutils literal notranslate"><span class="pre">printOrderedFunctionCallList</span></code> method of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class to
@@ -946,7 +1038,7 @@ the following line (see also <a class="reference external" href="https://github.
 <figure class="align-center" id="uncoupledreactemp">
 <a class="reference external image-reference" href="_images/uncoupledreactemp.png"><img alt="../_images/uncoupledreactemp.png" src="../_images/uncoupledreactemp.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Uncoupled thermal reaction model.</span><a class="headerlink" href="#uncoupledreactemp" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Uncoupled thermal reaction model.</span><a class="headerlink" href="#uncoupledreactemp" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The variable name and graph structures are imported from both the submodels. The name of the model it
