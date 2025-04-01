@@ -15,10 +15,10 @@ your BattMo installation
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Part1<pynbnotebooks/part_1_battery_modeling_guide.ipynb>`
+      :ref:`Part1<part_1_battery_modeling_guide>`
 
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Part2<pynbnotebooks/part_2_battery_modeling_guide.ipynb>`           
+      :ref:`Part2<part_2_battery_modeling_guide>`           
            
