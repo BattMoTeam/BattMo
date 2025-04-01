@@ -8,6 +8,8 @@
 
    Installation <installation>
    basicusage
+   tutorials
+   modeling
    intermediate
    architecture
    json
