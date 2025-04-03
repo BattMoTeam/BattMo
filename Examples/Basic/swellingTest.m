@@ -272,22 +272,15 @@ for istate = 1 : numel(states)
 end
 
 %%
+
 subplot(2,2,3)
 hold on
-negativeElectrodeSize = model.NegativeElectrode.grid.cells.num;
+negativeElectrodeSize = model.(ne).grid.cells.num;
 L = "x = 1";
+
 for i = 1 : negativeElectrodeSize
 
-    
-    phi      = cellfun(@(x) x.(ne).(co).phi(i), states);
-    phiElyte = cellfun(@(x) x.(elyte).phi(i), states);
-
-    cSurf = cellfun(@(x) x.(ne).(co).(am).(sd).cSurface(i), states);
-    cmax = model.(ne).(co).(am).(itf).saturationConcentration;
-    Temp = 298.15;
-    
-    OCP   = model.(ne).(co).(am).(itf).computeOCPFunc(cSurf, Temp, cmax);
-    eta = phi - phiElyte - OCP;
+    eta = cellfun(@(state) state.(ne).(co).(am).(itf).eta(i), states);
     plot(T/hour, eta);
 
     if i > 1
@@ -301,26 +294,11 @@ xlabel('time [hours]')
 ylabel('Eta of the Negative electrode')
 legend(L);
 
-%% Plot the porosity as a function of the time for different position across the negative electrode
-%subplot(2,2,4)
-%negativeElectrodeSize = model.(ne).G.cells.num;
-%L = "x = 1";
-%for i = 1:negativeElectrodeSize
-%    hold on
-%    porosity = cellfun(@(x) x.(ne).(am).porosity(i), states);
-%    plot(T/hour, porosity);
-%    if i > 1
-%        L(end+1) = "x = " + int2str(i);
-%    end
-%end
-%xlabel('time [hours]')
-%ylabel('Porosity of the Negative Electrode')
-%legend(L);
-
-
+%% Plot of the porosity as a function of the time for different position across the negative electrode
 
 % Plot the porosity as a function of the position for different times
 subplot(2,2,4)
+hold on
 negativeElectrodeSize = gen.xlength(2);
 N_elements_ne = gen.nenx;
 deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
@@ -328,29 +306,31 @@ totalTime = length(T);
 
 position = [];
 for x = 1:N_elements_ne
-    position(end+1) = (x-1)*deltaX;
+    position(end+1) = (x - 1)*deltaX;
 end
 
 legendTime = "t = 0 hour";
 porosity = [];
 for i = 1:N_elements_ne
-            porosity(end+1) = initstate.(ne).(am).porosity(i);
+    porosity(end + 1) = initstate.(ne).(co).porosity(i);
 end
+
 plot(position, porosity);
 
+%% Plot of porosity as a function of time
 
 for t = 1:totalTime
     hold on
     %Only draw the curve for timestep multiples
-    if t<80
+    if t < 80
         timestep = 8;
     else
         timestep = 110;
     end
     if mod(t,timestep) == 0
         porosity = [];
-        for i = 1:N_elements_ne
-            porosity(end+1) = states{t}.(ne).(am).porosity(i);
+        for i = 1 : N_elements_ne
+            porosity(end+1) = states{t}.(ne).(co).porosity(i);
         end
         
         plot(position, porosity);
@@ -364,161 +344,54 @@ end
 xlabel('Position across the Negative Electrode (in µm)')
 ylabel('Porosity of the Negative Electrode')
 legend(legendTime);
-%
-%
-%
-%
- %% Plot the porosity near the cc as a function of the state of charge
- 
-%subplot(2,2,4)
+
+
+%% Plot the porosity near the current collector on the negative electrode as a function of the state of charge
+
 figure
  
- po_itf   = model.(ne).(am).(itf);
- ne_sd = model.(ne).(am).SolidDiffusion;
- 
- totalTime = length(T);
- realTotalTime = states{totalTime}.time;
- 
- theta100 = po_itf.theta100;
- theta0   = po_itf.theta0;
- cmax     = po_itf.cmax;
- r0       = ne_sd.rp;
- F        = model.con.F;
- N        = ne_sd.N;
- 
- 
- soc = [];
- porosity = [];
- 
- for t = 1:totalTime
-     sumConcentrations = 0;
-     for i = 1:N
-         c = states{t}.(ne).(am).(sd).c(i);
-         sumConcentrations = sumConcentrations + c;
-     end
-     cAverage = sumConcentrations/N;
- 
-     theta = cAverage/cmax;
- 
-     poros = states{t}.(ne).(am).porosity(1);
-     
-     stoc = (theta-theta0)./(theta100-theta0);
- 
-     soc(end+1) = stoc;
-     porosity(end+1) = poros;
- end
- 
- plot(soc, porosity,'LineWidth',1.2);
- axis([0 1 0 1]);
- axis square;
- 
- xlabel('State of Charge near the current collector')
- ylabel('Porosity near the current collector')
-%% Plot the concentration of the electrolyte as a function of the position for different times
-%figure
-%%subplot(2,2,4)
-%negativeElectrodeSize = gen.xlength(2);
-%positiveElectrodeSize = gen.xlength(4);
-%separatorSize          = gen.xlength(3);
-%
-%N_elements_ne = gen.nenx;
-%N_elements_pe = gen.penx;
-%N_elements_sep = gen.sepnx;
-%
-%deltaX_ne  = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
-%deltaX_pe  = (positiveElectrodeSize/(N_elements_pe-1)) * 10^6;
-%deltaX_sep = (separatorSize/(N_elements_sep-1)) * 10^6;
-%
-%totalTime = length(T);
-%
-%%constructing the x axis
-%position = [];
-%for x = 1:N_elements_ne
-%    position(end+1) = (x-1)*deltaX_ne;
-%end
-%for x = 1:N_elements_sep-1
-%    position(end+1) = negativeElectrodeSize* 10^6 + x*deltaX_sep;
-%end
-%for x = 1:N_elements_pe-1
-%    position(end+1) = (negativeElectrodeSize + separatorSize) * 10^6 + x*deltaX_pe;
-%end
-%
-%
-%legendTime = "t = 0 hour";
-%concentration = [];
-%for i = 1:N_elements_ne
-%            concentration(end+1) = initstate.(elyte).c(i);
-%end
-%for i = 1:N_elements_sep-1
-%            concentration(end+1) = initstate.(elyte).c(N_elements_ne + i);
-%end
-%for i = 1:N_elements_pe-1
-%            concentration(end+1) = initstate.(elyte).c(N_elements_ne + N_elements_sep + i);
-%end
-%
-%
-%plot(position, concentration);
-%
-%
-%for t = 1:totalTime
-%    hold on
-%    %Only draw the curve for timestep multiples
-%    if t<75
-%        timestep = 8;
-%    else
-%        timestep = 110;
-%    end
-%
-%    if mod(t,timestep) == 0
-%        concentration = [];
-%        for i = 1:N_elements_ne
-%            concentration(end+1) = states{t}.(elyte).c(i);
-%        end
-%        for i = 1:N_elements_sep-1
-%            concentration(end+1) = states{t}.(elyte).c(N_elements_ne + i);
-%        end
-%        for i = 1:N_elements_pe-1
-%            concentration(end+1) = states{t}.(elyte).c(N_elements_ne + N_elements_sep + i);
-%        end
-%        
-%        plot(position, concentration);
-%
-%        if t > 1
-%            t = T(t)/hour;
-%            legendTime(end+1) = "t = " + num2str(t,2) + " hour";
-%        end
-%
-%    end 
-%end
-%
-%hold on
-%xline(negativeElectrodeSize* 10^6,'red','separator');
-%xline((negativeElectrodeSize + separatorSize)* 10^6,'red');
-%
-%xlabel('Position across the (elyte) (in µm)')
-%ylabel('Concentration of the (elyte) (in mol/m3')
-%legend(legendTime);
+ne_itf = model.(ne).(co).(am).(itf);
+ne_sd  = model.(ne).(co).(am).SolidDiffusion;
 
+totalTime = states{numel(states)}.time;
 
+theta100 = ne_itf.guestStoichiometry100;
+theta0   = ne_itf.guestStoichiometry0;
+cmax     = ne_itf.saturationConcentration;
+r0       = ne_sd.particleRadius;
+F        = model.con.F;
+
+soc      = [];
+porosity = [];
+
+for ind = 1 : numel(T)
+    
+    cAverage = states{ind}.(ne).(co).(am).(sd).cAverage(1);
+    
+    theta = cAverage/cmax;
+    
+    poros = states{ind}.(ne).(co).porosity(1);
+    
+    stoc = (theta - theta0)./(theta100 - theta0);
+    
+    soc(end + 1)      = stoc;
+    porosity(end + 1) = poros;
+    
+end
+
+plot(soc, porosity,'LineWidth',1.2);
+axis([0 1 0 1]);
+axis square;
+
+xlabel('State of Charge near the current collector')
+ylabel('Porosity near the current collector')
 
 %% Plot the radius evolution
 
 figure
 
-ne_itf   = model.(ne).(am).(itf);
-ne_sd = model.(ne).(am).SolidDiffusion;
-
-totalTime = length(T);
-realTotalTime = states{totalTime}.time;
-
-theta100 = ne_itf.theta100;
-theta0   = ne_itf.theta0;
-cmax     = ne_itf.cmax;
-r0       = ne_sd.rp;
-F        = model.con.F;
-N        = ne_sd.N;
-N_elements_ne = gen.nenx;
-
+ne_itf = model.(ne).(co).(am).(itf);
+ne_sd  = model.(ne).(co).(am).SolidDiffusion;
 
 Y = [];
 X = [];
@@ -526,16 +399,16 @@ X = [];
 for t = 1:totalTime
 
     sumTheta = 0;
-        for x = 1:N_elements_ne       
+    for x = 1:N_elements_ne       
         sumConcentrations = 0;
         for i = 1:N
             c = states{t}.(ne).(am).(sd).c((x-1)*N +i);
             sumConcentrations = sumConcentrations + c;
         end
         cAverage = sumConcentrations/N;
-    
-        radius = computeRadius(cAverage,cmax,r0);
-        end
+        
+        radius = computeRadius(cAverage, cmax,r0);
+    end
     
     Y(end+1) = radius;
     X(end+1) = T(t)/hour;
@@ -546,17 +419,7 @@ ylabel('Silicon particle radius')
 xlabel('Time (in hours)')
 
 
-
-
-
-
-
-
-
-
-
-
-%% Plot soc for each electrode as a function of time
+%% Plot SOC for each electrode as a function of time
 
 figure
 subplot(2,1,1)
@@ -600,12 +463,12 @@ for t = 1:totalTime
     %    cAverage = sumConcentrations/N;
     %
     %    theta = cAverage/cmax;
-%
+    %
     %    sumTheta = sumTheta + theta;
     %    end
     %    theta = sumTheta/N_elements_ne;
-%
-        soc = (theta - theta0)/(theta100-theta0);
+    %
+    soc = (theta - theta0)/(theta100-theta0);
 
 
     Y(end+1) = soc;
@@ -616,7 +479,6 @@ plot(X, Y);
 
 ylabel('State of Charge in the NEGATIVE ELECTRODE')
 xlabel('Time (in hours)')
-
 
 
 subplot(2,1,2)
@@ -671,8 +533,8 @@ xlabel('Time (in hours)')
 
 figure
 
-ne_itf   = model.(ne).(am).(itf);
-ne_sd = model.(ne).(am).SolidDiffusion;
+ne_itf = model.(ne).(am).(itf);
+ne_sd  = model.(ne).(am).SolidDiffusion;
 
 totalTime = length(T);
 realTotalTime = states{totalTime}.time;
@@ -720,8 +582,6 @@ for t = 1:totalTime
     NLi_pe = sum(Npart_pe .* vols_pe .* cAveragePE .* vol_part_pe);
     NLi_elyte = sum(volsElyte .* porosElyte .* cAverageElyte);
 
-
-
     state.(ne).(am) = model.(ne).(am).updateRvol(state.(ne).(am));
     state.(pe).(am) = model.(pe).(am).updateRvol(state.(pe).(am));
 
@@ -730,45 +590,35 @@ for t = 1:totalTime
 
     Term 
     
-        Y(end+1) = NLi_ne;
-        X(end+1) = T(t)/hour;
-    end
-    
+    Y(end+1) = NLi_ne;
+    X(end+1) = T(t)/hour;
+end
 
 
+plot(X, Y);
 
-    
-    plot(X, Y);
-    
-    ylabel('total lithium quantity')
-    xlabel('Time (in hours)')
-
-     
-
-
-
-
-
+ylabel('total lithium quantity')
+xlabel('Time (in hours)')
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
 
