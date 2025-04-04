@@ -14,7 +14,12 @@
           "description" : "maximum number of Newton iterations. Default value is 10"},
         "maxTimestepCuts" : {
           "type" : "number",
-          "description" : "When a Newton iteration fails to converge, we cut the time step. If it fails again, we cut again until we have reached a number of time equal maxTimeStepCuts. Then, we consider the simulation has failed. The default value is 6"},          
+          "description" : "When a Newton iteration fails to converge, we cut the time step. If it fails again, we cut again until we have reached a number of time equal maxTimeStepCuts. Then, we consider the simulation has failed. The default value is 6"},
+        "timeStepSelector" : {
+          "type": "string",
+          "enum": ["stateChangeTimeStepSelector",
+                   "simpleTimeStepSelector"],
+          "description" : "The default is StateChangeTimeStepSelector. The other option is SimpleTimeStepSelector which is a simple time step selector that does not take into account the state of the system."},
         "nonlinearTolerance" : {
           "type" : "number",
           "description" : "tolerance value for the nonlinear iteration"},
