@@ -49,7 +49,11 @@ classdef ElectrodeInputParams < ComponentInputParams
             end
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'}, false);
-
+            
+            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+                                                 {'coatingModelSetup', 'swelling'}, ...
+                                                 {'Coating', 'activeMaterialModelSetup', 'swelling'});
+            
             is_swelling = getJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
 
             if is_swelling
@@ -60,7 +64,12 @@ classdef ElectrodeInputParams < ComponentInputParams
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            inputparams.(co) = CoatingInputParams(pick(co));
+            if is_swelling
+                inputparams.(co) = SwellingCoatingInputParams(pick(co));
+            else
+                inputparams.(co) = CoatingInputParams(pick(co));
+            end
+            
             if include_current_collectors
                 if getJsonStructField(jsonstruct, 'use_normed_current_collector')
                     inputparams.(cc) = NormedCurrentCollectorInputParams(pick(cc));

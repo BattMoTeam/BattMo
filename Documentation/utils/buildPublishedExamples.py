@@ -105,13 +105,13 @@ def parse_publish_to_xml(exfile):
                     for block in paragraphs:
                         #  print block
                         txt = "".join(block.itertext());
-                        txt = re.sub('\.\.\.\s', '...' + os.linesep, txt)
+                        txt = re.sub(r'\.\.\.\s', '...' + os.linesep, txt)
 
                         crindex = txt.lower().find("copyright")
                         if crindex > -1:
                             # Strip copyright plus any comments etc before that.
                             txt = txt[0:crindex]
-                            lastalpha = [m.end(0) for m in re.finditer('\w|\)|\;', txt)];
+                            lastalpha = [m.end(0) for m in re.finditer(r'\w|\)|\;', txt)];
                             if lastalpha:
                                txt = txt[0:lastalpha[-1]]
                         parsedText += "\n.. code-block:: matlab\n"

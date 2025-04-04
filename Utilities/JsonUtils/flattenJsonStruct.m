@@ -4,6 +4,7 @@ function flatjsonviewer = flattenJsonStruct(jsonstruct)
     flatjson = reshape(flatjson, 2, [])';
 
     flatjsonviewer = FlatJsonViewer(flatjson);
+    flatjsonviewer.print();
 
 end
 

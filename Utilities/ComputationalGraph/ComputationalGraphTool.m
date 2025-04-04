@@ -1095,6 +1095,112 @@ classdef ComputationalGraphTool
             cgt.functionDocs = functionDocs;
         end
 
+        function exportDOT(cgt, filename)
+
+            function str = getnodelabel(nodename)
+                strs = split(nodename, '.');
+                str = join(strs, '\n');
+                str = str{1};
+            end
+            
+            fid = fopen(filename, 'w');
+            fprintf(fid, 'digraph G {\n');
+            for ind = 1 : numel(cgt.nodenames)
+                fprintf(fid, '%d [label = "%s"]\n', ind, getnodelabel(cgt.nodenames{ind}));
+            end
+            [ii, jj, ss] = find(cgt.adjencyMatrix);
+
+            propfuncs = cgt.model.propertyFunctionList;
+            function str = getproplabel(indprop)
+                propfunc = cgt.model.propertyFunctionList{indprop};
+                str = func2str(propfunc.fn);
+            end
+            
+            for ind = 1 : numel(ii)
+                fprintf(fid, '%d -> %d [label = "%s"]\n', ii(ind), jj(ind), getproplabel(ss(ind)));
+            end
+            
+            fprintf(fid, '}\n');
+            fclose(fid);
+            
+        end
+        
+        function exportCytoscape(cgt, filename)
+
+            function str = getnodelabel(nodename)
+                strs = split(nodename, '.');
+                str = join(strs, ' ');
+                str = ['"', str{1}, '"'];
+            end
+
+            A = cgt.adjencyMatrix;
+            nodenames = cgt.nodenames;
+
+            %% print root variables after removing the variables that were declared as static in the model
+
+            rootnames = nodenames(all(A == 0, 1));
+            staticnames = cgt.getStaticVarNames();
+
+            ind = ismember(rootnames, staticnames);
+            rootind = find(~ind);
+            rootnames = rootnames(rootind);
+            isroot = ismember(nodenames, rootnames);
+
+            extravarnameinds = cgt.extraVarNameInds;
+
+            tailinds = find(all(A' == 0, 1));
+            isadded  = ismember(tailinds, extravarnameinds);
+            tailinds = tailinds(~isadded);
+            istail = false(numel(nodenames), 1);
+            istail(tailinds) = true;
+            
+            nodefilename = [filename, '_nodes.csv'];
+            
+            nodefid = fopen(nodefilename, 'w');
+            fprintf(nodefid, 'node id, node name,color, border width\n');
+            for ind = 1 : numel(cgt.nodenames)
+                if isroot(ind)
+                    % hard-coded for the moment, just for testing ...
+                    color = '#0B0A0A';
+                    borderwidth = 100;
+                elseif istail(ind)
+                    color = '#00FF22';
+                    borderwidth = 100;                    
+                else
+                    color = '#F7E7E7';
+                    borderwidth = 2;
+                end
+                fprintf(nodefid, '%d,%s,%s,%d\n', ind, getnodelabel(cgt.nodenames{ind}), color, borderwidth);
+            end
+            fclose(nodefid);
+            
+            siffilename  = [filename, '.sif'];
+            edgefilename = [filename, '_edgelabels.csv'];
+
+            siffid  = fopen(siffilename, 'w');
+            edgefid = fopen(edgefilename, 'w');
+            
+            fprintf(edgefid, 'edge id,edge name\n');
+
+            [ii, jj, ss] = find(cgt.adjencyMatrix);
+
+            function str = getproplabel(indprop)
+                propfunc = cgt.model.propertyFunctionList{indprop};
+                str = func2str(propfunc.fn);
+            end
+            
+            for ind = 1 : numel(ii)
+                
+                fprintf(siffid, '%d interaction %d\n', ii(ind), jj(ind));
+                fprintf(edgefid, '%d,%s\n', ind, getproplabel(ss(ind)));
+                
+            end
+
+            fclose(siffid);
+            fclose(edgefid);
+            
+        end
+        
     end
 
     methods (Static)
