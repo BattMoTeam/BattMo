@@ -1,3 +1,4 @@
+
 % BattMo Tutorial
 % This tutorial explains how to setup and run a simulation in BattMo
 
@@ -42,7 +43,7 @@ jsonstruct.include_current_collectors = false;
 %%%
 % The structure created in the jsonstruct follows the same hierarchy as the
 % fields in the JSON input file. These can be referenced by name in the
-% jsonstruct. To make life easier for ourselves we define some shorthand
+% jsonstruct. To make life easier we define some shorthand
 % names for various parts of the structure.
 
 ne      = 'NegativeElectrode';
@@ -75,7 +76,11 @@ jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 % instantiated using the jsonstruct we just created:
 
 inputparams = BatteryInputParams(jsonstruct);
-
+%%
+jsonstruct.(ne).(co).(am).(sd).N = 5;
+jsonstruct.(pe).(co).(am).(sd).N = 5;
+jsonstruct.(pe).(co).(am).(sd)
+%%
 %%%
 % It is also possible to update the properties of this inputparams in a
 % similar way to updating the jsonstruct. Here we set the discretisation
@@ -83,8 +88,8 @@ inputparams = BatteryInputParams(jsonstruct);
 % model can be found here:
 % :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
-inputparams.(ne).(co).(am).(sd).N = 5;
-inputparams.(pe).(co).(am).(sd).N = 5;
+%%inputparams.(ne).(co).(am).(sd).N = 5;
+%%inputparams.(pe).(co).(am).(sd).N = 5;
 
 %%% Setting up the geometry
 % Here, we setup the 1D computational mesh that will be used for the
@@ -92,60 +97,60 @@ inputparams.(pe).(co).(am).(sd).N = 5;
 % in the class BatteryGenerator1D. Classes for generating other geometries can
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
-gen = BatteryGeneratorP2D();
+jsonstruct_geometry = parseBattmoJson('Examples/jsondatafiles/geometry1d.json');
+jsonstruct = mergeJsonStructs({jsonstruct_geometry , jsonstruct});
 
+%set up model and output
+output = runBatteryJson(jsonstruct);
+model = output.model
+cgt = model.cgt;
+%%Plot Open Circuit Potential as a funcion of State of Charge for pe and ne
+%%(using the report p12)
 %%%
 % Now, we update the inputparams with the properties of the mesh. This function
 % will update relevent parameters in the inputparams object and make sure we have
 % all the required parameters for the model geometry chosen.
-
-inputparams = gen.updateBatteryInputParams(inputparams);
-
+%%inputparams = gen.updateBatteryInputParams(inputparams);
 %%% Initialising the battery model object
 % The battery model is initialized by sending inputparams to the Battery class
 % constructor. see :class:`Battery <Battery.Battery>`.
-
-model = GenericBattery(inputparams);
-
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
 % return
-
 %%%
 % In BattMo a battery model is actually a collection of submodels: 
 % Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
 % Model. The battery class contains all of these submodels and various other 
 % parameters necessary to run the simulation.
-
 %%% Plotting the OCP curves
 % We can inspect the model object to find out which parameters are being
 % used. For instance the information we need to plot the OCP curves for the
 % positive and negative electrodes can be found in the interface structure
 % of each electrode.
 
-%T = 298.15;
-%elde = {ne,pe};
-%
-%figure
-%hold on
-%for i = 1:numel(elde)
-%    po_itf = model.(elde{i}).(am).(itf);
-%
+% T = 298.15;
+% elde = {ne,pe};
+% 
+% figure
+% hold on
+% for i = 1:numel(elde)
+%    po_itf = model.(elde{i}).(co).(am).(itf);
+% 
 %    theta100 = po_itf.theta100;
 %    theta0   = po_itf.theta0;
 %    cmax     = po_itf.cmax;
-%
+% 
 %    soc   = linspace(0, 1);
 %    theta = soc*theta100 + (1 - soc)*theta0;
 %    c     = theta.*cmax;
 %    OCP = po_itf.computeOCPFunc(c, T, cmax);
-%
+% 
 %    plot(soc, OCP)
-%end
-%xlabel('SOC [-]')
-%ylabel('OCV [V]')
-%title('OCV for both electrodes');
-%legend(elde)
+% end
+% xlabel('SOC [-]')
+% ylabel('OCV [V]')
+% title('OCV for both electrodes');
+% legend(elde)
 
 %%% Controlling the simulation
 % The control model specifies how the simulation is controlled. This can
@@ -155,53 +160,49 @@ model = GenericBattery(inputparams);
 % In the first instance we use IEswitch control policy.
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
-
+%%
 timestep.timeStepDuration = 100;
 
 step    = model.Control.setupScheduleStep(timestep);
 control = model.Control.setupScheduleControl();
 
-% This control is used to set up the schedule
+%This control is used to set up the schedule
+%Noote : double switch structure seems obsolete, as initialControl is containent in controlPolicy now
+%gotta find the Control Policy possibilities
 schedule = struct('control', control, 'step', step);
+schedule = model.Control.setupSchedule
+%step contient un array de int qui renvoie à control (array)
 
-
-% tup = 0.1;
-% switch model.Control.controlPolicy
-%   case 'IEswitch'
-%       switch model.Control.initialControl
-%       case 'discharging'
-%         inputI = model.Control.Imax;
-%         inputE = model.Control.lowerCutoffVoltage;
-%       case {'charging', 'first-charge'}
-%         inputI = -model.Control.Imax;
-%         inputE = model.Control.upperCutoffVoltage;
-%       otherwise
-%         error('initCase not recognized')
-%     end
-%     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-%                                                 inputI, ...
-%                                                 inputE);
-%     control.IEswitch = true;
-%     control = struct('src', srcfunc, 'IEswitch', true);
-%   case 'CC'
-%     srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
-%     control.CC = true;
-%   otherwise
-%     error('control policity not recognized');
-% end
-
+tup = 0.1;
+switch model.Control.controlPolicy
+  case {'IEswitch'}
+      switch model.Control.initialControl
+            case 'discharging'
+                inputI = model.Control.Imax;
+                inputE = model.Control.lowerCutoffVoltage;
+            case {'charging', 'first-charge'}
+                inputI = -model.Control.Imax;
+                inputE = model.Control.upperCutoffVoltage;
+            otherwise
+        error('initCase not recognized')
+      end
+      srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
+                                                inputI, ...
+                                                inputE);
+      control.IEswitch = true;
+      control = struct('src', srcfunc, 'IEswitch', true);
+  case 'CC'
+    srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
+    control.CC = true;
+  otherwise
+    error('control policity not recognized');
+end
+%%
 %%%
 % We create a control structure containing the source function and
 % specifying that we want to use IESwitch control:
 
 % control.src = srcfunc;
-
-%%%
-% Finally we collect the control and step structures together in a schedule
-% struct which is the schedule which the simulation will follow:
-
-% schedule = struct('control', control, 'step', step); 
-
 
 %%% Setting the initial state of the battery
 % To run simulation we need to know the starting point which we will run it
@@ -211,6 +212,8 @@ schedule = struct('control', control, 'step', step);
 % Here we take the state of charge (SOC) given in the input and calculate
 % equilibrium concentration based on theta0, theta100 and cmax.
 
+%Noote : he's trying to set up an initial state, already done with the new
+%battmo ? never seen this before
 initstate = model.setupInitialState(jsonstruct);
 
 
