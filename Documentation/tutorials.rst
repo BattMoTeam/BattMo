@@ -1,36 +1,65 @@
-:orphan:
-   
-========================
-List of curated examples
-========================
-
-This examples are ready to be published
-
-* :ref:`battMoTutorial`
-* :ref:`runJsonScript`
-* :ref:`runBatteryP2D`
-* :ref:`runSEIActiveMaterial`
-* :ref:`runElectrolyser`
-  
-* More Examples
-        
-  In the :code:`Examples` directory examples, the following examples can be found. They should run out of the box (write
-  the name of script after :ref:`installing BattMo<installation>`). If not, tell us!
-  
-  - :code:`runBatteryP3D` : 2D example using :ref:`2D model geometry<2dgeometry>`
-  - :code:`runBatteryP4D` : 3D example using :ref:`3D model geometry<3dgeometry>`
-  - :code:`runChen2020` : Example using Chen data including a comparison with `pybamm <https://www.pybamm.org/>`_
-  - :code:`runCR` : Example running for a coin cell
-  - :code:`runGittTest` : Example running a Gitt test
-  - :code:`runJellyRoll` : Example running a :ref:`jelly roll geometry <jellyroll>`
-
+Tutorials
+=========
 
 .. toctree::
    :hidden:
 
-   publishedExamples/runJsonScript   
-   publishedExamples/battMoTutorial
-   publishedExamples/runBatteryP2D
-   publishedExamples/runSEIActiveMaterial
-   publishedExamples/runSiliconGraphiteBattery
-      
+   pynbnotebooks/tutorial_1_a_simple_p2d_model_live.ipynb
+   pynbnotebooks/tutorial_2_changing_control_protocol_live.ipynb
+   pynbnotebooks/tutorial_3_modify_structural_parameters_live.ipynb
+   pynbnotebooks/tutorial_4_modify_material_parameters_live.ipynb
+   pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.ipynb
+   pynbnotebooks/tutorial_6_simulate_thermal_performance_live.ipynb
+   pynbnotebooks/tutorial_7_a_simple_p4d_model_live.ipynb
+   pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb
+   pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.ipynb
+
+.. grid:: 1
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Your First BattMo Model<tutorial_1_a_simple_p2d_model_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Change the Control Protocol<tutorial_2_changing_control_protocol_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Modify Structural Parameters<tutorial_3_modify_structural_parameters_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Modify Material Parameters<tutorial_4_modify_material_parameters_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Simulate CC-CV Cycling<tutorial_5_simulate_CCCV_cycling_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Simulate Thermal Performance<tutorial_6_simulate_thermal_performance_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`A Simple P4D Simulation<tutorial_7_a_simple_p4d_model_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Simulate a Multilayer Pouch Cell<tutorial_8_simulate_a_multilayer_pouch_cell_live>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Simulate a cylindrical cell<tutorial_9_simulate_a_cylindrical_cell_live>`
+
+
+
