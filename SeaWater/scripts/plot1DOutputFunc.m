@@ -70,9 +70,9 @@ function plot1DOutputFunc(simoutput, varargin)
 
     state = states{ind};
     
-    xelyte   = model.Electrolyte.G.cells.centroids(:, 1);
-    xanode   = model.Anode.G.cells.centroids(:, 1);
-    xcathode = model.Cathode.G.cells.centroids(:, 1);
+    xelyte   = model.Electrolyte.grid.cells.centroids(:, 1);
+    xanode   = model.Anode.grid.cells.centroids(:, 1);
+    xcathode = model.Cathode.grid.cells.centroids(:, 1);
     
     qpdict = model.(elyte).qpdict;
     spdict = model.(elyte).spdict;
