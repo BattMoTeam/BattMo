@@ -3,21 +3,22 @@ classdef MLXnotebookExporter
     properties
 
         % list of registered notebooks
-        notebooknames = {'part_1_battery_modeling_guide.mlx'                   , ...
-                         'part_2_battery_modeling_guide.mlx'                   , ...
-                         'tutorial_1_a_simple_p2d_model_live.mlx'              , ...
-                         'tutorial_2_changing_control_protocol_live.mlx'       , ...
-                         'tutorial_3_modify_structural_parameters_live.mlx'    , ...
-                         'tutorial_4_modify_material_parameters_live.mlx'      , ...
-                         'tutorial_5_simulate_CCCV_cycling_live.mlx'           , ...
-                         'tutorial_6_simulate_thermal_performance_live.mlx'    , ...
-                         'tutorial_7_a_simple_p4d_model_live.mlx'              , ...
-                         'tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx', ...
-                         'tutorial_9_simulate_a_cylindrical_cell_live.mlx'};
+        notebooknames = {'part_1_battery_modeling_guide'                   , ...
+                         'part_2_battery_modeling_guide'                   , ...
+                         'tutorial_1_a_simple_p2d_model_live'              , ...
+                         'tutorial_2_changing_control_protocol_live'       , ...
+                         'tutorial_3_modify_structural_parameters_live'    , ...
+                         'tutorial_4_modify_material_parameters_live'      , ...
+                         'tutorial_5_simulate_CCCV_cycling_live'           , ...
+                         'tutorial_6_simulate_thermal_performance_live'    , ...
+                         'tutorial_7_a_simple_p4d_model_live'              , ...
+                         'tutorial_8_simulate_a_multilayer_pouch_cell_live', ...
+                         'tutorial_9_simulate_a_cylindrical_cell_live'};
 
         inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
         outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
-
+        % outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
+        
     end
 
     methods
@@ -30,10 +31,8 @@ classdef MLXnotebookExporter
 
             ext = ['.', mne.getExtension(opt.format)];
             
-            inputfile = fullfile(mne.inputdir, notebookname);
-            
-            notebookname = strrep(notebookname, '.mlx', ext);
-            outputfile = fullfile(mne.outputdir, notebookname);
+            inputfile  = fullfile(mne.inputdir, [notebookname, '.mlx']);
+            outputfile = fullfile(mne.outputdir, [notebookname, ext]);
             
             optvals = cellfun(@(x) opt.(x), fieldnames(opt), 'uniformoutput', false);
             options = reshape(vertcat(fieldnames(opt)', optvals'), [], 1);
@@ -54,14 +53,16 @@ classdef MLXnotebookExporter
 
         end
 
+        function exportMLXtoIpynb(mne, notebookname, varargin)
+
+            mne.exportMLX(notebookname, 'format', 'ipynb', varargin{:});
+
+        end        
 
         function openMfileSaveToMlx(mne, notebookname)
 
-            notebookname = sprintf('%s.m', notebookname);
-            inputfile = fullfile(mne.inputdir, notebookname);
-            
-            notebookname = strrep(notebookname, '.m', '.mlx');
-            outputfile = fullfile(mne.outputdir, notebookname);
+            inputfile  = fullfile(mne.inputdir, [notebookname, '.m']);
+            outputfile = fullfile(mne.outputdir, [notebookname, '.mlx']);
             
             matlab.internal.liveeditor.openAsLiveCode(fileread(inputfile)); % open as live script
             activeDoc = matlab.desktop.editor.getActive(); % get the active editor (the new file)
@@ -74,7 +75,7 @@ classdef MLXnotebookExporter
 
         % To run and update the mlx notebook programmatically, it is possible to use: matlab.internal.liveeditor.executeAndSave('fullpathnameto.mlx')
             
-            inputfile = fullfile(mne.inputdir, notebookname);
+            inputfile = fullfile(mne.inputdir, [notebookname, '.mlx']);
             matlab.internal.liveeditor.executeAndSave(inputfile);
 
         end
@@ -105,7 +106,6 @@ classdef MLXnotebookExporter
                 ext = format;
               otherwise
                 error('Unknown format %s', format)
-
             end
             
         end
