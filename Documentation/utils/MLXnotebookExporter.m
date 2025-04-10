@@ -17,7 +17,6 @@ classdef MLXnotebookExporter
 
         inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
         outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
-        % outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
         
     end
 
