@@ -11,10 +11,10 @@
    tutorials
    modeling
    intermediate
+   advancedtopics
    architecture
    json
    geometryinput
-   advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
    protonicmembrane
