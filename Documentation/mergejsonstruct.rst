@@ -2,8 +2,6 @@
 Merging parameters
 ==================
 
-.. _mergeJsonStructs:
-
 Setup a P4D Model using :code:`mergeJsonStructs`
 ================================================
 
@@ -30,14 +28,14 @@ First, let's define our cell materials. We have provided a JSON file that contai
 
 .. code:: matlab
           
-   jsonfilename = 'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json';
+   jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json');
    jsonstruct_material = parseBattmoJson(jsonfilename);
 
 Next, we have defined the cell geometry properties in a separate JSON file that we can also parse into |battmo|:
 
 .. code:: matlab
           
-   jsonfilename = 'Examples/jsondatafiles/geometry3d.json';
+   jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry3d.json');
    jsonstruct_geometry = parseBattmoJson(jsonfilename);            
 
 We can take the same approach for the remaining parameters, as shown below, for:
@@ -46,21 +44,21 @@ Control policy
 
 .. code:: matlab
           
-   jsonfilename = fullfile('Examples', 'jsondatafiles', 'ie_control.json');
+   jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
    jsonstruct_control = parseBattmoJson(jsonfilename);         
 
 Simulation settings
 
 .. code:: matlab
           
-   jsonfilename = fullfile('Examples', 'jsondatafiles', 'simulation_parameters.json');
+   jsonfilename = fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json');
    jsonstruct_simparams = parseBattmoJson(jsonfilename);       
 
 Output specifications
 
 .. code:: matlab
           
-   jsonfilename = fullfile('Examples', 'jsondatafiles', 'extra_output.json');
+   jsonfilename = fullfile('Examples', 'JsonDataFiles', 'extra_output.json');
    jsonstruct_output = parseBattmoJson(jsonfilename);         
 
 We can now merge these parameter definitions into a single parameter set and run the simulation:

@@ -1,11 +1,12 @@
-==============
-Advanced Usage
-==============
+==================
+Intermediate Usage
+==================
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
+   mergejsonstruct
    modelinitialisation
    controlinput
    soliddiffusion
@@ -20,8 +21,13 @@ Advanced Usage
    .. grid-item-card::
       :padding: 2
       
+      :ref:`Merging parameters<mergejsonstruct:Merging parameters>`
+                     
+   .. grid-item-card::
+      :padding: 2
+      
       :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
-           
+
    .. grid-item-card::
       :padding: 2
 

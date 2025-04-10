@@ -9,9 +9,8 @@
    Installation <installation>
    basicusage
    tutorials
-   modeling
    intermediate
-   advancedtopics
+   modeling
    architecture
    json
    geometryinput
