@@ -2,7 +2,7 @@
 
 %% Setup nonlinear solver
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Examples/Experimental/params/solver_paper.json';
+jsonfilename = '/home/xavier/Matlab/Projects/battmo/Examples/JsonDataFiles/linear_solver_setup.json';
 jsonstruct_nonlinear_solver = parseBattmoJson(jsonfilename);
 
 %% Setup material properties
@@ -13,7 +13,9 @@ jsonfilename = fullfile('ParameterData'        , ...
                         'lithium_ion_battery_nmc_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
-jsonstruct_material.include_current_collectors = true;
+jsonstruct_material = removeJsonStructFields(jsonstruct_material           , ...
+                                             {'include_current_collectors'}, ...
+                                             {'ThermalModel', 'externalHeatTransferCoefficient'});
 
 %% Setup geometry
 jsonfilename = fullfile('Examples'     , ...
