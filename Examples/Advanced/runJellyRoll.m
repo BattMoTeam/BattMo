@@ -67,6 +67,9 @@ nas = 10;
 % Number of discretization cells in the longitudonal
 nL = 3;
 
+% refinement parameter for the top and bottom faces
+refLcoef = 8;
+
 % structure that describes the tab setups (see SpiralBatteryGenerator)
 tabparams.tabcase   = 'aligned tabs';
 tabparams.width     = 3*milli*meter;
@@ -76,10 +79,10 @@ testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
     rOuter = rInner + 1*milli*meter;
-dR = rOuter - rInner;
-% Computed number of windings
-nwindings = ceil(dR/dr);
-nL = 2;
+    dR = rOuter - rInner;
+    % Computed number of windings
+    nwindings = ceil(dR/dr);
+    nL = 2;
 end
 
 spiralparams = struct('nwindings'   , nwindings, ...
@@ -89,6 +92,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'nas'         , nas      , ...
                       'L'           , L        , ...
                       'nL'          , nL       , ...
+                      'refLcoef'    , refLcoef , ...
                       'tabparams'   , tabparams, ...
                       'angleuniform', true);
 
@@ -138,7 +142,7 @@ gen = SpiralBatteryGenerator();
 
 inputparams = gen.updateBatteryInputParams(inputparams, spiralparams);
 
-model = Battery(inputparams);
+model = GenericBattery(inputparams);
 
 %% Setup schedule
 
@@ -184,7 +188,7 @@ nls = NonLinearSolver();
 
 clear setup
 
-casenumber = 2;
+casenumber = 1;
 beVerbose = false;
 
 switch casenumber
@@ -205,7 +209,7 @@ switch casenumber
             
             jsonstruct_solver.NonLinearSolver.verbose = false;
             jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.verbose = 0;
-            prcs = jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.preconditioners
+            prcs = jsonstruct_solver.NonLinearSolver.LinearSolver.linearSolverSetup.preconditioners;
             for iprc = 1 : numel(prcs)
                 prcs(iprc).solver.verbose = 0;
                 prcs(iprc).solver.solver.verbose = false;
@@ -236,7 +240,7 @@ end
 
 model.verbose = true;
 
-dopacked = true;
+dopacked = false;
 
 if dopacked
     
@@ -257,11 +261,10 @@ if dopacked
 
 else
 
-    fn = afterStepConvergencePlots(nls);
+    % fn = afterStepConvergencePlots(nls);
 
     [~, states, reports] = simulateScheduleAD(initstate, model, schedule, ...
-                                              'NonLinearSolver', nls, ...
-                                              'afterStepFn'    , fn);
+                                              'NonLinearSolver', nls);
 
     reports = reports.ControlstepReports;
 
