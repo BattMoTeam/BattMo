@@ -1,5 +1,5 @@
 ==================
-Intermediate usage
+Merging parameters
 ==================
 
 .. _mergeJsonStructs:
