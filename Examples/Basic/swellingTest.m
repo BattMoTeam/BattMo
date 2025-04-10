@@ -1,4 +1,3 @@
-%r0
 %gen
 %model static (l 550)
 %N*n (l 395)
@@ -89,14 +88,15 @@ jsonstruct.TimeStepping.totalTime = 3960/jsonstruct.Control.DRate;
 %set a timestep of 100
 jsonstruct.TimeStepping.numberOfTimeSteps = jsonstruct.TimeStepping.totalTime/100;
 %set up model and output
-output = runBatteryJson(jsonstruct);
+output = runBatteryJson(jsonstruct, 'includeGridGenerator', true);
 model = output.model;
 cgt = model.cgt;
+gen = output.gridGenerator;
 
 %% Plot Open Circuit Potential as a funcion of State of Charge for pe and ne
 %(using the report p12)
 
-T = 298.15;
+Temp = 298.15;
 elde = {ne,pe};
 
 figure
@@ -111,7 +111,7 @@ for i = 1:numel(elde)
    soc   = linspace(0, 1);
    theta = soc*theta100 + (1 - soc)*theta0;
    c     = theta.*cmax;
-   OCP = po_itf.computeOCPFunc(c, T, cmax);
+   OCP = po_itf.computeOCPFunc(c, Temp, cmax);
 
    plot(soc, OCP)
 end
@@ -198,10 +198,10 @@ legend(L);
 
 subplot(2,2,4)
 negativeElectrodeSize = model.NegativeElectrode.G.topology.cells.num;
-N_elements_ne = gen.nenx; %wtf
+N_elements_ne = gen.nenx;
 deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
 totalTime = length(T);
-initstate = model.states{0}; %seems like an assumption
+initstate = output.states{1}; %seems like an assumption
 position = (0:N_elements_ne-1) * deltaX; %tab pos[i] = (i-1)*deltaX
 
 legendTime = "t = 0 hour";
@@ -288,10 +288,9 @@ figure
 negativeElectrodeSize = model.NegativeElectrode.G.topology.cells.num;
 positiveElectrodeSize = model.PositiveElectrode.G.topology.cells.num;
 separatorSize         = model.Separator.G.topology.cells.num;
-
-N_elements_ne = gen.nenx; %wtf
-N_elements_pe = gen.penx; %wtf
-N_elements_sep = gen.sepnx; %wth
+N_elements_ne = gen.nenx;
+N_elements_pe = gen.penx;
+N_elements_sep = gen.sepnx;
 
 deltaX_ne  = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
 deltaX_pe  = (positiveElectrodeSize/(N_elements_pe-1)) * 10^6;
@@ -310,7 +309,7 @@ position = [pos_ne, pos_sep, pos_pe];
 
 legendTime = "t = 0 hour";
 
-%beep boop again babe
+%beep boop again
 c_ne  = c(1:N_elements_ne);
 c_sep = c(N_elements_ne + (1:N_elements_sep-1));
 c_pe  = c(N_elements_ne + N_elements_sep + (1:N_elements_pe-1));
@@ -324,6 +323,7 @@ plot(position, concentration);
 hold on
 
 for t = 1:totalTime
+    disp(totalTime)
    %Only draw the curve for timestep multiples
    if t<75
        timestep = 8;
@@ -332,22 +332,10 @@ for t = 1:totalTime
    end
 
    if mod(t,timestep) == 0
-       %did he want to exclude the upper bound of each part ? else, why not
-       %N_total = N_elements_ne + N_elements_sep + N_elements_pe;
-       %concentration = states{t}.Electrolyte.c(1:N_total); ???
-       concentration = [];
-       for i = 1:N_elements_ne
-           concentration(end+1) = states{t}.Electrolyte.c(i);
-       end
-       for i = 1:N_elements_sep-1
-           concentration(end+1) = states{t}.Electrolyte.c(N_elements_ne + i);
-       end
-       for i = 1:N_elements_pe-1
-           concentration(end+1) = states{t}.Electrolyte.c(N_elements_ne + N_elements_sep + i);
-       end
-
+       %In the initial code, he excluded the upper bound of each part
+       N_total = N_elements_ne + N_elements_sep + N_elements_pe;
+       concentration = states{t}.Electrolyte.c(1:N_total);
        plot(position, concentration);
-
        if t > 1
            t = T(t)/hour;
            legendTime(end+1) = "t = " + num2str(t,2) + " hour";
@@ -380,7 +368,7 @@ theta0   = ne_itf.guestStoichiometry0;
 cmax     = ne_itf.saturationConcentration;
 r0       = ne_sd.particleRadius;
 F        = model.con.F;
-N        = ne_sd.N;
+N        = ne_sd.N; %dim radius - c is 100*1 sphere by sphere
 N_elements_ne = 10;  %gen.nenx; %heh
 
 
@@ -546,13 +534,14 @@ N_elements_ne = 10; %gen.nenx; %still meh
 Y = [];
 X = [];
 
+vf_ne = model.NegativeElectrode.(co).(am).(sd).volumeFraction;
+vf_pe = model.PositiveElectrode.(co).(am).(sd).volumeFraction;
+porosElyte = model.Electrolyte.volumeFraction;
+rp0_ne = model.NegativeElectrode.(co).ActiveMaterial.SolidDiffusion.particleRadius;
+rp0_pe = model.PositiveElectrode.(co).ActiveMaterial.SolidDiffusion.particleRadius;
+
 for t = 1:totalTime
-    %isn't the model pretty static ??
-    vf_ne = model.NegativeElectrode.(co).(am).(sd).volumeFraction;
-    vf_pe = model.PositiveElectrode.(co).(am).(sd).volumeFraction;
-    porosElyte = model.Electrolyte.volumeFraction;
-    rp0_ne = model.NegativeElectrode.(co).ActiveMaterial.SolidDiffusion.particleRadius;
-    rp0_pe = model.PositiveElectrode.(co).ActiveMaterial.SolidDiffusion.particleRadius;
+
 
     state = states{t};
 

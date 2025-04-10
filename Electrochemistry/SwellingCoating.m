@@ -30,7 +30,7 @@ classdef SwellingCoating < Coating
             am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
+            %these are the new variables
             varnames = {'porosity'                    , ...
                         'volumeFraction'              , ...
                         'porosityAccum'               , ...
@@ -108,13 +108,15 @@ classdef SwellingCoating < Coating
             vf = state.volumeFraction;
             
             % setup effective electrical conductivity using Bruggeman approximation
+            % cf report 4.2
             state.conductivity = model.electronicConductivity.*vf.^brugg;
 
         end
 
         function state = updateCurrent(model, state)
         % Assemble electrical current which is stored in :code:`state.j`
-
+        % Appendix A, p23, Electrode charge conservation. Gotta see
+        % assembleFlux
             sigma = state.conductivity;
             phi   = state.phi;
 
@@ -161,7 +163,7 @@ classdef SwellingCoating < Coating
                 c      = state.(am).(itf).cElectrodeSurface;
                 radius = state.(am).(sd).radius;
                 
-                % Calculate reaction rate constant
+                % Calculate reaction rate constant (Arrhenius)
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
                 %k = k.*(R_delithiated./radius).^2;
@@ -170,7 +172,8 @@ classdef SwellingCoating < Coating
                 th = 1e-3*cmax;
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
-                
+                % appendix B, p24, Surface reaction rate coefficient, 
+                % with beta = 0.5
                 j0 = k.*regularizedSqrt(coef, th).*n.*F;
                 
             end
@@ -195,11 +198,11 @@ classdef SwellingCoating < Coating
             j0    = state.(am).(itf).j0;
             eta   = state.(am).(itf).eta;
             sigma = state.hydrostaticStress;
-            
+            % p20 ??
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
 
             r  = state.(am).(sd).radius;
-            r0 = model.(am).(sd).particleRadius; %.* (r0./r).^2
+            r0 = model.(am).(sd).particleRadius; %.* (r0./r).^2 ??
 
             state.(am).(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
 
@@ -207,7 +210,7 @@ classdef SwellingCoating < Coating
 
         
         function state = updateVolumeFraction(model, state)
-
+        
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -229,6 +232,7 @@ classdef SwellingCoating < Coating
         % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
         % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
         % Daniel Brandell ([ref1])
+        %also report p11, 4.2, Volumetric Surface Area
 
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
@@ -243,7 +247,7 @@ classdef SwellingCoating < Coating
         
 
         function state = updateHydrostaticStress(model, state)
-
+        %report p19, 8, Diffusion induced stresses
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -265,20 +269,14 @@ classdef SwellingCoating < Coating
 
         %% Implementation of a new equation : the volume conservation Equation
         % Reference : eq 2 in [ref1]
-        
+        %real derivative ?? why defining those var ??
         function state = updatePorosityAccum(model, state, state0, dt)
-
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-
             state.porosityAccum = (state.porosity - state0.porosity)./dt;
-            
         end
         
         function state = updatePorositySource(model, state)
         % cf eq 2 in [ref1]
-            
+        % cf report p9. This equation should be unused ??
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
@@ -295,7 +293,7 @@ classdef SwellingCoating < Coating
             molarVolumeLithiated   = model.computeMolarVolumeLithiated(theta);
             molarVolumeDelithiated = model.computeMolarVolumeLithiated(theta0);
             
-            state.porositySource = 0 .* a.*R.*(molarVolumeLithiated - molarVolumeDelithiated);
+            state.porositySource = a.*R.*(molarVolumeLithiated - molarVolumeDelithiated);
             
         end
 
