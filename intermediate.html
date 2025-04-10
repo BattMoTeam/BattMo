@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Intermediate usage &mdash; BattMo  documentation</title>
+  <title>Intermediate Usage &mdash; BattMo  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/sphinx_collapse.css" type="text/css" />
@@ -25,8 +25,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Advanced Usage" href="advancedtopics.html" />
-    <link rel="prev" title="Part II: The DFN Model overview" href="pynbnotebooks/part_2_battery_modeling_guide.html" /> 
+    <link rel="next" title="Merging parameters" href="mergejsonstruct.html" />
+    <link rel="prev" title="Tutorial 9 - Simulate a cylindrical cell" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -142,6 +142,44 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Intermediate Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mergejsonstruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#visualize-results">Visualize Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="controlinput.html">Control models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="controlinput.html#json-input-control-interface">Json input control interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="thermal.html">Thermal Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html">Part1</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
@@ -182,44 +220,6 @@
 </li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Intermediate usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#define-parameters">Define Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run-simulation">Run Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#visualize-results">Visualize Results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="advancedtopics.html">Advanced Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="controlinput.html">Control models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#json-input-control-interface">Json input control interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
-<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="thermal.html">Thermal Simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
-<li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">BattMo Model Architecture</a></li>
@@ -382,7 +382,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Intermediate usage</li>
+      <li class="breadcrumb-item active">Intermediate Usage</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/intermediate.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -393,155 +393,84 @@
            <div itemprop="articleBody">
              
   <section id="intermediate-usage">
-<h1>Intermediate usage<a class="headerlink" href="#intermediate-usage" title="Link to this heading"></a></h1>
-<section id="setup-a-p4d-model-using-mergejsonstructs">
-<span id="mergejsonstructs"></span><h2>Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code><a class="headerlink" href="#setup-a-p4d-model-using-mergejsonstructs" title="Link to this heading"></a></h2>
-<p>Let’s build a pseudo-four-dimensional Li-ion battery model and explore more about how to mix-and-match <strong>BattMo</strong> parameter definitions!</p>
-<p>P4D simulations provide the most spatial detail for battery simulations. They can consider the effects of complex shapes like current collector tabs, jelly rolls, or multi-layer cells on overall performance. However, they are also the most computationally expensive simulations to run. They are therefore usually reserved for specicial cases when geometric effects play a significant role.</p>
-<p>P4D models can be setup using a similar JSON parameter definition as described in the section on Basic Usage.</p>
-<p><strong>BattMo</strong> aims to provide a modular solution for building electrochemical models. That allows us to mix-and-match different sets of parameter definitions without needing to do much re-coding. In this example, we will use the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> function to build a model definition from multiple sources.</p>
-<section id="define-parameters">
-<h3>Define Parameters<a class="headerlink" href="#define-parameters" title="Link to this heading"></a></h3>
-<p>We will combine five separate JSON files that define the parameters for:</p>
-<ul class="simple">
-<li><p>cell materials</p></li>
-<li><p>cell geometry</p></li>
-<li><p>control policy</p></li>
-<li><p>simulation settings</p></li>
-<li><p>output specifications</p></li>
-</ul>
-<p>First, let’s define our cell materials. We have provided a JSON file that contains material properties for an NMC-Graphite Li-ion battery and can parse this as a <strong>BattMo</strong> structure:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">;</span>
-<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
+<h1>Intermediate Usage<a class="headerlink" href="#intermediate-usage" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
 </div>
-<p>Next, we have defined the cell geometry properties in a separate JSON file that we can also parse into <strong>BattMo</strong>:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Examples/jsondatafiles/geometry3d.json&#39;</span><span class="p">;</span>
-<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>We can take the same approach for the remaining parameters, as shown below, for:</p>
-<p>Control policy</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;ie_control.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>Simulation settings</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_simparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>Output specifications</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;extra_output.json&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct_output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>We can now merge these parameter definitions into a single parameter set and run the simulation:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_simparams</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_output</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                              </span><span class="p">});</span>
-</pre></div>
-</div>
-</section>
-<section id="run-simulation">
-<h3>Run Simulation<a class="headerlink" href="#run-simulation" title="Link to this heading"></a></h3>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="visualize-results">
-<h3>Visualize Results<a class="headerlink" href="#visualize-results" title="Link to this heading"></a></h3>
-<p>We plot the model using <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotBatteryGrid.m">plotBatteryGrid</a> (note that the different axis are scaled differently)</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span>
-<span class="n">plotBatteryGrid</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</pre></div>
-</div>
-<figure class="align-default">
-<a class="reference external image-reference" href="_images/3dmodel.png"><img alt="_images/3dmodel.png" src="_images/3dmodel.png" /></a>
-</figure>
-<p>We find a extensive set of plotting functions in <a class="reference external" href="https://www.sintef.no/Projectweb/MRST/">MRST</a>. You may be interested
-to have a look at the <a class="reference external" href="https://www.sintef.no/projectweb/mrst/documentation/tutorials/visualization-tutorial/">Visualization Tutorial</a>. Let us use the
-<a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-core/plotting/plotGrid.m">plotGrid</a> and <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-core/plotting/plotCellData.m">plotCellData</a> to plot the
-surface particle concentrations in both electrode at a given time step.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="mi">20</span><span class="p">};</span>
-<span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">)</span>
-<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">NegativeElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">NegativeElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">SolidDiffusion</span><span class="p">.</span><span class="n">cSurface</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">))</span>
-<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">SolidDiffusion</span><span class="p">.</span><span class="n">cSurface</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Particle Surface Lithium Concentration&#39;</span><span class="p">);</span>
-</pre></div>
-</div>
-<figure class="align-default">
-<a class="reference external image-reference" href="_images/3dconc.png"><img alt="_images/3dconc.png" src="_images/3dconc.png" /></a>
-</figure>
-</section>
-</section>
-<section id="file-links-and-insertions-with-parsebattmojson">
-<h2>File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code><a class="headerlink" href="#file-links-and-insertions-with-parsebattmojson" title="Link to this heading"></a></h2>
-<p>There are two mechanisms which can be used to combine JSON input files:</p>
-<ol class="arabic simple">
-<li><p>Merge function using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStruct</span></code></p></li>
-<li><p>Direct insertion using <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></p></li>
-</ol>
-<p>We have just seen an example of the first mechanism, which can be used within Matlab when we setup the simulation.</p>
-<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/parseBattmoJson.m">parseBattmoJson</a> is used to parse a JSON input and create the corresponding matlab structure. It
-basically relies on <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/jsondecode.html">jsondecode</a>.</p>
-<p>In this process the reserved keyword properties <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> combined with <code class="code docutils literal notranslate"><span class="pre">filename</span></code> are used to fetch and
-insert in place JSON data located in separate files. Here is an example, taken from
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">lithium_ion_battery_nmc_graphite.json</a>
-where we have the following lines</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ParameterData/MaterialProperties/Graphite/graphite.json&quot;</span>
-<span class="w">      </span><span class="p">}}}}</span>
-</pre></div>
-</div>
-<p>The content of the file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a> is then
-inserted in place. Hence, when we write</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fileread</span><span class="p">(</span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">)</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
-<div class="sphinx_collapse docutils">
-<input class="sphinx_collapse__input" id="6d9ee4a9-4362-4b37-8b30-3c3e7d1446c6" name="6d9ee4a9-4362-4b37-8b30-3c3e7d1446c6" type="checkbox"><label class="sphinx_collapse__label" for="6d9ee4a9-4362-4b37-8b30-3c3e7d1446c6"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;saturationConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30555</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;volumetricSurfaceArea&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;numberOfElectronsTransferred&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;activationEnergyOfReaction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;reactionRateConstant&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.031e-11</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;guestStoichiometry100&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88551</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;guestStoichiometry0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1429</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;chargeTransferCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;openCircuitPotential&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;function&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;functionname&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;argumentlist&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;cElectrode&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;T&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cmax&quot;</span><span class="p">]</span>
-<span class="w">        </span><span class="p">}}},</span>
-</pre></div>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="mergejsonstruct.html#merging-parameters"><span class="std std-ref">Merging parameters</span></a></p>
 </div>
 </div>
 </div>
-</section>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="modelinitialisation.html#the-battery-simulation-model"><span class="std std-ref">The Battery Simulation Model</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="controlinput.html#control-models"><span class="std std-ref">Control models</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="soliddiffusion.html#solid-diffusion-models"><span class="std std-ref">Solid diffusion models</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="parsets.html#parameter-sets"><span class="std std-ref">Parameter sets</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="units.html#units"><span class="std std-ref">Units</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="thermal.html#thermal-simulation"><span class="std std-ref">Thermal simulation</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="optimisation.html#optimization"><span class="std std-ref">Optimisation</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="octave.html#note-on-octave-support"><span class="std std-ref">Octave Support</span></a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="pynbnotebooks/part_2_battery_modeling_guide.html" class="btn btn-neutral float-left" title="Part II: The DFN Model overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="advancedtopics.html" class="btn btn-neutral float-right" title="Advanced Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html" class="btn btn-neutral float-left" title="Tutorial 9 - Simulate a cylindrical cell" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mergejsonstruct.html" class="btn btn-neutral float-right" title="Merging parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
