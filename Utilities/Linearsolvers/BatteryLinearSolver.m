@@ -31,6 +31,8 @@ classdef BatteryLinearSolver < handle
 
         function solver = BatteryLinearSolver(varargin)
 
+            mrstModule add linearsolvers
+
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
@@ -993,6 +995,24 @@ classdef BatteryLinearSolver < handle
         end
 
     end
+
+    methods (Static)
+
+        function ok = checkAMGCL()
+            A = speye(5);
+            b = ones(5, 1);
+            result = A\b;
+            try
+                callAMGCL(A, b);
+                ok = true;
+            catch
+                disp('AMGCL test failed. May not be compiled.');
+                ok = false;
+            end
+        end
+        
+    end
+    
 end
 
 
