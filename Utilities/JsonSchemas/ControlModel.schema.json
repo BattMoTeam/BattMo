@@ -10,6 +10,7 @@
           "type": "string",
           "enum": ["CCDischarge",
                    "CCCharge",
+                   "generic",
                    "CC",
                    "CCCV",
                    "powerControl",
@@ -20,6 +21,10 @@
         "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
         "then": {
           "$ref" : "#/$defs/CCDischarge"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "generic"}},
+        "then": {
+          "$ref" : "GenericControl.schema.json"}}},
       {"if": {
         "properties": {"controlPolicy" : {"const" : "CCCharge"}},
         "then": {

@@ -366,7 +366,7 @@ classdef CcCvControlModel < ControlModel
         
         function func = setupStopFunction(model)
             
-            func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
+            func = @(model, state, state_prev) (state.numberOfCycles >= model.numberOfCycles);
             
         end
 

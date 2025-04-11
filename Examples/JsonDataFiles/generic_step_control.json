@@ -1,0 +1,37 @@
+{"Control":
+ { "controlPolicy": "Generic",
+   "controlsteps" : [
+    {"controltype" : "cycle",
+     "numberOfcycles" : 3,
+     "cycleControlSteps" : [
+       {"controltype" : "current",
+        "value" : 5,
+        "direction" : "discharge",
+        "termination" : {"quantity" : "voltage",
+                         "value" : 3.0,
+                         "comparison" : "below"},
+        "timeStepSize" : 100
+       },
+       {"controltype" : "voltage",
+        "value" : 3.0,
+        "termination" : {"quantity" : "current",
+                         "value" : 1e-4,
+                         "comparison" : "absolute value below"},
+        "timeStepSize" : 100
+       },
+       {"controltype" : "current",
+        "value" : 5,
+        "direction" : "charge",
+        "termination" : {"quantity" : "voltage",
+                         "value" : 4,
+                         "comparison" : "above"},
+        "timeStepSize" : 100
+       }
+     ]
+    },
+    {"controltype" : "rest",
+     "termination" : {"value" : 1000,
+                      "quantity" : "time"},
+     "timeStepSize" : 100}]
+ }
+}

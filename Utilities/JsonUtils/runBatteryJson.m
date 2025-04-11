@@ -51,17 +51,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the time step schedule
     %
 
-    if isfield(jsonstruct, 'TimeStepping')
-        timeSteppingParams = jsonstruct.TimeStepping;
-    else
-        timeSteppingParams = [];
-    end
-
-    step    = model.(ctrl).setupScheduleStep(timeSteppingParams);
-    control = model.(ctrl).setupScheduleControl();
-
-    % This control is used to set up the schedule
-    schedule = struct('control', control, 'step', step);
+    schedule = model.(ctrl).setupSchedule(jsonstruct);
 
     switch initializationSetup
       case "given SOC"
