@@ -20,8 +20,8 @@ close all
 fname = fullfile('ParameterData','BatteryCellParameters',...
                  'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
 jsonstruct = parseBattmoJson(fname);
-jsonstruct2 = parseBattmoJson("sample_input.json");
-jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct2});
+% jsonstruct2 = parseBattmoJson("sample_input.json");
+% jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct2});
 
 %removing temperature effect
 
@@ -79,8 +79,8 @@ jsonstruct.(pe).(co).(am).(sd).N = 5;
 jsonstruct_geometry = parseBattmoJson('Examples/jsondatafiles/geometry1d.json');
 jsonstruct = mergeJsonStructs({jsonstruct_geometry , jsonstruct});
 
-%merging with another json to add a TimeStepping field (good way)?
-jsonstruct2 = parseBattmoJson("sample_input.json");
+% merging with another json to add a TimeStepping field (good way)?
+jsonstruct2 = parseBattmoJson("Examples/Documentation/jsonfiles/Example/timeStepping.json");
 jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct2});
 %we choose a pertinent totalTime (the simulation stops as the battery is 
 % empty, 3960 = 1.1*3600 to get total time in seconds)
