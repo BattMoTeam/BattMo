@@ -174,33 +174,23 @@ classdef ControlModel < BaseModel
         % Parser for TimeStepping structure (see schema :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`)
         % which defines default values if not given
             
-            paramstemplate = struct('totalTime'          , []   , ...
-                                    'numberOfTimeSteps'  , 100  , ...
-                                    'timeStepDuration'   , []   , ...
-                                    'useRampup'          , false, ...
-                                    'numberOfRampupSteps', 5);
+            paramsdefault = struct('numberOfTimeSteps'  , 100  , ...
+                                   'useRampup'          , false, ...
+                                   'numberOfRampupSteps', 5);
 
             if (nargin > 0) && ~isempty(params)
                 
                 params = resolveUnitInputJson(params);
-
-                vals    = struct2cell(params);
-                fdnames = fieldnames(params);
-
-                params = horzcat(fdnames, vals)';
-                params = params(:);
-
-
-                params = merge_options(paramstemplate, params{:});
+                params = mergeJsonStructs({params, paramsdefault}, 'warn', false);
                 
             else
                 
-                params = paramstemplate;
+                params = paramsdefault;
                 
             end
 
-
         end
+        
     end
     
         
