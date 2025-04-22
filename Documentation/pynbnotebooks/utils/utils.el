@@ -12,8 +12,7 @@
 (defun clean-up-output ()
   "removes the verbose output from the simulations from a ipynb notebook"
   (interactive)
-  (let ((res (find-next-output-region))
-        (find-next-output-region (lambda ()
+  (let* ((find-next-output-region (lambda ()
                                    (if (re-search-forward "outputs\": " nil t)
                                        (save-excursion
                                          (let ((start (point))
@@ -22,7 +21,9 @@
                                            (list start end)
                                            ))
                                      nil
-                                     ))))
+                                     )))
+         (res (funcall find-next-output-region))
+         )
     (while res
       (if (and (re-search-forward "data" nil t)
                (re-search-forward "Solving timestep" nil t)

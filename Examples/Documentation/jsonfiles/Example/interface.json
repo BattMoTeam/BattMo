@@ -8,9 +8,6 @@
   "guestStoichiometry0": 0.1429,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
-    "type": "function",
-    "functionname": "computeOCP_Graphite_Torchio",
-    "argumentlist": [
-      "concentration",
-      "temperature",
-      "cmax"]}}
+    "functionFormat": "named function",
+    "functionName": "computeOCP_Graphite_Torchio",
+    "argumentList": ["stoichiometry"]}}
