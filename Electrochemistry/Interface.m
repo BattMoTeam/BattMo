@@ -53,12 +53,14 @@ classdef Interface < BaseModel
 
         %% Computed parameters at model setup
 
-        computeOCPFunc           % Function object to compute the OCP (see setupFunction)
+        computeOCPFunc           % Function object to compute the OCP (see Utilities/FunctionInterface/Function.m)
+        computeOCP               % function handler to compute the OCP (can be called directly)
         includeEntropyChange     % flag which determines if entropy change should be computed and included
-        computeEntropyChangeFunc % Function object to compute dUdT (see setupFunction)
+        computeEntropyChangeFunc % Function object to compute dUdT (see Utilities/FunctionInterface/Function.m)
+        computeEntropyChange     % function handler to compute dUdT (can be called directly)
         useJ0Func                % true if we use a function to compute the function computeJ0Func to compute the exchange current density
-        computeJ0Func            % used when useJ0Func is true. Function handler to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
-        
+        computeJ0Func            % used when useJ0Func is true. Function object to compute J0 as function of cElectrode, see method updateReactionRateCoefficient
+        computeJ0                % function handler used when useJ0Func is true. (can be called directly)
 
     end
 
@@ -88,10 +90,12 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.computeOCPFunc = setupFunction(inputparams.openCircuitPotential);
+            [model.computeOCPFunc, ...
+             model.computeOCP] = setupFunction(inputparams.openCircuitPotential);
 
             if ~isempty(model.entropyChange)
-                model.computeEntropyChangeFunc = setupFunction(inputparams.entropyChange);
+                [model.computeEntropyChangeFunc, ...
+                 model.computeEntropyChange] = setupFunction(inputparams.entropyChange);
             end
             
             j0 = inputparams.exchangeCurrentDensity;
@@ -99,7 +103,8 @@ classdef Interface < BaseModel
             if ~isempty(j0)
                 if isa(j0, 'struct') && isfield(j0, 'functionFormat')
                     model.useJ0Func = true;
-                    model.computeJ0Func = setupFunction(inputparams.exchangeCurrentDensity);
+                    [model.computeJ0Func, ...
+                     model.computeJ0] = setupFunction(inputparams.exchangeCurrentDensity);
                 else
                     model.useJ0Func = false;
                 end
@@ -261,14 +266,14 @@ classdef Interface < BaseModel
 
         function state = updateOCP0(model, state)
             
-            computeOCP = model.computeOCPFunc;
+            computeOCPFunc = model.computeOCPFunc;
             cmax       = model.saturationConcentration;
             
             c = state.cElectrodeSurface;
 
-            switch computeOCP.numberOfArguments
+            switch computeOCPFunc.numberOfArguments
               case 1
-                state.OCP0 = computeOCP.eval(c/cmax);
+                state.OCP0 = computeOCPFunc.eval(c/cmax);
               otherwise
                 error('number of argument not recognized')
             end
@@ -283,9 +288,9 @@ classdef Interface < BaseModel
             c = state.cElectrodeSurface;
             
             if computeEntCh.numberOfArguments
-                state.dUdT = computeEntCh.eval(c/cmax);
+                state.dUdT = computeEntCh(c/cmax);
             else
-                state.dUdT = computeEntCh.eval(c, cmax);
+                state.dUdT = computeEntCh(c, cmax);
             end
 
         end
@@ -331,7 +336,7 @@ classdef Interface < BaseModel
                     
                     soc = (c - cmin)./(cmax - cmin);
                     
-                    j0 = computeJ0.eval(soc);
+                    j0 = computeJ0(soc);
                     
                   case 4
 
@@ -341,7 +346,7 @@ classdef Interface < BaseModel
                     celde  = state.cElectrodeSurface;
                     T      = state.T;
 
-                    j0 = computeJ0.eval(celyte, celde, cmax, T);
+                    j0 = computeJ0(celyte, celde, cmax, T);
 
                   otherwise
 

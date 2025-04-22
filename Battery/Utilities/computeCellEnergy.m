@@ -66,10 +66,10 @@ function [energy, extras] = computeCellEnergy(model, varargin)
             c    = (1 - s).*c0 + s.*cT;
             cmax = model.(elde).(co).(am).(itf).(sc);
             
-            f = model.(elde).(co).(am).(itf).computeOCPFunc.eval(c(1 : end - 1)/cmax);
+            f = model.(elde).(co).(am).(itf).computeOCP(c(1 : end - 1)/cmax);
             
             % function handler
-            fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCPFunc.eval(((1 - s).*c0 + s.*cT)/cmax);
+            fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCP(((1 - s).*c0 + s.*cT)/cmax);
             
             energies{ielde} = capacities.(elde)*smax/N*sum(f);
             
