@@ -32,7 +32,13 @@ classdef Function
             fn.numberOfArguments = numel(fn.argumentList);
 
         end
-        
+
+        function y = eval(fn, varargin)
+            
+            error('virtual function');
+            
+        end
+
     end
     
     

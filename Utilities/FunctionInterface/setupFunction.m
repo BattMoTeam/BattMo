@@ -1,4 +1,4 @@
-function fn = setupFunction(jsonstruct)
+function [fn, fn_handler] = setupFunction(jsonstruct)
 
     switch jsonstruct.functionFormat
         
@@ -19,16 +19,25 @@ function fn = setupFunction(jsonstruct)
           otherwise
             
             error('the given number of arguments is not supported');
-            
-        end
+        end   
+
+        fn_handler = @(x) fn.eval(x);
+
+        return
         
       case 'string expression'
 
         fn = FormulaFunction(jsonstruct);
+        fn_handler = @(varargin) fn.eval(varargin{:});
+
+        return
         
       case 'named function'
         
         fn = NamedFunction(jsonstruct);
+        fn_handler = @(varargin) fn.eval(varargin{:});
+
+        return
         
       case 'constant'
 
