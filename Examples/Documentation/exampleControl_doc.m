@@ -1,33 +1,31 @@
 clear all
 
-dt = 1*second;
-T  = 3*minute;
-N  = T/dt;
-
-step.val = dt*ones(N, 1);
-step.control = ones(N, 1);
-
-period = 1*minute;
-control.src = @(time) (1e-2*ampere*sin(2*pi*time/period));
-control.CC = true;
-
-schedule.step = step;
-schedule.control = control;
-
 jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
 
-jsonstruct.Control = [];
-jsonstruct.Control.controlPolicy = 'CC';
+jsonstruct_control.controlPolicy = 'timeControl';
+
+expression = struct('formula', '1e-2*ampere*sin(2*pi*time/(1*minute))');
+jsonstruct_control.value = struct('functionFormat', 'string expression', ...
+                                  'argumentList', {{'time'}}, ...
+                                  'expression', expression);
+
+expression = struct('formula', '1');
+jsonstruct_control.type = struct('functionFormat', 'string expression', ...
+                                  'argumentList', {{'time'}}, ...
+                                  'expression', expression);
+
+
+jsonstruct.Control = jsonstruct_control;
+
+jsonstruct.TimeStepping.totalTime = 3*minute;
 
 jsonstruct.SOC = 0.5;
 
-model = setupModelFromJson(jsonstruct);
-
-initstate = model.setupInitialState();
-
-[~, states] = simulateScheduleAD(initstate, model, schedule);
+output = runBatteryJson(jsonstruct, 'runSimulation', true);
 
 %%
+
+states = output.states;
 
 time = cellfun(@(state) state.time, states);
 E = cellfun(@(state) state.Control.E, states);

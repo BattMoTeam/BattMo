@@ -230,9 +230,12 @@ classdef GenericBattery < BaseModel
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
+              case {'CCDischarge', 'CCCharge', 'CC'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
                 model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case 'timeControl'
+                model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, {'time'}});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, {'time'}});                
               case {'CCCV', 'Impedance'}
                 model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
               case {'Generic'}
