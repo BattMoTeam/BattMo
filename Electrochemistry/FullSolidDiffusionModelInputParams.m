@@ -11,8 +11,8 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
 
         % Function to update diffusion coefficient value, given as a struct with fields
         % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
-        % - functionname : matlab function name (should be available in path)
-        % - argumentlist : should be  ["c", "cmin", "cmax"]
+        % - functionName : matlab function name (should be available in path)
+        % - argumentList : should be  ["c", "cmin", "cmax"]
         diffusionCoefficient    
 
         % The following parameters are only need in the case the diffusionCoefficient is given as a function (see argument list)

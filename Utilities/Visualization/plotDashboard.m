@@ -38,7 +38,7 @@ function [fig] = plotDashboard(model, states, varargin)
     step = p.Results.step;
 
     fig = figure();
-    sgtitle(sprintf('step %g', step))
+    sgtitle(sprintf('step %g (time %g h)', step, states{step}.time/hour))
 
     time = cellfun(@(state) state.time, states);
     Enew = cellfun(@(state) state.(ctrl).E, states);

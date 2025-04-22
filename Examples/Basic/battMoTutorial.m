@@ -140,7 +140,7 @@ for ielde = 1:numel(eldes)
     soc   = linspace(0, 1);
     theta = soc*theta100 + (1 - soc)*theta0;
     c     = theta.*cmax;
-    OCP   = el_itf.computeOCPFunc(c, T, cmax);
+    OCP   = el_itf.computeOCP(c/cmax);
 
     plot(soc, OCP)
 end

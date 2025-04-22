@@ -9,8 +9,8 @@
   "reactionRateConstant": 2.33e-11,
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
-  "openCircuitPotential" : {"type" : "function",
-           "functionname" : "computeOCP_LNMO_Mao",
-           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
-                           },
+  "openCircuitPotential" : {
+    "functionFormat" : "named function",
+    "functionName" : "computeOCP_LNMO_Mao",
+    "argumentList" : ["concentration", "temperature", "maximum concentration"]},
   "chargeTransferCoefficient" : 0.5}
