@@ -6,6 +6,7 @@ PEM electrolyser with Gas Supply
 ================================
 *Generated from runProtonicCell.m*
 
+.. include:: runProtonicCellPreamble.rst
 
 
 json input data

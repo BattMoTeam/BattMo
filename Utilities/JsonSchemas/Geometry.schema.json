@@ -197,12 +197,16 @@
             "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "numberOfDiscreteCellsVertical" : {
+            "numberOfDiscretizationCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "numberOfDiscreteCellsAngular" : {
+            "numberOfDiscretizationCellsAngular" : {
               "type" : "integer",
-              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
+              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
+            "verticalRefinementParameter" :{
+              "type" : "integer",
+              "description" : "parameter that is used to refine the grid in the vertical direction at the top and bottom. The higher the value, the more refinement is done. If this value is not set, no refinement is done, that is we use a uniform mesh in the vertical direction"}
+          }},
         "NegativeElectrode" : {
           "properties" : {
             "CurrentCollector" : {

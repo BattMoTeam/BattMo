@@ -189,7 +189,7 @@
   },
   "TimeStepping": {
     "totalTime": 5040,
-    "numberOfTimeSteps": 300,
+    "numberOfTimeSteps": 150,
     "useRampup": true
   },
   "Output": {
