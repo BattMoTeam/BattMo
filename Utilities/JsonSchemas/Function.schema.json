@@ -19,7 +19,7 @@
         "type": "string",
         "description": "name of the argument"
       },
-      "description": "list of arguments ordered as in function call. This is used in the schema themselves for the given function to describe the expected argument list. It necessary to include it when a string expression is given. It can be used to infer the number of arguments"
+      "description": "list of arguments ordered as in function call. This is used in the schema themselves for the given function to describe the expected argument list. It is necessary to include it when a string expression is given. Within the expression itself, other variable name can be given, see below. This property is also used to infer the number of arguments, when needed."
     }
   },
   "oneOf": [
