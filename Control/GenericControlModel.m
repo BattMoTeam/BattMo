@@ -77,7 +77,10 @@ classdef GenericControlModel < ControlModel
 
         
         function model = setupTerminationFunctions(model)
-
+            
+        % For each control step termination, setup the function that determines if the termination condition is fulfilled. This
+        % function is stored under controlstep.termination.function.
+            
             controlsteps = model.controlsteps;
 
             for ictrl = 1 : numel(controlsteps)
@@ -96,7 +99,7 @@ classdef GenericControlModel < ControlModel
         end
         
         function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
-        % Returns the current time-step and control
+        % Returns the current time-step and control. Each control step stores its time step size.
 
             ctrlsteps = model.controlsteps;
 
@@ -117,6 +120,8 @@ classdef GenericControlModel < ControlModel
         
         function state = updateControlType(model, state)
             
+        % Fetch control step index from state, then from this control step, we get the control type. Assign this control
+        % type to the state.
             istep    = model.getControlStep(state);
             ctrlstep = model.controlsteps{istep};
             
@@ -126,12 +131,18 @@ classdef GenericControlModel < ControlModel
 
         function state = updateControlTime(model, state)
 
+        % Control time is the time spent since last control switch
+            
             state.ctrlTime = state.time - state.ctrlSwitchTime;
             
         end
         
         function [isCtrlDone, isLastControl] = isControlTerminated(model, state, state0)
 
+        % check if control is terminated or if it is the last control step. For that is uses the termintation.function
+        % that we setup earlier (preprocsessing). It is called in updateControlState, at the end of each Newton step,
+        % and also to check if simulation is terminated in triggerSimulationEnd.
+            
             if ~isfield(state, 'ctrlType')
                 state = model.updateControlType(state);
             end
@@ -148,9 +159,11 @@ classdef GenericControlModel < ControlModel
         
         function state = updateControlState(model, state, state0, dt)
             
-        % This function is called by the solver at the end of a Newton step.  We check if we have triggered the
-        % "termination" criteria from the control If the termination criteria is met, we increment the control step by
-        % one, and proceed with the Newton algorithm
+        % This function is called by the solver at the end of each Newton step.  We check if we have triggered the
+        % "termination" criteria from the control. If the termination criteria is met, we increment the control step by
+        % one, and proceed with the Newton algorithm. This may create control switches that are too early, because when
+        % we have not converged, the termination condition can be met but it does not mean that it will be the case at
+        % convergence.
             
             [isCtrlDone, isLastControl] = model.isControlTerminated(state, state0);
             
@@ -166,12 +179,14 @@ classdef GenericControlModel < ControlModel
         function  [arefulfilled, state] = checkConstraints(model, state, state0, dt)
             
         % This function is called when the Newton method has converged, but we want to check if the solution we have
-        % obtained does not break the termination criteria.
+        % obtained does not break the termination criteria. For the moment, we do implement this check, which may lead
+        % to control switches that come too early.
             
         end
         
         function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
 
+        % Returns true if the simulation should end. Called in getTimeStep.
             [isCtrlDone, isLastControl] = model.isControlTerminated(state, state0_inner);
             
             doend = (isCtrlDone && isLastControl);
@@ -179,7 +194,9 @@ classdef GenericControlModel < ControlModel
         end
         
         function state = updateValueFromControl(model, state)
-        % From the given control type, set the corresponding control variable to the expected value
+            
+        % From the given control step, we get the control type which determines which value should be set (current and
+        % voltage) and also provides the numerical value. We update the state using those two.
             
             ictrlstep   = model.getControlStep(state);
             controlstep = model.controlsteps{ictrlstep};
@@ -212,6 +229,8 @@ classdef GenericControlModel < ControlModel
         end
 
         function [ictrlstep, isLastControl] = getControlStep(model, state)
+
+        % Utility function to get control step index and, in addition, check if it is the last control step.
             
             ctrlsteps = model.controlsteps;
             ictrlstep = state.ctrlStepIndex;
@@ -224,6 +243,8 @@ classdef GenericControlModel < ControlModel
         end
         
         function state = updateControlEquation(model, state)
+
+        % Assemble the control equation and add it to state.
             
             ctrlType  = state.ctrlType;
             ictrlstep = state.ctrlStepIndex;
