@@ -274,7 +274,6 @@ figure
      soc(end+1) = stoc;
      porosity(end+1) = poros;
  end
- porosit
  plot(soc, porosity,'LineWidth',1.2);
  axis([0 1 0 1]);
  axis square;
@@ -301,29 +300,32 @@ totalTime = length(T);
 %constructing the x axis
 %beep boop. Assembling the 3 zones.
 pos_ne = (0:N_elements_ne-1) * deltaX_ne;
-pos_sep = negativeElectrodeSize * 1e6 + (1:N_elements_sep-1) * deltaX_sep;
-pos_pe = (negativeElectrodeSize + separatorSize) * 1e6 + (1:N_elements_pe-1) * deltaX_pe;
+pos_sep = negativeElectrodeSize * 1e6 + (0:N_elements_sep-1) * deltaX_sep;
+pos_pe = (negativeElectrodeSize + separatorSize) * 1e6 + (0:N_elements_pe-1) * deltaX_pe;
 
 position = [pos_ne, pos_sep, pos_pe];
 
 
-legendTime = "t = 0 hour";
-
-%beep boop again
-c_ne  = c(1:N_elements_ne);
-c_sep = c(N_elements_ne + (1:N_elements_sep-1));
-c_pe  = c(N_elements_ne + N_elements_sep + (1:N_elements_pe-1));
-
-%Assemble
-concentration = [c_ne, c_sep, c_pe];
-
-
-plot(position, concentration);
+% legendTime = "t = 0 hour";
+% 
+% %Lets try something else
+% % c_ne  = c(1:N_elements_ne);
+% % c_sep = c(N_elements_ne + (1:N_elements_sep-1));
+% % c_pe  = c(N_elements_ne + N_elements_sep + (1:N_elements_pe-1));
+% 
+% c_ne = model.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.c
+% c_pe = model.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.c
+% 
+% 
+% %Assemble
+% concentration = [c_ne, c_sep, c_pe];
+% 
+% hold on
+% 
+% plot(position, concentration);
 
 hold on
-
 for t = 1:totalTime
-    disp(totalTime)
    %Only draw the curve for timestep multiples
    if t<75
        timestep = 8;
@@ -369,7 +371,7 @@ cmax     = ne_itf.saturationConcentration;
 r0       = ne_sd.particleRadius;
 F        = model.con.F;
 N        = ne_sd.N; %dim radius - c is 100*1 sphere by sphere
-N_elements_ne = 10;  %gen.nenx; %heh
+N_elements_ne = gen.nenx;
 
 
 Y = [];
@@ -414,7 +416,7 @@ cmax     = ne_itf.saturationConcentration;
 r0       = ne_sd.particleRadius;
 F        = model.con.F;
 N        = ne_sd.N;
-N_elements_ne = 10; %gen.nenx; %still meh
+N_elements_ne = gen.nenx;
 
 
 Y = [];
@@ -474,7 +476,7 @@ cmax     = po_itf.saturationConcentration;
 r0       = po_sd.particleRadius; %this variable is not used. Anyway why does it exist??
 F        = model.con.F;
 N        = po_sd.N;
-N_elements_pe = 10; %gen.penx;
+N_elements_pe = gen.penx;
 
 
 Y = [];
@@ -528,8 +530,7 @@ cmax     = ne_itf.saturationConcentration;
 r0       = ne_sd.particleRadius;
 F        = model.con.F;
 N        = ne_sd.N;
-N_elements_ne = 10; %gen.nenx; %still meh
-
+N_elements_ne = gen.nenx; 
 
 Y = [];
 X = [];

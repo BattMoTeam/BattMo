@@ -78,11 +78,12 @@ classdef SwellingCoating2 < Coating
             sd  = 'SolidDiffusion';
                        
             r0    = model.(am).(sd).particleRadius;
+
             poro0 = 1 - model.(am).(sd).volumeFraction;
 
             r  = state.(am).(sd).radius;
 
-            poro = 1 - (r.^3)./(r0.^3).*(1 - poro0);
+            poro = 1 - (1 - poro0).*(r.^3)./(r0.^3);
 
             state.porosity = poro;
             
@@ -133,7 +134,7 @@ classdef SwellingCoating2 < Coating
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+        
             if model.(am).(itf).useJ0Func
 
                 error('not checked');
@@ -168,16 +169,19 @@ classdef SwellingCoating2 < Coating
                 % Calculate reaction rate constant (Arrhenius)
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
-                %k = k.*(R_delithiated./radius).^2;
+                k = k.*(R_delithiated./radius).^2;
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3*cmax;
                 coef = cElyte.*(cmax - c).*c;
+                coef2 = coef; %!!!
                 coef(coef < 0) = 0;
+                if ~isequal(coef, coef2)
+                    disp("SwellingCoating2 -  coef < 0")
+                end
                 % appendix B, p24, Surface reaction rate coefficient, 
                 % with beta = 0.5
                 j0 = k.*regularizedSqrt(coef, th).*n.*F;
-                
             end
             
             state.(am).(itf).j0 = j0;

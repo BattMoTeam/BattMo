@@ -46,7 +46,7 @@ classdef Electrode < BaseModel
             model = dispatchParams(model, inputparams, fdnames);
 
             if model.coatingModelSetup.swelling
-                model.Coating = SwellingCoating2(inputparams.Coating);
+                model.Coating = SwellingCoating(inputparams.Coating);
             else
                 model.Coating = Coating(inputparams.Coating);
             end

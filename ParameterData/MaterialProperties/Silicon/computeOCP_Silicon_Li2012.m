@@ -3,7 +3,9 @@ function [OCP, dUdT] = computeOCP_Silicon_Li2012(c, T, cmax)
 % Juchuan Li, Xingcheng Xiao, Fuqian Yang, Mark W. Verbrugge, Yang-Tse Cheng
 % Potentiostatic Intermittent Titration Technique for Electrodes Governed by Diffusion and Interfacial Reaction
 % doi : 10.1021/jp207919q
-    
+
+        c = real(c);
+        fprintf('ADI - imag max: %e\n', max(abs(imag(value(c)))));
     stoc = c/cmax;
     stoc_vals = [0.00476555
                  0.00485132
@@ -48,7 +50,6 @@ function [OCP, dUdT] = computeOCP_Silicon_Li2012(c, T, cmax)
                 0.0671234
                 0.0385545
                ];
-
     OCP = interpTable(stoc_vals, OCP_vals, stoc);
     dUdT = 0;
     

@@ -171,7 +171,11 @@ classdef SwellingCoating < Coating
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3*cmax;
                 coef = cElyte.*(cmax - c).*c;
+                coef2 = coef; %!!!
                 coef(coef < 0) = 0;
+                if ~isequal(coef, coef2)
+                    disp("SwellingCoating2 -  coef < 0")
+                end
                 % appendix B, p24, Surface reaction rate coefficient, 
                 % with beta = 0.5
                 j0 = k.*regularizedSqrt(coef, th).*n.*F;
@@ -324,7 +328,7 @@ classdef SwellingCoating < Coating
 
             cons = assembleConservationEquation(model, flux, 0, source, accum);
             
-            state.volumeCons = cons;
+            state.volumeCons =  cons;
             
         end
 
