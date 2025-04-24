@@ -1888,8 +1888,10 @@ classdef GenericBattery < BaseModel
                         state.(elde).(co).(amc).(sd).cAverage = max(cmin, state.(elde).(co).(amc).(sd).cAverage);
                         state.(elde).(co).(amc).(sd).cAverage = min(cmax, state.(elde).(co).(amc).(sd).cAverage);
                       case {'full', 'swelling'}
-                        state.(elde).(co).(amc).(sd).c = max(cmin, state.(elde).(co).(amc).(sd).c);
-                        state.(elde).(co).(amc).(sd).c = min(cmax, state.(elde).(co).(amc).(sd).c);
+                        state.(elde).(co).(amc).(sd).c        = max(cmin, state.(elde).(co).(amc).(sd).c);
+                        state.(elde).(co).(amc).(sd).c        = min(cmax, state.(elde).(co).(amc).(sd).c);
+                        state.(elde).(co).(amc).(sd).cSurface = max(cmin, state.(elde).(co).(amc).(sd).cSurface);
+                        state.(elde).(co).(amc).(sd).cSurface = min(cmax, state.(elde).(co).(amc).(sd).cSurface);
                       otherwise
                         error('diffusionModelType not recognized')
                     end
