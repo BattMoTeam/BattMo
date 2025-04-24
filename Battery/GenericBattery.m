@@ -1901,8 +1901,8 @@ classdef GenericBattery < BaseModel
                 co = 'Coating';
 
                 if model.(elde).coatingModelSetup.swelling
-                    state.(elde).(co).porosity = min(1, state.(elde).(co).porosity);
-                    state.(elde).(co).porosity = max(0, state.(elde).(co).porosity);
+                    state.(elde).(co).porosity = min(0.99, state.(elde).(co).porosity);
+                    state.(elde).(co).porosity = max(0.01, state.(elde).(co).porosity);
                 end
                 
             end
