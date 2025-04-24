@@ -87,11 +87,18 @@ jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct2});
 jsonstruct.TimeStepping.totalTime = 3960/jsonstruct.Control.DRate;
 %set a timestep of 100
 jsonstruct.TimeStepping.numberOfTimeSteps = jsonstruct.TimeStepping.totalTime/100;
+
+
+jsonstruct.Control.Drate = 0;
+
 %set up model and output
 output = runBatteryJson(jsonstruct, 'includeGridGenerator', true);
+
 model = output.model;
-cgt = model.cgt;
-gen = output.gridGenerator;
+cgt   = model.cgt;
+gen   = output.gridGenerator;
+
+return
 
 %% Plot Open Circuit Potential as a funcion of State of Charge for pe and ne
 %(using the report p12)
