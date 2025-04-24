@@ -1983,7 +1983,7 @@ classdef GenericBattery < BaseModel
 
             end
 
-            model.cmin = 0;
+            model.cmin = 0.01;
 
 
         end
