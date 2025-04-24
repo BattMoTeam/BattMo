@@ -34,13 +34,14 @@ classdef SwellingCoating2 < Coating
             varnames = {'porosity'                    , ...
                         'volumeFraction'              , ...
                         'hydrostaticStress'           , ...
+                        'porosityCons', ...
                         {am, itf, 'volumetricSurfaceArea'}};
 
             model = model.registerVarNames(varnames);
             
-            fn = @SwellingCoating2.updatePorosity;
-            model = model.registerPropFunction({'porosity', fn, {{am, sd, 'radius'}}});
-
+            fn = @SwellingCoating2.updatePorosityEquation;
+            model = model.registerPropFunction({'porosityCons', fn, {'porosity', {am, sd, 'radius'}}});
+            
             fn = @SwellingCoating2.updateHydrostaticStress;
             model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
             
@@ -70,23 +71,19 @@ classdef SwellingCoating2 < Coating
             
         end
         
-
-        function state = updatePorosity(model, state)
-
+        function state = updatePorosityEquation(model, state)
+    
             am  = 'ActiveMaterial';
-            itf = 'Interface';
             sd  = 'SolidDiffusion';
-                       
+
             r0    = model.(am).(sd).particleRadius;
-
             poro0 = 1 - model.(am).(sd).volumeFraction;
+            r     = state.(am).(sd).radius;
+            poro  = state.porosity;
 
-            r  = state.(am).(sd).radius;
+            expr = 1 - (1 - poro0).*(r.^3)./(r0.^3);
 
-            poro = 1 - (1 - poro0).*(r.^3)./(r0.^3);
-
-            state.porosity = poro;
-            
+            state.porosityCons = poro - expr;
         end
         
         function state = updateRvol(model, state)
