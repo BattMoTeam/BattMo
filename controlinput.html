@@ -1,29 +1,29 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Control models &mdash; BattMo  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/sphinx_collapse.css" type="text/css" />
-      <link rel="stylesheet" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="_static/battmologo.ico"/>
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c92655ae" />
+
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="_static/design-tabs.js?v=36754332"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="_static/battmologo.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -435,7 +435,8 @@ where the current is gradually increased from zero to the targeted given input c
 <p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id1">
-<a class="reference external image-reference" href="_images/controlExampleCCDischarge.png"><img alt="_images/controlExampleCCDischarge.png" src="_images/controlExampleCCDischarge.png" style="width: 70%;" /></a>
+<a class="reference external image-reference" href="_images/controlExampleCCDischarge.png"><img alt="_images/controlExampleCCDischarge.png" src="_images/controlExampleCCDischarge.png" style="width: 70%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Constant Current Discharge control</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
@@ -455,7 +456,8 @@ this case, we can include a rampup time. As an example,</p>
 <p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id2">
-<a class="reference external image-reference" href="_images/controlExampleCCCharge.png"><img alt="_images/controlExampleCCCharge.png" src="_images/controlExampleCCCharge.png" style="width: 70%;" /></a>
+<a class="reference external image-reference" href="_images/controlExampleCCCharge.png"><img alt="_images/controlExampleCCCharge.png" src="_images/controlExampleCCCharge.png" style="width: 70%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Constant Current Charge control</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
@@ -488,7 +490,8 @@ this value is lower than <code class="code docutils literal notranslate"><span c
 <p>We iterate this process for the given number of cycles. For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
 following result.</p>
 <figure class="align-center" id="id3">
-<a class="reference external image-reference" href="_images/controlExampleCCCV.png"><img alt="_images/controlExampleCCCV.png" src="_images/controlExampleCCCV.png" style="width: 70%;" /></a>
+<a class="reference external image-reference" href="_images/controlExampleCCCV.png"><img alt="_images/controlExampleCCCV.png" src="_images/controlExampleCCCV.png" style="width: 70%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">CCCV control</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
@@ -553,7 +556,8 @@ a <code class="code docutils literal notranslate"><span class="pre">controlPolic
 </div>
 <p>The complete source can be found here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/exampleControl_doc.m">exampleControl_doc</a>.</p>
 <figure class="align-center">
-<a class="reference external image-reference" href="_images/exampleControl.png"><img alt="_images/exampleControl.png" src="_images/exampleControl.png" style="width: 70%;" /></a>
+<a class="reference external image-reference" href="_images/exampleControl.png"><img alt="_images/exampleControl.png" src="_images/exampleControl.png" style="width: 70%;" />
+</a>
 </figure>
 </section>
 </section>

@@ -1,29 +1,29 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Computation Graph Model Design ang Assembly &mdash; BattMo  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/sphinx_collapse.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="../_static/battmologo.ico"/>
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c92655ae" />
+
   
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../_static/design-tabs.js?v=36754332"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="shortcut icon" href="../_static/battmologo.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -428,7 +428,8 @@ j&amp;= k c_s(1 - c_e)^{\frac12}c_e^\frac12\\
 \end{align*}</div><p>We have seven variables <span class="math notranslate nohighlight">\(R,\ j, \eta, \text{OCP}, \phi_s, \phi_e, c_s, c_e\)</span>. The dependency graph we
 obtain from the equations above is</p>
 <figure class="align-center" id="reacmodelgraph">
-<a class="reference external image-reference" href="_images/reacmodelgraph.png"><img alt="../_images/reacmodelgraph.png" src="../_images/reacmodelgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/reacmodelgraph.png"><img alt="../_images/reacmodelgraph.png" src="../_images/reacmodelgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Reaction model graph</span><a class="headerlink" href="#reacmodelgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -504,7 +505,8 @@ parameter belonging to the model, which we mentioned earlier.</p>
 \[\text{OCP} = \hat{\text{OCP}}(c_s, T)\]</div>
 <p>Then, we have to introduce a new node (i.e. variable) in our graph, the temperature <code class="code docutils literal notranslate"><span class="pre">T</span></code>.</p>
 <figure class="align-center" id="reacmodelgraph2">
-<a class="reference external image-reference" href="_images/reacmodelgraph2.png"><img alt="../_images/reacmodelgraph2.png" src="../_images/reacmodelgraph2.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/reacmodelgraph2.png"><img alt="../_images/reacmodelgraph2.png" src="../_images/reacmodelgraph2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Reaction model graph with added temperature</span><a class="headerlink" href="#reacmodelgraph2" title="Link to this image"></a></p>
 </figcaption>
@@ -535,7 +537,8 @@ column, we write the definition they will take after discretization. The operato
 </div></blockquote>
 <p>The computational for the temperature model is given by</p>
 <figure class="align-center" id="tempgraph">
-<a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -546,7 +549,8 @@ reaction, as some function of the reaction rate. The effect of the temperature o
 included, as we presented earlier, as a additional temperature dependence of the open circuit potential
 <code class="code docutils literal notranslate"><span class="pre">OCP</span></code>. We obtain the following computational graph</p>
 <figure class="align-center" id="tempreacgraph">
-<a class="reference external image-reference" href="_images/tempreacgraph.png"><img alt="../_images/tempreacgraph.png" src="../_images/tempreacgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/tempreacgraph.png"><img alt="../_images/tempreacgraph.png" src="../_images/tempreacgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Coupled Temperature Reaction model graph</span><a class="headerlink" href="#tempreacgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -573,7 +577,8 @@ the chemical reaction. We have equations of the form</p>
 chemical reactions.</p>
 <p>The computational grap for each of this equation take the generic form</p>
 <figure class="align-center" id="concgraph">
-<a class="reference external image-reference" href="_images/concgraph.png"><img alt="../_images/concgraph.png" src="../_images/concgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/concgraph.png"><img alt="../_images/concgraph.png" src="../_images/concgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Concentration model graph</span><a class="headerlink" href="#concgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -601,7 +606,8 @@ model names and a model hierarchy. This was done already earlier with the <code 
 models. Let us name our two concentration models as <code class="code docutils literal notranslate"><span class="pre">Solid</span></code> and <code class="code docutils literal notranslate"><span class="pre">Elyte</span></code>. We obtain the following
 graph.</p>
 <figure class="align-center" id="concreacgraph">
-<a class="reference external image-reference" href="_images/concreacgraph.png"><img alt="../_images/concreacgraph.png" src="../_images/concreacgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/concreacgraph.png"><img alt="../_images/concreacgraph.png" src="../_images/concreacgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Coupled reaction-concentration model</span><a class="headerlink" href="#concreacgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -615,7 +621,8 @@ the mass conservation equations.</p>
 previous composite model as <code class="code docutils literal notranslate"><span class="pre">Masses</span></code> and keep the name of <code class="code docutils literal notranslate"><span class="pre">Thermal</span></code> for the thermal model. We
 obtain the following</p>
 <figure class="align-center" id="tempconcreacgraph">
-<a class="reference external image-reference" href="_images/tempconcreacgraph.png"><img alt="../_images/tempconcreacgraph.png" src="../_images/tempconcreacgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/tempconcreacgraph.png"><img alt="../_images/tempconcreacgraph.png" src="../_images/tempconcreacgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Coupled Temperature-Concentration-Reaction graph</span><a class="headerlink" href="#tempconcreacgraph" title="Link to this image"></a></p>
 </figcaption>
@@ -623,7 +630,8 @@ obtain the following</p>
 <p>New computational graphs are thus obtained by connecting existing graph, using a hierarchy of model. In the
 example above, the model hierarchy is given by</p>
 <figure class="align-center" id="tempconcreacgraphmodel">
-<a class="reference external image-reference" href="_images/tempconcreacgraphmodel.png"><img alt="../_images/tempconcreacgraphmodel.png" src="../_images/tempconcreacgraphmodel.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/tempconcreacgraphmodel.png"><img alt="../_images/tempconcreacgraphmodel.png" src="../_images/tempconcreacgraphmodel.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Model hierarchy</span><a class="headerlink" href="#tempconcreacgraphmodel" title="Link to this image"></a></p>
 </figcaption>
@@ -993,7 +1001,8 @@ graph.</p>
 </div>
 <p>We obtain the plot we already presented <a class="reference internal" href="#tempgraph"><span class="std std-ref">above</span></a></p>
 <figure class="align-center" id="tempgraphcopy">
-<a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/tempgraph.png"><img alt="../_images/tempgraph.png" src="../_images/tempgraph.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraphcopy" title="Link to this image"></a></p>
 </figcaption>
@@ -1036,7 +1045,8 @@ the following line (see also <a class="reference external" href="https://github.
 </pre></div>
 </div>
 <figure class="align-center" id="uncoupledreactemp">
-<a class="reference external image-reference" href="_images/uncoupledreactemp.png"><img alt="../_images/uncoupledreactemp.png" src="../_images/uncoupledreactemp.png" style="width: 100%;" /></a>
+<a class="reference external image-reference" href="_images/uncoupledreactemp.png"><img alt="../_images/uncoupledreactemp.png" src="../_images/uncoupledreactemp.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Uncoupled thermal reaction model.</span><a class="headerlink" href="#uncoupledreactemp" title="Link to this image"></a></p>
 </figcaption>
