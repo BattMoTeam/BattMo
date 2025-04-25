@@ -1,4 +1,4 @@
-classdef SwellingCoating2 < Coating
+classdef NahCoating < Coating
 
     % Same class as ActiveMaterial but with a new primaryVariable
     % (porosity). Some properties depending on porosity are thus no more constant
@@ -12,7 +12,7 @@ classdef SwellingCoating2 < Coating
     
     methods
         
-        function model = SwellingCoating2(inputparams)
+        function model = NahCoating(inputparams)
 
             model = model@Coating(inputparams)
             fdnames = {'molarMass'};
@@ -26,64 +26,111 @@ classdef SwellingCoating2 < Coating
         function model = registerVarAndPropfuncNames(model)
 
             model = registerVarAndPropfuncNames@Coating(model);
-            
+            ne = 'NegativeElectrode';
             am  = 'ActiveMaterial';
             itf = 'Interface';
             sd  = 'SolidDiffusion';
+            co = 'Coating';
             %these are the new variables
-            varnames = {'porosity'                    , ...
-                        'volumeFraction'              , ...
-                        'hydrostaticStress'           , ...
-                        'porosityCons', ...
+            varnames = {'porosity';
+                        'volumeFraction';
+                        'porosityAccum';
+                        'porositySource';
+                        'porosityFlux';
+                        'volumeCons';
+                        'hydrostaticStress';
+                        {ne, 'platedLi'}; %New! plated Li concentration 
+                        {ne, 'lithiumPlatingFlux'};  %New! flux (N_Li)
                         {am, itf, 'volumetricSurfaceArea'}};
 
             model = model.registerVarNames(varnames);
             
-            fn = @SwellingCoating2.updatePorosityEquation;
-            model = model.registerPropFunction({'porosityCons', fn, {'porosity', {am, sd, 'radius'}}});
+            fn = @NahCoating.updateLithiumPlatingFlux; %New
+            model = model.registerPropFunction({{ne, 'lithiumPlatingFlux'}, fn, ...
+                {{ne, 'platedLi'}, {am, itf, 'cElectrolyte'}, {'phi'}}});
+
+            fn = @NahCoating.updateplatedLi;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({{ne, 'platedLi'}, fn, {{ne, 'lithiumPlatingFlux'}}});
             
-            fn = @SwellingCoating2.updateHydrostaticStress;
+            fn = @NahCoating.updatePorosityAccum;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({'porosityAccum', fn, {'porosity','volumeFraction'}});
+
+            fn = @NahCoating.updatePorositySource;
+            inputparams = {{am, itf, 'R'}, {am, itf, 'volumetricSurfaceArea'}, {am, sd, 'cAverage'}, {am, sd,'radius'}};
+            model = model.registerPropFunction({'porositySource', fn, inputparams});
+
+            fn = @NahCoating.updatePorosityFlux;
+            model = model.registerPropFunction({'porosityFlux', fn, {}});
+            
+            fn = @NahCoating.updateVolumeConservation;
+            model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
+            
+            fn = @NahCoating.updateHydrostaticStress;
             model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
             
-            fn = @SwellingCoating2.updateVolumeFraction;
+            fn = @NahCoating.updateVolumeFraction;
             model = model.registerPropFunction({{'volumeFraction'}, fn, {'porosity'}});
             model = model.registerPropFunction({{am, sd, 'volumeFraction'}, fn, {'porosity'}});
 
-            fn = @SwellingCoating2.updateVolumetricSurfaceArea;
+            fn = @NahCoating.updateVolumetricSurfaceArea;
             model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radius'}, {am, sd, 'volumeFraction'}}});
-            fn =  @SwellingCoating2.updateRvol;
+            fn =  @NahCoating.updateRvol;
             model = model.registerPropFunction({{am, sd, 'Rvol'}, fn, {{am, itf, 'R'}, {am, itf, 'volumetricSurfaceArea'}}});
 
-            fn  = @SwellingCoating2.updateReactionRate;
+            fn  = @NahCoating.updateReactionRate;
             inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, {am, sd, 'radius'}, 'hydrostaticStress'};
             model = model.registerPropFunction({{am, itf, 'R'}, fn, inputnames});
             
-            fn  = @SwellingCoating2.updateReactionRateCoefficient;
+            fn  = @NahCoating.updateReactionRateCoefficient;
             inputnames = {{am, itf, 'cElectrolyte'}, {am, itf, 'cElectrodeSurface'}, {am, sd, 'radius'}, {am, itf, 'T'}};
             model = model.registerPropFunction({{am, itf, 'j0'}, fn, inputnames});
 
-            fn  = @SwellingCoating2.updateVolumeFraction;
+            fn  = @NahCoating.updateVolumeFraction;
             model = model.registerPropFunction({'volumeFraction', fn, {'porosity'}});
             model = model.registerPropFunction({{am, sd, 'volumeFraction'}, fn, {'porosity'}});
 
-            fn  = @SwellingCoating2.updateConductivity;
+            fn  = @NahCoating.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});
             
         end
         
-        function state = updatePorosityEquation(model, state)
-    
+        function state = updateLithiumPlatingFlux(model, state) %New!
+            ne  = 'NegativeElectrode';
             am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
+            itf = 'Interface';
 
-            r0    = model.(am).(sd).particleRadius;
-            poro0 = 1 - model.(am).(sd).volumeFraction;
-            r     = state.(am).(sd).radius;
-            poro  = state.porosity;
+            F = model.constants.F;
+            R = model.constants.R;
 
-            expr = 1 - (1 - poro0).*(r.^3)./(r0.^3);
+            T     = state.(ne).(am).(itf).T;
+            phi_s = state.(ne).(co).phi;
+            phi_e = state.(ne).(am).(itf).electrolytePotential;
 
-            state.porosityCons = poro - expr;
+            etaLi = phi_s - phi_e;  %plating surtension
+
+            kLi = 1e-9;  % need to add lithiumPlatingRateConstant [m/s]
+            alphaA = 0.5;
+            alphaC = 0.5;
+
+            cLi = state.(ne).platedLi;
+            ce  = state.(ne).(am).(itf).cElectrolyte;
+
+            num = cLi .* exp((F * alphaA .* etaLi) ./ (R .* T));
+            den = ce  .* exp((-F * alphaC .* etaLi) ./ (R .* T));
+
+            N_Li = kLi .* (num - den);  % [mol/m²/s]
+
+            state.(ne).lithiumPlatingFlux = N_Li;
+        end
+        
+        function state = updateplatedLi(model, state, state0, dt) %New!
+            ne = 'NegativeElectrode';
+            a = 1e6 % model.specificSurfaceArea [m²/m³]
+            N_Li = state.(ne).lithiumPlatingFlux;
+            dLi_dt = -a .* N_Li;  % variation de concentration
+            state.(ne).platedLi = state0.(ne).platedLi + dt .* dLi_dt;
         end
         
         function state = updateRvol(model, state)
@@ -131,7 +178,7 @@ classdef SwellingCoating2 < Coating
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-        
+            
             if model.(am).(itf).useJ0Func
 
                 error('not checked');
@@ -166,7 +213,7 @@ classdef SwellingCoating2 < Coating
                 % Calculate reaction rate constant (Arrhenius)
                 k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
 
-                k = k.*(R_delithiated./radius).^2;
+                %k = k.*(R_delithiated./radius).^2;
 
                 % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
                 th = 1e-3*cmax;
@@ -174,14 +221,12 @@ classdef SwellingCoating2 < Coating
                 coef2 = coef; %!!!
                 coef(coef < 0) = 0;
                 if ~isequal(coef, coef2)
-                    disp("SwellingCoating2 -  coef < 0")
-                    disp(c.val)
-                    disp(cmax)
-                    disp(cElyte.val)
+                    disp("NahCoating2 -  coef < 0")
                 end
                 % appendix B, p24, Surface reaction rate coefficient, 
                 % with beta = 0.5
                 j0 = k.*regularizedSqrt(coef, th).*n.*F;
+                
             end
             
             state.(am).(itf).j0 = j0;
@@ -330,7 +375,7 @@ classdef SwellingCoating2 < Coating
 
             cons = assembleConservationEquation(model, flux, 0, source, accum);
             
-            state.volumeCons = cons;
+            state.volumeCons =  cons;
             
         end
 

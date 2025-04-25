@@ -9,7 +9,8 @@
 %%% Setting up the environment
 % BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
 % is collected into modules where each module contains code for doing 
-% specific things. To use this functionality we must add these modules to 
+% specific things. To use this functionality we
+% must add these modules to 
 % the matlab path by running:
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
@@ -89,10 +90,11 @@ jsonstruct.TimeStepping.totalTime = 3960/jsonstruct.Control.DRate;
 jsonstruct.TimeStepping.numberOfTimeSteps = jsonstruct.TimeStepping.totalTime/100;
 
 
-jsonstruct.Control.Drate = 0;
+jsonstruct.Control.DRate = 0.1;
+jsonstruct.NegativeElectrode.platedLi = 0; %Trying this
 
 %set up model and output
-output = runBatteryJson(jsonstruct, 'includeGridGenerator', true);
+output = runBatteryJson(jsonstruct, 'includeGridGenerator', true, 'runSimulation', false);
 
 model = output.model;
 cgt   = model.cgt;
