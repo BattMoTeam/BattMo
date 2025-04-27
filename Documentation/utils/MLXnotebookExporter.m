@@ -58,10 +58,21 @@ classdef MLXnotebookExporter
 
         end        
 
-        function openMfileSaveToMlx(mne, notebookname)
+        function openMfileSaveToMlx(mne, filename)
 
-            inputfile  = fullfile(mne.inputdir, [notebookname, '.m']);
-            outputfile = fullfile(mne.outputdir, [notebookname, '.mlx']);
+            assert(exist(filename, 'file') == 2, 'File %s not found.', filename); 
+            fullfilename = which(filename);
+            [dirpath, filename, ext] = fileparts(fullfilename);
+
+            inputfile = fullfile(dirpath, [filename, ext]);
+            
+            notebookdir = fullfile(dirpath, 'notebooks');
+            if ~exist(notebookdir)
+                % Create the directory if it does not exist
+                mkdir(notebookdir);
+            end
+
+            outputfile = fullfile(notebookdir, [filename, '.mlx']);
             
             matlab.internal.liveeditor.openAsLiveCode(fileread(inputfile)); % open as live script
             activeDoc = matlab.desktop.editor.getActive(); % get the active editor (the new file)
