@@ -10,7 +10,8 @@ classdef ActiveMaterial < BaseModel
         
         Interface
         SolidDiffusion        
-
+        LithiumPlating
+        
         %% Input parameters
 
         % Standard parameters
@@ -34,6 +35,8 @@ classdef ActiveMaterial < BaseModel
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        useLithiumPlating
+        
     end
     
     methods
@@ -53,6 +56,7 @@ classdef ActiveMaterial < BaseModel
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'SEImodel'              , ...
+                       'useLithiumPlating'     , ...
                        'isRootSimulationModel'};
 
             model = dispatchParams(model, inputparams, fdnames);
@@ -79,6 +83,9 @@ classdef ActiveMaterial < BaseModel
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
+            if model.useLithiumPlating
+                model.LithiumPlating = LithiumPlating();
+            end
             
         end
         
@@ -91,6 +98,7 @@ classdef ActiveMaterial < BaseModel
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
+            lp  = 'LithiumPlating';
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
@@ -146,7 +154,16 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'E'}});
 
             end
-            
+
+            if model.useLithiumPlating
+                fn = @ActiveMaterial.updateLithiumPlatingVariables;
+                inputvarnames = {{itf, 'phiElectrode'} , ...
+                                 {itf, 'phiElectrolyte'}, ...
+                                 {itf, 'cElectrolyte'}};
+                model = model.registerPropFunction({{lp, 'phiElectrode'}, fn, inputvarnames});            
+                model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
+            end            
         end
 
         function model = setupForSimulation(model)

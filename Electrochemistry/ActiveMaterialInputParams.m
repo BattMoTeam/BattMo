@@ -38,6 +38,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        useLithiumPlating
+        
     end
 
     methods
@@ -48,6 +50,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             itf = 'Interface';
             
             jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct,  'useLithiumPlating', false);
 
             jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
             diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
