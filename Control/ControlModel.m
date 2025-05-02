@@ -13,6 +13,7 @@ classdef ControlModel < BaseModel
         % - 'CC'
         % - 'CCCV'
         % - 'timecontrol'
+        % - 'generic'
         %
         controlPolicy
         
