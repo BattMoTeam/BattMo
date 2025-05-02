@@ -69,8 +69,40 @@ classdef MLXnotebookExporter
             end
         end
         
+        function setupIpynbFromMlx(mne, filename, varargin)
 
-        function setupNotebookFromMfile(mne, filename, varargin)
+            opt = struct('outputDirectory', []);
+            opt = merge_options(opt, varargin{:});
+
+            [inputfile, outputfile] = getIOfiles(mne, filename, ...
+                                                 'outputDirectory', opt.outputDirectory, ...
+                                                 'outputFormat', 'ipynb');
+
+            export(inputfile, outputfile, 'format', 'ipynb');
+            
+        end
+
+        
+        function setupMlxFromM(mne, filename, varargin)
+
+            opt = struct('run'            , false, ...
+                         'outputDirectory', []);
+            opt = merge_options(opt, varargin{:});
+
+            [inputfile, outputfile] = getIOfiles(mne, filename, ...
+                                                 'outputDirectory', opt.outputDirectory, ...
+                                                 'outputFormat', 'mlx');
+            
+            matlab.internal.liveeditor.openAndSave(inputfile, outputfile);
+
+            if opt.run
+                matlab.internal.liveeditor.executeAndSave(outputfile);
+            end
+            
+        end
+        
+        function setupIpynbFromM(mne, filename, varargin)
+
         % From a M-file, generate the notebooks (mlx and ipynb)
         % The default directory for the generated notebooks is a sub-directory where the M-file is located called 'notebooks'
 
@@ -79,11 +111,26 @@ classdef MLXnotebookExporter
                          'generateIpynb'  , true);
             opt = merge_options(opt, varargin{:});
 
+            mne.setupMlxFromM(filename, ...
+                              'run'            , opt.run, ...
+                              'outputDirectory', opt.outputDirectory);
+
+            if opt.generateIpynb
+                mne.setupIpynbFromMlx(filename, 'outputDirectory', opt.outputDirectory);
+            end
+            
+        end
+
+        function [inputfile, outputfile] = getIOfiles(mne, filename, varargin)
+            
+            opt = struct('outputDirectory', [], ...
+                         'outputFormat', 'mlx');
+            
+            opt = merge_options(opt, varargin{:});
+
             assert(exist(filename, 'file') == 2, 'File %s not found.', filename); 
             fullfilename = which(filename);
             [dirpath, filename, ext] = fileparts(fullfilename);
-
-            inputfile = fullfile(dirpath, [filename, ext]);
 
             if isempty(opt.outputDirectory)
                 outputDirectory = fullfile(dirpath, 'notebooks');
@@ -95,17 +142,15 @@ classdef MLXnotebookExporter
                 outputDirectory = opt.outputDirectory
             end
 
-            outputfile = fullfile(outputDirectory, [filename, '.mlx']);
-            matlab.internal.liveeditor.openAndSave(inputfile, outputfile);
-
-            if opt.run
-                matlab.internal.liveeditor.executeAndSave(outputfile);
-            end
-
-            if opt.generateIpynb
-                inputfile  = outputfile;
+            switch opt.outputFormat
+              case 'mlx'
+                inputfile  = fullfile(dirpath, [filename, '.m']);
+                outputfile = fullfile(outputDirectory, [filename, '.mlx']);
+              case 'ipynb'
+                inputfile  = fullfile(outputDirectory, [filename, '.mlx']);
                 outputfile = fullfile(outputDirectory, [filename, '.ipynb']);
-                export(inputfile, outputfile, 'format', 'ipynb');
+              otherwise
+                error('outputFormat not recognized');
             end
             
         end
