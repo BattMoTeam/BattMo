@@ -169,7 +169,19 @@
 <li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="thermal.html">Thermal Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runThermalExample.html">Thermal simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-minimum-and-maximum-values-of-the-temperature">Plot of the minimum and maximum values of the temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#We-change-setup-for-cooling-coefficient">We change setup for cooling coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-temperatures">Plot of temperatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-temperature-distribution">Plot of the temperature distribution</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
@@ -392,10 +404,11 @@
              
   <section id="runthermalmodel">
 <h1>runThermalModel<a class="headerlink" href="#runthermalmodel" title="Link to this heading"></a></h1>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Example with thermal effects </span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Thermal simulation</span>
+<span class="c">% BattMo support simulations with thermal coupling.</span>
 
-<span class="c">%% Setup material properties</span>
-
+<span class="c">%% Setup of the material properties</span>
+<span class="c">% </span>
 <span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                        </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                        </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
@@ -404,35 +417,79 @@
 
 <span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 
-<span class="c">%% Setup geometry</span>
+<span class="c">%% Setup of the geometry</span>
+<span class="c">%</span>
+<span class="c">% We use a simple 3d-geometry</span>
 <span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                        </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                        </span><span class="s">&#39;geometry3d.json&#39;</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
-<span class="c">%% Setup Control</span>
+<span class="c">%% Setup of the Control</span>
+<span class="c">%</span>
 <span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
 <span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
+<span class="c">%% Setup the full input</span>
+<span class="c">% We merge all the json structures to obtain a complete input</span>
+<span class="c">%</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">});</span>
+<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;warn&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
-<span class="c">%% Plot the extrnal heat transfer coefficient</span>
 
+<span class="c">%%</span>
+<span class="c">% In the json structure the value of the flag |use_thermal| is set to |true|, which means that the simulation will</span>
+<span class="c">% include thermal effects.</span>
+
+<span class="nb">disp</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">use_thermal</span><span class="p">);</span>
+
+<span class="c">%%</span>
+<span class="c">% The thermal parameters are given for each component. They typically consists of</span>
+<span class="c">%</span>
+<span class="c">% * Specific Heat Capacity</span>
+<span class="c">% * Thermal Conducitivty</span>
+<span class="c">%</span>
+<span class="c">% From those, we compute *effective* quantities. For the coating, it is done by processing the corresponding properties</span>
+<span class="c">% of the constituents. The effective thermal conductivity takes into account the volume fraction.</span>
+<span class="c">%</span>
+<span class="c">% The parameters needed to compute the heat exchange with the exterior are</span>
+<span class="c">%</span>
+<span class="c">% * The external temperature (K)</span>
+<span class="c">% * The external heat transfer coefficient (W/m²/s)  </span>
+<span class="c">%</span>
+<span class="c">% The external heat transfer coefficient can take different values for each external face of the model. It will then</span>
+<span class="c">% depend on the chosen geometrical domain. For our simple 3D model, the json interface gives us the possibility to set two</span>
+<span class="c">% values : A default value used for all external faces which is overwritten by the value given for the tabs. In our</span>
+<span class="c">% example we use 100 W/m²/s and 1000 W/m²/s, respectively.</span>
+
+
+<span class="c">%% Plot of the external heat transfer coefficient</span>
+<span class="c">%</span>
+
+<span class="c">%%%</span>
+<span class="c">% We setup the model from the json struct input in order to inspect it. We could have run the simulation and retrieve</span>
+<span class="c">% from the output too.</span>
+<span class="c">%</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupModelFromJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
-<span class="c">% We index of the faces that are coupled to thermally to the exterior</span>
+<span class="c">%%%</span>
+<span class="c">% We retriecv index of the faces that are coupled thermally to the exterior</span>
 <span class="n">extfaceind</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">couplingTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">;</span>
-<span class="n">nf</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">G</span><span class="p">.</span><span class="n">getNumberOfFaces</span><span class="p">();</span>
+<span class="n">nf</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">G</span><span class="p">.</span><span class="n">getNumberOfFaces</span><span class="p">();</span><span class="w"> </span><span class="c">% total number of faces in the thermal model, which are in fact all the faces in the model</span>
 
+<span class="c">%%%</span>
 <span class="c">% We create a vector with one value per face with value equal to the external heat transfer coefficient for the external</span>
 <span class="c">% face</span>
 <span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">NaN</span><span class="p">(</span><span class="n">nf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="n">val</span><span class="p">(</span><span class="n">extfaceind</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">externalHeatTransferCoefficient</span><span class="p">;</span>
 
-<span class="n">figure</span>
-<span class="s">plotFaceData(model.ThermalModel.grid,</span><span class="w"> </span><span class="s">val,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;,</span><span class="w"> </span><span class="s">&#39;black&#39;)</span><span class="p">;</span>
+<span class="c">%%%</span>
+<span class="c">% We now use the function |plotFaceData| to plot the values of the external heat transfer coefficient on the faces of</span>
+<span class="c">% the 3d model.</span>
+
+<span class="nb">figure</span>
+<span class="n">plotFaceData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;black&#39;</span><span class="p">);</span>
 <span class="n">axis</span><span class="w"> </span><span class="s">equal</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">]);</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;External Heat Transfer Coefficient / W/s/m^2&#39;</span><span class="p">)</span>
@@ -442,7 +499,9 @@
 
 <span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
-<span class="c">%% plot voltage</span>
+<span class="c">%% Plot of the voltage</span>
+<span class="c">%</span>
+<span class="c">% We obtain the usual discharge curves and plot them.</span>
 
 <span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">time</span><span class="p">;</span>
 <span class="n">E</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">E</span><span class="p">;</span>
@@ -458,7 +517,10 @@
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;voltage / V&#39;</span><span class="p">);</span>
 
 
-<span class="c">%% Plot the minimum and maximum values of the temperature</span>
+<span class="c">%% Plot of the minimum and maximum values of the temperature</span>
+<span class="c">%</span>
+<span class="c">% We extract the temperature results and the minimum and maximum values from the output</span>
+<span class="c">%</span>
 
 <span class="n">T0</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">PhysicalConstants</span><span class="p">.</span><span class="n">absoluteTemperature</span><span class="p">;</span>
 
@@ -467,8 +529,11 @@
 <span class="n">Tmin</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">T0</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 <span class="n">Tmax</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">T0</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
-<span class="n">figure</span>
-<span class="s">hold</span><span class="w"> </span><span class="s">on</span>
+<span class="c">%%%</span>
+<span class="c">% We plot the values</span>
+
+<span class="nb">figure</span>
+<span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;min T&#39;</span><span class="p">);</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T&#39;</span><span class="p">);</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
@@ -477,14 +542,28 @@
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 
-<span class="c">%% change setup for cooling coefficient</span>
+<span class="c">%%%</span>
+<span class="c">% We notice that there is very little temperature variation. The reason is that we have a small cell which is very thin,</span>
+<span class="c">% with a lot of external contact where heat can be released.</span>
+<span class="c">%</span>
+<span class="c">% Let us use a different heat exchange coefficient. We set the default heat exchange to zero so that heat exchange can only</span>
+<span class="c">% occur through the tabs.</span>
+
+
+<span class="c">%% We change setup for cooling coefficient</span>
 
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">externalHeatTransferCoefficientTab</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">externalHeatTransferCoefficient</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 
+<span class="c">%%%</span>
+<span class="c">% We re-run the simulation and obtain higher temperatures.</span>
+
 <span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
-<span class="c">%% Plot the minimum and maximum values of the temperature</span>
+<span class="c">%% Plot of temperatures</span>
+<span class="c">%</span>
+<span class="c">% We plot the minimum and maximum values of the temperature for the new values of the cooling coefficients</span>
+<span class="c">%</span>
 
 <span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 
@@ -502,7 +581,10 @@
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 
-<span class="c">%% plot final temperature distribution</span>
+<span class="c">%% Plot of the temperature distribution</span>
+<span class="c">%</span>
+<span class="c">% We have access to the temperature distribution for all the cells in the model. Let us plot the temperature field</span>
+<span class="c">% for the last time step. To do so, we run</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">}</span>
 <span class="nb">figure</span>
@@ -511,29 +593,6 @@
 <span class="n">colorbar</span>
 <span class="s">title(&#39;Temperature / C&#39;)</span><span class="p">;</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">]);</span>
-
-
-
-
-<span class="cm">%{</span>
-<span class="cm">Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology</span>
-<span class="cm">and SINTEF Digital, Mathematics &amp; Cybernetics.</span>
-
-<span class="cm">This file is part of The Battery Modeling Toolbox BattMo</span>
-
-<span class="cm">BattMo is free software: you can redistribute it and/or modify</span>
-<span class="cm">it under the terms of the GNU General Public License as published by</span>
-<span class="cm">the Free Software Foundation, either version 3 of the License, or</span>
-<span class="cm">(at your option) any later version.</span>
-
-<span class="cm">BattMo is distributed in the hope that it will be useful,</span>
-<span class="cm">but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
-<span class="cm">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
-<span class="cm">GNU General Public License for more details.</span>
-
-<span class="cm">You should have received a copy of the GNU General Public License</span>
-<span class="cm">along with BattMo.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-<span class="cm">%}</span>
 </pre></div>
 </div>
 </section>
