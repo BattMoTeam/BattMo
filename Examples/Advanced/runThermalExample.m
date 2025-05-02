@@ -1,7 +1,8 @@
-%% Example with thermal effects 
+%% Thermal simulation
+% BattMo support simulations with thermal coupling.
 
-%% Setup material properties
-
+%% Setup of the material properties
+% 
 jsonfilename = fullfile('ParameterData'        , ...
                         'BatteryCellParameters', ...
                         'LithiumIonBatteryCell', ...
@@ -10,32 +11,76 @@ jsonstruct_material = parseBattmoJson(jsonfilename);
 
 jsonstruct_material.include_current_collectors = true;
 
-%% Setup geometry
+%% Setup of the geometry
+%
+% We use a simple 3d-geometry
 jsonfilename = fullfile('Examples'     , ...
                         'JsonDataFiles', ...
                         'geometry3d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
-%% Setup Control
+%% Setup of the Control
+%
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
+%% Setup the full input
+% We merge all the json structures to obtain a complete input
+%
 jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
-                               jsonstruct_control});
+                               jsonstruct_control}, 'warn', false);
 
-%% Plot the extrnal heat transfer coefficient
 
+%%
+% In the json structure the value of the flag |use_thermal| is set to |true|, which means that the simulation will
+% include thermal effects.
+
+disp(jsonstruct.use_thermal);
+
+%%
+% The thermal parameters are given for each component. They typically consists of
+%
+% * Specific Heat Capacity
+% * Thermal Conducitivty
+%
+% From those, we compute *effective* quantities. For the coating, it is done by processing the corresponding properties
+% of the constituents. The effective thermal conductivity takes into account the volume fraction.
+%
+% The parameters needed to compute the heat exchange with the exterior are
+%
+% * The external temperature (K)
+% * The external heat transfer coefficient (W/m²/s)  
+%
+% The external heat transfer coefficient can take different values for each external face of the model. It will then
+% depend on the chosen geometrical domain. For our simple 3D model, the json interface gives us the possibility to set two
+% values : A default value used for all external faces which is overwritten by the value given for the tabs. In our
+% example we use 100 W/m²/s and 1000 W/m²/s, respectively.
+
+
+%% Plot of the external heat transfer coefficient
+%
+
+%%%
+% We setup the model from the json struct input in order to inspect it. We could have run the simulation and retrieve
+% from the output too.
+%
 model = setupModelFromJson(jsonstruct);
 
-% We index of the faces that are coupled to thermally to the exterior
+%%%
+% We retriecv index of the faces that are coupled thermally to the exterior
 extfaceind = model.ThermalModel.couplingTerm.couplingfaces;
-nf         = model.ThermalModel.G.getNumberOfFaces();
+nf         = model.ThermalModel.G.getNumberOfFaces(); % total number of faces in the thermal model, which are in fact all the faces in the model
 
+%%%
 % We create a vector with one value per face with value equal to the external heat transfer coefficient for the external
 % face
 val = NaN(nf, 1);
 val(extfaceind) = model.ThermalModel.externalHeatTransferCoefficient;
+
+%%%
+% We now use the function |plotFaceData| to plot the values of the external heat transfer coefficient on the faces of
+% the 3d model.
 
 figure
 plotFaceData(model.ThermalModel.grid, val, 'edgecolor', 'black');
@@ -48,7 +93,9 @@ colorbar
 
 output = runBatteryJson(jsonstruct);
 
-%% plot voltage
+%% Plot of the voltage
+%
+% We obtain the usual discharge curves and plot them.
 
 time = output.time;
 E    = output.E;
@@ -64,7 +111,10 @@ xlabel('time / h');
 ylabel('voltage / V');
 
 
-%% Plot the minimum and maximum values of the temperature
+%% Plot of the minimum and maximum values of the temperature
+%
+% We extract the temperature results and the minimum and maximum values from the output
+%
 
 T0 = PhysicalConstants.absoluteTemperature;
 
@@ -72,6 +122,9 @@ states = output.states;
 
 Tmin = cellfun(@(state) min(state.ThermalModel.T + T0), states);
 Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
+
+%%%
+% We plot the values
 
 figure
 hold on
@@ -83,14 +136,28 @@ ylabel('Temperature / C');
 
 legend show
 
-%% change setup for cooling coefficient
+%%%
+% We notice that there is very little temperature variation. The reason is that we have a small cell which is very thin,
+% with a lot of external contact where heat can be released.
+%
+% Let us use a different heat exchange coefficient. We set the default heat exchange to zero so that heat exchange can only
+% occur through the tabs.
+
+
+%% We change setup for cooling coefficient
 
 jsonstruct.ThermalModel.externalHeatTransferCoefficientTab = 100;
 jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 
+%%%
+% We re-run the simulation and obtain higher temperatures.
+
 output = runBatteryJson(jsonstruct);
 
-%% Plot the minimum and maximum values of the temperature
+%% Plot of temperatures
+%
+% We plot the minimum and maximum values of the temperature for the new values of the cooling coefficients
+%
 
 states = output.states;
 
@@ -108,7 +175,10 @@ ylabel('Temperature / C');
 
 legend show
 
-%% plot final temperature distribution
+%% Plot of the temperature distribution
+%
+% We have access to the temperature distribution for all the cells in the model. Let us plot the temperature field
+% for the last time step. To do so, we run
 
 state = states{end}
 figure
@@ -117,26 +187,3 @@ plotCellData(model.ThermalModel.grid, ...
 colorbar
 title('Temperature / C');
 view([50, 50]);
-
-
-
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}

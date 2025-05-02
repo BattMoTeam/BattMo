@@ -53,6 +53,7 @@ nbsphinx_prolog = r"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['nbsphinx',
+              'nbsphinx_link',
               'sphinxcontrib.globalsubs',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
