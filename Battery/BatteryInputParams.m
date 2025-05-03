@@ -37,7 +37,7 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            jsontruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
 
             jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors'      , ...
                                                                {ne, 'include_current_collectors'}, ...
@@ -94,6 +94,8 @@ classdef BatteryInputParams < InputParams
                 inputparams.(ctrl) = PowerControlModelInputParams(pick(ctrl));
               case 'timeControl'
                 inputparams.(ctrl) = TimeControlModelInputParams(pick(ctrl));
+              case 'Generic'
+                inputparams.(ctrl) = GenericControlModelInputParams(pick(ctrl));
               otherwise
                 error('controlPolicy %s not recognized', jsonstruct.(ctrl).controlPolicy);
             end

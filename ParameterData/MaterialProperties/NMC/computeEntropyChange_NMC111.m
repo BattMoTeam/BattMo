@@ -1,16 +1,19 @@
-function [OCP, dUdT] = computeOCP_NMC811_Chen2020(c, T, cmax)
-
-    % LG M50 NMC open circuit potential as a function of stochiometry, fit taken
-    % from [1].
-
-    % [1] Chang-Hui Chen, Ferran Brosa Planella, Kieran O’Regan, Dominika Gastol, W.
-    % Dhammika Widanage, and Emma Kendrick. "Development of Experimental Techniques for
-    % Parameterization of Multi-scale Lithium-ion Battery Models." Journal of the
-    % Electrochemical Society 167 (2020): 080534.
-
-    sto = c./cmax;
-    OCP = -0.8090*sto + 4.4875 - 0.0428*tanh(18.5138*(sto - 0.5542)) - 17.7326*tanh(15.7890*(sto - 0.3117)) + 17.5842*tanh(15.9308*(sto - 0.3120));
-    dUdT = 0;
+function dUdT = computeEntropyChange_NMC111(theta)
+    
+    % Calculate the entropy change at the given lithiation
+    
+    coeff1 = [0.199521039        , ...
+                   - 0.928373822      , ...
+                   + 1.364550689000003, ...
+                   - 0.611544893999998];
+    
+    coeff2 = [1                  , ...
+                   - 5.661479886999997, ...
+                   + 11.47636191      , ... 
+                   - 9.82431213599998 , ...
+                   + 3.048755063];
+    
+    dUdT = -1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1), theta);
     
 end
 

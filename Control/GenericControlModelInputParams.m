@@ -1,22 +1,26 @@
-classdef FunctionInputParams < InputParams
-    
+classdef GenericControlModelInputParams < ControlModelInputParams
+%
     properties
-        
-        functionname
-        filepath
-        argumentlist
-        name
+
+        controlsteps
         
     end
+    
     
     methods
 
-        function inputparams = FunctionInputParams(jsonstruct)
-            inputparams = inputparams@InputParams(jsonstruct);
+        function inputparams = GenericControlModelInputParams(jsonstruct)
+
+        % addon to compensate for matlab json parsing choice
+            if isstruct(jsonstruct.controlsteps)
+                jsonstruct.controlsteps = {jsonstruct.controlsteps};
+            end
+            inputparams = inputparams@ControlModelInputParams(jsonstruct);
+            
         end
-        
     end
     
+        
 end
 
 

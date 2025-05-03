@@ -24,11 +24,36 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
         jsonstructrests = {};
     end
 
-    fds1 = fieldnames(jsonstruct1);
-    fds2 = fieldnames(jsonstruct2);
-
     jsonstruct = jsonstruct1;
 
+    if isstruct(jsonstruct) && numel(jsonstruct) > 1
+        % We look at the case where the jsonstruct is a struct-array
+
+        nelts = numel(jsonstruct);
+
+        if nelts ~= numel(jsonstruct2)
+
+            % we overwrite the elements, which means do nothing
+            return
+            
+        else
+            % we merge each of the elements
+
+            for ielt = 1 : nelts
+                subtree = tree;
+                subtree{end + 1} = sprintf('[%d]', ielt);
+                jsonstruct(ielt) = mergeJsonStructs({jsonstruct(ielt), jsonstruct2(ielt)}, 'warn', opt.warn, 'tree', subtree);
+            end
+
+            return
+            
+        end
+
+    end
+    
+    fds1 = fieldnames(jsonstruct1);
+    fds2 = fieldnames(jsonstruct2);
+    
     for ifd2 = 1 : numel(fds2)
         
         fd2 = fds2{ifd2};

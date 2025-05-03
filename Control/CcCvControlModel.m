@@ -366,7 +366,7 @@ classdef CcCvControlModel < ControlModel
         
         function func = setupStopFunction(model)
             
-            func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
+            func = @(model, state, state_prev) (state.numberOfCycles >= model.numberOfCycles);
             
         end
 
@@ -399,16 +399,16 @@ classdef CcCvControlModel < ControlModel
             if isempty(ncycles)
                 totalTime = params.totalTime;
             else 
-                if ~isempty(params.totalTime) 
+                if isAssigned(params, {'totalTime'}) 
                     warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
                 end
                 totalTime = ncycles*1.2*(1*hour/CRate + 1*hour/DRate);
             end
 
-            if ~isempty(params.timeStepDuration)
+            if isAssigned(params, {'timeStepDuration'})
                 dt = params.timeStepDuration;
             else
-                if isempty(params.numberOfTimeSteps) 
+                if isUnAssigned(params, {'numberOfTimeSteps'}) 
                     error('No timeStepDuration and numberOfTimeSteps are given');
                 end
                 n  = params.numberOfTimeSteps;
@@ -427,8 +427,6 @@ classdef CcCvControlModel < ControlModel
 
         end
 
-        
-        
         function control = setupScheduleControl(model)
             
             control = setupScheduleControl@ControlModel(model);

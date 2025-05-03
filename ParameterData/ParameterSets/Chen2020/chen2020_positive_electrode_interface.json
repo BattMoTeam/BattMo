@@ -8,12 +8,14 @@
   "guestStoichiometry0": 0.99,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
-    "type": "function",
-    "functionname": "computeOCP_NMC811_Chen2020",
-    "argumentlist": [
-      "concentration",
-      "temperature",
-      "cmax"
-    ]
+    "functionFormat": "string expression",
+    "argumentList": ["stoichiometry"],
+    "expressions" : [{"language" : "matlab",
+                      "variableNames" : ["sto"],
+                      "formula" : "-0.8090*sto + 4.4875 - 0.0428*tanh(18.5138*(sto - 0.5542)) - 17.7326*tanh(15.7890*(sto - 0.3117)) + 17.5842*tanh(15.9308*(sto - 0.3120))"},
+                     {"language" : "julia",
+                      "variableNames" : ["x"],
+                      "formula" : "-0.8090*x + 4.4875 - 0.0428*tanh(18.5138*(x - 0.5542)) - 17.7326*tanh(15.7890*(x - 0.3117)) + 17.5842*tanh(15.9308*(x - 0.3120))"}
+                    ]
   }
 }

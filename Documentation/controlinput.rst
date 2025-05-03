@@ -2,6 +2,13 @@
 Control models
 ==============
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+      
+   runControlExamples.nblink
+   runTimeControlExample.nblink
+
 The battery :battmo:`model <Battery#19>` contains a *Control* sub-model, see the overall model structure
 :ref:`description<architecture:BattMo Model Architecture>`. The Control model determine the control *values* and *type*.
 
@@ -15,10 +22,8 @@ Given a control type, the control *value* can change in time. For the most stand
 can be used. We plan to include there more control models. Below, we give some short explanations on how a control model
 can be implemented.
 
-
 Json input control interface
 ============================
-
 
 The most standard controls can be called from BattMo using the json interface:
 
@@ -125,78 +130,10 @@ following result.
 
    CCCV control
 
-The script used to generate the figures is available :battmo:`here <plotControlExamples_doc>`.
 
+**Time control function**
 
-Control model description
-=========================
-
-Beside json input, the function :mrstfile:`simulateScheduleAD
-<mrst-autodiff/ad-core/simulators/simulateScheduleAD.m>` is used to run a simulation. It requires
-
-* A **model**, which knows how to setup and solve the governing equations of our problem,
-* An **initial state**,
-* A **schedule**, which provides the time stepping and can also contain setup for control
-
-The :code:`schedule` contains two fields
-
-* :code:`control`: It is a struct array containing fields that the model knows how to process.  Typically, this
-  will be the fields such as `src` for input current.
-* :code:`step`: It contains two arrays of equal size named :code:`val` and :code:`control`. Control is a index into the
-  :code:`schedule.control` array, indicating which control is to be used for the timestep. :code:`schedule.step.val` is the
-  timestep used for that control step.
-
-Let us set up a control with a given current control source function. In this case, we choose a sinusoidal current
-control.
-
-.. code:: matlab
-
-   dt = 1*second;
-   T  = 3*minute;
-   N  = T/dt;
-
-   step.val = dt*ones(N, 1);
-   step.control = ones(N, 1);
-
-   period = 1*minute;
-   control.src = @(time) (1e-2*ampere*sin(2*pi*time/period));
-   control.CC = true;
-
-   schedule.step = step;
-   schedule.control = control;
-
-We have to setup a model and an initial state. We use the function :battmo:`setupModelFromJson` to setup the model from
-a given json input. We load the sample input function we have used before, see source
-:battmofile:`here<Examples/JsonDataFiles/sample_input.json>`. We replace the :code:`Control` field with a structure with
-a :code:`controlPolicy` given by a current control (:code:`CC`). We change the initial state of charge value (SOC) to
-0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).
-
-.. code:: matlab
-
-   jsonstruct = parseBattmoJson('Examples/jsondatafiles/sample_input.json');
-
-   jsonstruct.Control = [];
-   jsonstruct.Control.controlPolicy = 'CC';
-
-   jsonstruct.SOC = 0.5;
-
-   model = setupModelFromJson(jsonstruct);
-
-We use the default state initialisation method given by the method :code:`setupInitialState` in the :battmo:`Battery` model.
-
-.. code:: matlab
-
-   initstate = model.setupInitialState(jsonstruct);
-
-Now, we can run the simulation for the given schedule, model and initial state using :mrstfile:`simulateScheduleAD
-<mrst-autodiff/ad-core/simulators/simulateScheduleAD.m>`
-
-.. code:: matlab
-
-   [~, states] = simulateScheduleAD(initstate, model, schedule);
-
-The complete source can be found here :battmo:`exampleControl_doc`.
-
+We can choose use a function to determine the input. In this example a sinusoidal
 
 .. figure:: img/exampleControl.png
    :target: _images/exampleControl.png
@@ -204,4 +141,18 @@ The complete source can be found here :battmo:`exampleControl_doc`.
    :align: center
 
 
+Scripts with source code
+========================
+   
+.. grid:: 2
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Control Examples <runControlExamples>`
+           
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Time Functional Control Examples <runTimeControlExample>`
    

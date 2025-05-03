@@ -179,9 +179,9 @@ for ielde = 1:numel(eldes)
     c     = theta.*cmax;
     
     %%%
-    % The function |computeOCPFunc| returns the OCP function for the given concentration
-    
-    OCP   = interface_model.computeOCPFunc(c, T, cmax);
+    % The function |computeOCP| returns the OCP function for the given stoichiometry
+
+    OCP = interface_model.computeOCP(c/cmax);
 
     %%%
     % we plot the OCP curve for the given electrode as a function of the state of charge

@@ -145,7 +145,17 @@ classdef GenericBattery < BaseModel
 
             eldes = {ne, pe};
 
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge', 'CC', 'CCCV', 'Impedance'}
+                % do nothing
+              case {'Generic', 'timeControl'}
+                model = model.registerVarName('time');
+                model = model.setAsStaticVarName('time');
+              otherwise
+                error('controlPolicy not recognized');
+            end
 
+            
             %% Temperature dispatch functions
             fn = @GenericBattery.updateTemperature;
 
@@ -220,15 +230,30 @@ classdef GenericBattery < BaseModel
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
+              case {'CCDischarge', 'CCCharge', 'CC'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case 'timeControl'
+                model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, {'time'}});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, {'time'}});                
               case {'CCCV', 'Impedance'}
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case {'Generic'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
             end
-            model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
 
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl', 'CCCV', 'Impedance'}
+                % do nothing
+              case {'Generic'}
+                fn = @GenericBattery.updateControlTime;
+                model = model.registerPropFunction({{ctrl, 'time'}, fn, {'time'}});
+              otherwise
+                error('controlPolicy not recognized');
+            end
+            
             %% Function that update the Thermal Ohmic Terms
 
             if model.use_thermal
@@ -263,16 +288,18 @@ classdef GenericBattery < BaseModel
                 inputnames = {{thermal, 'T'}           , ...
                               {ne, co, am, sd, 'Rvol'} , ...
                               {ne, co, am, itf, 'eta'} , ...
-                              {ne, co, am, itf, 'dUdT'}, ...
                               {pe, co, am, sd, 'Rvol'} , ...
-                              {pe, co, am, itf, 'eta'} , ...
-                              {pe, co, am, itf, 'dUdT'}};
+                              {pe, co, am, itf, 'eta'}};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).(co).(am).(itf).includeEntropyChange
+                        inputnames{end + 1} = {elde, co, am, itf, 'dUdT'};
+                    end
+                end
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
 
             else
                 model = model.removeVarName({elyte, 'diffFlux'});
-                model = model.removeVarName({ne, co, am, itf, 'dUdT'});
-                model = model.removeVarName({pe, co, am, itf, 'dUdT'});
             end
 
             %% Functions that setup external  coupling for negative electrode
@@ -558,6 +585,10 @@ classdef GenericBattery < BaseModel
 
                 control = CCcontrolModel(inputparams);
 
+              case "Generic"
+
+                control = GenericControlModel(inputparams);
+                
               otherwise
 
                 error('Error controlPolicy not recognized');
@@ -949,8 +980,17 @@ classdef GenericBattery < BaseModel
                   otherwise
                     error('initialControl not recognized');
                 end
+                
+              case 'Generic'
 
+                % set first step
+                initstate.(ctrl).ctrlStepIndex  = 1;
+                initstate.(ctrl).ctrlSwitchTime = 0;
+                initstate.(ctrl).I              = 0;
+                initstate.time                  = 0;
+                
               otherwise
+                
                 error('control policy not recognized');
             end
 
@@ -1146,7 +1186,6 @@ classdef GenericBattery < BaseModel
 
         end
 
-
         function state = updateControl(model, state, drivingForces)
 
             ctrl = "Control";
@@ -1206,6 +1245,12 @@ classdef GenericBattery < BaseModel
 
         end
 
+        function state = updateControlTime(model, state)
+
+            state.Control.time = state.time;
+            
+        end
+        
         function state = updateThermalOhmicSourceTerms(model, state)
         % Assemble the ohmic source term :code:`state.jHeatOhmSource`, see :cite:t:`Latz2016`
 
@@ -1426,11 +1471,14 @@ classdef GenericBattery < BaseModel
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
                 eta  = state.(elde).(co).(am).(itf).eta;
 
-                itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
-                % itf_src = n*F*vols.*Rvol.*eta;
+                itf_src = n*F*vols.*Rvol.*eta;
+
+                if model.(elde).(co).(am).(itf).includeEntropyChange
+                    dUdT = state.(elde).(co).(am).(itf).dUdT;
+                    itf_src = itf_src + T(co_map).*dUdT;
+                end
                 
                 src = subsetPlus(src, itf_src, co_map);
 
@@ -1611,11 +1659,12 @@ classdef GenericBattery < BaseModel
 
 
         function forces = getValidDrivingForces(model)
-
+        %% Mainly assignement to have the simulator from MRST running (nothing is done here)
             forces = getValidDrivingForces@PhysicalModel(model);
 
-            forces.src = [];
-
+            forces.src     = [];
+            forces.Control = [];
+            
             ctrl = 'Control';
             ctrlpol = model.(ctrl).controlPolicy;
             forces.(ctrlpol) = true;
@@ -1825,7 +1874,8 @@ classdef GenericBattery < BaseModel
 
 
         function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
-
+        % This function runs one Newton step
+            
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
             if ~report.Failure
@@ -1851,6 +1901,23 @@ classdef GenericBattery < BaseModel
             end
 
         end
+
+        function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+        % Returns the current time-step and control index
+
+            [dt, done, currControl] = model.Control.getTimeStep(itstep, schedule, state.Control);
+            
+        end
+
+        function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
+
+            doend = triggerSimulationEnd@BaseModel(model, state, state0_inner, drivingForces);
+            if isfield(drivingForces, 'Control')
+                doend = model.Control.triggerSimulationEnd(state.Control, state0_inner.Control, drivingForces.Control);
+            end
+        
+        end
+        
 
         function outputvars = extractGlobalVariables(model, states)
 

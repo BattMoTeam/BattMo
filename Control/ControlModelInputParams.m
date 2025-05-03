@@ -12,6 +12,7 @@ classdef ControlModelInputParams < InputParams
         % - 'CCCharge'
         % - 'CC'
         % - 'CCCV'
+        % - 'timeControl'
         %
         controlPolicy
 
