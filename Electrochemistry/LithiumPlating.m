@@ -9,8 +9,11 @@ classdef LithiumPlating < BaseModel
         cmax = 1000;         % Maximum lithium concentration [mol/m³]
         Uref % depends on position
 
-        beta = 1000%need to check again
-        nLirev
+        beta = 1000 %need to check again
+        reversibleFraction = 0.775
+        deadFraction = 0.175
+        SEIFraction = 0.05
+    
     end
 
     methods
@@ -40,6 +43,7 @@ classdef LithiumPlating < BaseModel
                         'U'
                         'exchangeCurrentDensity'
                         'overpotential'
+                        'nLiRev'
                         };
 
             model = model.registerVarNames(varnames);
@@ -58,10 +62,13 @@ classdef LithiumPlating < BaseModel
             model = model.registerPropFunction({'overpotential', fn, {'phiElectrode', 'phiElectrolyte'}});
      
             fn = @LithiumPlating.updatePlatingFlux; 
-            model = model.registerPropFunction({'flux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+            model = model.registerPropFunction({'platingFlux', fn, {'overpotential', 'exchangeCurrentDensity'}});
             
             fn = @LithiumPlating.updateStrippingFlux; 
-            model = model.registerPropFunction({'flux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+            model = model.registerPropFunction({'strippingFlux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+
+            fn = @LithiumPlating.updateNLiRev; 
+            model = model.registerPropFunction({'nLiRev', fn, {'platingFlux'}});
             
         end
         
@@ -106,7 +113,7 @@ classdef LithiumPlating < BaseModel
 
         function state = updateStrippingFlux(model, state)
             eta = state.overpotential
-            if eta < 0 | nLirev <= 0 %checking if lithium is stripping
+            if eta < 0 | state.nLiRev <= 0 %checking if lithium is stripping
                 state.platingFlux = 0;
             else
                 F = model.constants.F;
@@ -118,7 +125,7 @@ classdef LithiumPlating < BaseModel
 
                 %correction factor considering the limitation by the amount of reversible lithium
                 
-                correction = model.beta.*model.nLirev./(1 + model.beta.*model.nLirev)
+                correction = model.beta.*state.nLiRev./(1 + model.beta.*state.nLiRev)
 
                 %butler-Volmer equation (current density, A/m²)
                 j = correction .* i0 .* (exp((alphaA2 * F * eta) / (R * T)) - exp((-alphaC2 * F * eta) / (R * T)));
