@@ -1,11 +1,16 @@
 classdef LithiumPlating < BaseModel
 
     properties
-        alpha = 0.5          % Symmetry factor for Butler-Volmer equation
+        alphaA1 = 0.5
+        alphaC1 = 0.5 % Transfer coefficients of lithium intercalation reaction
         T = 298.15           % Temperature [K]
         U = 0;               % Open Circuit Voltage (OCV)
-        kLi = 1e-10;         % Reaction rate constant [A m^-2 (mol m^-3)^-1.5]
+        k2 = 1e-10;         % Reaction rate constant [A m^-2 (mol m^-3)^-1.5]
         cmax = 1000;         % Maximum lithium concentration [mol/m³]
+        Uref % depends on position
+
+        beta = 1000%need to check again
+        nLirev
     end
 
     methods
@@ -28,9 +33,14 @@ classdef LithiumPlating < BaseModel
                         'phiElectrolyte', ...
                         'cElectrolyte'  , ...
                         'concentration' , ...
-                        'flux'          , ...
+                        'platingFlux', ...
+                        'strippingFlux', ...
                         'massAccum'     , ...
-                        'massCons'};
+                        'massCons'
+                        'U'
+                        'exchangeCurrentDensity'
+                        'overpotential'
+                        };
 
             model = model.registerVarNames(varnames);
             
@@ -41,47 +51,90 @@ classdef LithiumPlating < BaseModel
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
             model = model.registerPropFunction({'massAccum', fn, {'concentration'}});
 
-            fn = @LithiumPlating.updateFlux; 
-            model = model.registerPropFunction({'flux', fn, {'phiElectrode', 'phiElectrolyte', 'cElectrolyte', 'concentration'}});
+            fn = @LithiumPlating.updateExchangeCurrentDensity; 
+            model = model.registerPropFunction({'exchangeCurrentDensity', fn, {'cElectrolyte', 'concentration'}});
+            
+            fn = @LithiumPlating.updateOverpotential; 
+            model = model.registerPropFunction({'overpotential', fn, {'phiElectrode', 'phiElectrolyte'}});
+     
+            fn = @LithiumPlating.updatePlatingFlux; 
+            model = model.registerPropFunction({'flux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+            
+            fn = @LithiumPlating.updateStrippingFlux; 
+            model = model.registerPropFunction({'flux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+            
+        end
+        
+        function state = updateExchangeCurrentDensity(model, state) %eq 20
+            
+            k2 = model.k2
+            ce = state.cElectrolyte;
+            alphaA2 = model.alphaA2
+            
+            i0 = k2*ce^alphaA2
+
+            state.exchangeCurrentDensity = i0
+
         end
 
-        function state = updateFlux(model, state)
-            
-            F = model.constants.F; 
-            R = model.constants.R;
-            T = model.T;
+        function state = updateOverpotential(model, state) %must be completed
+            eta = state.phiElectrode - state.phiElectrolyte
+            state.overpotential = eta
+        end
 
-            phi_s = state.phiElectrode;
-            phi_e = state.phiElectrolyte;
+        function state = updatePlatingFlux(model, state)
+            eta = state.overpotential
+            if eta > 0 %checking if lithium is plating
+                state.platingFlux = 0;
+            else
+                F = model.constants.F;
+                R = model.constants.R;
+                T = model.T;
+                alphaA2 = model.alphaA2
+                alphaC2 = model.alphaC2
+                i0 = state.exchangeCurrentDensity
 
-            ce = state.cElectrolyte;
-            cs = state.concentration;
+                %butler-Volmer equation (current density, A/m²)
+                j = i0 .* (exp((alphaA2 * F * eta) / (R * T)) - exp((-alphaC2 * F * eta) / (R * T)));
 
-            U = model.U;
+                %convert to molar flux (mol/m²/s) by dividing by Faraday constant
+                platingFlux = j ./ F;
 
-            eta = phi_s - phi_e - U; % Overpotential
+                state.platingFlux = platingFlux;
+            end
+        end
 
-            k0 = model.kLi;
-            alpha = model.alpha;
-            cmax = model.cmax;
+        function state = updateStrippingFlux(model, state)
+            eta = state.overpotential
+            if eta < 0 | nLirev <= 0 %checking if lithium is stripping
+                state.platingFlux = 0;
+            else
+                F = model.constants.F;
+                R = model.constants.R;
+                T = model.T;
+                alphaA2 = model.alphaA2
+                alphaC2 = model.alphaC2
+                i0 = state.exchangeCurrentDensity
 
-            %exchange current density j0
-            j0 = k0 .* sqrt(ce) .* sqrt(cs) .* sqrt(cmax - cs);
+                %correction factor considering the limitation by the amount of reversible lithium
+                
+                correction = model.beta.*model.nLirev./(1 + model.beta.*model.nLirev)
 
-            %butler-Volmer equation (current density, A/m²)
-            j = j0 .* (exp((alpha * F * eta) / (R * T)) - exp((-(1 - alpha) * F * eta) / (R * T)));
+                %butler-Volmer equation (current density, A/m²)
+                j = correction .* i0 .* (exp((alphaA2 * F * eta) / (R * T)) - exp((-alphaC2 * F * eta) / (R * T)));
 
-            %convert to molar flux (mol/m²/s) by dividing by Faraday constant
-            flux = j ./ F;
+                %convert to molar flux (mol/m²/s) by dividing by Faraday constant
+                platingFlux = j ./ F;
 
-            state.flux = flux;
+                state.platingFlux = platingFlux;
+            end
         end
 
         function state = updateMassAccum(model, state, state0, dt)
             state.massAccum = (state.concentration - state0.concentration) ./ dt;         
         end
 
-        function state = updateMassCons(model, state)
+        function state = updateMassCons(model, state) %need to see that again
             flux = state.flux;
             accum = state.massAccum;
             cons = assembleConservationEquation(model, flux, 0, 0, accum);

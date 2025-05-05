@@ -253,8 +253,7 @@ classdef BaseModel < PhysicalModel
             pnames  = model.getPrimaryVariableNames();
             vars = cell(numel(pnames), 1);
             for i = 1:numel(pnames)
-                vars{i} = model.getProp(state, pnames{i});
-            end
+                vars{i} = model.getProp(state, pnames{i});           end
             % Get the AD state for this model           
             [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
             stateAD = struct();
