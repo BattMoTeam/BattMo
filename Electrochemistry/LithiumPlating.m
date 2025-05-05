@@ -4,12 +4,13 @@ classdef LithiumPlating < BaseModel
         alphaA1 = 0.5
         alphaC1 = 0.5 % Transfer coefficients of lithium intercalation reaction
         T = 298.15           % Temperature [K]
-        U = 0;               % Open Circuit Voltage (OCV)
+        U = 0;               % Open Circuit Voltage (OCV) (unused yet)
         k2 = 1e-10;         % Reaction rate constant
-        cmax = 1000;         % Maximum lithium concentration [mol/m³]
         Uref % should depend on position, not used yet
 
-        beta = 1000 %need to check again
+        beta = 1000 %adapted to n , not to c
+        
+        %what become the plated lithium according to the model
         reversibleFraction = 0.775
         deadFraction = 0.175
         SEIFraction = 0.05
@@ -22,10 +23,7 @@ classdef LithiumPlating < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'alpha', ...
-                       'kLi', ...
-                       'U', ...
-                       'cmax'};
+            fdnames = {};
             model = dispatchParams(model, inputparams, fdnames);
             
         end
@@ -147,7 +145,7 @@ classdef LithiumPlating < BaseModel
         end
         
         function state = updateMassCons(model, state) %probably wrong
-            flux = platingFlux - strippingFlux; %???
+            flux = flux + platingFlux - strippingFlux; %flux of the main butler volmer???
             accum = state.massAccum;
             cons = assembleConservationEquation(model, flux, 0, 0, accum);
             state.massCons = cons;
