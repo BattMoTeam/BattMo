@@ -71,7 +71,8 @@ classdef MLXnotebookExporter
         
         function setupIpynbFromMlx(mne, filename, varargin)
 
-            opt = struct('outputDirectory', []);
+            opt = struct('outputDirectory', [], ...
+                         'removeSolverOutput', true);
             opt = merge_options(opt, varargin{:});
 
             [inputfile, outputfile] = getIOfiles(mne, filename, ...
@@ -79,6 +80,19 @@ classdef MLXnotebookExporter
                                                  'outputFormat', 'ipynb');
 
             export(inputfile, outputfile, 'format', 'ipynb');
+
+            if opt.removeSolverOutput
+                % Remove the solver output
+                fid = fopen(outputfile, 'r+');
+                txt = fread(fid, '*char')';
+                fclose(fid);
+
+                txt = mne.cleanup(txt);
+
+                fid = fopen(outputfile, 'w+');
+                fwrite(fid, txt);
+                fclose(fid);
+            end
             
         end
 
@@ -166,6 +180,72 @@ classdef MLXnotebookExporter
 
     end
 
+    methods (Static)
+
+        function txt = cleanup(txt)
+
+            [txt, found_one] = MLXnotebookExporter.cleanup_one(txt);
+
+            while found_one
+                [txt, found_one] = MLXnotebookExporter.cleanup_one(txt);
+            end
+
+        end
+        
+        function [txt, found_one] = cleanup_one(txt)
+            
+
+            pos = strfind(txt, "Solving timestep");
+
+            if isempty(pos)
+                found_one = false;
+                return
+            else
+                found_one = true;
+            end
+            
+            pos = pos(1);
+
+            %  find the first occurence of 'output' before 'Solving timestep'
+            outputpos = strfind(txt, 'output');
+            outputpos = outputpos(outputpos < pos);
+            outputpos = outputpos(end);
+
+            %% We now find the position of the matching square brackets after the occurence of 'output'
+            
+            bleft  = strfind(txt, '[');
+            bright = strfind(txt, ']');
+
+            bleft  = [bleft', ones(numel(bleft), 1)];
+            bright = [bright', -ones(numel(bright), 1)];
+
+            bracket = [bleft; bright];
+
+            [~, ind] = sort(bracket(:, 1));
+
+            bracket = bracket(ind, :);
+
+            bracket(:, 2) = cumsum(bracket(:, 2));
+
+            ind = find(bracket(:, 1) > outputpos, 1);
+
+            bracket = bracket(ind : end, :);
+            
+            % Position after the opening square bracket
+            startpos = bracket(1, 1) + 1;
+
+            ind = find(bracket(:, 2) == bracket(1, 2) - 1, 1);
+
+            % Position before the closing square bracket
+            endpos = bracket(ind, 1) - 1;
+
+            %% We remove the captured text
+            txt = [txt(1 : startpos), ...
+                   txt(endpos + 1: end)];
+
+        end
+
+    end
 
 end
 
