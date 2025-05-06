@@ -1,12 +1,9 @@
-%% Particle simulation with SEI layer growth (Bolay et al 2022)
-
-% clear the workspace and close open figures
-clear
-close all
+%% Simulation with Surface Electrolyte Interface (SEI)
+%
+% We use the model described in the paper /Microstructure-resolved degradation simulation of lithium-ion batteries in
+% space applications/ https://doi.org/10.1016/j.powera.2022.100083
 
 %% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
 
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
