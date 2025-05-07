@@ -85,8 +85,11 @@ classdef MLXnotebookExporter
                 lastdir = dirpaths{end};
                 if strcmp(lastdir, 'notebooks')
                     outputDirectory = strrep(dirpath, [filesep, 'notebooks'], '');
+                elseif strcmp(ext, '.m')
+                    inputfilename = fullfile(dirpath, 'notebooks', [filename, '.mlx']);
+                    outputDirectory = dirpath;
                 else
-                    outputDirectory = dirpath
+                    outputDirectory = dirpath;
                 end
             else
                 outputDirectory = opt.outputDirectory;
