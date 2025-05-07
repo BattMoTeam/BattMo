@@ -7,7 +7,10 @@ classdef LithiumPlating < BaseModel
         U = 0;               % Open Circuit Voltage (OCV) (unused yet)
         k2 = 1e-10;         % Reaction rate constant
         Uref % should depend on position, not used yet
-
+        sigmaSEI = 5e-6; % [S/m] electrical conductivity of SEI
+        deltaSEI0 = 1e-9; % [m] initial SEI thickness
+        MSEI = 0.162; % [kg/mol] molar mass of SEI
+        rhoSEI = 1690; % [kg/m^3] density of SEI
         beta = 1000 %adapted to n , not to c
         
         %what become the plated lithium according to the model
@@ -44,6 +47,9 @@ classdef LithiumPlating < BaseModel
                         'exchangeCurrentDensity'
                         'overpotential'
                         'cLiRev'
+                        'nSEIAccum'
+                        'nSEICons'
+                        'nSEI'
                         };
 
             model = model.registerVarNames(varnames);
@@ -73,6 +79,13 @@ classdef LithiumPlating < BaseModel
             
             fn = @LithiumPlating.updateCLiRevCons; 
             model = model.registerPropFunction({'cLiRev', fn, {'platingFlux'}});
+
+            fn = @LithiumPlating.updateNSEIAccum;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+            model = model.registerPropFunction({'nSEIAccum', fn, {'nSEI'}});
+
+            fn = @LithiumPlating.updateNSEICons;
+            model = model.registerPropFunction({'nSEI', fn, {'platingFlux'}});
             
         end
         
@@ -88,8 +101,14 @@ classdef LithiumPlating < BaseModel
 
         end
 
-        function state = updateOverpotential(model, state) %must be completed
-            eta = state.phiElectrode - state.phiElectrolyte;
+        function state = updateOverpotential(model, state)
+            j = state.exchangeCurrentDensity; %must change that, j1 + j2 - j3
+            F = model.constants.F;
+
+            deltaSEI = model.deltaSEI0 + (state.nSEI * model.MSEI) / (model.rhoSEI * F);
+            RSEI = deltaSEI / model.sigmaSEI; %assuming RSEI = 0 at t = 0
+
+            eta = state.phiElectrode - state.phiElectrolyte - j * F * RSEI;
             state.overpotential = eta;
         end
 
@@ -157,11 +176,24 @@ classdef LithiumPlating < BaseModel
 
         function state = updateCLiRevCons(model, state)
             % only a fraction of the plated lithium is reversible
-            flux = state.platingFlux*state.reversibleFraction;
+            flux = state.platingFlux*state.reversibleFraction - state.strippingFlux;
             accum = state.cLiRevAccum;
             cons = assembleConservationEquation(model, flux, 0, 0, accum);
             state.cLiRevCons = cons;
         end
+
+        function state = updateNSEIAccum(model, state, state0, dt)
+            state.nSEIAccum = (state.nSEI - state0.nSEI) ./ dt;
+        end
+
+        function state = updateNSEICons(model, state)
+            % Only the SEIFraction of plated Li forms SEI
+            flux = state.platingFlux * model.SEIFraction;
+            accum = state.nSEIAccum;
+            cons = assembleConservationEquation(model, flux, 0, 0, accum);
+            state.nSEICons = cons;
+        end
+
     end
 
 end
