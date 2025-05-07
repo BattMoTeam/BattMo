@@ -68,28 +68,74 @@ classdef MLXnotebookExporter
                 
             end
         end
+
+        function setupMfromMlx(mne, filename, varargin)
+        % Setup M file from mlx
+
+            opt = struct('outputDirectory', []);
+            opt = merge_options(opt, varargin{:});
+
+            assert(exist(filename, 'file') == 2, 'File %s not found.', filename); 
+            inputfilename = which(filename);
+            
+            if isempty(opt.outputDirectory)
+                % if the file is in a directory denoted notebooks, we move the output in the directory above
+                [dirpath, filename, ext] = fileparts(inputfilename);
+                dirpaths = split(dirpath, filesep);
+                lastdir = dirpaths{end};
+                if strcmp(lastdir, 'notebooks')
+                    outputDirectory = strrep(dirpath, [filesep, 'notebooks'], '');
+                else
+                    outputDirectory = dirpath
+                end
+            else
+                outputDirectory = opt.outputDirectory;
+            end
+
+            outputfilename = fullfile(outputDirectory, [filename, '.m']);
+
+            export(inputfilename, outputfilename, 'format', 'm');            
+            
+        end
+        
         
         function setupIpynbFromMlx(mne, filename, varargin)
 
             opt = struct('outputDirectory', [], ...
                          'removeSolverOutput', true);
             opt = merge_options(opt, varargin{:});
+            
+            assert(exist(filename, 'file') == 2, 'File %s not found.', filename);
+            
+            fullfilename = which(filename);
+            [dirpath, filename, ext] = fileparts(fullfilename);
+                                   
+            if strcmp(ext, '.mlx')
+                % same directory
+                inputfilename   = fullfilename;
+                outputDirectory = dirpath;
+            else
+                outputDirectory = fullfile(dirpath, 'notebooks');
+                inputfilename = fullfile(outputDirectory, [filename, '.mlx']);
+            end            
 
-            [inputfile, outputfile] = getIOfiles(mne, filename, ...
-                                                 'outputDirectory', opt.outputDirectory, ...
-                                                 'outputFormat', 'ipynb');
+            if ~isempty(opt.outputDirectory)
+                outputDirectory = opt.outputDirectory;
+            end
 
-            export(inputfile, outputfile, 'format', 'ipynb');
+            outputfilename = fullfile(outputDirectory, [filename, '.ipynb']);
+            
+            export(inputfilename, outputfilename, 'format', 'ipynb');
 
             if opt.removeSolverOutput
                 % Remove the solver output
-                fid = fopen(outputfile, 'r+');
+                fid = fopen(outputfilename, 'r+');
                 txt = fread(fid, '*char')';
                 fclose(fid);
 
                 txt = mne.cleanup(txt);
 
-                fid = fopen(outputfile, 'w+');
+                fid = fopen(outputfilename, 'w+');
                 fwrite(fid, txt);
                 fclose(fid);
             end
