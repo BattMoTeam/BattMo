@@ -8,7 +8,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', '468
 testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
-    rOuter = jsonstruct_geometry.Geometry.innerRadius + 3*milli*meter;
+    rOuter = jsonstruct_geometry.Geometry.innerRadius + 1*milli*meter;
     jsonstruct_geometry.Geometry.outerRadius                         = rOuter;
     jsonstruct_geometry.Geometry.numberOfDiscretizationCellsVertical =  2;
 %% 
