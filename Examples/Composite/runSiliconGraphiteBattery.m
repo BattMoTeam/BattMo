@@ -23,8 +23,6 @@ ctrl = 'Control';
 %% Setup the properties of the battery
 %
 % We load the property of a composite silicon graphite electrode, see
-% :ref:`compositeElectrode`
-%
 
 jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
 
@@ -39,20 +37,29 @@ jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIo
 jsonstruct_cell.(ne).(co) = rmfield(jsonstruct_cell.(ne).(co), 'ActiveMaterial');
 
 %%
-% We merge the two json structures
-jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
-                               jsonstruct_cell});
+% we load a 1d geometry
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %%
-% We do not consider the thermal model and remove the current
-% collector
+% We merge the two json structures
+jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
+                               jsonstruct_cell              , ...
+                               jsonstruct_geometry});
+
+%%
+% We do not consider the thermal model and remove the current collector
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
-qjsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
+%%
+% We adjust the mass fractions  parameters of the active material in the negative electrode
+jsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, am2, 'massFraction'}, 0.08, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, bd , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
+
+output = runBatteryJson(jsonstruct);
 
 %%
 % We instantiate the battery :code:`InputParams` object

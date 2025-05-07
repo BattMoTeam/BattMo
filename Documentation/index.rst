@@ -8,11 +8,12 @@
 
    Installation <installation>
    basicusage
+   tutorials
    intermediate
+   modeling
    architecture
    json
    geometryinput
-   advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
    protonicmembrane

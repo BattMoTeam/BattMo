@@ -1,12 +1,37 @@
-%% Particle simulation with SEI layer growth (Bolay et al 2022)
+%% Simulation with Surface Electrolyte Interface (SEI)
+%
+% For the SEI, we use the model described in the paper _Microstructure-resolved degradation simulation of lithium-ion
+% batteries in space applications_ from Bolay et al. (https://doi.org/10.1016/j.powera.2022.100083).
+%
+% The model consider the electron diffusion and migration in the SEI layer given by the flux
+%
+% $$N_{sei} = D^{e^{-1}}\frac{c^{e^{-1}}}{L_{sei}} - z F \kappa_{sei}^{e^{-1}}\nabla\phi$$
+%  
+%
+% * $D^{e^{-}}$            : Electron iffusion coefficient
+% * $c^{e^{-}}$            : Electron concentration 
+% * $L_{sei}$              : SEI length
+% * $\kappa_{sei}^{e^{-}}$ : Electronic conductivity in SEI
+%
+% When the electron reaches the SEI interface, it reacts with the electrolyte to create more SEI. This process is modeled by the differential equation
+%
+% $$\frac1{V_{sei}}\frac{dL_{{sei}}}{dt} = N_{sei}$$
+%
+% where
+%
+% * $V_{sei}$ : Mean partial volume of SEI
+%
+% The SEI layer induces an additional potential drop given by
+%
+% $$U_{sei} = \frac{L_{sei}}{\kappa_{Li^+}^{sei}}j_{Li^+}$$
+%
+% where
+%
+% * $\kappa_{Li^+}^{sei}$ : Conductivity for Lithium ion in SEI
+% * $j_{Li^+}$           : Lithium ion current density
 
-% clear the workspace and close open figures
-clear
-close all
-
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
+%% 
+% We define some shortcuts for convenience
 
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
@@ -20,12 +45,19 @@ elyte = 'Electrolyte';
 ctrl  = 'Control';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
+%
+% We use a standard parameter set
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
                         'lithium_ion_battery_nmc_graphite.json');
 jsonstruct = parseBattmoJson(jsonfilename);
 
+%%
+% We do not include the thermal effect in this simulation
 jsonstruct.use_thermal = false;
 
+%%
+% We parse and add to our json input structure |jsonstruct| the parameters for the SEI model
+%
 jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
@@ -33,8 +65,9 @@ jsonstruct_bolay = parseBattmoJson(jsonfilename);
 jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
                                               jsonstruct_bolay});
 
-jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
-
+%%
+% We create a control structure which we add to the main json structure
+%
 jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
                             'initialControl'    , 'discharging', ...
                             'numberOfCycles'    , 4            , ...
@@ -47,56 +80,37 @@ jsontruct_control = struct( 'controlPolicy'     , 'CCCV'       , ...
 
 jsonstruct.(ctrl) = jsontruct_control;
 
-jsonstruct.(ne).(co).(am).(itf).SEIelectronicDiffusionCoefficient = 3.5e-15;
-
 jsonstruct.SOC = 1;
 
-
 %%
+% We parse and add to |jsonstruct| some geometrical parameter. Here, we use a P2D model
+%
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsontruct_geometry = parseBattmoJson(jsonfilename);
 
-inputparams = BatteryInputParams(jsonstruct);
+jsonstruct = mergeJsonStructs({jsonstruct, jsontruct_geometry});
 
-gen = BatteryGeneratorP2D();
-inputparams = gen.updateBatteryInputParams(inputparams);
+%% Simulation
+%
+% We run the simulation
+%
+output = runBatteryJson(jsonstruct);
 
-model = GenericBattery(inputparams);
 
-%% Setup the schedule
+%% Plotting
+%
+% We recover the states and the model from the |output| structure
+%
 
-% schedule = model.(ctrl).setupSchedule([]);
-jsonstruct.TimeStepping.timeStepDuration = 200;
-schedule = model.(ctrl).setupSchedule(jsonstruct);
-
-%% Setup the initial state of the model
-% The initial state of the model is setup using the model.setupInitialState() method.
-
-initstate = model.setupInitialState();
-
-%% Setup non-linear solver
-
-nls = NonLinearSolver();
-nls.errorOnFailure = false;
-
-model.nonlinearTolerance = 1e-5;
-
-%% Run simulation
-
-model.verbose = true;
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-%% Setup for plotting
-
-ind = cellfun(@(x) not(isempty(x)), states); 
-states = states(ind);
-time = cellfun(@(x) x.time, states); 
-E    = cellfun(@(x) x.Control.E, states); 
-I    = cellfun(@(x) x.Control.I, states);
+states = output.states;
+model  = output.model;
+time   = output.time;
+E      = output.E;
+I      = output.I;
 
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
-
-%% Plotting
 
 close all
 
@@ -104,6 +118,7 @@ set(0, 'defaultlinelinewidth', 3)
 set(0, 'defaultaxesfontsize', 15)
 
 %%
+% We plot the voltage
 
 figure
 plot(time/hour, E, '*-');
@@ -111,13 +126,16 @@ title('Voltage / V')
 xlabel('Time / h')
 
 %%
+% We plot the current
 
 figure
 plot(time/hour, I);
 title('Current / A')
 xlabel('Time / h')
 
-%%
+%% SEI thickness
+%
+% We plot the evolution of the SEI thickness in the negative electrode
 
 figure
 hold on
@@ -133,7 +151,9 @@ xlabel('Time / h')
 
 legend show
 
-%%
+%% SEI voltage drop
+% 
+% We plot the evolution of the voltage drop 
 
 figure
 hold on
@@ -148,7 +168,11 @@ title('SEI voltage drop in negative electrode/ V')
 xlabel('Time / h')
 legend show
 
-%%
+%% Lithium content
+%
+% We plot the evolution of the lithium content in the negative electrode
+%
+
 figure
 
 vols = model.(ne).(co).G.getVolumes();
@@ -163,7 +187,9 @@ plot(time/hour, m);
 title('Total lithium amount in negative electrode / mol')
 xlabel('Time / h')
 
-%%
+%% Lithium total mass balance
+%
+% We plot the Lithium content in all the components
 
 quantities = [];
 
@@ -194,7 +220,6 @@ Electrodes_Li_quantities  = [];
 Total_Li_quantities       = [];
 
 for timeindex = 1 : numel(states)
-
 
     amvf     = model.(pe).(co).volumeFractions(1);
     vf       = model.(pe).(co).volumeFraction;
@@ -242,7 +267,10 @@ ylabel('quantity / mol');
 grid on;
 legend show
 
-%%
+%% Capacity loss
+%
+% We plot the amount of lithium that has been consumed in the SEI layer
+%
 
 figure 
 
