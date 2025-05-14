@@ -1,199 +1,131 @@
-classdef LithiumPlating < BaseModel
+classdef LithiumPlatingLatz < BaseModel
 
     properties
-        alphaA1 = 0.5
-        alphaC1 = 0.5 % Transfer coefficients of lithium intercalation reaction
-        T = 298.15           % Temperature [K]
-        U = 0;               % Open Circuit Voltage (OCV) (unused yet)
-        k2 = 1e-10;         % Reaction rate constant
-        Uref % should depend on position, not used yet
-        sigmaSEI = 5e-6; % [S/m] electrical conductivity of SEI
-        deltaSEI0 = 1e-9; % [m] initial SEI thickness
-        MSEI = 0.162; % [kg/mol] molar mass of SEI
-        rhoSEI = 1690; % [kg/m^3] density of SEI
-        beta = 1000 %adapted to n , not to c
-        
-        %what become the plated lithium according to the model
-        reversibleFraction = 0.775
-        deadFraction = 0.175
-        SEIFraction = 0.05
-    
+        T = 298.15            % Temperature [K]
+        F = 96485             % Faraday constant [C/mol]
+        R = 8.314             % Universal gas constant [J/mol/K]
+
+        alphaPl = 0.3         % Anodic transfer coefficient for plating/stripping
+        alphaStr = 0.7        % Cathodic transfer coefficient for plating/stripping
+        alphaChInt = 0.5      % Symmetry factor for chemical intercalation
+
+        kPl = 1e-10           % Kinetic rate constant for plating [mol/(m²·s·(mol/m³)^α)]
+        kChInt = 1e-12        % Kinetic rate constant for chemical intercalation [mol/(m²·s)]
+
+        nPl0 = 1e-6           % Reference plated lithium amount for activity expression [mol/m²]
+        muLiRef = 0           % Reference chemical potential of lithium metal [J/mol]
+
+        nPlLimit = 2.3e-5     % Maximum plated Li before full coverage (1 monolayer) [mol/m²]
+        ATotal = 1            % Total available surface area per unit volume [m²]
     end
 
     methods
 
-        function model = LithiumPlating(inputparams)
-
+        function model = LithiumPlatingLatz(inputparams)
             model = model@BaseModel();
-            
             fdnames = {};
             model = dispatchParams(model, inputparams, fdnames);
-            
         end
 
         function model = registerVarAndPropfuncNames(model)
 
-            varnames = {'phiElectrode'  , ...
-                        'phiElectrolyte', ...
-                        'cElectrolyte'  , ...
-                        'concentration' , ...
-                        'platingFlux', ...
-                        'strippingFlux', ...
-                        'massAccum'     , ...
-                        'massCons'
-                        'cLiRevAccum'
-                        'cLiRevCons'
-                        'U'
-                        'exchangeCurrentDensity'
-                        'overpotential'
-                        'cLiRev'
-                        'nSEIAccum'
-                        'nSEICons'
-                        'nSEI'
-                        };
+            varnames = {'phiSolid'         , ...
+                        'phiElectrolyte'   , ...
+                        'cElectrolyte'     , ...
+                        'nPl'              , ...
+                        'nPlAccum'         , ...
+                        'nPlCons'          , ...
+                        'platingFlux'      , ...
+                        'chemicalFlux'     , ...
+                        'etaPlating'       , ...
+                        'etaChemical'      , ...
+                        'activityPlated'   , ...
+                        'surfaceCoverage'  };
 
             model = model.registerVarNames(varnames);
-            
-            fn = @LithiumPlating.updateMassCons; 
-            model = model.registerPropFunction({'massCons', fn, {'massAccum', 'flux'}});
-            
-            fn = @LithiumPlating.updateMassAccum; 
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'massAccum', fn, {'concentration'}});
 
-            fn = @LithiumPlating.updateExchangeCurrentDensity; 
-            model = model.registerPropFunction({'exchangeCurrentDensity', fn, {'cElectrolyte', 'concentration'}});
-            
-            fn = @LithiumPlating.updateOverpotential; 
-            model = model.registerPropFunction({'overpotential', fn, {'phiElectrode', 'phiElectrolyte'}});
-     
-            fn = @LithiumPlating.updatePlatingFlux; 
-            model = model.registerPropFunction({'platingFlux', fn, {'overpotential', 'exchangeCurrentDensity'}});
-            
-            fn = @LithiumPlating.updateStrippingFlux; 
-            model = model.registerPropFunction({'strippingFlux', fn, {'overpotential', 'exchangeCurrentDensity'}});
+            fn = @LithiumPlatingLatz.updateNPlAccum;
+            fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
+            model = model.registerPropFunction({'nPlAccum', fn, {'nPl'}});
 
-            fn = @LithiumPlating.updateCLiRevAccum; 
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'cLiRevAccum', fn, {'cLiRev'}});
-            
-            fn = @LithiumPlating.updateCLiRevCons; 
-            model = model.registerPropFunction({'cLiRev', fn, {'platingFlux'}});
+            fn = @LithiumPlatingLatz.updateActivityPlated;
+            model = model.registerPropFunction({'activityPlated', fn, {'nPl'}});
 
-            fn = @LithiumPlating.updateNSEIAccum;
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'nSEIAccum', fn, {'nSEI'}});
+            fn = @LithiumPlatingLatz.updateEtaPlating;
+            model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated'}});
 
-            fn = @LithiumPlating.updateNSEICons;
-            model = model.registerPropFunction({'nSEI', fn, {'platingFlux'}});
-            
-        end
-        
-        function state = updateExchangeCurrentDensity(model, state) %eq 20
-            
-            k2 = model.k2;
-            ce = state.cElectrolyte;
-            alphaA2 = model.alphaA2;
-            
-            i0 = k2*ce^alphaA2;
+            fn = @LithiumPlatingLatz.updateEtaChemical;
+            model = model.registerPropFunction({'etaChemical', fn, {'activityPlated'}});
 
-            state.exchangeCurrentDensity = i0;
+            fn = @LithiumPlatingLatz.updatePlatingFlux;
+            model = model.registerPropFunction({'platingFlux', fn, {'cElectrolyte', 'etaPlating'}});
 
+            fn = @LithiumPlatingLatz.updateChemicalFlux;
+            model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical'}});
+
+            fn = @LithiumPlatingLatz.updateNPlCons;
+            model = model.registerPropFunction({'nPlCons', fn, {'nPlAccum', 'platingFlux', 'chemicalFlux', 'SurfaceCoverage'}});
+
+            fn = @LithiumPlatingLatz.updateSurfaceCoverage;
+            model = model.registerPropFunction({'surfaceCoverage', fn, {'nPl'}});
         end
 
-        function state = updateOverpotential(model, state)
-            j = state.exchangeCurrentDensity; %must change that, j1 + j2 - j3
-            F = model.constants.F;
+        function state = updateNPlAccum(model, state, state0, dt)
+            state.nPlAccum = (state.nPl - state0.nPl) / dt;
+        end
 
-            deltaSEI = model.deltaSEI0 + (state.nSEI * model.MSEI) / (model.rhoSEI * F);
-            RSEI = deltaSEI / model.sigmaSEI; %assuming RSEI = 0 at t = 0
+        function state = updateActivityPlated(model, state)
+            nPl = state.nPl;
+            n0 = model.nPl0;
+            state.activityPlated = nPl ./ (nPl + n0);
+        end
 
-            eta = state.phiElectrode - state.phiElectrolyte - j * F * RSEI;
-            state.overpotential = eta;
+        function state = updateEtaPlating(model, state)
+            phiS = state.phiSolid;
+            phiE = state.phiElectrolyte;
+            aPl = state.activityPlated;
+
+            eta = phiS - phiE + (model.R * model.T / model.F) * log(aPl);
+            state.etaPlating = eta;
+        end
+
+        function state = updateEtaChemical(model, state)
+            % Equation (23) of Hein et al.
+            aPl = state.activityPlated;
+            eta = -(model.R * model.T / model.F) * log(aPl); % Assuming U0 = 0
+            state.etaChemical = eta;
         end
 
         function state = updatePlatingFlux(model, state)
-            eta = state.overpotential;
-            if eta > 0 %checking if lithium is plating
-                state.platingFlux = 0;
-            else
-                F = model.constants.F;
-                R = model.constants.R;
-                T = model.T;
-                alphaA2 = model.alphaA2;
-                alphaC2 = model.alphaC2;
-                i0 = state.exchangeCurrentDensity;
+            eta = state.etaPlating;
+            ce = state.cElectrolyte;
+            T = model.T; R = model.R; F = model.F;
 
-                %butler-Volmer equation (current density, A/m²)
-                j = i0 .* (exp((alphaA2 * F * eta) / (R * T)) - exp((-alphaC2 * F * eta) / (R * T)));
+            i0 = model.kPl * ce.^model.alphaPl;
+            j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
+                       exp((-model.alphaStr * F * eta) / (R * T)));
 
-                %convert to molar flux (mol/m²/s) by dividing by Faraday constant
-                platingFlux = j ./ F;
-
-                state.platingFlux = platingFlux;
-            end
+            state.platingFlux = j ./ F;  % [mol/m²/s]
         end
 
-        function state = updateStrippingFlux(model, state)
-            eta = state.overpotential;
-            if eta < 0 | state.cLiRev <= 0 %checking if lithium is stripping
-                state.platingFlux = 0;
-            else
-                F = model.constants.F;
-                R = model.constants.R;
-                T = model.T;
-                alphaA2 = model.alphaA2;
-                alphaC2 = model.alphaC2;
-                i0 = state.exchangeCurrentDensity;
-
-                %correction factor considering the limitation by the amount of reversible lithium
-                correction = model.beta.*state.cLiRev./(1 + model.beta.*state.cLiRev); %should be n instead of c but same I guess ?
-
-                %butler-Volmer equation (current density, A/m²)
-                j = correction .* i0 .* (exp((alphaA2 * F * eta) / (R * T)) - exp((-alphaC2 * F * eta) / (R * T)));
-
-                %convert to molar flux (mol/m²/s) by dividing by Faraday constant
-                platingFlux = j ./ F;
-
-                state.platingFlux = platingFlux;
-            end
+        function state = updateChemicalFlux(model, state)
+            eta = state.etaChemical;
+            jCh = model.kChInt * (exp(0.5 * model.F * eta / (model.R * model.T)) - ...
+                                  exp(-0.5 * model.F * eta / (model.R * model.T)));
+            state.chemicalFlux = jCh ./ model.F; % [mol/m²/s]
         end
 
-        function state = updateMassAccum(model, state, state0, dt)
-            state.massAccum = (state.concentration - state0.concentration) ./ dt;         
-        end
-        
-        function state = updateMassCons(model, state) %probably wrong
-            flux = flux + platingFlux - strippingFlux; %flux of the main butler volmer???
-            accum = state.massAccum;
+        function state = updateNPlCons(model, state)
+            flux = state.platingFlux- state.chemicalFlux;
+            accum = state.nPlAccum;
             cons = assembleConservationEquation(model, flux, 0, 0, accum);
-            state.massCons = cons;
-        end        
-
-        function state = updateCLiRevAccum(model, state, state0, dt)
-            state.cLiRevAccum = (state.cLiRev - state0.cLiRev) ./ dt;         
+            state.nPlCons = cons;
         end
 
-        function state = updateCLiRevCons(model, state)
-            % only a fraction of the plated lithium is reversible
-            flux = state.platingFlux*state.reversibleFraction - state.strippingFlux;
-            accum = state.cLiRevAccum;
-            cons = assembleConservationEquation(model, flux, 0, 0, accum);
-            state.cLiRevCons = cons;
-        end
-
-        function state = updateNSEIAccum(model, state, state0, dt)
-            state.nSEIAccum = (state.nSEI - state0.nSEI) ./ dt;
-        end
-
-        function state = updateNSEICons(model, state)
-            % Only the SEIFraction of plated Li forms SEI
-            flux = state.platingFlux * model.SEIFraction;
-            accum = state.nSEIAccum;
-            cons = assembleConservationEquation(model, flux, 0, 0, accum);
-            state.nSEICons = cons;
+        function state = updateSurfaceCoverage(model, state)
+            nPl = state.nPl;
+            state.surfaceCoverage = min(nPl ./ model.nPlLimit, 1.0);
         end
 
     end
-
 end
