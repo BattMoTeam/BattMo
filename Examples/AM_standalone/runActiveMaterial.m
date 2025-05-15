@@ -9,6 +9,8 @@ close all
 mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
+% We fetch data for the active material model from a parameter set for a complete battery
+
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 % We define some shorthand names for simplicity.
@@ -30,13 +32,22 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
+% set flag to true for active material to be run stand alone. Used when setting up the graph of functional dependencies
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
+% Setup the InputParams structure for the whole battery
 inputparams = BatteryInputParams(jsonstruct);
 
+% Extract the part for the active material only
 inputparams = inputparams.(ne).(co).(am);
 
+%% Setup the model
+
 model = ActiveMaterial(inputparams);
+
+%% Equip model for simulation
+% Generate the graph
+
 model = model.setupForSimulation();
 
 %% Setup initial state
@@ -46,10 +57,12 @@ model = model.setupForSimulation();
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
+% The electrolyte state variable and temperature are static, that is, there are given and will not vary in time.
 cElectrolyte   = 5e-1*mol/litre;
 phiElectrolyte = 0;
 T              = 298;
 
+%%  Initialize all the primary variables
 cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 % set primary variables
@@ -70,6 +83,7 @@ initState.E = OCP + phiElectrolyte;
 %% setup schedule
 
 % Reference rate which roughly corresponds to 1 hour for the data of this example
+
 Iref = 5e-12;
 
 Imax = 5e1*Iref;
