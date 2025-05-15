@@ -57,8 +57,9 @@ model = model.setupForSimulation();
 sd  = 'SolidDiffusion';
 itf = 'Interface';
 
-% The electrolyte state variable and temperature are static, that is, there are given and will not vary in time.
+%% The electrolyte state variable and temperature are static, that is, they are given and will not vary in time.
 cElectrolyte   = 5e-1*mol/litre;
+% We set the electrical potential in the electrolyte to zero.
 phiElectrolyte = 0;
 T              = 298;
 
@@ -127,11 +128,13 @@ figure
 plot(time/hour, cSurface/(1/litre));
 xlabel('time [hour]');
 ylabel('Surface concentration [mol/L]');
+title('Surface concentration');
 
 figure
 plot(time/hour, E);
 xlabel('time [hour]');
 ylabel('Potential [mol/L]');
+title('Potential difference');
 
 cmin = cellfun(@(state) min(state.(sd).c), states);
 cmax = cellfun(@(state) max(state.(sd).c), states);
@@ -148,6 +151,8 @@ plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
 plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
 plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
 title('Concentration in particle / mol/L')
+xlabel('time [hour]');
+ylabel('Concentration [mol/L]');
 legend show
 
 c = states{end}.(sd).c;
