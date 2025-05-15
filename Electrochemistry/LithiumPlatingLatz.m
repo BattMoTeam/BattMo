@@ -2,29 +2,28 @@ classdef LithiumPlatingLatz < BaseModel
 
     properties
 
-        T = 298.15
-        F = 96485
-        R = 8.314
+        F = PhysicalConstants.F
+        R = PhysicalConstants.R
 
-        alphaPl    = 0.3
-        alphaStr   = 0.7
-        alphaChInt = 0.5
+        alphaPl    
+        alphaStr   
+        alphaChInt 
 
-        kPl    = 1e-10
-        kChInt = 1e-12
+        kPl    
+        kChInt 
 
-        nPl0    = 1e-6
-        muLiRef = 0
+        nPl0    
+        muLiRef 
 
-        nPlLimit = 2.3e-5
+        nPlLimit 
 
-        SEIFraction = 0.05
-        MSEI        = 0.162
-        rhoSEI      = 1690
-        deltaSEI0   = 1e-9
-        sigmaSEI    = 5e-6
+        SEIFraction 
+        MSEI        
+        rhoSEI      
+        deltaSEI0   
+        sigmaSEI    
 
-        useSEI = false;
+        useSEI 
         
     end
 
@@ -32,8 +31,22 @@ classdef LithiumPlatingLatz < BaseModel
 
         function model = LithiumPlatingLatz(inputparams)
             model = model@BaseModel();
-            % fdnames = {};
-            % model = dispatchParams(model, inputparams, fdnames);
+            fdnames = {'alphaPl'    , ...    
+                       'alphaStr'   , ...   
+                       'alphaChInt' , ... 
+                       'kPl'        , ...    
+                       'kChInt'     , ... 
+                       'nPl0'       , ...    
+                       'muLiRef'    , ... 
+                       'nPlLimit'   , ... 
+                       'SEIFraction', ... 
+                       'MSEI'       , ...        
+                       'rhoSEI'     , ...      
+                       'deltaSEI0'  , ...   
+                       'sigmaSEI'   , ...    
+                       'useSEI'};
+            model = dispatchParams(model, inputparams, fdnames);
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -42,7 +55,9 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames = {};
             % potential of the solid electrode
-            varnames{end + 1} = 'phiSolid';
+            varnames{end + 1} = 'T';
+            % potential of the solid electrode
+            varnames{end + 1} = 'phiElectrode';
             %
             varnames{end + 1} = 'phiElectrolyte';
             %
@@ -90,19 +105,19 @@ classdef LithiumPlatingLatz < BaseModel
 
             if useSEI
                 fn = @LithiumPlatingLatz.updateEtaPlatingSEI;
-                model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated', 'SEIThickness'}});
+                model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'SEIThickness', 'T'}});
             else
                 fn = @LithiumPlatingLatz.updateEtaPlating;
-                model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated'}});
+                model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'T'}});
             end
             fn = @LithiumPlatingLatz.updateEtaChemical;
-            model = model.registerPropFunction({'etaChemical', fn, {'activityPlated'}});
+            model = model.registerPropFunction({'etaChemical', fn, {'activityPlated', 'T'}});
 
             fn = @LithiumPlatingLatz.updatePlatingFlux;
-            model = model.registerPropFunction({'platingFlux', fn, {'cElectrolyte', 'etaPlating'}});
+            model = model.registerPropFunction({'platingFlux', fn, {'cElectrolyte', 'etaPlating', 'T'}});
 
             fn = @LithiumPlatingLatz.updateChemicalFlux;
-            model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical'}});
+            model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T'}});
 
             fn = @LithiumPlatingLatz.updateNPlCons;
             model = model.registerPropFunction({'nPlCons', fn, {'nPlAccum', 'platingFlux', 'chemicalFlux'}});
@@ -130,52 +145,83 @@ classdef LithiumPlatingLatz < BaseModel
         end
 
         function state = updateActivityPlated(model, state)
+            
             nPl = state.nPl;
             n0 = model.nPl0;
             state.activityPlated = nPl ./ (nPl + n0);
+            
         end
 
-        function state = updateEtaPlating(model, state)
-            phiS = state.phiSolid;
+        function state = updateEtaPlatingSEI(model, state)
+            
+            phiS = state.phiElectrode;
             phiE = state.phiElectrolyte;
             aPl = state.activityPlated;
 
             RSEI = state.SEIThickness / model.sigmaSEI;
-            j = model.kPl*0;  % !!! Approximation: use i0 as constant for RSEI drop
+            j = model.kPl;  
 
-            eta = phiS - phiE - j * model.F * RSEI + (model.R * model.T / model.F) * log(aPl);
+            eta = phiS - phiE - j * model.F * RSEI + (model.R * state.T / model.F) .* log(aPl);
+            state.etaPlating = eta;
+        end
+
+        function state = updateEtaPlating(model, state)
+            
+            phiS = state.phiElectrode;
+            phiE = state.phiElectrolyte;
+            aPl  = state.activityPlated;
+            T    = state.T;
+
+            eta = phiS - phiE  + (model.R * T / model.F) .* log(aPl);
             state.etaPlating = eta;
         end
 
         function state = updateEtaChemical(model, state)
+            
             aPl = state.activityPlated;
-            eta = -(model.R * model.T / model.F) * log(aPl);
+            T   = state.T;
+            
+            eta = -(model.R * T / model.F) .* log(aPl);
             state.etaChemical = eta;
+            
         end
 
         function state = updatePlatingFlux(model, state)
-            eta = state.etaPlating;
-            ce = state.cElectrolyte;
-            T = model.T; R = model.R; F = model.F;
 
+            R = model.R;
+            F = model.F;
+            
+            eta = state.etaPlating;
+            ce  = state.cElectrolyte;
+            T   = state.T;
+            
             i0 = model.kPl * ce.^model.alphaPl;
             j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
                        exp((-model.alphaStr * F * eta) / (R * T)));
 
             state.platingFlux = j ./ F;
+            
         end
 
         function state = updateChemicalFlux(model, state)
+
             eta = state.etaChemical;
-            jCh = model.kChInt * (exp(0.5 * model.F * eta / (model.R * model.T)) - ...
-                                  exp(-0.5 * model.F * eta / (model.R * model.T)));
+            T   = state.T;
+            
+            jCh = model.kChInt * (exp(0.5 * model.F * eta / (model.R * T)) - ...
+                                  exp(-0.5 * model.F * eta / (model.R * T)));
+            
             state.chemicalFlux = jCh ./ model.F;
+            
         end
 
         function state = updateNPlCons(model, state)
-            flux = state.platingFlux - state.chemicalFlux;
+            
+            flux  = state.platingFlux - state.chemicalFlux;
             accum = state.nPlAccum;
-            state.nPlCons = assembleConservationEquation(model, flux, 0, 0, accum);
+            
+            state.nPlCons = assembleConservationEquation(model, 0, 0, flux, accum);
+            
         end
 
         function state = updateSurfaceCoverage(model, state)
@@ -188,12 +234,16 @@ classdef LithiumPlatingLatz < BaseModel
         end
 
         function state = updateNSEICons(model, state)
-            flux = state.platingFlux * model.SEIFraction;
+            
+            flux  = state.platingFlux * model.SEIFraction;
             accum = state.nSEIAccum;
-            state.nSEICons = assembleConservationEquation(model, flux, 0, 0, accum);
+            
+            state.nSEICons = assembleConservationEquation(model, 0, 0, flux, accum);
+            
         end
 
         function state = updateSEIThickness(model, state)
+            
             delta = model.deltaSEI0 + (model.MSEI * state.nSEI) / (model.rhoSEI * model.F);
             state.SEIThickness = delta;
         end

@@ -12,6 +12,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         % Input parameter for the solid diffusion model  :class:`SolidDiffusionModelInputParams <Electrochemistry.SolidDiffusionModelInputParams>`
         %
         SolidDiffusion
+
+        LithiumPlating
         
         %% Standard parameters
 
@@ -48,6 +50,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            lp  = 'LithiumPlating';
             
             jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
 
@@ -102,6 +105,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             inputparams = inputparams.setupInterface(jsonstruct);
             inputparams = inputparams.setupSolidDiffusion(jsonstruct);
+
+            if jsonstruct.useLithiumPlating
+                inputparams.LithiumPlating = LithiumPlatingLatzInputParams(pickField(jsonstruct, lp));
+            end
 
         end
 

@@ -84,7 +84,7 @@ classdef ActiveMaterial < BaseModel
             end
 
             if model.useLithiumPlating
-                model.LithiumPlating = LithiumPlating();
+                model.LithiumPlating = LithiumPlatingLatz(inputparams.LithiumPlating);
             end
             
         end
@@ -106,6 +106,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
+            model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
             
             if model.isRootSimulationModel
 
@@ -133,8 +134,13 @@ classdef ActiveMaterial < BaseModel
                 
             end
 
-            fn = @ActiveMaterial.updateRvol;
-            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+            if model.useLithiumPlating
+                fn = @ActiveMaterial.updateRvolLithiumPlating;
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
+            else
+                fn = @ActiveMaterial.updateRvol;
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+            end
             
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
@@ -265,6 +271,28 @@ classdef ActiveMaterial < BaseModel
 
         %% assembly functions use in this model
 
+
+        function state = updateRvolLithiumPlating(model, state)
+
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+            lp  = 'LithiumPlating';
+
+            vsa = model.(itf).volumetricSurfaceArea;
+            R = state.(itf).R;
+
+            if model.useLithiumPlating
+                theta = state.(lp).surfaceCoverage;
+                Rchem = state.(lp).chemicalFlux;
+                Rvol = vsa .* (R .* (1 - theta) + Rchem .* theta);
+            else
+                Rvol = vsa .* R;
+            end
+
+            state.(sd).Rvol = Rvol;
+        end
+
+        
         function state = updateRvol(model, state)
             
             itf = 'Interface';
