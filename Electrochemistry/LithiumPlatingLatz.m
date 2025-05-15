@@ -1,27 +1,29 @@
 classdef LithiumPlatingLatz < BaseModel
 
     properties
+
         T = 298.15
         F = 96485
         R = 8.314
 
-        alphaPl = 0.3
-        alphaStr = 0.7
+        alphaPl    = 0.3
+        alphaStr   = 0.7
         alphaChInt = 0.5
 
-        kPl = 1e-10
+        kPl    = 1e-10
         kChInt = 1e-12
 
-        nPl0 = 1e-6
+        nPl0    = 1e-6
         muLiRef = 0
 
         nPlLimit = 2.3e-5
 
         SEIFraction = 0.05
-        MSEI = 0.162
-        rhoSEI = 1690
-        deltaSEI0 = 1e-9
-        sigmaSEI = 5e-6
+        MSEI        = 0.162
+        rhoSEI      = 1690
+        deltaSEI0   = 1e-9
+        sigmaSEI    = 5e-6
+        
     end
 
     methods
