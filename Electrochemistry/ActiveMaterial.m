@@ -106,7 +106,9 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
-            model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
+            if model.useLithiumPlating
+                model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
+            end
             
             if model.isRootSimulationModel
 
