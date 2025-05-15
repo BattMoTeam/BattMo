@@ -23,6 +23,8 @@ classdef LithiumPlatingLatz < BaseModel
         rhoSEI      = 1690
         deltaSEI0   = 1e-9
         sigmaSEI    = 5e-6
+
+        useSEI = false;
         
     end
 
@@ -30,29 +32,53 @@ classdef LithiumPlatingLatz < BaseModel
 
         function model = LithiumPlatingLatz(inputparams)
             model = model@BaseModel();
-            fdnames = {};
-            model = dispatchParams(model, inputparams, fdnames);
+            % fdnames = {};
+            % model = dispatchParams(model, inputparams, fdnames);
         end
 
         function model = registerVarAndPropfuncNames(model)
 
-            varnames = {'phiSolid'        , ...
-                        'phiElectrolyte'  , ...
-                        'cElectrolyte'    , ...
-                        'nPl'             , ...
-                        'nPlAccum'        , ...
-                        'nPlCons'         , ...
-                        'platingFlux'     , ...
-                        'chemicalFlux'    , ...
-                        'etaPlating'      , ...
-                        'etaChemical'     , ...
-                        'activityPlated'  , ...
-                        'surfaceCoverage' , ...
-                        'nSEI'            , ...
-                        'nSEIAccum'       , ...
-                        'nSEICons'        , ...
-                        'SEIThickness'    };
+            useSEI = model.useSEI;
+            
+            varnames = {};
+            % potential of the solid electrode
+            varnames{end + 1} = 'phiSolid';
+            %
+            varnames{end + 1} = 'phiElectrolyte';
+            %
+            varnames{end + 1} = 'cElectrolyte';
+            %
+            varnames{end + 1} = 'nPl';
+            %
+            varnames{end + 1} = 'nPlAccum';
+            %
+            varnames{end + 1} = 'nPlCons';
+            %
+            varnames{end + 1} = 'platingFlux';
+            %
+            varnames{end + 1} = 'chemicalFlux';
+            %
+            varnames{end + 1} = 'etaPlating';
+            %
+            varnames{end + 1} = 'etaChemical';
+            %
+            varnames{end + 1} = 'activityPlated';
+            %
+            varnames{end + 1} = 'surfaceCoverage';
 
+            if useSEI
+                
+                %
+                varnames{end + 1} = 'nSEI';
+                %
+                varnames{end + 1} = 'nSEIAccum';
+                %
+                varnames{end + 1} = 'nSEICons';
+                %
+                varnames{end + 1} = 'SEIThickness';
+                
+            end
+            
             model = model.registerVarNames(varnames);
 
             fn = @LithiumPlatingLatz.updateNPlAccum;
@@ -62,9 +88,13 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateActivityPlated;
             model = model.registerPropFunction({'activityPlated', fn, {'nPl'}});
 
-            fn = @LithiumPlatingLatz.updateEtaPlating;
-            model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated', 'SEIThickness'}});
-
+            if useSEI
+                fn = @LithiumPlatingLatz.updateEtaPlatingSEI;
+                model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated', 'SEIThickness'}});
+            else
+                fn = @LithiumPlatingLatz.updateEtaPlating;
+                model = model.registerPropFunction({'etaPlating', fn, {'phiSolid', 'phiElectrolyte', 'activityPlated'}});
+            end
             fn = @LithiumPlatingLatz.updateEtaChemical;
             model = model.registerPropFunction({'etaChemical', fn, {'activityPlated'}});
 
@@ -80,15 +110,19 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
             model = model.registerPropFunction({'surfaceCoverage', fn, {'nPl'}});
 
-            fn = @LithiumPlatingLatz.updateNSEIAccum;
-            fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
-            model = model.registerPropFunction({'nSEIAccum', fn, {'nSEI'}});
+            if useSEI
+                
+                fn = @LithiumPlatingLatz.updateNSEIAccum;
+                fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
+                model = model.registerPropFunction({'nSEIAccum', fn, {'nSEI'}});
 
-            fn = @LithiumPlatingLatz.updateNSEICons;
-            model = model.registerPropFunction({'nSEICons', fn, {'platingFlux', 'nSEIAccum'}});
+                fn = @LithiumPlatingLatz.updateNSEICons;
+                model = model.registerPropFunction({'nSEICons', fn, {'platingFlux', 'nSEIAccum'}});
 
-            fn = @LithiumPlatingLatz.updateSEIThickness;
-            model = model.registerPropFunction({'SEIThickness', fn, {'nSEI'}});
+                fn = @LithiumPlatingLatz.updateSEIThickness;
+                model = model.registerPropFunction({'SEIThickness', fn, {'nSEI'}});
+
+            end
         end
 
         function state = updateNPlAccum(model, state, state0, dt)
