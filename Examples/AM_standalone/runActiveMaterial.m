@@ -72,7 +72,7 @@ initState.E = OCP + phiElectrolyte;
 % Reference rate which roughly corresponds to 1 hour for the data of this example
 Iref = 5e-12;
 
-Imax = 5e1*Iref;
+Imax = 2e1*Iref;
 
 total = 1*hour*(Iref/Imax);
 n     = 100;
