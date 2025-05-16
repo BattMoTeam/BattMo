@@ -43,54 +43,51 @@ classdef LithiumPlatingLatz < BaseModel
                        'sigmaSEI'   , ...    
                        'useSEI'};
             model = dispatchParams(model, inputparams, fdnames);
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
 
             useSEI = model.useSEI;
+
             
             varnames = {};
-            % potential of the solid electrode
-            varnames{end + 1} = 'T';
-            % potential of the solid electrode
-            varnames{end + 1} = 'phiElectrode';
-            %
-            varnames{end + 1} = 'phiElectrolyte';
-            %
-            varnames{end + 1} = 'cElectrolyte';
-            %
-            varnames{end + 1} = 'nPl';
-            %
+            
+            varnames{end + 1} = 'T';  % Temperature
+            
+            varnames{end + 1} = 'phiElectrode';  % Potential of the solid electrode
+            
+            varnames{end + 1} = 'phiElectrolyte';  % Potential of the electrolyte
+            
+            varnames{end + 1} = 'cElectrolyte';  % Concentration of the electrolyte
+            
+            varnames{end + 1} = 'nPl';  % Plating amount
+            
             varnames{end + 1} = 'nPlAccum';
-            %
-            varnames{end + 1} = 'nPlCons';
-            %
-            varnames{end + 1} = 'platingFlux';
-            %
-            varnames{end + 1} = 'chemicalFlux';
-            %
-            varnames{end + 1} = 'etaPlating';
-            %
-            varnames{end + 1} = 'etaChemical';
-            %
-            varnames{end + 1} = 'activityPlated';
-            %
-            varnames{end + 1} = 'surfaceCoverage';
-
+            
+            varnames{end + 1} = 'nPlCons';  % Conservation equation nPl
+            
+            varnames{end + 1} = 'platingFlux';  % Plating flux
+            
+            varnames{end + 1} = 'chemicalFlux';  % Flux of plated lithium going into the electrode
+            
+            varnames{end + 1} = 'etaPlating';  % Overpotential for plated lithium B-V
+            
+            varnames{end + 1} = 'etaChemical';  % Overpotential for plated insertion B-V
+            
+            varnames{end + 1} = 'activityPlated';  % Activity of plated li
+            
+            varnames{end + 1} = 'surfaceCoverage';  % Surface coverage of the plated lithium
             if useSEI
                 
-                %
-                varnames{end + 1} = 'nSEI';
-                %
-                varnames{end + 1} = 'nSEIAccum';
-                %
-                varnames{end + 1} = 'nSEICons';
-                %
-                varnames{end + 1} = 'SEIThickness';
+                varnames{end + 1} = 'nSEI';  % SEI amount
                 
+                varnames{end + 1} = 'nSEIAccum';  % Accumulated SEI
+                
+                varnames{end + 1} = 'nSEICons';  % SEI Conservation
+                
+                varnames{end + 1} = 'SEIThickness';  % Thickness of the SEI layer
             end
-            
             model = model.registerVarNames(varnames);
 
             fn = @LithiumPlatingLatz.updateNPlAccum;
