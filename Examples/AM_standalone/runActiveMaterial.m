@@ -27,7 +27,7 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
-jsonstruct.(ne).(co).(am).useLithiumPlating = false;
+jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
 % Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
