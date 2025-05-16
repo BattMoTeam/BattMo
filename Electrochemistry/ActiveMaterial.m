@@ -41,6 +41,8 @@ classdef ActiveMaterial < BaseModel
     
     methods
         
+        
+
         function model = ActiveMaterial(inputparams)
         %
         % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
@@ -177,10 +179,10 @@ classdef ActiveMaterial < BaseModel
         function model = setupForSimulation(model)
             
             model = model.equipModelForComputation();
-
+            
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-
+            
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             rp = model.(sd).particleRadius;
@@ -189,7 +191,9 @@ classdef ActiveMaterial < BaseModel
                         {{sd, 'solidDiffusionEq'}, scalingcoef}};
 
             model.scalings = scalings;
-
+            % if model.useLithiumPlating
+            %     model.LithiumPlating.G = model.G;
+            % end !!!
         end
 
         function jsonstruct = exportParams(model)
@@ -322,7 +326,10 @@ classdef ActiveMaterial < BaseModel
 
             state.Interface.T      = state.T;
             state.SolidDiffusion.T = state.T;
-            
+            if model.useLithiumPlating
+                state.LithiumPlating.T = state.T;
+                model.LithiumPlating.G = model.G;
+            end
         end
 
 
@@ -345,7 +352,15 @@ classdef ActiveMaterial < BaseModel
             
         end
         
-        
+        function state = updateLithiumPlatingVariables(model, state)
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+
+            state.(lp).phiElectrode   = state.(itf).phiElectrode;
+            state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
+            state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
+           
+        end
         
     end
 

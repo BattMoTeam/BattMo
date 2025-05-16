@@ -3,9 +3,10 @@ function cons = assembleConservationEquation(model, flux, bcsource, source, accu
     if nargin < 5
         accum = 0;
     end
-        
-    cons = accum + model.G.getDiv(flux) - bcsource - source; 
-    
+    cons = accum + - bcsource - source; 
+    if flux ~= 0
+        cons = cons + model.G.getDiv(flux); %!!!
+    end
 end
 
 

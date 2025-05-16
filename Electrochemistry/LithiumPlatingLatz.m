@@ -13,8 +13,6 @@ classdef LithiumPlatingLatz < BaseModel
         kChInt 
 
         nPl0    
-        muLiRef 
-
         nPlLimit 
 
         SEIFraction 
@@ -37,7 +35,6 @@ classdef LithiumPlatingLatz < BaseModel
                        'kPl'        , ...    
                        'kChInt'     , ... 
                        'nPl0'       , ...    
-                       'muLiRef'    , ... 
                        'nPlLimit'   , ... 
                        'SEIFraction', ... 
                        'MSEI'       , ...        
@@ -146,10 +143,10 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updateActivityPlated(model, state)
             
+            epsilon = 1e-12; % !!!
             nPl = state.nPl;
             n0 = model.nPl0;
-            state.activityPlated = nPl ./ (nPl + n0);
-            
+            state.activityPlated = max(epsilon, nPl^4) ./ (nPl^4 + n0^4);            
         end
 
         function state = updateEtaPlatingSEI(model, state)
