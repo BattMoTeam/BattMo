@@ -192,8 +192,10 @@ classdef ActiveMaterial < BaseModel
             F  = model.(sd).constants.F;
             rp = model.(sd).particleRadius;
             scalingcoef = 1/(n*F/(4*pi*rp^3/3));
+            vp = 4/3*pi*rp^3;
             scalings = {{{sd, 'massCons'}, scalingcoef}, ...
-                        {{sd, 'solidDiffusionEq'}, scalingcoef}};
+                        {{sd, 'solidDiffusionEq'}, scalingcoef}, ...
+                        {{'chargeCons'}, vp}};
 
             model.scalings = scalings;
         end
@@ -268,7 +270,7 @@ classdef ActiveMaterial < BaseModel
             I = state.I;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I -  vp* Rvol*n*F;
+            state.chargeCons = I -  vp*Rvol*n*F;
 
         end
         
