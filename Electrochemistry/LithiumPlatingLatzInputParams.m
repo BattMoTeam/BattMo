@@ -33,10 +33,9 @@ classdef LithiumPlatingLatzInputParams < InputParams
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'alphaChInt' , 0.5);
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'kPl'        , 1e-10);
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'kChInt'     , 1e-12);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPl0'       , 1e-9); %1.173e-23
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'muLiRef'    , 0);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPlLimit'   , 1e-6); %1.173e-17
-             jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEIFraction', 0.05);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPl0'       , 1.173e-23);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPlLimit'   , 1.173e-17);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEIFraction', 0.05);
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'MSEI'       , 0.162);
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'rhoSEI'     , 1690);
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'deltaSEI0'  , 1e-9);

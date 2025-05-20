@@ -169,10 +169,13 @@ classdef ActiveMaterial < BaseModel
                 fn = @ActiveMaterial.updateLithiumPlatingVariables;
                 inputvarnames = {{itf, 'phiElectrode'} , ...
                                  {itf, 'phiElectrolyte'}, ...
-                                 {itf, 'cElectrolyte'}};
+                                 {itf, 'cElectrolyte'}, ...
+                                 {itf, 'OCP'}};
                 model = model.registerPropFunction({{lp, 'phiElectrode'}, fn, inputvarnames});            
                 model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
+
             end            
         end
 
@@ -359,6 +362,8 @@ classdef ActiveMaterial < BaseModel
             state.(lp).phiElectrode   = state.(itf).phiElectrode;
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
             state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
+            state.(lp).OCP = state.(itf).OCP;
+
            
         end
         

@@ -67,7 +67,10 @@ initState.E = OCP + phiElectrolyte;
 
 if model.useLithiumPlating
     lp = 'LithiumPlating';
-    initState.(lp).nPl            = 0;
+    F = model.LithiumPlating.F;
+    R = model.LithiumPlating.R;
+    nPl0 = model.LithiumPlating.nPl0;
+    initState.(lp).nPl            = nPl0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
     initState.(lp).phiSolid       = initState.E;
     initState.(lp).phiElectrolyte = phiElectrolyte;
     initState.(lp).cElectrolyte   = cElectrolyte;
@@ -83,7 +86,7 @@ dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 1*second*(Iref/Imax);
-srcfunc = @(time) rampupControl(time, tup, Imax);
+srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
 control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);

@@ -54,6 +54,8 @@ classdef LithiumPlatingLatz < BaseModel
             varnames = {};
             
             varnames{end + 1} = 'T';  % Temperature
+
+            varnames{end + 1} = 'OCP' %OpencircuitVoltage
             
             varnames{end + 1} = 'phiElectrode';  % Potential of the solid electrode
             
@@ -105,7 +107,7 @@ classdef LithiumPlatingLatz < BaseModel
                 model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'T'}});
             end
             fn = @LithiumPlatingLatz.updateEtaChemical;
-            model = model.registerPropFunction({'etaChemical', fn, {'activityPlated', 'T'}});
+            model = model.registerPropFunction({'etaChemical', fn, {'activityPlated', 'T', 'OCP'}});
 
             fn = @LithiumPlatingLatz.updatePlatingFlux;
             model = model.registerPropFunction({'platingFlux', fn, {'cElectrolyte', 'etaPlating', 'T'}});
@@ -139,11 +141,9 @@ classdef LithiumPlatingLatz < BaseModel
         end
 
         function state = updateActivityPlated(model, state)
-            
-            epsilon = 1e-12; % !!!
             nPl = state.nPl;
             n0 = model.nPl0;
-            state.activityPlated = max(epsilon, nPl^4) ./ (nPl^4 + n0^4);            
+            state.activityPlated = nPl^4 ./ (nPl^4 + n0^4);            
         end
 
         function state = updateEtaPlatingSEI(model, state)
@@ -174,8 +174,9 @@ classdef LithiumPlatingLatz < BaseModel
             
             aPl = state.activityPlated;
             T   = state.T;
-            
-            eta = -(model.R * T / model.F) .* log(aPl);
+            OCP = state.OCP;
+
+            eta = -OCP -(model.R * T / model.F) .* log(aPl);
             state.etaChemical = eta;
             
         end
