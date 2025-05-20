@@ -13,6 +13,7 @@ Intermediate Usage
    parsets
    units
    runThermalExample.nblink
+   runSiliconGraphiteBattery.ipynb
    optimisation
    Octave <octave>
 
@@ -52,7 +53,12 @@ Intermediate Usage
       :padding: 2
 
       :ref:`Thermal simulation <runThermalExample>`
-           
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Composite material <runSiliconGraphiteBattery>`
+                    
    .. grid-item-card::
       :padding: 2
 
