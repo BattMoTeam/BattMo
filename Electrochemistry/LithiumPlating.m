@@ -109,23 +109,32 @@ classdef LithiumPlatingLatz < BaseModel
         end
 
         function state = updateChemicalFlux(model, state)
+            
             eta = state.etaChemical;
             jCh = model.kChInt * (exp(0.5 * model.F * eta / (model.R * model.T)) - ...
                                   exp(-0.5 * model.F * eta / (model.R * model.T)));
             state.chemicalFlux = jCh ./ model.F; % [mol/m²/s]
+            
         end
 
         function state = updateNPlCons(model, state)
-            flux = state.platingFlux- state.chemicalFlux;
+            
+            flux  = state.platingFlux - state.chemicalFlux;
             accum = state.nPlAccum;
+            
             cons = assembleConservationEquation(model, flux, 0, 0, accum);
+            
             state.nPlCons = cons;
+            
         end
 
         function state = updateSurfaceCoverage(model, state)
+            
             nPl = state.nPl;
             state.surfaceCoverage = min(nPl ./ model.nPlLimit, 1.0);
+            
         end
 
     end
+    
 end

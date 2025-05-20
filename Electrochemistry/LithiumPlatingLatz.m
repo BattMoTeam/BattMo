@@ -85,6 +85,7 @@ classdef LithiumPlatingLatz < BaseModel
             varnames{end + 1} = 'activityPlated';  % Activity of plated li
             
             varnames{end + 1} = 'surfaceCoverage';  % Surface coverage of the plated lithium
+            
             if useSEI
                 
                 varnames{end + 1} = 'nSEI';  % SEI amount
@@ -241,6 +242,7 @@ classdef LithiumPlatingLatz < BaseModel
             cLimit = nLimit * vsa / (4*pi*r^2);
             platedConcentration = state.platedConcentration;
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
+            
         end
 
         function state = updateNSEIAccum(model, state, state0, dt)

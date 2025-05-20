@@ -281,25 +281,21 @@ classdef ActiveMaterial < BaseModel
 
         %% assembly functions use in this model
 
-
         function state = updateRvolLithiumPlating(model, state)
 
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             lp  = 'LithiumPlating';
 
-            vsa = model.(itf).volumetricSurfaceArea;
-            R = state.(itf).R;
-
-            if model.useLithiumPlating
-                theta = state.(lp).surfaceCoverage;
-                Rchem = state.(lp).chemicalFlux;
-                Rvol = vsa .* (R .* (1 - theta) + Rchem .* theta);
-            else
-                Rvol = vsa .* R;
-            end
+            vsa   = model.(itf).volumetricSurfaceArea;
+            R     = state.(itf).R;
+            theta = state.(lp).surfaceCoverage;
+            Rchem = state.(lp).chemicalFlux;
+            
+            Rvol = vsa .* (R .* (1 - theta) + Rchem .* theta);
 
             state.(sd).Rvol = Rvol;
+            
         end
 
         

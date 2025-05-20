@@ -1,10 +1,7 @@
-%% run stand-alone active material model
+%% run stand-alone active material model with lithium plating
 
 clear
 close all
-
-%% Import the required modules from MRST
-mrstModule add ad-core mrst-gui mpfa
 
 %% Setup the properties of Li-ion battery materials and cell design
 
@@ -65,24 +62,21 @@ initState = model.evalVarName(initState, {itf, 'OCP'});
 OCP = initState.(itf).OCP;
 initState.E = OCP + phiElectrolyte;
 
-if model.useLithiumPlating
-    lp = 'LithiumPlating';
-    F = model.LithiumPlating.F;
-    R = model.LithiumPlating.R;
-    
-    nPl0 = model.LithiumPlating.nPl0;
-    r = model.LithiumPlating.particleRadius;
-    vsa = model.LithiumPlating.volumetricSurfaceArea;
+lp = 'LithiumPlating';
+F = model.LithiumPlating.F;
+R = model.LithiumPlating.R;
 
-    platedConcentration0 = nPl0 * vsa / (4 * pi * r^2);
+nPl0 = model.LithiumPlating.nPl0;
+r = model.LithiumPlating.particleRadius;
+vsa = model.LithiumPlating.volumetricSurfaceArea;
 
-    initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
-    initState.(lp).phiSolid       = initState.E;
-    initState.(lp).phiElectrolyte = phiElectrolyte;
-    initState.(lp).cElectrolyte   = cElectrolyte;
-    initState.(lp).surfaceCoverage = 0; 
-    
-end
+platedConcentration0 = nPl0 * vsa / (4 * pi * r^2);
+
+initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+initState.(lp).phiSolid       = initState.E;
+initState.(lp).phiElectrolyte = phiElectrolyte;
+initState.(lp).cElectrolyte   = cElectrolyte;
+initState.(lp).surfaceCoverage = 0; 
 
 %% setup schedule
 
@@ -166,43 +160,41 @@ caver = cellfun(@(state) max(state.(sd).cAverage), states);
 
 %% Lithium plating plotting
 
-if model.useLithiumPlating
-    lp = 'LithiumPlating';
+lp = 'LithiumPlating';
 
-    varsToEval = { ...
-        {'LithiumPlating', 'surfaceCoverage'}, ...
-        {'LithiumPlating', 'platingFlux'}, ...
-        {'LithiumPlating', 'chemicalFlux'}, ...
-        {'LithiumPlating', 'etaPlating'}, ...
-        {'LithiumPlating', 'etaChemical'} ...
-    };
-    for k = 1:numel(states) %!!!
-        for iv = 1:numel(varsToEval)
-            states{k} = model.evalVarName(states{k}, varsToEval{iv});
-        end
+varsToEval = { ...
+    {'LithiumPlating', 'surfaceCoverage'}, ...
+    {'LithiumPlating', 'platingFlux'}, ...
+    {'LithiumPlating', 'chemicalFlux'}, ...
+    {'LithiumPlating', 'etaPlating'}, ...
+    {'LithiumPlating', 'etaChemical'} ...
+             };
+for k = 1:numel(states) %!!!
+    for iv = 1:numel(varsToEval)
+        states{k} = model.evalVarName(states{k}, varsToEval{iv});
     end
-
-    surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
-    platingFlux     = cellfun(@(s) s.(lp).platingFlux, states);
-    chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
-    platedConcentration             = cellfun(@(s) s.(lp).platedConcentration, states);
-
-    figure
-    plot(time/hour, surfaceCoverage);
-    xlabel('time [hour]');
-    ylabel('Surface coverage');
-    title('Surface Coverage of Plated Lithium');
-
-    figure
-    plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
-    xlabel('time [hour]');
-    ylabel('Volumetric Plating Flux [mol/m³/s]');
-    title('Lithium Plating Flux');
-
-    figure
-    plot(time/hour, platedConcentration);
-    xlabel('time [hour]');
-    ylabel('platedConcentration [mol/m²]');
-    title('Accumulated Plated Lithium');
-
 end
+
+surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
+platingFlux     = cellfun(@(s) s.(lp).platingFlux, states);
+chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
+platedConcentration             = cellfun(@(s) s.(lp).platedConcentration, states);
+
+figure
+plot(time/hour, surfaceCoverage);
+xlabel('time [hour]');
+ylabel('Surface coverage');
+title('Surface Coverage of Plated Lithium');
+
+figure
+plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
+xlabel('time [hour]');
+ylabel('Volumetric Plating Flux [mol/m³/s]');
+title('Lithium Plating Flux');
+
+figure
+plot(time/hour, platedConcentration);
+xlabel('time [hour]');
+ylabel('platedConcentration [mol/m²]');
+title('Accumulated Plated Lithium');
+
