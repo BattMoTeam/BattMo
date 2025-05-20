@@ -2,6 +2,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     opt = struct('runSimulation'       , true , ...
                  'includeGridGenerator', false, ...
+                 'initstate'           , []   , ...
                  'validateJson'        , false, ...
                  'verbose'             , true);
     opt = merge_options(opt, varargin{:});
@@ -27,11 +28,10 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
-    if isfield(jsonstruct, 'initializationSetup')
-        initializationSetup = jsonstruct.initializationSetup;
+    if ~isempty(opt.initstate)
+        jsonstruct = setJsonStructField(jsonstruct, {'initializationSetup'}, 'given matlab object', 'handleMisMatch', 'warn');
     else
-        % default is given SOC
-        initializationSetup = "given SOC";
+        jsonstruct = setDefaultJsonStructField(jsonstruct, {'initializationSetup'}, 'given SOC');
     end
 
     %%  Initialize the battery model.
@@ -39,11 +39,15 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
+    initializationSetup = getJsonStructField(jsonstruct, {'initializationSetup'});
+    
     switch initializationSetup
       case "given SOC"
         % nothing to do
       case "given input"
         eval(jsonstruct.loadStateCmd);
+      case "given matlab object"
+        initstate = opt.initstate;
       otherwise
         error('initializationSetup not recognized');
     end
@@ -71,7 +75,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
             jsonstructInit = [];
         end
         initstate = model.setupInitialState(jsonstructInit);
-      case "given input"
+      case {"given input", 'given matlab object'}
         % allready handled
       otherwise
         error('initializationSetup not recognized');
