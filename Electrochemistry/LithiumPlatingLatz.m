@@ -15,13 +15,16 @@ classdef LithiumPlatingLatz < BaseModel
         nPl0    
         nPlLimit 
 
+        volumetricSurfaceArea
+        particleRadius
+
         SEIFraction 
         MSEI        
         rhoSEI      
         deltaSEI0   
         sigmaSEI    
 
-        useSEI 
+        useSEI
         
     end
 
@@ -36,6 +39,8 @@ classdef LithiumPlatingLatz < BaseModel
                        'kChInt'     , ... 
                        'nPl0'       , ...    
                        'nPlLimit'   , ... 
+                       'volumetricSurfaceArea' , ...
+                       'particleRadius', ...
                        'SEIFraction', ... 
                        'MSEI'       , ...        
                        'rhoSEI'     , ...      
@@ -63,11 +68,11 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames{end + 1} = 'cElectrolyte';  % Concentration of the electrolyte
             
-            varnames{end + 1} = 'nPl';  % Plating amount
+            varnames{end + 1} = 'platedConcentration';  % Plating amount
             
-            varnames{end + 1} = 'nPlAccum';
+            varnames{end + 1} = 'platedConcentrationAccum';
             
-            varnames{end + 1} = 'nPlCons';  % Conservation equation nPl
+            varnames{end + 1} = 'platedConcentrationCons';  % Conservation equation platedConcentration
             
             varnames{end + 1} = 'platingFlux';  % Plating flux
             
@@ -92,12 +97,12 @@ classdef LithiumPlatingLatz < BaseModel
             end
             model = model.registerVarNames(varnames);
 
-            fn = @LithiumPlatingLatz.updateNPlAccum;
+            fn = @LithiumPlatingLatz.updatePlatedConcentrationAccum;
             fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
-            model = model.registerPropFunction({'nPlAccum', fn, {'nPl'}});
+            model = model.registerPropFunction({'platedConcentrationAccum', fn, {'platedConcentration'}});
 
             fn = @LithiumPlatingLatz.updateActivityPlated;
-            model = model.registerPropFunction({'activityPlated', fn, {'nPl'}});
+            model = model.registerPropFunction({'activityPlated', fn, {'platedConcentration'}});
 
             if useSEI
                 fn = @LithiumPlatingLatz.updateEtaPlatingSEI;
@@ -115,11 +120,11 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateChemicalFlux;
             model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T'}});
 
-            fn = @LithiumPlatingLatz.updateNPlCons;
-            model = model.registerPropFunction({'nPlCons', fn, {'nPlAccum', 'platingFlux', 'chemicalFlux'}});
+            fn = @LithiumPlatingLatz.updatePlatedConcentrationCons;
+            model = model.registerPropFunction({'platedConcentrationCons', fn, {'platedConcentrationAccum', 'platingFlux', 'chemicalFlux'}});
 
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
-            model = model.registerPropFunction({'surfaceCoverage', fn, {'nPl'}});
+            model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
 
             if useSEI
                 
@@ -136,14 +141,20 @@ classdef LithiumPlatingLatz < BaseModel
             end
         end
 
-        function state = updateNPlAccum(model, state, state0, dt)
-            state.nPlAccum = (state.nPl - state0.nPl) / dt;
+        function state = updatePlatedConcentrationAccum(model, state, state0, dt)
+            state.platedConcentrationAccum = (state.platedConcentration - state0.platedConcentration) / dt;
         end
 
         function state = updateActivityPlated(model, state)
-            nPl = state.nPl;
+            platedConcentration = state.platedConcentration;
+            
             n0 = model.nPl0;
-            state.activityPlated = nPl^4 ./ (nPl^4 + n0^4);            
+            r = model.particleRadius;
+            vsa = model.volumetricSurfaceArea
+            % switching the n of lithium plated for one particle to a concentration with this volume
+            c0 = n0 * vsa / (4*pi*r^2)
+            
+            state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
         end
 
         function state = updateEtaPlatingSEI(model, state)
@@ -210,18 +221,26 @@ classdef LithiumPlatingLatz < BaseModel
             
         end
 
-        function state = updateNPlCons(model, state)
+        function state = updatePlatedConcentrationCons(model, state)
+
+            vsa = model.volumetricSurfaceArea;
             
-            flux  = state.platingFlux - state.chemicalFlux;
-            accum = state.nPlAccum;
+            flux  = (state.platingFlux - state.chemicalFlux);
+            accum = state.platedConcentrationAccum;
             
-            state.nPlCons = assembleConservationEquation(model, 0, 0, flux, accum);
+            state.platedConcentrationCons = assembleConservationEquation(model, 0, 0, flux*vsa , accum);
             
         end
 
         function state = updateSurfaceCoverage(model, state)
-            nPl = state.nPl;
-            state.surfaceCoverage = min(nPl ./ model.nPlLimit, 1.0);
+            
+            nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+            r = model.particleRadius;
+            vsa = model.volumetricSurfaceArea;
+            % switching the n of lithium plated for one particle to a concentration with this volume
+            cLimit = nLimit * vsa / (4*pi*r^2);
+            platedConcentration = state.platedConcentration;
+            state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
         end
 
         function state = updateNSEIAccum(model, state, state0, dt)

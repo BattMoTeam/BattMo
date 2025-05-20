@@ -69,11 +69,19 @@ if model.useLithiumPlating
     lp = 'LithiumPlating';
     F = model.LithiumPlating.F;
     R = model.LithiumPlating.R;
+    
     nPl0 = model.LithiumPlating.nPl0;
-    initState.(lp).nPl            = nPl0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+    r = model.LithiumPlating.particleRadius;
+    vsa = model.LithiumPlating.volumetricSurfaceArea;
+
+    platedConcentration0 = nPl0 * vsa / (4 * pi * r^2);
+
+    initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
     initState.(lp).phiSolid       = initState.E;
     initState.(lp).phiElectrolyte = phiElectrolyte;
     initState.(lp).cElectrolyte   = cElectrolyte;
+    initState.(lp).surfaceCoverage = 0; 
+    
 end
 
 %% setup schedule
@@ -177,7 +185,7 @@ if model.useLithiumPlating
     surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
     platingFlux     = cellfun(@(s) s.(lp).platingFlux, states);
     chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
-    nPl             = cellfun(@(s) s.(lp).nPl, states);
+    platedConcentration             = cellfun(@(s) s.(lp).platedConcentration, states);
 
     figure
     plot(time/hour, surfaceCoverage);
@@ -192,9 +200,9 @@ if model.useLithiumPlating
     title('Lithium Plating Flux');
 
     figure
-    plot(time/hour, nPl);
+    plot(time/hour, platedConcentration);
     xlabel('time [hour]');
-    ylabel('nPl [mol/m²]');
+    ylabel('platedConcentration [mol/m²]');
     title('Accumulated Plated Lithium');
 
 end
