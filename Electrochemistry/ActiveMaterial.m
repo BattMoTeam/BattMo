@@ -87,6 +87,8 @@ classdef ActiveMaterial < BaseModel
 
             if model.useLithiumPlating
                 model.LithiumPlating = LithiumPlatingLatz(inputparams.LithiumPlating);
+                model.LithiumPlating.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
+                model.LithiumPlating.particleRadius = model.SolidDiffusion.particleRadius;
             end
             
         end
@@ -194,10 +196,6 @@ classdef ActiveMaterial < BaseModel
                         {{sd, 'solidDiffusionEq'}, scalingcoef}};
 
             model.scalings = scalings;
-            if model.useLithiumPlating
-                model.LithiumPlating.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
-                model.LithiumPlating.particleRadius = model.SolidDiffusion.particleRadius;
-            end
         end
 
         function jsonstruct = exportParams(model)

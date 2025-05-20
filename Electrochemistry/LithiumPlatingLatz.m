@@ -150,9 +150,9 @@ classdef LithiumPlatingLatz < BaseModel
             
             n0 = model.nPl0;
             r = model.particleRadius;
-            vsa = model.volumetricSurfaceArea
+            vsa = model.volumetricSurfaceArea;
             % switching the n of lithium plated for one particle to a concentration with this volume
-            c0 = n0 * vsa / (4*pi*r^2)
+            c0 = n0 * vsa / (4*pi*r^2);
             
             state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
         end
