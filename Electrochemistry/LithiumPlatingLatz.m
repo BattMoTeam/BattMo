@@ -122,7 +122,7 @@ classdef LithiumPlatingLatz < BaseModel
             model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T'}});
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationCons;
-            model = model.registerPropFunction({'platedConcentrationCons', fn, {'platedConcentrationAccum', 'platingFlux', 'chemicalFlux'}});
+            model = model.registerPropFunction({'platedConcentrationCons', fn, {'platedConcentrationAccum', 'platingFlux', 'chemicalFlux', 'surfaceCoverage'}});
 
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
             model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
@@ -225,8 +225,10 @@ classdef LithiumPlatingLatz < BaseModel
         function state = updatePlatedConcentrationCons(model, state)
 
             vsa = model.volumetricSurfaceArea;
+
+            s = state.surfaceCoverage;
             
-            flux  = (state.platingFlux - state.chemicalFlux);
+            flux  = (state.platingFlux - state.chemicalFlux) * s;
             accum = state.platedConcentrationAccum;
             
             state.platedConcentrationCons = assembleConservationEquation(model, 0, 0, flux*vsa , accum);
