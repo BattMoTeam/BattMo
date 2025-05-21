@@ -172,11 +172,14 @@ classdef ActiveMaterial < BaseModel
                 inputvarnames = {{itf, 'phiElectrode'} , ...
                                  {itf, 'phiElectrolyte'}, ...
                                  {itf, 'cElectrolyte'}, ...
-                                 {itf, 'OCP'}};
+                                 {itf, 'OCP'}, ...
+                                 {sd, 'c'}};
                 model = model.registerPropFunction({{lp, 'phiElectrode'}, fn, inputvarnames});            
                 model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'cSolid'}, fn, inputvarnames});
+
 
             end            
         end
@@ -290,9 +293,9 @@ classdef ActiveMaterial < BaseModel
             vsa   = model.(itf).volumetricSurfaceArea;
             R     = state.(itf).R;
             theta = state.(lp).surfaceCoverage;
-            Rchem = state.(lp).chemicalFlux;
+            Rchem = state.(lp).chemicalFlux * vsa;
             
-            Rvol = vsa .* (R .* (1 - theta) + Rchem .* theta);
+            Rvol = R .* (1 - theta) + Rchem .* theta;
 
             state.(sd).Rvol = Rvol;
             
@@ -302,14 +305,19 @@ classdef ActiveMaterial < BaseModel
         function state = updateRvol(model, state)
             
             itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            
+            sd  = 'SolidDiffusion'
             vsa = model.(itf).volumetricSurfaceArea;
-            
-            Rvol = vsa.*state.(itf).R;
-            
-            state.(sd).Rvol = Rvol;
-            
+
+            if model.useLithiumPlating
+                %following Latz model
+
+                Rvol = vsa.* state.(lp).intercalationFlux;
+
+            else
+                Rvol = vsa.*state.(itf).R;
+
+                state.(sd).Rvol = Rvol;
+            end
         end        
         
         function state = updateConcentrations(model, state)
@@ -355,11 +363,13 @@ classdef ActiveMaterial < BaseModel
         function state = updateLithiumPlatingVariables(model, state)
             itf = 'Interface';
             lp  = 'LithiumPlating';
+            sd = 'SolidDiffusion'
 
             state.(lp).phiElectrode   = state.(itf).phiElectrode;
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
             state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
-            state.(lp).OCP = state.(itf).OCP;
+            state.(lp).OCP            = state.(itf).OCP;
+            state.(lp).cSolid         = state.(sd).c;
 
            
         end

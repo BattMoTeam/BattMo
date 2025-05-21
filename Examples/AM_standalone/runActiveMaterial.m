@@ -95,7 +95,7 @@ nls.errorOnFailure = false;
 
 model.nonlinearTolerance = 1e-2;
 
-%% Run simulation
+%% Runstat simulation
 
 model.verbose = true;
 [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
