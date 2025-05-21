@@ -139,11 +139,18 @@ classdef ActiveMaterial < BaseModel
             end
 
             if model.useLithiumPlating
+                
                 fn = @ActiveMaterial.updateRvolLithiumPlating;
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
+
+                fn = @ActiveMaterial.updateInterfaceLithiumPlatingJ0;
+                model = model.registerPropFunction({{itf, 'j0'}, fn, {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}}});
+                
             else
+                
                 fn = @ActiveMaterial.updateRvol;
                 model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+                
             end
             
             fn = @ActiveMaterial.updateConcentrations;
@@ -233,6 +240,24 @@ classdef ActiveMaterial < BaseModel
             
         end
 
+
+        function state = updateInterfaceLithiumPlatingJ0(model, state)
+
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            
+            n = model.(itf).numberOfElectronsTransferred;
+            
+            cElyte = state.(itf).cElectrolyte;
+            c      = state.(itf).cElectrodeSurface;
+
+            coef = cElyte.*c;
+            
+            coef(coef < 0) = 0;
+            state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
+            
+        end
+        
         function state = updatePhi(model, state)
 
             itf = 'Interface';
@@ -306,16 +331,8 @@ classdef ActiveMaterial < BaseModel
             sd  = 'SolidDiffusion'
             vsa = model.(itf).volumetricSurfaceArea;
 
-            if model.useLithiumPlating
-                %following Latz model
-
-                Rvol = vsa.* state.(lp).intercalationFlux;
-
-            else
-                Rvol = vsa.*state.(itf).R;
-
-                state.(sd).Rvol = Rvol;
-            end
+            Rvol = vsa.*state.(itf).R;
+                
         end        
         
         function state = updateConcentrations(model, state)
