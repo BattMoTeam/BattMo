@@ -1,0 +1,15 @@
+{"LithiumPlating" : {
+    "alphaPl" : 0.3,
+    "alphaStr" : 0.7, 
+    "alphaChInt" : 0.5, 
+    "kPl" : 6.089e3, 
+    "kChInt" : 0.965, 
+    "kInter" : 6.342e3, 
+    "nPl0" : 1.173e-23, 
+    "nPlLimit" : 1.173e-17, 
+    "SEIFraction" : 0.05, 
+    "MSEI" : 0.162, 
+    "rhoSEI" : 1690, 
+    "deltaSEI0" : 1e-9, 
+    "sigmaSEI" : 5e-6, 
+    "useSEI" : false}}

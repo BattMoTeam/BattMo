@@ -23,27 +23,15 @@ classdef LithiumPlatingLatzInputParams < InputParams
 
         useSEI
         
+        volumetricSurfaceArea
+        particleRadius
+
     end
 
     methods
 
         function inputparams = LithiumPlatingLatzInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'alphaPl'    , 0.3);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'alphaStr'   , 0.7);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'alphaChInt' , 0.5);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'kPl'        , 6.089e3);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'kChInt'     , 0.965);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'kInter'     , 6.342e3);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPl0'       , 1.173e-23);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'nPlLimit'   , 1.173e-17);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'SEIFraction', 0.05);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'MSEI'       , 0.162);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'rhoSEI'     , 1690);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'deltaSEI0'  , 1e-9);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'sigmaSEI'   , 5e-6);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useSEI'     , false);
-            
             inputparams = inputparams@InputParams(jsonstruct);
 
         end

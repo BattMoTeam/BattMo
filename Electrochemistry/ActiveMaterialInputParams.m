@@ -93,6 +93,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
+            if jsonstruct.useLithiumPlating
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
+            end
+            
             isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
 
             if isAssigned(isRootSimulationModel) && isRootSimulationModel 

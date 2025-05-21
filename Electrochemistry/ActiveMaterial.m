@@ -87,8 +87,6 @@ classdef ActiveMaterial < BaseModel
 
             if model.useLithiumPlating
                 model.LithiumPlating = LithiumPlatingLatz(inputparams.LithiumPlating);
-                model.LithiumPlating.volumetricSurfaceArea = model.Interface.volumetricSurfaceArea;
-                model.LithiumPlating.particleRadius = model.SolidDiffusion.particleRadius;
             end
             
         end
