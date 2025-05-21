@@ -295,8 +295,8 @@
 <li class="toctree-l2"><a class="reference internal" href="runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../protonicmembrane.html">Protonic Membrane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html">Protonic Membrane</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="../protonicmembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="runProtonicMembrane.html#model-overview">Model overview</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="runProtonicMembrane.html#governing-equations">Governing equations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runProtonicMembrane.html#boundary-conditions">Boundary conditions</a></li>
@@ -414,7 +414,7 @@
              
   <section id="source-code-for-runprotonicmembrane">
 <span id="runprotonicmembrane-source"></span><h1>Source code for runProtonicMembrane<a class="headerlink" href="#source-code-for-runprotonicmembrane" title="Link to this heading"></a></h1>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Protonic Membrane model</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Proton Membrane model</span>
 
 <span class="c">%% Load and parse input from given json files</span>
 <span class="c">% The source of the json files can be seen in :battmofile:`protonicMembrane.json&lt;ProtonicMembrane/jsonfiles/protonicMembrane.json&gt;` and</span>
@@ -438,7 +438,7 @@
 <span class="p">[</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">gen</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupProtonicMembraneGrid</span><span class="p">(</span><span class="n">inputparams</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">);</span>
 
 <span class="c">%% Model setup</span>
-<span class="c">% We instantiate the model for the protonic membrane cell</span>
+<span class="c">% We instantiate the model for the proton membrane cell</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProtonicMembrane</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
 
 <span class="c">%%</span>

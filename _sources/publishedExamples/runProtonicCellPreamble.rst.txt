@@ -1,7 +1,7 @@
 Model coupling
 ==============
 
-We couple the :ref:`gas supply layer <runGasSupply>` with the anode of the :ref:`protonic membrane
+We couple the :ref:`gas supply layer <runGasSupply>` with the anode of the :ref:`proton membrane
 <runProtonicMembrane>`. The coupling occurs at the interface of the two regions. Along the anode, we assume a constant
 voltage, that is, we neglect the potential loss in this part.
 
