@@ -242,17 +242,20 @@ classdef ActiveMaterial < BaseModel
 
 
         function state = updateInterfaceLithiumPlatingJ0(model, state)
-
+        
             itf = 'Interface';
             lp  = 'LithiumPlating';
-            
+            cmax = model.Interface.saturationConcentration;
             n = model.(itf).numberOfElectronsTransferred;
             
+            F = model.(itf).constants.F;
             cElyte = state.(itf).cElectrolyte;
             c      = state.(itf).cElectrodeSurface;
 
             coef = cElyte.*c;
             
+            th = cmax * 1e-12;
+
             coef(coef < 0) = 0;
             state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
             
@@ -332,6 +335,8 @@ classdef ActiveMaterial < BaseModel
             vsa = model.(itf).volumetricSurfaceArea;
 
             Rvol = vsa.*state.(itf).R;
+
+            state.(sd).Rvol = Rvol;
                 
         end        
         
@@ -378,7 +383,7 @@ classdef ActiveMaterial < BaseModel
         function state = updateLithiumPlatingVariables(model, state)
             itf = 'Interface';
             lp  = 'LithiumPlating';
-            sd = 'SolidDiffusion'
+            sd = 'SolidDiffusion';
 
             state.(lp).phiElectrode   = state.(itf).phiElectrode;
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;

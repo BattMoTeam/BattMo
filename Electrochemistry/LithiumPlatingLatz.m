@@ -82,8 +82,6 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames{end + 1} = 'chemicalFlux';  % Flux of plated lithium going into the electrode
             
-            varnames{end + 1} = 'intercalationFlux';  % Flux of lithium going into the electrode from the electrolyte (classic)
-
             varnames{end + 1} = 'etaPlating';  % Overpotential for plated lithium B-V
             
             varnames{end + 1} = 'etaChemical';  % Overpotential for plated insertion B-V
@@ -126,9 +124,6 @@ classdef LithiumPlatingLatz < BaseModel
 
             fn = @LithiumPlatingLatz.updateChemicalFlux;
             model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T'}});
-
-            fn = @LithiumPlatingLatz.updateIntercalationFlux;
-            model = model.registerPropFunction({'intercalationFlux', fn, {'cElectrolyte', 'cSolid', 'phiElectrode', 'phiElectrolyte', 'T', 'OCP'}});
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationCons;
             model = model.registerPropFunction({'platedConcentrationCons', fn, {'platedConcentrationAccum', 'platingFlux', 'chemicalFlux', 'surfaceCoverage'}});
@@ -229,30 +224,6 @@ classdef LithiumPlatingLatz < BaseModel
             
             state.chemicalFlux = jCh ./ model.F;
             
-        end
-
-        function state = updateIntercalationFlux(model, state)
-
-            R = model.R;
-            F = model.F;
-
-            T     = state.T;
-            ce    = state.cElectrolyte;
-            cSo   = state.cSolid;
-            phiS  = state.phiElectrode;
-            phiE  = state.phiElectrolyte;
-            OCP   = state.OCP;
-
-            eta = phiS - phiE - OCP;  % Overpotential
-
-            % Butler-Volmer parameters
-            i0 = model.kInter .* sqrt(ce .* cSo);
-
-            jInter = i0 .* (exp((0.5 * F * eta) / (R * T)) - ...
-                exp((-0.5 * F * eta) / (R * T)));
-
-            state.intercalationFlux = jInter / F;
-
         end
 
         function state = updatePlatedConcentrationCons(model, state)
