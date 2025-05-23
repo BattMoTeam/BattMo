@@ -5,28 +5,28 @@ classdef LithiumPlatingLatz < BaseModel
         F = PhysicalConstants.F
         R = PhysicalConstants.R
 
-        alphaPl    
-        alphaStr   
-        alphaChInt 
+        alphaPl                                 % Symmetry factor for lithium plating/stripping reaction (typically ≈ 0.3)
+        alphaStr                                % Symmetry factor for stripping (may be 1-alphaPl)
+        alphaChInt                              % Symmetry factor for charge-neutral chemical intercalation of plated lithium
 
-        kPl    
-        kChInt 
-        kInter
+        kPl                                     % Reaction rate constant for lithium plating (N⁰₀ Plating)
+        kChInt                                  % Reaction rate constant for chemical intercalation of plated lithium
+        kInter                                  % Reaction rate constant for direct lithium-ion intercalation into graphite
 
-        nPl0    
-        nPlLimit 
+        nPl0                                    % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
+        nPlLimit                                % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
 
-        volumetricSurfaceArea
-        particleRadius
+        volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
+        particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
 
-        SEIFraction 
-        MSEI        
-        rhoSEI      
-        deltaSEI0   
-        sigmaSEI    
+        SEIFraction                             % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
+        MSEI                                    % Molar mass of SEI [kg/mol]
+        rhoSEI                                  % Density of SEI [kg/m³]
+        deltaSEI0                               % Initial thickness of SEI layer [m]
+        sigmaSEI                                % Ionic conductivity of SEI [S/m]
 
-        useSEI
-        
+        useSEI                                  % Boolean flag: whether SEI effects are included in overpotential calculations
+
     end
 
     methods

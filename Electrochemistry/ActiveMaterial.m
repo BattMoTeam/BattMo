@@ -389,7 +389,7 @@ classdef ActiveMaterial < BaseModel
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
             state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
             state.(lp).OCP            = state.(itf).OCP;
-            state.(lp).cSolid         = state.(sd).c;
+            state.(lp).cSolid         = state.(sd).cSurface;
 
            
         end
