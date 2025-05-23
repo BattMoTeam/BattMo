@@ -34,9 +34,12 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
+jsonstruct.Control.controlPolicy = 'CCCharge';
+
 % Setup InputParams
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
+inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
 
 %% Setup the model
 
@@ -81,7 +84,6 @@ initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 
 initState.(lp).phiSolid       = initState.E;
 initState.(lp).phiElectrolyte = phiElectrolyte;
 initState.(lp).cElectrolyte   = cElectrolyte;
-initState.(lp).surfaceCoverage = 0; 
 
 %% setup schedule
 

@@ -1,4 +1,4 @@
-function [OCP] = computeOCP_Graphite_Latz(c, cmax)
+function [OCP, dUdT] = computeOCP_Graphite_Latz(c, ~, cmax)
 % computeOCP_Graphite_Latz
 %   Computes the equilibrium open-circuit potential (OCP) of
 %   graphite based on the model from Hein, Danner, and Latz [1].
@@ -17,7 +17,7 @@ function [OCP] = computeOCP_Graphite_Latz(c, cmax)
     x = c ./ cmax;
 
     % Modified hyperbolic tangent function used in the original paper
-    tanhmod = @(x) (exp(20 .* x) - exp(-x)) ./ (2 .* cosh(x));
+    tanhmod = @(x) (exp(20 .* x) - exp(-x)) ./ (exp(-x) + exp(x));
 
     % OCP expression at reference temperature (T = 298.15 K)
     OCP = 0.6379 ...
@@ -26,4 +26,8 @@ function [OCP] = computeOCP_Graphite_Latz(c, cmax)
         - 0.1978 .* tanhmod((x - 0.99) ./ 0.05) ...
         - 0.6875 .* tanh((x + 0.0117) ./ 0.0529) ...
         - 0.0175 .* tanh((x - 0.5692) ./ 0.0875);
+
+    dUdT = 0;
+
+
 end

@@ -70,14 +70,19 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames{end + 1} = 'cElectrolyte';  % Concentration of the electrolyte
             
-            varnames{end + 1} = 'cSolid';  % Concentration in the electrode
-
             varnames{end + 1} = 'platedConcentration';  % Plating amount
             
             varnames{end + 1} = 'platedConcentrationAccum';
             
             varnames{end + 1} = 'platedConcentrationCons';  % Conservation equation platedConcentration
             
+            % Warning : fluxes are considered from the inside to the
+            % outside
+
+            % platingFlux is positive if stripping and negative if plating
+            % chemicalFlux is Negative if platedLithium inserts in the
+            % electrode
+
             varnames{end + 1} = 'platingFlux';  % Plating flux
             
             varnames{end + 1} = 'chemicalFlux';  % Flux of plated lithium going into the electrode
@@ -232,7 +237,7 @@ classdef LithiumPlatingLatz < BaseModel
 
             s = state.surfaceCoverage;
             
-            flux  = (state.platingFlux - state.chemicalFlux) * s;
+            flux  = (state.chemicalFlux - state.platingFlux) * s;
             accum = state.platedConcentrationAccum;
             
             state.platedConcentrationCons = assembleConservationEquation(model, 0, 0, flux*vsa , accum);

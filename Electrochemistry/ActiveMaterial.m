@@ -183,8 +183,6 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
-                model = model.registerPropFunction({{lp, 'cSolid'}, fn, inputvarnames});
-
 
             end            
         end
@@ -389,8 +387,6 @@ classdef ActiveMaterial < BaseModel
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
             state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
             state.(lp).OCP            = state.(itf).OCP;
-            state.(lp).cSolid         = state.(sd).cSurface;
-
            
         end
         
