@@ -34,7 +34,17 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
-jsonstruct.Control.controlPolicy = 'CCCharge';
+scenario = 'discharge'
+
+%% following is not used at particle level (but necessary to initiliaze full battery below)
+switch scenario
+  case 'charge'
+    jsonstruct.Control.controlPolicy = 'CCCharge';
+  case 'discharge'
+    jsonstruct.Control.controlPolicy = 'CCDischarge';
+  otherwise
+    error('scenario not recognized');
+end
 
 % Setup InputParams
 inputparams = BatteryInputParams(jsonstruct);
@@ -57,7 +67,15 @@ cElectrolyte   = 5e-1*mol/litre;
 phiElectrolyte = 0;
 T              = 298;
 
-cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
+switch scenario
+  case 'charge'
+    cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+  case 'discharge'
+    cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
+  otherwise
+    error('scenario not recognized');
+end
+
 N = model.(sd).N;
 initState.(sd).c        = cElectrodeInit*ones(N, 1);
 initState.(sd).cSurface = cElectrodeInit;
@@ -87,7 +105,7 @@ initState.(lp).cElectrolyte   = cElectrolyte;
 
 %% setup schedule
 
-Iref = 5e-12;
+Iref = 5e-12; % calibrated set to work on this example
 Imax = 5e1*Iref;
 total = 1*hour*(Iref/Imax);
 n     = 100;
@@ -95,7 +113,15 @@ dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 1*second*(Iref/Imax);
-srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
+
+switch scenario
+  case 'charge'
+    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+  case 'discharge'
+    srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
+  otherwise
+    error('scenario not recognized');
+end
 
 cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
 control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
