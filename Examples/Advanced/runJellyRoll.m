@@ -9,8 +9,7 @@ testing = true;
 if testing
     % We setup a smaller model for quicker testing
     fprintf('We setup a smaller case for quicker testing\n');
-    rOuter = jsonstruct_geometry.Geometry.innerRadius + 1*milli*meter;
-    jsonstruct_geometry.Geometry.outerRadius                         = rOuter;
+    jsonstruct_geometry.Geometry.outerRadius = 10*milli*meter;
     jsonstruct_geometry.Geometry.numberOfDiscretizationCellsVertical =  2;
 
     tabparams = struct('usetab', false);
@@ -41,7 +40,19 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 
 jsonstruct.include_current_collectors = true;
 
-output = runBatteryJson(jsonstruct);
+% output = setupSimulationForJuliaBridge(jsonstruct, 'runSimulation', false)
+% 
+% return
+
+output = runBatteryJson(jsonstruct, 'runSimulation', true);
+
+% jsonstruct = output.model.jsonstruct;
+
+% writeJsonStruct(jsonstruct, '4680_example.json')
+
+% return
+
+
 
 %% Process output and recover the output voltage and current from the output states.
 
