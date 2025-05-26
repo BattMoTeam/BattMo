@@ -40,9 +40,9 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 
 jsonstruct.include_current_collectors = true;
 
-% output = setupSimulationForJuliaBridge(jsonstruct, 'runSimulation', false)
-% 
-% return
+output = setupSimulationForJuliaBridge(jsonstruct, 'runSimulation', true)
+
+return
 
 output = runBatteryJson(jsonstruct, 'runSimulation', true);
 
