@@ -18,6 +18,7 @@ classdef LithiumPlatingLatz < BaseModel
 
         volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
         particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
+        volumeFraction                          % Porosity
 
         SEIFraction                             % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
         MSEI                                    % Molar mass of SEI [kg/mol]
@@ -42,7 +43,8 @@ classdef LithiumPlatingLatz < BaseModel
                        'nPl0'       , ...    
                        'nPlLimit'   , ... 
                        'volumetricSurfaceArea' , ...
-                       'particleRadius', ...
+                       'particleRadius',...
+                       'volumeFraction', ...
                        'SEIFraction', ... 
                        'MSEI'       , ...        
                        'rhoSEI'     , ...      
@@ -62,7 +64,7 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames{end + 1} = 'T';  % Temperature
 
-            varnames{end + 1} = 'OCP' %OpencircuitVoltage
+            varnames{end + 1} = 'OCP'; %OpencircuitVoltage
             
             varnames{end + 1} = 'phiElectrode';  % Potential of the solid electrode
             
@@ -160,9 +162,9 @@ classdef LithiumPlatingLatz < BaseModel
             
             n0 = model.nPl0;
             r = model.particleRadius;
-            vsa = model.volumetricSurfaceArea;
+            poros = model.volumeFraction;
             % switching the n of lithium plated for one particle to a concentration with this volume
-            c0 = n0 * vsa / (4*pi*r^2);
+            c0 = n0 * poros / ((4/3)*pi*r^3);
             
             state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
         end
@@ -214,7 +216,7 @@ classdef LithiumPlatingLatz < BaseModel
             i0 = model.kPl * ce.^model.alphaPl;
             j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
                        exp((-model.alphaStr * F * eta) / (R * T)));
-
+            
             state.platingFlux = j ./ F;
             
         end
@@ -248,9 +250,8 @@ classdef LithiumPlatingLatz < BaseModel
             
             nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
             r = model.particleRadius;
-            vsa = model.volumetricSurfaceArea;
-            % switching the n of lithium plated for one particle to a concentration with this volume
-            cLimit = nLimit * vsa / (4*pi*r^2);
+            poros = model.volumeFraction;
+            cLimit = nLimit * poros / ((4/3)*pi*r^3);
             platedConcentration = state.platedConcentration;
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             

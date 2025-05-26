@@ -25,6 +25,7 @@ classdef LithiumPlatingLatzInputParams < InputParams
         
         volumetricSurfaceArea
         particleRadius
+        volumeFraction
 
     end
 

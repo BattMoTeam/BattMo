@@ -7,6 +7,27 @@ close all
 
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
+inputparams = BatteryInputParams(jsonstruct);
+
+use_cccv = true;
+if use_cccv
+    inputparams.SOC = 0;
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
+                         'initialControl'    , 'charging', ...
+                         'numberOfCycles'    , 2            , ...
+                         'CRate'             , 1.5          , ...
+                         'DRate'             , 1            , ...
+                         'lowerCutoffVoltage', 3            , ...
+                         'upperCutoffVoltage', 4            , ...
+                         'dIdtLimit'         , 1e-2         , ...
+                         'dEdtLimit'         , 1e-4);
+    cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+    inputparams.Control = cccvinputparams;
+end
+
+
+
+
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 elyte   = 'Electrolyte';
@@ -34,7 +55,7 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
-scenario = 'discharge'
+scenario = 'charge';
 
 %% following is not used at particle level (but necessary to initiliaze full battery below)
 switch scenario
@@ -50,7 +71,7 @@ end
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
 inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
-
+inputparams.LithiumPlating.volumeFraction = inputparams.SolidDiffusion.volumeFraction;
 %% Setup the model
 
 model = ActiveMaterial(inputparams);
@@ -94,9 +115,8 @@ R = model.LithiumPlating.R;
 
 nPl0 = model.LithiumPlating.nPl0;
 r = model.LithiumPlating.particleRadius;
-vsa = model.LithiumPlating.volumetricSurfaceArea;
-
-platedConcentration0 = nPl0 * vsa / (4 * pi * r^2);
+poros = model.LithiumPlating.volumeFraction;
+platedConcentration0 = nPl0 * poros / ((4/3)*pi*r^3);
 
 initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 initState.(lp).phiSolid       = initState.E;
@@ -208,10 +228,10 @@ for k = 1:numel(states) %!!!
     end
 end
 
+platingFlux    = cellfun(@(s) s.(lp).platingFlux, states);
 surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
-platingFlux     = cellfun(@(s) s.(lp).platingFlux, states);
 chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
-platedConcentration             = cellfun(@(s) s.(lp).platedConcentration, states);
+platedConcentration = cellfun(@(s) s.(lp).platedConcentration, states);
 
 figure
 plot(time/hour, surfaceCoverage);
@@ -222,7 +242,7 @@ title('Surface Coverage of Plated Lithium');
 figure
 plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
 xlabel('time [hour]');
-ylabel('Volumetric Plating Flux [mol/m³/s]');
+ylabel('Volumetric Plating Flux [mol/m³/s] / platingFlux*vsa');
 title('Lithium Plating Flux');
 
 figure
