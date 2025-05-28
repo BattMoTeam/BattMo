@@ -122,6 +122,7 @@ initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 
 initState.(lp).phiSolid       = initState.E;
 initState.(lp).phiElectrolyte = phiElectrolyte;
 initState.(lp).cElectrolyte   = cElectrolyte;
+initState.(lp).nSEI = 0;
 
 %% setup schedule
 
@@ -232,22 +233,31 @@ platingFlux    = cellfun(@(s) s.(lp).platingFlux, states);
 surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
 chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
 platedConcentration = cellfun(@(s) s.(lp).platedConcentration, states);
+etaPlating = cellfun(@(s) s.(lp).etaPlating, states);
+R_inter = cellfun(@(s) s.Rvol - s.(lp).chemicalFlux * vsa, states); %Intercalation reaction only
+% figure
+% plot(time/hour, surfaceCoverage);
+% xlabel('time [hour]');
+% ylabel('Surface coverage');
+% title('Surface Coverage of Plated Lithium');
+% 
+% figure
+% plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
+% xlabel('time [hour]');
+% ylabel('Volumetric Plating Flux [mol/m³/s] / platingFlux*vsa');
+% title('Lithium Plating Flux');
+% 
+% figure
+% plot(time/hour, platedConcentration);
+% xlabel('time [hour]');
+% ylabel('platedConcentration [mol/m²]');
+% title('Accumulated Plated Lithium');
 
 figure
-plot(time/hour, surfaceCoverage);
-xlabel('time [hour]');
-ylabel('Surface coverage');
-title('Surface Coverage of Plated Lithium');
-
-figure
-plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
-xlabel('time [hour]');
-ylabel('Volumetric Plating Flux [mol/m³/s] / platingFlux*vsa');
-title('Lithium Plating Flux');
-
-figure
-plot(time/hour, platedConcentration);
+hold on
+plot(time/hour, R_inter);
+plot(time/hour, platingFlux * vsa);
+plot(time/hour, etaPlating)
 xlabel('time [hour]');
 ylabel('platedConcentration [mol/m²]');
 title('Accumulated Plated Lithium');
-

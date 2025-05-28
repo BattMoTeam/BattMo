@@ -99,10 +99,10 @@ classdef LithiumPlatingLatz < BaseModel
             
             if useSEI
                 
-                varnames{end + 1} = 'nSEI';  % SEI amount
-                
                 varnames{end + 1} = 'nSEIAccum';  % Accumulated SEI
-                
+
+                varnames{end + 1} = 'nSEI';  % SEI amount
+                                
                 varnames{end + 1} = 'nSEICons';  % SEI Conservation
                 
                 varnames{end + 1} = 'SEIThickness';  % Thickness of the SEI layer
@@ -176,9 +176,9 @@ classdef LithiumPlatingLatz < BaseModel
             aPl = state.activityPlated;
 
             RSEI = state.SEIThickness / model.sigmaSEI;
-            j = model.kPl;  
+            j = 5e-12;  
 
-            eta = phiS - phiE - j * model.F * RSEI + (model.R * state.T / model.F) .* log(aPl);
+            eta = phiS - phiE - j * RSEI + (model.R * state.T / model.F) .* log(aPl);
             state.etaPlating = eta;
         end
 
@@ -239,9 +239,15 @@ classdef LithiumPlatingLatz < BaseModel
 
             s = state.surfaceCoverage;
             
-            flux  = (state.chemicalFlux - state.platingFlux) * s;
+            %a part of the flux goes in the SEI if the option is active
+            %So only 1 - model.SEIFraction goes in the particles
+            coeff_plating = 1 - model.SEIFraction * model.useSEI;
+            
+            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
             accum = state.platedConcentrationAccum;
             
+            % multiplying the flux by vsa to get a volumetric flux
+            % (mol/s/m3)
             state.platedConcentrationCons = assembleConservationEquation(model, 0, 0, flux*vsa , accum);
             
         end
@@ -251,7 +257,8 @@ classdef LithiumPlatingLatz < BaseModel
             nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
             r = model.particleRadius;
             poros = model.volumeFraction;
-            cLimit = nLimit * poros / ((4/3)*pi*r^3);
+            cLimit = nLimit * poros / ((4/3)*pi*r^3); %and we computed the associated concentration
+
             platedConcentration = state.platedConcentration;
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             
@@ -270,7 +277,7 @@ classdef LithiumPlatingLatz < BaseModel
             
         end
 
-        function state = updateSEIThickness(model, state)
+        function state = updateSEIThickness(model, state) %need to modify this
             
             delta = model.deltaSEI0 + (model.MSEI * state.nSEI) / (model.rhoSEI * model.F);
             state.SEIThickness = delta;

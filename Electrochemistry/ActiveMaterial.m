@@ -123,7 +123,6 @@ classdef ActiveMaterial < BaseModel
                 varnames{end + 1} = 'E';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
-                
                 model = model.registerVarNames(varnames);
 
                 varnames = {{itf, 'dUdT'}, ...
@@ -131,7 +130,7 @@ classdef ActiveMaterial < BaseModel
                             'jExternal'};
                 model = model.removeVarNames(varnames);
 
-                varnames = {'T'                  , ...
+                varnames = {'T',                  ...
                             {itf, 'cElectrolyte'}, ... 
                             {itf, 'phiElectrolyte'}};
                 model = model.setAsStaticVarNames(varnames);
