@@ -216,48 +216,39 @@ caver = cellfun(@(state) max(state.(sd).cAverage), states);
 
 lp = 'LithiumPlating';
 
-varsToEval = { ...
-    {'LithiumPlating', 'surfaceCoverage'}, ...
-    {'LithiumPlating', 'platingFlux'}, ...
-    {'LithiumPlating', 'chemicalFlux'}, ...
-    {'LithiumPlating', 'etaPlating'}, ...
-    {'LithiumPlating', 'etaChemical'} ...
-             };
-for k = 1:numel(states) %!!!
-    for iv = 1:numel(varsToEval)
-        states{k} = model.evalVarName(states{k}, varsToEval{iv});
+varsToEval = {{'Interface'     , 'eta'}         , ...
+              {'LithiumPlating', 'etaPlating'}  , ...
+              {'LithiumPlating', 'etaChemical'} , ...
+              {'Interface'     , 'R'}           , ...
+              {'LithiumPlating', 'platingFlux'} , ...
+              {'LithiumPlating', 'chemicalFlux'}, ...
+              {'LithiumPlating', 'surfaceCoverage'}};
+for k = 1:numel(states)
+    for var = 1:numel(varsToEval)
+        states{k} = model.evalVarName(states{k}, varsToEval{var});
     end
 end
 
-platingFlux    = cellfun(@(s) s.(lp).platingFlux, states);
-surfaceCoverage = cellfun(@(s) s.(lp).surfaceCoverage, states);
-chemicalFlux    = cellfun(@(s) s.(lp).chemicalFlux, states);
-platedConcentration = cellfun(@(s) s.(lp).platedConcentration, states);
-etaPlating = cellfun(@(s) s.(lp).etaPlating, states);
-R_inter = cellfun(@(s) s.Rvol - s.(lp).chemicalFlux * vsa, states); %Intercalation reaction only
-% figure
-% plot(time/hour, surfaceCoverage);
-% xlabel('time [hour]');
-% ylabel('Surface coverage');
-% title('Surface Coverage of Plated Lithium');
-% 
-% figure
-% plot(time/hour, platingFlux*model.(itf).volumetricSurfaceArea);
-% xlabel('time [hour]');
-% ylabel('Volumetric Plating Flux [mol/m³/s] / platingFlux*vsa');
-% title('Lithium Plating Flux');
-% 
-% figure
-% plot(time/hour, platedConcentration);
-% xlabel('time [hour]');
-% ylabel('platedConcentration [mol/m²]');
-% title('Accumulated Plated Lithium');
+varnames = {'eta', ...             
+            'etaPlating', ...      
+            'etaChemical', ...     
+            'platingFlux', ...     
+            'chemicalFlux', ...    
+            'R', ...               
+            'surfaceCoverage' };
 
-figure
-hold on
-plot(time/hour, R_inter);
-plot(time/hour, platingFlux * vsa);
-plot(time/hour, etaPlating)
-xlabel('time [hour]');
-ylabel('platedConcentration [mol/m²]');
-title('Accumulated Plated Lithium');
+vars = {}
+
+vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
+vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
+vars{end + 1} = cellfun(@(s) s.(lp).etaChemical, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platingFlux, states);
+vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux, states);
+vars{end + 1} = cellfun(@(s) s.(itf).R, states);
+vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
+
+for ivar = 1 : numel(varnames)
+    figure
+    plot(time, vars{ivar});
+    title(varnames{ivar});
+end
