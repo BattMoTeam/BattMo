@@ -64,7 +64,7 @@ classdef LithiumPlatingLatz < BaseModel
             
             varnames{end + 1} = 'T';  % Temperature
 
-            varnames{end + 1} = 'OCP'; %OpencircuitVoltage
+            varnames{end + 1} = 'OCP'; % Open circuit Voltage
             
             varnames{end + 1} = 'phiElectrode';  % Potential of the solid electrode
             
@@ -85,27 +85,28 @@ classdef LithiumPlatingLatz < BaseModel
             % chemicalFlux is Negative if platedLithium inserts in the
             % electrode
 
-            varnames{end + 1} = 'platingFlux';  % Plating flux
+            varnames{end + 1} = 'platingFlux';     % Plating flux / C m^{-2}s^{-1}
             
-            varnames{end + 1} = 'chemicalFlux';  % Flux of plated lithium going into the electrode
+            varnames{end + 1} = 'chemicalFlux';    % Flux of plated lithium going into the electrode / C m^{-2}s^{-1}
             
-            varnames{end + 1} = 'etaPlating';  % Overpotential for plated lithium B-V
+            varnames{end + 1} = 'etaPlating';      % Overpotential for plated lithium B-V
             
-            varnames{end + 1} = 'etaChemical';  % Overpotential for plated insertion B-V
+            varnames{end + 1} = 'etaChemical';     % Overpotential for plated insertion B-V
             
             varnames{end + 1} = 'activityPlated';  % Activity of plated li
             
-            varnames{end + 1} = 'surfaceCoverage';  % Surface coverage of the plated lithium
+            varnames{end + 1} = 'surfaceCoverage'; % Surface coverage of the plated lithium
             
             if useSEI
                 
-                varnames{end + 1} = 'nSEIAccum';  % Accumulated SEI
+                varnames{end + 1} = 'nSEIAccum';    % Accumulated SEI
 
-                varnames{end + 1} = 'nSEI';  % SEI amount
+                varnames{end + 1} = 'nSEI';         % SEI amount
                                 
-                varnames{end + 1} = 'nSEICons';  % SEI Conservation
+                varnames{end + 1} = 'nSEICons';     % SEI Conservation
                 
-                varnames{end + 1} = 'SEIThickness';  % Thickness of the SEI layer
+                varnames{end + 1} = 'SEIThickness'; % Thickness of the SEI layer
+                
             end
             model = model.registerVarNames(varnames);
 
