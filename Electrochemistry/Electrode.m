@@ -20,7 +20,7 @@ classdef Electrode < BaseModel
         include_current_collectors
         use_thermal
         use_normed_current_collector
-        
+
     end
 
     methods
@@ -93,13 +93,13 @@ classdef Electrode < BaseModel
         end
 
         function cc = setupCurrentCollector(model, inputparams)
-            
+
             if inputparams.use_normed_current_collector
                 cc = NormedCurrentCollector(inputparams.CurrentCollector);
             else
                 cc = CurrentCollector(inputparams.CurrentCollector);
             end
-            
+
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
@@ -124,7 +124,7 @@ classdef Electrode < BaseModel
 
             fdnames = {'include_current_collectors', ...
                        'use_thermal'};
-            
+
             for ifd = 1 : numel(fdnames)
                 fdname = fdnames{ifd};
                 jsonstruct.(fdname) = model.(fdname);
@@ -132,7 +132,7 @@ classdef Electrode < BaseModel
 
         end
 
-                
+
         function state = updateCoupling(model, state)
         % setup coupling terms between the current collector and the electrode active component
 
@@ -157,13 +157,13 @@ classdef Electrode < BaseModel
                 coupterm = model.couplingTerm;
                 face_cc = coupterm.couplingfaces(:, 1);
                 face_co = coupterm.couplingfaces(:, 2);
-                
+
                 [tco, bccell_co, bcsgn_co] = elde.(co).G.getBcTrans(face_co);
-                tco = co_sigmaeff*tco;
-                
+                tco = co_sigmaeff.*tco;
+
                 [tcc, bccell_cc, bcsgn_cc]  = elde.(cc).G.getBcTrans(face_cc);
-                tcc = cc_sigmaeff*tcc;
-                
+                tcc = cc_sigmaeff.*tcc;
+
                 bcphi_co = co_phi(bccell_co);
                 bcphi_cc = cc_phi(bccell_cc);
 
