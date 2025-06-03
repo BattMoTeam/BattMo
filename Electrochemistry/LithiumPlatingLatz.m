@@ -59,55 +59,54 @@ classdef LithiumPlatingLatz < BaseModel
 
             useSEI = model.useSEI;
 
-            
             varnames = {};
-            
-            varnames{end + 1} = 'T';  % Temperature
 
-            varnames{end + 1} = 'OCP'; % Open circuit Voltage
-            
-            varnames{end + 1} = 'phiElectrode';  % Potential of the solid electrode
-            
-            varnames{end + 1} = 'phiElectrolyte';  % Potential of the electrolyte
-            
-            varnames{end + 1} = 'cElectrolyte';  % Concentration of the electrolyte
-            
-            varnames{end + 1} = 'platedConcentration';  % Plating amount
-            
-            varnames{end + 1} = 'platedConcentrationAccum';
-            
-            varnames{end + 1} = 'platedConcentrationCons';  % Conservation equation platedConcentration
-            
-            % Warning : fluxes are considered from the inside to the
-            % outside
+            varnames{end + 1} = 'T';                      % Temperature [K]
+
+            varnames{end + 1} = 'OCP';                    % Open circuit Voltage [V]
+
+            varnames{end + 1} = 'phiElectrode';           % Potential of the solid electrode [V]
+
+            varnames{end + 1} = 'phiElectrolyte';         % Potential of the electrolyte [V]
+
+            varnames{end + 1} = 'cElectrolyte';           % Concentration in Li of the electrolyte [mol/m^3]
+
+            varnames{end + 1} = 'platedConcentration';    % Plated Li concentration in the electrode [mol/m^3]
+
+            varnames{end + 1} = 'platedConcentrationAccum'; % Accumulated plated concentration [mol/m^3]
+
+            varnames{end + 1} = 'platedConcentrationCons'; % Conservation equation for plated concentration [mol/m^2/s]
+
+            % Warning : fluxes are considered from the inside to the outside
 
             % platingFlux is positive if stripping and negative if plating
-            % chemicalFlux is Negative if platedLithium inserts in the
-            % electrode
+            % chemicalFlux is Negative if platedLithium inserts in the electrode
 
-            varnames{end + 1} = 'platingFlux';     % Plating flux / C m^{-2}s^{-1}
-            
-            varnames{end + 1} = 'chemicalFlux';    % Flux of plated lithium going into the electrode / C m^{-2}s^{-1}
-            
-            varnames{end + 1} = 'etaPlating';      % Overpotential for plated lithium B-V
-            
-            varnames{end + 1} = 'etaChemical';     % Overpotential for plated insertion B-V
-            
-            varnames{end + 1} = 'activityPlated';  % Activity of plated li
-            
-            varnames{end + 1} = 'surfaceCoverage'; % Surface coverage of the plated lithium
-            
+            varnames{end + 1} = 'platingFlux';           % Plating flux [C/m^2/s]
+
+            varnames{end + 1} = 'chemicalFlux';          % Flux of plated lithium into the electrode [C/m^2/s]
+
+            varnames{end + 1} = 'etaPlating';            % Overpotential for plated lithium (Butler-Volmer) [V]
+
+            varnames{end + 1} = 'etaChemical';           % Overpotential for plated insertion (Butler-Volmer) [V]
+
+            varnames{end + 1} = 'activityPlated';        % Activity of plated lithium [unitless]
+
+            varnames{end + 1} = 'surfaceCoverage';       % Fraction of Surface covered by plated lithium [unitless]
+
+            varnames{end + 1} = 'cElectrodeSurface';       % Concentration of solid lithium at Surface of particule [mol/m3]
+
             if useSEI
                 
-                varnames{end + 1} = 'nSEIAccum';    % Accumulated SEI
+                varnames{end + 1} = 'nSEIAccum';         % Accumulated SEI amount [mol/m^2]
 
-                varnames{end + 1} = 'nSEI';         % SEI amount
-                                
-                varnames{end + 1} = 'nSEICons';     % SEI Conservation
-                
-                varnames{end + 1} = 'SEIThickness'; % Thickness of the SEI layer
-                
+                varnames{end + 1} = 'nSEI';              % SEI amount [mol/m^2]
+
+                varnames{end + 1} = 'nSEICons';          % SEI Conservation term [mol/m^2/s]
+
+                varnames{end + 1} = 'SEIThickness';      % Thickness of the SEI layer [m]
             end
+
             model = model.registerVarNames(varnames);
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationAccum;
@@ -131,7 +130,7 @@ classdef LithiumPlatingLatz < BaseModel
             model = model.registerPropFunction({'platingFlux', fn, {'cElectrolyte', 'etaPlating', 'T'}});
 
             fn = @LithiumPlatingLatz.updateChemicalFlux;
-            model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T'}});
+            model = model.registerPropFunction({'chemicalFlux', fn, {'etaChemical', 'T', 'cElectrodeSurface'}});
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationCons;
             model = model.registerPropFunction({'platedConcentrationCons', fn, {'platedConcentrationAccum', 'platingFlux', 'chemicalFlux', 'surfaceCoverage'}});
@@ -170,18 +169,18 @@ classdef LithiumPlatingLatz < BaseModel
             state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
         end
 
-        function state = updateEtaPlatingSEI(model, state)
-            
-            phiS = state.phiElectrode;
-            phiE = state.phiElectrolyte;
-            aPl = state.activityPlated;
-
-            RSEI = state.SEIThickness / model.sigmaSEI;
-            j = 5e-12;  
-
-            eta = phiS - phiE - j * RSEI + (model.R * state.T / model.F) .* log(aPl);
-            state.etaPlating = eta;
-        end
+        % function state = updateEtaPlatingSEI(model, state)
+        % 
+        %     phiS = state.phiElectrode;
+        %     phiE = state.phiElectrolyte;
+        %     aPl = state.activityPlated;
+        % 
+        %     RSEI = state.SEIThickness / model.sigmaSEI;
+        %     j = 5e-12;  % Warning warning warning
+        % 
+        %     eta = phiS - phiE - j * RSEI + (model.R * state.T / model.F) .* log(aPl);
+        %     state.etaPlating = eta;
+        % end
 
         function state = updateEtaPlating(model, state)
             
@@ -209,16 +208,15 @@ classdef LithiumPlatingLatz < BaseModel
 
             R = model.R;
             F = model.F;
-            
             eta = state.etaPlating;
             ce  = state.cElectrolyte;
             T   = state.T;
-            
+
             i0 = model.kPl * ce.^model.alphaPl;
             j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
                        exp((-model.alphaStr * F * eta) / (R * T)));
             
-            state.platingFlux = j ./ F;
+            state.platingFlux = j * F; %C/s/m2
             
         end
 
@@ -226,25 +224,28 @@ classdef LithiumPlatingLatz < BaseModel
 
             eta = state.etaChemical;
             T   = state.T;
+            F = model.F;
+            cSo = state.cElectrodeSurface;
+            jCh = model.kChInt * (cSo)^(1/2)  * (exp(model.alphaChInt * F * eta / (model.R * T)) - ...
+                                  exp(-model.alphaChInt * F * eta / (model.R * T)));
             
-            jCh = model.kChInt * (exp(0.5 * model.F * eta / (model.R * T)) - ...
-                                  exp(-0.5 * model.F * eta / (model.R * T)));
-            
-            state.chemicalFlux = jCh ./ model.F;
+            state.chemicalFlux = jCh * F; %C/s/m2
             
         end
 
         function state = updatePlatedConcentrationCons(model, state)
 
             vsa = model.volumetricSurfaceArea;
-
+            F = model.F;
             s = state.surfaceCoverage;
             
             %a part of the flux goes in the SEI if the option is active
             %So only 1 - model.SEIFraction goes in the particles
             coeff_plating = 1 - model.SEIFraction * model.useSEI;
             
-            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
+            % converting the current into a mass flux with /F
+
+            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s / F;
             accum = state.platedConcentrationAccum;
             
             % multiplying the flux by vsa to get a volumetric flux
@@ -271,7 +272,7 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updateNSEICons(model, state)
             
-            flux  = state.platingFlux * model.SEIFraction;
+            flux  = state.platingFlux / F  * model.SEIFraction;
             accum = state.nSEIAccum;
             
             state.nSEICons = assembleConservationEquation(model, 0, 0, flux, accum);

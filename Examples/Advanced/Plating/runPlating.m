@@ -42,6 +42,7 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
+
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
@@ -49,7 +50,6 @@ jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
 % Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
-
 
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
 
@@ -237,7 +237,7 @@ varnames = {'eta', ...
             'R', ...               
             'surfaceCoverage' };
 
-vars = {}
+vars = {};
 
 vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);

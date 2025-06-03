@@ -177,11 +177,14 @@ classdef ActiveMaterial < BaseModel
                                  {itf, 'phiElectrolyte'}, ...
                                  {itf, 'cElectrolyte'}, ...
                                  {itf, 'OCP'}, ...
-                                 {sd, 'c'}};
+                                 {sd, 'cSurface'}, ...
+                                 };
+
                 model = model.registerPropFunction({{lp, 'phiElectrode'}, fn, inputvarnames});            
                 model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
 
             end            
         end
@@ -200,8 +203,12 @@ classdef ActiveMaterial < BaseModel
             vp = 4/3*pi*rp^3;
             scalings = {{{sd, 'massCons'}, scalingcoef}, ...
                         {{sd, 'solidDiffusionEq'}, scalingcoef}, ...
-                        {{'chargeCons'}, vp}};
-
+                        {{'chargeCons'}, vp}, ...
+                        };
+            if model.useLithiumPlating
+                lp = 'LithiumPlating';
+                scalings{end + 1} = {{lp, 'platedConcentrationCons'}, 1e1};
+            end
             model.scalings = scalings;
         end
 
@@ -255,6 +262,7 @@ classdef ActiveMaterial < BaseModel
 
             coef(coef < 0) = 0;
             state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
+            %C/m2/s
             
         end
         
@@ -312,13 +320,14 @@ classdef ActiveMaterial < BaseModel
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             lp  = 'LithiumPlating';
+            F = model.(lp).F;
 
             vsa   = model.(itf).volumetricSurfaceArea;
             R     = state.(itf).R;
             theta = state.(lp).surfaceCoverage;
-            Rchem = state.(lp).chemicalFlux;
+            Rchem = state.(lp).chemicalFlux / F; %mol/s/m2
             
-            Rvol = vsa.*(R .* (1 - theta) + Rchem .* theta);
+            Rvol = vsa * (R .* (1 - theta) + Rchem .* theta);
 
             state.(sd).Rvol = Rvol;
             
@@ -328,7 +337,7 @@ classdef ActiveMaterial < BaseModel
         function state = updateRvol(model, state)
             
             itf = 'Interface';
-            sd  = 'SolidDiffusion'
+            sd  = 'SolidDiffusion';
             vsa = model.(itf).volumetricSurfaceArea;
 
             Rvol = vsa.*state.(itf).R;
@@ -341,9 +350,10 @@ classdef ActiveMaterial < BaseModel
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            lp = 'LitiumPlating';
             
             state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            
+
         end
 
         
@@ -386,6 +396,7 @@ classdef ActiveMaterial < BaseModel
             state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
             state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
             state.(lp).OCP            = state.(itf).OCP;
+            state.(lp).cElectrodeSurface = state.(itf).cElectrodeSurface;
            
         end
         
