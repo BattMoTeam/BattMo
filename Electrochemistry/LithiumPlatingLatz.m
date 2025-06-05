@@ -210,16 +210,17 @@ classdef LithiumPlatingLatz < BaseModel
             
             % multiplying the flux by vsa to get a volumetric flux
             % (mol/s/m3)
-            state.platedConcentrationCons = assembleConservationEquation(model, 0, 0, flux*vsa , accum);
+            state.platedConcentrationCons = accum + flux*vsa;
             
         end
 
         function state = updateSurfaceCoverage(model, state)
             
             nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
-            r = model.particleRadius;
-            poros = model.volumeFraction;
-            cLimit = nLimit * poros / ((4/3)*pi*r^3); %and we computed the associated concentration
+            r      = model.particleRadius;
+            vf     = model.volumeFraction;
+            
+            cLimit = nLimit * vf / ((4/3)*pi*r^3); %and we computed the associated concentration
 
             platedConcentration = state.platedConcentration;
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
