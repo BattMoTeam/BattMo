@@ -93,11 +93,6 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            if jsonstruct.useLithiumPlating
-                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
-                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
-            end
-            
             isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
 
             if isAssigned(isRootSimulationModel) && isRootSimulationModel 
@@ -107,6 +102,12 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
 
+            if jsonstruct.useLithiumPlating
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumeFraction'}, {sd, 'volumeFraction'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
+            end
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             inputparams = inputparams.setupInterface(jsonstruct);
             inputparams = inputparams.setupSolidDiffusion(jsonstruct);
