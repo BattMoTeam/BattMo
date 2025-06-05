@@ -71,12 +71,13 @@ end
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
 inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
-inputparams.LithiumPlating.volumeFraction = inputparams.SolidDiffusion.volumeFraction;
+
 %% Setup the model
 
 model = ActiveMaterial(inputparams);
 
 %% Equip model for simulation
+
 model = model.setupForSimulation();
 
 %% Setup initial state
@@ -113,16 +114,17 @@ lp = 'LithiumPlating';
 F = model.LithiumPlating.F;
 R = model.LithiumPlating.R;
 
-nPl0 = model.LithiumPlating.nPl0;
-r = model.LithiumPlating.particleRadius;
-poros = model.LithiumPlating.volumeFraction;
-platedConcentration0 = nPl0 * poros / ((4/3)*pi*r^3);
+nPl0                 = model.LithiumPlating.nPl0;
+r                    = model.LithiumPlating.particleRadius;
+vf                   = model.LithiumPlating.volumeFraction;
+platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
 
 initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
-initState.(lp).phiSolid       = initState.E;
-initState.(lp).phiElectrolyte = phiElectrolyte;
-initState.(lp).cElectrolyte   = cElectrolyte;
-initState.(lp).nSEI = 0;
+initState.(lp).phiSolid            = initState.E;
+initState.(lp).phiElectrolyte      = phiElectrolyte;
+initState.(lp).cElectrolyte        = cElectrolyte;
+initState.(lp).nSEI                = 0;
+
 
 %% setup schedule
 
@@ -137,18 +139,26 @@ tup = 1*second*(Iref/Imax);
 
 switch scenario
   case 'charge'
-    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+    srcfunc = @(time) 0; %0 pour tourner à vide
+    cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
+    control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'
     srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
+    cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+    control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
   otherwise
     error('scenario not recognized');
 end
 
-cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
 control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step);
+
+scalingparams = struct('I'                  , Imax                              , ...
+                       'platedConcentration', initState.(lp).platedConcentration, ...
+                       'elyteConcentration' , initState.(itf).cElectrolyte);
+
+model = model.setupScalings(scalingparams);
 
 %% setup non-linear solver
 
