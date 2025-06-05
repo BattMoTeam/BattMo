@@ -119,7 +119,11 @@ r                    = model.LithiumPlating.particleRadius;
 vf                   = model.LithiumPlating.volumeFraction;
 platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
 
-initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+
+model.(lp).platedConcentrationRef = platedConcentrationInit;
+
+initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
 initState.(lp).phiSolid            = initState.E;
 initState.(lp).phiElectrolyte      = phiElectrolyte;
 initState.(lp).cElectrolyte        = cElectrolyte;
@@ -139,7 +143,7 @@ tup = 1*second*(Iref/Imax);
 
 switch scenario
   case 'charge'
-    srcfunc = @(time) 0; %0 pour tourner à vide
+    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
     control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'
@@ -155,7 +159,7 @@ control.src = srcfunc;
 schedule = struct('control', control, 'step', step);
 
 scalingparams = struct('I'                  , Imax                              , ...
-                       'platedConcentration', initState.(lp).platedConcentration, ...
+                       'platedConcentration', platedConcentrationInit, ...
                        'elyteConcentration' , initState.(itf).cElectrolyte);
 
 model = model.setupScalings(scalingparams);
@@ -245,7 +249,8 @@ varnames = {'eta', ...
             'platingFlux', ...     
             'chemicalFlux', ...    
             'R', ...               
-            'surfaceCoverage' };
+            'surfaceCoverage', ...
+            'platedConcentrationNorm'};
 
 vars = {};
 
@@ -256,6 +261,7 @@ vars{end + 1} = cellfun(@(s) s.(lp).platingFlux, states);
 vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux, states);
 vars{end + 1} = cellfun(@(s) s.(itf).R, states);
 vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platedConcentrationNorm, states);
 
 for ivar = 1 : numel(varnames)
     figure

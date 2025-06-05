@@ -14,7 +14,8 @@ classdef LithiumPlatingLatzInputParams < InputParams
 
         nPl0
         nPlLimit
-
+        platedConcentrationRef
+        
         SEIFraction
         MSEI       
         rhoSEI     

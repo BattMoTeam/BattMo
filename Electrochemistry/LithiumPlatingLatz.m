@@ -15,6 +15,7 @@ classdef LithiumPlatingLatz < BaseModel
 
         nPl0                                    % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
         nPlLimit                                % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
+        platedConcentrationRef                  % Reference concentration for plated lithium [mol/m^3]
 
         volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
         particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
@@ -42,6 +43,7 @@ classdef LithiumPlatingLatz < BaseModel
                        'kInter'     , ...
                        'nPl0'       , ...    
                        'nPlLimit'   , ... 
+                       'platedConcentrationRef', ...
                        'volumetricSurfaceArea' , ...
                        'particleRadius',...
                        'volumeFraction', ...
@@ -53,6 +55,24 @@ classdef LithiumPlatingLatz < BaseModel
                        'useSEI'};
             model = dispatchParams(model, inputparams, fdnames);
 
+            % % Extract physical constants
+            % F = model.F;
+            % R = model.R;
+            % T = model.T;
+            % OCP = inputparams.OCP;
+            % 
+            % % Compute the reference plated concentration based on theoretical initial value
+            % n0 = model.nPl0;
+            % vf = model.volumeFraction;
+            % r = model.particleRadius;
+            % 
+            % % Compute baseline concentration for one particle volume [mol/m^3]
+            % platedConcentration0 = n0 * vf / ((4/3) * pi * r^3);
+            % platedConcentrationInit = platedConcentration0 / (exp((F * OCP) / (R * T)) - 1)^(1/4);
+            % 
+            % % Assign to model property
+            % model.platedConcentrationRef = platedConcentrationInit;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -71,7 +91,10 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames{end + 1} = 'cElectrolyte';           % Concentration in Li of the electrolyte [mol/m^3]
 
-            varnames{end + 1} = 'platedConcentration';    % Plated Li concentration in the electrode [mol/m^3]
+            varnames{end + 1} = 'platedConcentrationNorm';    % Normalized plated Li concentration [unitless]
+
+            varnames{end + 1} = 'platedConcentration';        % Actual plated concentration [mol/m^3]
+
 
             varnames{end + 1} = 'platedConcentrationAccum'; % Accumulated plated concentration [mol/m^3]
 
@@ -105,6 +128,8 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateActivityPlated;
             model = model.registerPropFunction({'activityPlated', fn, {'platedConcentration'}});
 
+            fn = @LithiumPlatingLatz.updatePlatedConcentration;
+            model = model.registerPropFunction({'platedConcentration', fn, {'platedConcentrationNorm'}});
 
             fn = @LithiumPlatingLatz.updateEtaPlating;
             model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'T'}});
@@ -125,9 +150,13 @@ classdef LithiumPlatingLatz < BaseModel
             model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
 
         end
+        
+        function state = updatePlatedConcentration(model, state)
+            state.platedConcentration = state.platedConcentrationNorm * model.platedConcentrationRef;
+        end
 
         function state = updatePlatedConcentrationAccum(model, state, state0, dt)
-            state.platedConcentrationAccum = (state.platedConcentration - state0.platedConcentration) / dt;
+            state.platedConcentrationAccum = (state.platedConcentration - state0.platedConcentrationNorm * model.platedConcentrationRef) / dt;
         end
 
         function state = updateActivityPlated(model, state)
