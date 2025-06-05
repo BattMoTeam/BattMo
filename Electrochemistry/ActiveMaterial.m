@@ -192,24 +192,56 @@ classdef ActiveMaterial < BaseModel
         function model = setupForSimulation(model)
             
             model = model.equipModelForComputation();
+            model = model.setupScalings([]);
+
+        end
+
+        function model = setupScalings(model, scalingparams)
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
+
+            scalingparams = setDefaultJsonStructField(scalingparams, {'I'}, 5e-10);
+
+            I = getJsonStructField(scalingparams, {'I'});
+
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
-            rp = model.(sd).particleRadius;
-            scalingcoef = 1/(n*F/(4*pi*rp^3/3));
-            vp = 4/3*pi*rp^3;
-            scalings = {{{sd, 'massCons'}, scalingcoef}, ...
-                        {{sd, 'solidDiffusionEq'}, scalingcoef}, ...
-                        {{'chargeCons'}, vp}, ...
-                        };
+            vf = model.(sd).volumeFraction;
+            
+            scaling_charge = I*vf*n*F;
+            scalings = {{{sd, 'massCons'}, I}                  , ...
+                        {{sd, 'solidDiffusionEq'}, I}, ...
+                        {{'chargeCons'}, scaling_charge}       , ...
+                       };
+            
             if model.useLithiumPlating
+
                 lp = 'LithiumPlating';
-                scalings{end + 1} = {{lp, 'platedConcentrationCons'}, 1e1};
+
+                scalingparams = setDefaultJsonStructField(scalingparams, {'platedConcentration'}, 8e-07);
+                scalingparams = setDefaultJsonStructField(scalingparams, {'elyteConcentration'}, 5e-1*mol/litre);
+                
+                cp = getJsonStructField(scalingparams, {'platedConcentration'});
+                ce = getJsonStructField(scalingparams, {'elyteConcentration'});
+                
+                vsa     = model.(itf).volumetricSurfaceArea;
+                kPl     = model.(lp).kPl;
+                alphaPl = model.(lp).alphaPl;
+                nLimit  = model.(lp).nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+                r       = model.(lp).particleRadius;
+                vf      = model.(lp).volumeFraction;
+                
+                cLimit = nLimit * vf / ((4/3)*pi*r^3);
+
+                scaling_masscons_lp = vsa*kPl*ce^alphaPl*(cp/cLimit);
+                
+                scalings{end + 1} = {{lp, 'platedConcentrationCons'}, scaling_masscons_lp};
+                
             end
+            
             model.scalings = scalings;
+            
         end
 
         function jsonstruct = exportParams(model)
@@ -388,14 +420,15 @@ classdef ActiveMaterial < BaseModel
         end
         
         function state = updateLithiumPlatingVariables(model, state)
+            
             itf = 'Interface';
             lp  = 'LithiumPlating';
-            sd = 'SolidDiffusion';
+            sd  = 'SolidDiffusion';
 
-            state.(lp).phiElectrode   = state.(itf).phiElectrode;
-            state.(lp).phiElectrolyte = state.(itf).phiElectrolyte;
-            state.(lp).cElectrolyte   = state.(itf).cElectrolyte;
-            state.(lp).OCP            = state.(itf).OCP;
+            state.(lp).phiElectrode      = state.(itf).phiElectrode;
+            state.(lp).phiElectrolyte    = state.(itf).phiElectrolyte;
+            state.(lp).cElectrolyte      = state.(itf).cElectrolyte;
+            state.(lp).OCP               = state.(itf).OCP;
             state.(lp).cElectrodeSurface = state.(itf).cElectrodeSurface;
            
         end
