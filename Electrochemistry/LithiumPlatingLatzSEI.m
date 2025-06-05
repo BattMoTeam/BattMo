@@ -96,6 +96,17 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames{end + 1} = 'cElectrodeSurface';       % Concentration of solid lithium at Surface of particule [mol/m3]
 
+            if useSEI
+                
+                varnames{end + 1} = 'nSEIAccum';         % Accumulated SEI amount [mol/m^2]
+
+                varnames{end + 1} = 'nSEI';              % SEI amount [mol/m^2]
+
+                varnames{end + 1} = 'nSEICons';          % SEI Conservation term [mol/m^2/s]
+
+                varnames{end + 1} = 'SEIThickness';      % Thickness of the SEI layer [m]
+            end
+
             model = model.registerVarNames(varnames);
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationAccum;
@@ -105,10 +116,13 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateActivityPlated;
             model = model.registerPropFunction({'activityPlated', fn, {'platedConcentration'}});
 
-
-            fn = @LithiumPlatingLatz.updateEtaPlating;
-            model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'T'}});
-            
+            if useSEI
+                fn = @LithiumPlatingLatz.updateEtaPlatingSEI;
+                model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'SEIThickness', 'T'}});
+            else
+                fn = @LithiumPlatingLatz.updateEtaPlating;
+                model = model.registerPropFunction({'etaPlating', fn, {'phiElectrode', 'phiElectrolyte', 'activityPlated', 'T'}});
+            end
             fn = @LithiumPlatingLatz.updateEtaChemical;
             model = model.registerPropFunction({'etaChemical', fn, {'activityPlated', 'T', 'OCP'}});
 
@@ -124,6 +138,19 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
             model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
 
+            if useSEI
+                
+                fn = @LithiumPlatingLatz.updateNSEIAccum;
+                fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
+                model = model.registerPropFunction({'nSEIAccum', fn, {'nSEI'}});
+
+                fn = @LithiumPlatingLatz.updateNSEICons;
+                model = model.registerPropFunction({'nSEICons', fn, {'platingFlux', 'nSEIAccum'}});
+
+                fn = @LithiumPlatingLatz.updateSEIThickness;
+                model = model.registerPropFunction({'SEIThickness', fn, {'nSEI'}});
+
+            end
         end
 
         function state = updatePlatedConcentrationAccum(model, state, state0, dt)
@@ -141,6 +168,19 @@ classdef LithiumPlatingLatz < BaseModel
             
             state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
         end
+
+        % function state = updateEtaPlatingSEI(model, state)
+        % 
+        %     phiS = state.phiElectrode;
+        %     phiE = state.phiElectrolyte;
+        %     aPl = state.activityPlated;
+        % 
+        %     RSEI = state.SEIThickness / model.sigmaSEI;
+        %     j = 5e-12;  % Warning warning warning
+        % 
+        %     eta = phiS - phiE - j * RSEI + (model.R * state.T / model.F) .* log(aPl);
+        %     state.etaPlating = eta;
+        % end
 
         function state = updateEtaPlating(model, state)
             
@@ -225,5 +265,25 @@ classdef LithiumPlatingLatz < BaseModel
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             
         end
+
+        function state = updateNSEIAccum(model, state, state0, dt)
+            state.nSEIAccum = (state.nSEI - state0.nSEI) / dt;
+        end
+
+        function state = updateNSEICons(model, state)
+            
+            flux  = state.platingFlux / F  * model.SEIFraction;
+            accum = state.nSEIAccum;
+            
+            state.nSEICons = assembleConservationEquation(model, 0, 0, flux, accum);
+            
+        end
+
+        function state = updateSEIThickness(model, state) %need to modify this
+            
+            delta = model.deltaSEI0 + (model.MSEI * state.nSEI) / (model.rhoSEI * model.F);
+            state.SEIThickness = delta;
+        end
+
     end
 end
