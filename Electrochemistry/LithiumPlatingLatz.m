@@ -105,9 +105,9 @@ classdef LithiumPlatingLatz < BaseModel
             % platingFlux is positive if stripping and negative if plating
             % chemicalFlux is Negative if platedLithium inserts in the electrode
 
-            varnames{end + 1} = 'platingFlux';           % Plating flux [C/m^2/s]
+            varnames{end + 1} = 'platingFlux';           % Plating flux [mol/m^2/s]
 
-            varnames{end + 1} = 'chemicalFlux';          % Flux of plated lithium into the electrode [C/m^2/s]
+            varnames{end + 1} = 'chemicalFlux';          % Flux of plated lithium into the electrode [mol/m^2/s]
 
             varnames{end + 1} = 'etaPlating';            % Overpotential for plated lithium (Butler-Volmer) [V]
 
@@ -205,7 +205,7 @@ classdef LithiumPlatingLatz < BaseModel
             j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
                        exp((-model.alphaStr * F * eta) / (R * T)));
             
-            state.platingFlux = j * F; %C/s/m2
+            state.platingFlux = j; %mol/s/m2
             
         end
 
@@ -218,7 +218,7 @@ classdef LithiumPlatingLatz < BaseModel
             jCh = model.kChInt * (cSo)^(1/2)  * (exp(model.alphaChInt * F * eta / (model.R * T)) - ...
                                   exp(-model.alphaChInt * F * eta / (model.R * T)));
             
-            state.chemicalFlux = jCh * F; %C/s/m2
+            state.chemicalFlux = jCh; %mol/s/m2
             
         end
 
@@ -232,14 +232,12 @@ classdef LithiumPlatingLatz < BaseModel
             %So only 1 - model.SEIFraction goes in the particles
             coeff_plating = 1 - model.SEIFraction * model.useSEI;
             
-            % converting the current into a mass flux with /F
-
-            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s / F;
+            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
             accum = state.platedConcentrationAccum;
             
             % multiplying the flux by vsa to get a volumetric flux
             % (mol/s/m3)
-            state.platedConcentrationCons = accum + flux*vsa;
+            state.platedConcentrationCons = accum - flux*vsa;
             
         end
 

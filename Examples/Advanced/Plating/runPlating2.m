@@ -96,43 +96,47 @@ for sim_idx = 1:n_simulations
     %% Setup initial state
     
     sd  = 'SolidDiffusion';
-    itf = 'Interface';
-    
-    cElectrolyte   = 5e-1*mol/litre;
-    phiElectrolyte = 0;
-    T              = 298;
-    
-    switch scenario
-      case 'charge'
-        cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-      case 'discharge'
-        cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-      otherwise
-        error('scenario not recognized');
-    end
-    
-    N = model.(sd).N;
-    initState.(sd).c        = cElectrodeInit*ones(N, 1);
-    initState.(sd).cSurface = cElectrodeInit;
-    
-    initState.T = T;
-    initState.(itf).cElectrolyte   = cElectrolyte;
-    initState.(itf).phiElectrolyte = phiElectrolyte;
-    
-    initState = model.evalVarName(initState, {itf, 'OCP'});
-    OCP = initState.(itf).OCP;
-    initState.E = OCP + phiElectrolyte;
-    
-    lp = 'LithiumPlating';
-    F = model.LithiumPlating.F;
-    R = model.LithiumPlating.R;
-    
-    nPl0 = model.LithiumPlating.nPl0;
-    r = model.LithiumPlating.particleRadius;
-    poros = model.LithiumPlating.volumeFraction;
-    platedConcentration0 = nPl0 * poros / ((4/3)*pi*r^3);
-    
-    initState.(lp).platedConcentration = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+itf = 'Interface';
+
+cElectrolyte   = 5e-1*mol/litre;
+phiElectrolyte = 0;
+T              = 298;
+
+switch scenario
+  case 'charge'
+    cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+  case 'discharge'
+    cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
+  otherwise
+    error('scenario not recognized');
+end
+
+N = model.(sd).N;
+initState.(sd).c        = cElectrodeInit*ones(N, 1);
+initState.(sd).cSurface = cElectrodeInit;
+
+initState.T = T;
+initState.(itf).cElectrolyte   = cElectrolyte;
+initState.(itf).phiElectrolyte = phiElectrolyte;
+
+initState = model.evalVarName(initState, {itf, 'OCP'});
+OCP = initState.(itf).OCP;
+initState.E = OCP + phiElectrolyte;
+
+lp = 'LithiumPlating';
+F = model.LithiumPlating.F;
+R = model.LithiumPlating.R;
+
+nPl0                 = model.LithiumPlating.nPl0;
+r                    = model.LithiumPlating.particleRadius;
+vf                   = model.LithiumPlating.volumeFraction;
+platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+
+platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+
+model.(lp).platedConcentrationRef = platedConcentrationInit;
+
+initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
     initState.(lp).phiSolid       = initState.E;
     initState.(lp).phiElectrolyte = phiElectrolyte;
     initState.(lp).cElectrolyte   = cElectrolyte;

@@ -357,7 +357,7 @@ classdef ActiveMaterial < BaseModel
             vsa   = model.(itf).volumetricSurfaceArea;
             R     = state.(itf).R;
             theta = state.(lp).surfaceCoverage;
-            Rchem = state.(lp).chemicalFlux / F; %mol/s/m2
+            Rchem = state.(lp).chemicalFlux; %mol/s/m2
             
             Rvol = vsa * (R .* (1 - theta) + Rchem .* theta);
 
