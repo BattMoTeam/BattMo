@@ -1,5 +1,7 @@
 function model = convertModelForJuliaBridge(model)
 
+    % convert the grids from sub-grids, adding the transmissibilities and other quantities needed in the julia
+    % simulation.
     model = convertModelGrids(model);
 
     model = convertModelForJuliaBridge_(model);
