@@ -100,7 +100,6 @@ classdef ActiveMaterial < BaseModel
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            lp  = 'LithiumPlating';
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
@@ -109,6 +108,7 @@ classdef ActiveMaterial < BaseModel
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             if model.useLithiumPlating
+                lp  = 'LithiumPlating';
                 model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
             end
             
@@ -208,11 +208,12 @@ classdef ActiveMaterial < BaseModel
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             vf = model.(sd).volumeFraction;
+
             
-            scaling_charge = I*vf*n*F;
+            
             scalings = {{{sd, 'massCons'}, I}                  , ...
                         {{sd, 'solidDiffusionEq'}, I}, ...
-                        {{'chargeCons'}, scaling_charge}       , ...
+                        {{'chargeCons'}, I}       , ...
                        };
             
             if model.useLithiumPlating
@@ -327,16 +328,26 @@ classdef ActiveMaterial < BaseModel
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             n  = model.(itf).numberOfElectronsTransferred;
             F  = model.(itf).constants.F;
             rp = model.(sd).particleRadius;
             vp = 4/3*pi*rp^3;
-
-            I = state.I;
+            
+            vsa   = model.(itf).volumetricSurfaceArea;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I -  vp*Rvol*n*F;
+            I = state.I;
+
+            if model.useLithiumPlating
+                theta = state.(lp).surfaceCoverage;
+                platingFlux = state.(lp).platingFlux;
+                RvolPlating = vsa * platingFlux .* theta;
+            else
+                RvolPlating = 0;
+            end
+
+            state.chargeCons = I - vp*(Rvol - RvolPlating)*n*F; %flux are to the outside
 
         end
         
@@ -357,9 +368,8 @@ classdef ActiveMaterial < BaseModel
             vsa   = model.(itf).volumetricSurfaceArea;
             R     = state.(itf).R;
             theta = state.(lp).surfaceCoverage;
-            Rchem = state.(lp).chemicalFlux; %mol/s/m2
             
-            Rvol = vsa * (R .* (1 - theta) + Rchem .* theta);
+            Rvol = vsa * R .* (1 - theta);
 
             state.(sd).Rvol = Rvol;
             
