@@ -46,7 +46,7 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
-jsonstruct.(ne).(co).(am).useLithiumPlating = true;
+jsonstruct.(ne).(co).(am).useLithiumPlating = false;
 
 % Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
@@ -110,25 +110,26 @@ initState = model.evalVarName(initState, {itf, 'OCP'});
 OCP = initState.(itf).OCP;
 initState.E = OCP + phiElectrolyte;
 
-lp = 'LithiumPlating';
-F = model.LithiumPlating.F;
-R = model.LithiumPlating.R;
 
-nPl0                 = model.LithiumPlating.nPl0;
-r                    = model.LithiumPlating.particleRadius;
-vf                   = model.LithiumPlating.volumeFraction;
-platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+F = model.(itf).constants.F;
+R = model.(itf).constants.R;
 
-platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
+if model.useLithiumPlating
+    nPl0                 = model.LithiumPlating.nPl0;
+    r                    = model.LithiumPlating.particleRadius;
+    vf                   = model.LithiumPlating.volumeFraction;
+    platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
 
-model.(lp).platedConcentrationRef = platedConcentrationInit;
+    platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
-initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
-initState.(lp).phiSolid            = initState.E;
-initState.(lp).phiElectrolyte      = phiElectrolyte;
-initState.(lp).cElectrolyte        = cElectrolyte;
-initState.(lp).nSEI                = 0;
+    model.(lp).platedConcentrationRef = platedConcentrationInit;
 
+    initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
+    initState.(lp).phiSolid            = initState.E;
+    initState.(lp).phiElectrolyte      = phiElectrolyte;
+    initState.(lp).cElectrolyte        = cElectrolyte;
+    initState.(lp).nSEI                = 0;
+end
 
 %% setup schedule
 
@@ -159,8 +160,12 @@ control.src = srcfunc;
 schedule = struct('control', control, 'step', step);
 
 scalingparams = struct('I'                  , Imax                              , ...
-                       'platedConcentration', platedConcentrationInit, ...
                        'elyteConcentration' , initState.(itf).cElectrolyte);
+
+if model.LithiumPlating
+    scalingparams.platedConcentration = platedConcentrationInit;
+end
+
 
 model = model.setupScalings(scalingparams);
 
