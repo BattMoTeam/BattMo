@@ -172,6 +172,7 @@ classdef ActiveMaterial < BaseModel
             end
 
             if model.useLithiumPlating
+
                 fn = @ActiveMaterial.updateLithiumPlatingVariables;
                 inputvarnames = {{itf, 'phiElectrode'} , ...
                                  {itf, 'phiElectrolyte'}, ...
@@ -186,6 +187,11 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
 
+                fn = @ActiveMaterial.updateLithiumPlatingSolidDiffusionMassSource;
+                inputvarnames = {{sd, 'Rvol'}, ...
+                                 {lp, 'chemicalFlux'}};
+                model = model.registerPropFunction({{sd, 'massSource'}, fn, inputvarnames});
+                
                 if model.isRootSimulationModel
                     
                     fn = @ActiveMaterial.updateLithiumPlatingChargeCons;
@@ -353,7 +359,31 @@ classdef ActiveMaterial < BaseModel
             platingFlux = state.(lp).platingFlux;
 
             
-            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*intercalationFlux - theta*platingFlux); % flux are to the outside
+            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*interFlux - theta*platingFlux); % flux are to the outside
+
+        end
+
+
+
+        function state = updateLithiumPlatingSolidDiffusionMassSource(model, state)
+
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            
+            op  = model.(sd).operators;
+            rp  = model.(sd).particleRadius;
+            vf  = model.(sd).volumeFraction;
+            vsa = model.(itf).volumetricSurfaceArea;
+            
+            Rvol     = state.(sd).Rvol;
+            chemFlux = state.(lp).chemicalFlux;
+            theta    = state.(lp).surfaceCoverage;
+            
+            Rvol    = op.mapFromBc*Rvol;
+            chemVol = op.mapFromBc*(vsa*chemFlux);
+            
+            state.(sd).massSource = - ((1 - theta)*Rvol + theta*chemVol).*((4*pi*rp^3)./(3*vf));
 
         end
         
