@@ -140,7 +140,7 @@ classdef ActiveMaterial < BaseModel
             if model.useLithiumPlating
                 
                 fn = @ActiveMaterial.updateRvolLithiumPlating;
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
 
                 fn = @ActiveMaterial.updateInterfaceLithiumPlatingJ0;
                 model = model.registerPropFunction({{itf, 'j0'}, fn, {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}}});
@@ -367,7 +367,7 @@ classdef ActiveMaterial < BaseModel
             F = model.(lp).F;
 
             vsa   = model.(itf).volumetricSurfaceArea;
-            R     = state.(itf).R;
+            R     = state.(itf).intercalationFlux;
             theta = state.(lp).surfaceCoverage;
             
             Rvol = vsa * R .* (1 - theta);
