@@ -327,7 +327,7 @@ classdef Interface < BaseModel
 
         function state = updateReactionRate(model, state)
 
-            state.R = model.computeRate(state);
+            state.intercalationFlux = model.computeRate(state);
             
         end
         
@@ -356,7 +356,7 @@ classdef Interface < BaseModel
         
         function state = updateTotalRateWithCapacity(model, state)
 
-            state.R = state.reactionR + state.capacityR;
+            state.intercalationFlux = state.reactionR + state.capacityR;
         end
 
         function newstate = addVariablesAfterConvergence(model, newstate, state)

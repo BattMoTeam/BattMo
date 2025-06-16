@@ -255,7 +255,7 @@ classdef ActiveMaterial < BaseModel
             
             vsa = model.(itf).volumetricSurfaceArea;
             
-            Rvol = vsa.*state.(itf).R;
+            Rvol = vsa.*state.(itf).intercalationFlux;
             
             state.(sd).Rvol = Rvol;
             

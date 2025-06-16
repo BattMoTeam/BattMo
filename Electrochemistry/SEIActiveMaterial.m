@@ -200,7 +200,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             vsa = model.(itf).volumetricSurfaceArea;
 
-            Rint = state.(itf).R;
+            Rint = state.(itf).intercalationFlux;
             Rsei = state.(sr).R;
             R = state.R;
 

@@ -42,7 +42,7 @@ classdef SideReaction < BaseModel
             varnames{end + 1} = 'c';
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
-            % Intercalation flux
+            % Reaction rate
             varnames{end + 1} = 'R';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';

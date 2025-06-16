@@ -210,7 +210,7 @@ classdef SingleParticleSEI < BaseModel
             ctArea = model.cathodeArea;
 
             anR = state.(an).R;
-            ctR = state.(ct).(itf).R;
+            ctR = state.(ct).(itf).intercalationFlux;
             
             state.(elyte).massCons = anR*anArea + ctR*ctArea;
             
