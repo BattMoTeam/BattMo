@@ -1,5 +1,16 @@
 classdef LithiumPlatingLatz < BaseModel
-
+% Implementation of the model from Hein et al
+% @article{hein2020electrochemical,
+%   title={An electrochemical model of lithium plating and stripping in lithium ion batteries},
+%   author={Hein, Simon and Danner, Timo and Latz, Arnulf},
+%   journal={ACS Applied Energy Materials},
+%   volume={3},
+%   number={9},
+%   pages={8519--8531},
+%   year={2020},
+%   publisher={ACS Publications}
+% }
+    
     properties
 
         F = PhysicalConstants.F
@@ -81,43 +92,41 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames = {};
 
-            varnames{end + 1} = 'T';                      % Temperature [K]
+            varnames{end + 1} = 'T';                        % Temperature [K]
 
-            varnames{end + 1} = 'OCP';                    % Open circuit Voltage [V]
+            varnames{end + 1} = 'OCP';                      % Open circuit Voltage [V]
 
-            varnames{end + 1} = 'phiElectrode';           % Potential of the solid electrode [V]
+            varnames{end + 1} = 'phiElectrode';             % Potential of the solid electrode [V]
 
-            varnames{end + 1} = 'phiElectrolyte';         % Potential of the electrolyte [V]
+            varnames{end + 1} = 'phiElectrolyte';           % Potential of the electrolyte [V]
 
-            varnames{end + 1} = 'cElectrolyte';           % Concentration in Li of the electrolyte [mol/m^3]
+            varnames{end + 1} = 'cElectrolyte';             % Concentration in Li of the electrolyte [mol/m^3]
 
-            varnames{end + 1} = 'platedConcentrationNorm';    % Normalized plated Li concentration [unitless]
+            varnames{end + 1} = 'platedConcentrationNorm';  % Normalized plated Li concentration [unitless]
 
-            varnames{end + 1} = 'platedConcentration';        % Actual plated concentration [mol/m^3]
-
+            varnames{end + 1} = 'platedConcentration';      % Actual plated concentration [mol/m^3]
 
             varnames{end + 1} = 'platedConcentrationAccum'; % Accumulated plated concentration [mol/m^3]
 
-            varnames{end + 1} = 'platedConcentrationCons'; % Conservation equation for plated concentration [mol/m^2/s]
+            varnames{end + 1} = 'platedConcentrationCons';  % Conservation equation for plated concentration [mol/m^2/s]
 
-            % Warning : fluxes are considered from the inside to the outside
+            % Warning : we use the conventions from Rein et al paper, where the fluxes are considered from the inside to
+            % the outside, except for the intercalation flux which has been defined before for which the convention is
+            % that the flux goes from the electrolyte to the electrode
 
-            % platingFlux is positive if stripping and negative if plating
-            % chemicalFlux is Negative if platedLithium inserts in the electrode
+            varnames{end + 1} = 'platingFlux';       % Plating flux [mol/m^2/s], platingFlux is positive if stripping and negative if plating
 
-            varnames{end + 1} = 'platingFlux';           % Plating flux [mol/m^2/s]
+            varnames{end + 1} = 'chemicalFlux';      % Flux of plated lithium into the electrode [mol/m^2/s], chemicalFlux is Negative if platedLithium inserts in the electrode
 
-            varnames{end + 1} = 'chemicalFlux';          % Flux of plated lithium into the electrode [mol/m^2/s]
+            varnames{end + 1} = 'etaPlating';        % Overpotential for plated lithium (Butler-Volmer) [V]
 
-            varnames{end + 1} = 'etaPlating';            % Overpotential for plated lithium (Butler-Volmer) [V]
+            varnames{end + 1} = 'etaChemical';       % Overpotential for plated insertion (Butler-Volmer) [V]
 
-            varnames{end + 1} = 'etaChemical';           % Overpotential for plated insertion (Butler-Volmer) [V]
+            varnames{end + 1} = 'activityPlated';    % Activity of plated lithium [unitless]
 
-            varnames{end + 1} = 'activityPlated';        % Activity of plated lithium [unitless]
+            varnames{end + 1} = 'surfaceCoverage';   % Fraction of Surface covered by plated lithium [unitless]
 
-            varnames{end + 1} = 'surfaceCoverage';       % Fraction of Surface covered by plated lithium [unitless]
-
-            varnames{end + 1} = 'cElectrodeSurface';       % Concentration of solid lithium at Surface of particule [mol/m3]
+            varnames{end + 1} = 'cElectrodeSurface'; % Concentration of solid lithium at Surface of particule [mol/m3]
 
             model = model.registerVarNames(varnames);
 
