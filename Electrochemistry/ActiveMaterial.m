@@ -10,7 +10,8 @@ classdef ActiveMaterial < BaseModel
         
         Interface
         SolidDiffusion        
-
+        LithiumPlating
+        
         %% Input parameters
 
         % Standard parameters
@@ -22,7 +23,7 @@ classdef ActiveMaterial < BaseModel
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % either 'full' or 'simple'
+        diffusionModelType     % either 'full', 'simple', 'swelling'
 
         %% SEI layer model choice
         SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
@@ -34,10 +35,14 @@ classdef ActiveMaterial < BaseModel
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        useLithiumPlating
+        
     end
     
     methods
         
+        
+
         function model = ActiveMaterial(inputparams)
         %
         % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
@@ -53,6 +58,7 @@ classdef ActiveMaterial < BaseModel
                        'externalCouplingTerm'  , ...
                        'diffusionModelType'    , ...
                        'SEImodel'              , ...
+                       'useLithiumPlating'     , ...
                        'isRootSimulationModel'};
 
             model = dispatchParams(model, inputparams, fdnames);
@@ -73,10 +79,15 @@ classdef ActiveMaterial < BaseModel
                 model.SolidDiffusion = SimplifiedSolidDiffusionModel(inputparams.SolidDiffusion);
               case 'full'
                 model.SolidDiffusion = FullSolidDiffusionModel(inputparams.SolidDiffusion);
+              case 'swelling'
+                model.SolidDiffusion = FullSolidDiffusionSwellingModel(inputparams.SolidDiffusion);
               otherwise
                 error('Unknown diffusionModelType %s', diffusionModelType);
             end
 
+            if model.useLithiumPlating
+                model.LithiumPlating = LithiumPlatingLatz(inputparams.LithiumPlating);
+            end
             
         end
         
@@ -96,6 +107,10 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
+            if model.useLithiumPlating
+                lp  = 'LithiumPlating';
+                model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
+            end
             
             if model.isRootSimulationModel
 
@@ -108,7 +123,6 @@ classdef ActiveMaterial < BaseModel
                 varnames{end + 1} = 'E';
                 % Charge Conservation equation
                 varnames{end + 1} = 'chargeCons';
-                
                 model = model.registerVarNames(varnames);
 
                 varnames = {{itf, 'dUdT'}, ...
@@ -116,15 +130,27 @@ classdef ActiveMaterial < BaseModel
                             'jExternal'};
                 model = model.removeVarNames(varnames);
 
-                varnames = {'T'                  , ...
+                varnames = {'T',                  ...
                             {itf, 'cElectrolyte'}, ... 
                             {itf, 'phiElectrolyte'}};
                 model = model.setAsStaticVarNames(varnames);
                 
             end
 
-            fn = @ActiveMaterial.updateRvol;
-            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}}});
+            if model.useLithiumPlating
+                
+                fn = @ActiveMaterial.updateRvolLithiumPlating;
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
+
+                fn = @ActiveMaterial.updateInterfaceLithiumPlatingJ0;
+                model = model.registerPropFunction({{itf, 'j0'}, fn, {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}}});
+                
+            else
+                
+                fn = @ActiveMaterial.updateRvol;
+                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}}});
+                
+            end
             
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
@@ -144,27 +170,79 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{itf, 'phiElectrode'}, fn, {'E'}});
 
             end
-            
+
+            if model.useLithiumPlating
+                fn = @ActiveMaterial.updateLithiumPlatingVariables;
+                inputvarnames = {{itf, 'phiElectrode'} , ...
+                                 {itf, 'phiElectrolyte'}, ...
+                                 {itf, 'cElectrolyte'}, ...
+                                 {itf, 'OCP'}, ...
+                                 {sd, 'cSurface'}, ...
+                                 };
+
+                model = model.registerPropFunction({{lp, 'phiElectrode'}, fn, inputvarnames});            
+                model = model.registerPropFunction({{lp, 'phiElectrolyte'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'cElectrolyte'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
+                model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
+
+            end            
         end
 
         function model = setupForSimulation(model)
             
             model = model.equipModelForComputation();
+            model = model.setupScalings([]);
 
+        end
+
+        function model = setupScalings(model, scalingparams)
+            
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
+            scalingparams = setDefaultJsonStructField(scalingparams, {'I'}, 5e-10);
+
+            I = getJsonStructField(scalingparams, {'I'});
+
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
-            rp = model.(sd).particleRadius;
-            scalingcoef = 1/(n*F/(4*pi*rp^3/3));
-            vp = 4/3*pi*rp^3;
-            scalings = {{{sd, 'massCons'}, scalingcoef}, ...
-                        {{sd, 'solidDiffusionEq'}, scalingcoef}, ...
-                        {{'chargeCons'}, vp}};
+            vf = model.(sd).volumeFraction;
 
+            
+            
+            scalings = {{{sd, 'massCons'}, I}                  , ...
+                        {{sd, 'solidDiffusionEq'}, I}, ...
+                        {{'chargeCons'}, I}       , ...
+                       };
+            
+            if model.useLithiumPlating
+
+                lp = 'LithiumPlating';
+
+                scalingparams = setDefaultJsonStructField(scalingparams, {'platedConcentration'}, 8e-07);
+                scalingparams = setDefaultJsonStructField(scalingparams, {'elyteConcentration'}, 5e-1*mol/litre);
+                
+                cp = getJsonStructField(scalingparams, {'platedConcentration'});
+                ce = getJsonStructField(scalingparams, {'elyteConcentration'});
+                
+                vsa     = model.(itf).volumetricSurfaceArea;
+                kPl     = model.(lp).kPl;
+                alphaPl = model.(lp).alphaPl;
+                nLimit  = model.(lp).nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+                r       = model.(lp).particleRadius;
+                vf      = model.(lp).volumeFraction;
+                
+                cLimit = nLimit * vf / ((4/3)*pi*r^3);
+
+                scaling_masscons_lp = vsa*kPl*ce^alphaPl*(cp/cLimit);
+                
+                scalings{end + 1} = {{lp, 'platedConcentrationCons'}, scaling_masscons_lp};
+                
+            end
+            
             model.scalings = scalings;
-
+            
         end
 
         function jsonstruct = exportParams(model)
@@ -199,6 +277,28 @@ classdef ActiveMaterial < BaseModel
             
         end
 
+
+        function state = updateInterfaceLithiumPlatingJ0(model, state)
+        
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            cmax = model.Interface.saturationConcentration;
+            n = model.(itf).numberOfElectronsTransferred;
+            
+            F = model.(itf).constants.F;
+            cElyte = state.(itf).cElectrolyte;
+            c      = state.(itf).cElectrodeSurface;
+
+            coef = cElyte.*c;
+            
+            th = cmax * 1e-12;
+
+            coef(coef < 0) = 0;
+            state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
+            %C/m2/s
+            
+        end
+        
         function state = updatePhi(model, state)
 
             itf = 'Interface';
@@ -228,16 +328,26 @@ classdef ActiveMaterial < BaseModel
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
+
             n  = model.(itf).numberOfElectronsTransferred;
             F  = model.(itf).constants.F;
             rp = model.(sd).particleRadius;
             vp = 4/3*pi*rp^3;
-
-            I = state.I;
+            
+            vsa   = model.(itf).volumetricSurfaceArea;
             Rvol = state.(sd).Rvol;
 
-            state.chargeCons = I -  vp*Rvol*n*F;
+            I = state.I;
+
+            if model.useLithiumPlating
+                theta = state.(lp).surfaceCoverage;
+                platingFlux = state.(lp).platingFlux;
+                RvolPlating = vsa * platingFlux .* theta;
+            else
+                RvolPlating = 0;
+            end
+
+            state.chargeCons = I - vp*(Rvol - RvolPlating)*n*F; %flux are to the outside
 
         end
         
@@ -248,26 +358,44 @@ classdef ActiveMaterial < BaseModel
 
         %% assembly functions use in this model
 
+        function state = updateRvolLithiumPlating(model, state)
+
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+            lp  = 'LithiumPlating';
+            F = model.(lp).F;
+
+            vsa   = model.(itf).volumetricSurfaceArea;
+            R     = state.(itf).R;
+            theta = state.(lp).surfaceCoverage;
+            
+            Rvol = vsa * R .* (1 - theta);
+
+            state.(sd).Rvol = Rvol;
+            
+        end
+
+        
         function state = updateRvol(model, state)
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
-            
             vsa = model.(itf).volumetricSurfaceArea;
             
             Rvol = vsa.*state.(itf).intercalationFlux;
             
             state.(sd).Rvol = Rvol;
-            
+                
         end        
         
         function state = updateConcentrations(model, state)
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            lp = 'LitiumPlating';
             
             state.(itf).cElectrodeSurface = state.(sd).cSurface;
-            
+
         end
 
         
@@ -275,7 +403,10 @@ classdef ActiveMaterial < BaseModel
 
             state.Interface.T      = state.T;
             state.SolidDiffusion.T = state.T;
-            
+            if model.useLithiumPlating
+                state.LithiumPlating.T = state.T;
+                model.LithiumPlating.G = model.G;
+            end
         end
 
 
@@ -298,7 +429,19 @@ classdef ActiveMaterial < BaseModel
             
         end
         
-        
+        function state = updateLithiumPlatingVariables(model, state)
+            
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            sd  = 'SolidDiffusion';
+
+            state.(lp).phiElectrode      = state.(itf).phiElectrode;
+            state.(lp).phiElectrolyte    = state.(itf).phiElectrolyte;
+            state.(lp).cElectrolyte      = state.(itf).cElectrolyte;
+            state.(lp).OCP               = state.(itf).OCP;
+            state.(lp).cElectrodeSurface = state.(itf).cElectrodeSurface;
+           
+        end
         
     end
 
