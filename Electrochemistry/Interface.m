@@ -122,7 +122,7 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % Electrode over potential
             varnames{end + 1} = 'eta';
-            % Reaction rate [mol s^-1 m^-2]
+            % Intercalation flux [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
             % OCP [V]
             varnames{end + 1} = 'OCP';
@@ -137,7 +137,7 @@ classdef Interface < BaseModel
                 varnames = {};
                 % Double layer capacity rate [mol s^-1 m^-2]
                 varnames{end + 1} = 'capacityR';
-                % Reaction rate [mol s^-1 m^-2] (same as R without the double layer capacity, now R will contain the sum)
+                % Intercalation flux [mol s^-1 m^-2] (same as R without the double layer capacity, now R will contain the sum)
                 varnames{end + 1} = 'reactionR';
                 % Double layer capacity rate equation
                 varnames{end + 1} = 'capacityRequation';
