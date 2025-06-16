@@ -225,18 +225,22 @@ classdef LithiumPlatingLatz < BaseModel
         function state = updatePlatedConcentrationCons(model, state)
 
             vsa = model.volumetricSurfaceArea;
-            F = model.F;
-            s = state.surfaceCoverage;
+            F   = model.F;
             
-            %a part of the flux goes in the SEI if the option is active
-            %So only 1 - model.SEIFraction goes in the particles
-            coeff_plating = 1 - model.SEIFraction * model.useSEI;
+            surfcov = state.surfaceCoverage;
             
-            flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
+            % a part of the flux goes in the SEI if the option is active
+            % So only 1 - model.SEIFraction goes in the particles
+            % coeff_plating = 1 - model.SEIFraction * model.useSEI;
+            % flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
+
+            flux  = (state.chemicalFlux - state.platingFlux) * surfcov;
+            
             accum = state.platedConcentrationAccum;
             
             % multiplying the flux by vsa to get a volumetric flux
             % (mol/s/m3)
+            
             state.platedConcentrationCons = accum - flux*vsa;
             
         end
