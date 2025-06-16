@@ -123,7 +123,7 @@ classdef Interface < BaseModel
             % Electrode over potential
             varnames{end + 1} = 'eta';
             % Intercalation flux [mol s^-1 m^-2]
-            varnames{end + 1} = 'R';
+            varnames{end + 1} = 'intercalationFlux';
             % OCP [V]
             varnames{end + 1} = 'OCP';
             % 
@@ -172,7 +172,7 @@ classdef Interface < BaseModel
 
                 fn = @Interface.updateReactionRate;
                 inputnames = {'T', 'eta', 'j0'};
-                model = model.registerPropFunction({'R', fn, inputnames});
+                model = model.registerPropFunction({'intercalationFlux', fn, inputnames});
                 
             else
                 
@@ -187,7 +187,7 @@ classdef Interface < BaseModel
                 
                 fn = @Interface.updateTotalRateWithCapacity;
                 inputnames = {'reactionR', 'capacityR'};
-                model = model.registerPropFunction({'R', fn, inputnames});
+                model = model.registerPropFunction({'intercalationFlux', fn, inputnames});
                 
             end
 

@@ -124,7 +124,7 @@ classdef ActiveMaterial < BaseModel
             end
 
             fn = @ActiveMaterial.updateRvol;
-            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'R'}}});
+            model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}}});
             
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});

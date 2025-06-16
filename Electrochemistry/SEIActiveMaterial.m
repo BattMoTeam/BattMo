@@ -44,7 +44,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
-            inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
+            inputnames = {{itf, 'intercalationFlux'}, {sr, 'R'}, 'R'};
             model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
 
             fn = @SEIActiveMaterial.dispatchTemperature;
