@@ -328,7 +328,8 @@ classdef ActiveMaterial < BaseModel
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
-
+            lp  = 'LithiumPlating';
+            
             n  = model.(itf).numberOfElectronsTransferred;
             F  = model.(itf).constants.F;
             rp = model.(sd).particleRadius;

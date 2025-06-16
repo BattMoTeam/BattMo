@@ -30,6 +30,7 @@ end
 
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
+lp      = 'LithiumPlating';
 elyte   = 'Electrolyte';
 thermal = 'ThermalModel';
 co      = 'Coating';
@@ -46,7 +47,7 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
-jsonstruct.(ne).(co).(am).useLithiumPlating = false;
+jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
 % Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
@@ -162,7 +163,7 @@ schedule = struct('control', control, 'step', step);
 scalingparams = struct('I'                  , Imax                              , ...
                        'elyteConcentration' , initState.(itf).cElectrolyte);
 
-if model.LithiumPlating
+if model.useLithiumPlating
     scalingparams.platedConcentration = platedConcentrationInit;
 end
 
