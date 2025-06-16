@@ -186,6 +186,17 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'OCP'}, fn, inputvarnames});
                 model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
 
+                if model.isRootSimulationModel
+                    
+                    fn = @ActiveMaterial.updateLithiumPlatingChargeCons;
+                    inputnames = {'I'                    , ...
+                                  {sd, 'Rvol'}           , ...
+                                  {lp, 'surfaceCoverage'}, ...
+                                  {lp, 'platingFlux'}};
+                    model = model.registerPropFunction({'chargeCons', fn, inputnames});
+                    
+                end                
+
             end            
         end
 
@@ -322,6 +333,29 @@ classdef ActiveMaterial < BaseModel
             end
             
         end
+
+        function state = updateLithiumPlatingChargeCons(model, state)
+
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            
+            n   = model.(itf).numberOfElectronsTransferred;
+            F   = model.(itf).constants.F;
+            rp  = model.(sd).particleRadius;
+            vsa = model.(itf).volumetricSurfaceArea;
+            
+            vp = 4/3*pi*rp^3;
+
+            interFlux   = state.(itf).intercalationFlux;
+            I           = state.I;
+            theta       = state.(lp).surfaceCoverage;
+            platingFlux = state.(lp).platingFlux;
+
+            
+            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*intercalationFlux - theta*platingFlux); % flux are to the outside
+
+        end
         
         function state = updateChargeCons(model, state)
         % Only used for stand-alone model
@@ -339,16 +373,8 @@ classdef ActiveMaterial < BaseModel
             Rvol = state.(sd).Rvol;
 
             I = state.I;
-
-            if model.useLithiumPlating
-                theta = state.(lp).surfaceCoverage;
-                platingFlux = state.(lp).platingFlux;
-                RvolPlating = vsa * platingFlux .* theta;
-            else
-                RvolPlating = 0;
-            end
-
-            state.chargeCons = I - vp*(Rvol - RvolPlating)*n*F; %flux are to the outside
+            
+            state.chargeCons = I - vp*Rvol*n*F; 
 
         end
         
