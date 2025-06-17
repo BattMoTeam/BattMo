@@ -120,7 +120,8 @@ if model.useLithiumPlating
     r                    = model.LithiumPlating.particleRadius;
     vf                   = model.LithiumPlating.volumeFraction;
     platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
-
+    
+    %initialisation so that overpotential are =0 at the beginning
     platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
     model.(lp).platedConcentrationRef = platedConcentrationInit;
@@ -145,7 +146,7 @@ tup = 1*second*(Iref/Imax);
 
 switch scenario
   case 'charge'
-    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+    srcfunc = @(time) 0 %rampupControl(time, tup, -Imax); %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
     control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'

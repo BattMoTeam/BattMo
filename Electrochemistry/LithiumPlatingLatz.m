@@ -66,24 +66,6 @@ classdef LithiumPlatingLatz < BaseModel
                        'useSEI'};
             model = dispatchParams(model, inputparams, fdnames);
 
-            % % Extract physical constants
-            % F = model.F;
-            % R = model.R;
-            % T = model.T;
-            % OCP = inputparams.OCP;
-            % 
-            % % Compute the reference plated concentration based on theoretical initial value
-            % n0 = model.nPl0;
-            % vf = model.volumeFraction;
-            % r = model.particleRadius;
-            % 
-            % % Compute baseline concentration for one particle volume [mol/m^3]
-            % platedConcentration0 = n0 * vf / ((4/3) * pi * r^3);
-            % platedConcentrationInit = platedConcentration0 / (exp((F * OCP) / (R * T)) - 1)^(1/4);
-            % 
-            % % Assign to model property
-            % model.platedConcentrationRef = platedConcentrationInit;
-            
         end
 
         function model = registerVarAndPropfuncNames(model)

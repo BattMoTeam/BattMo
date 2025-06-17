@@ -228,7 +228,7 @@ classdef ActiveMaterial < BaseModel
 
             
             
-            scalings = {{{sd, 'massCons'}, I}                  , ...
+            scalings = {{{sd, 'massCons'}, I/(vf*n*F)}                  , ...
                         {{sd, 'solidDiffusionEq'}, I}, ...
                         {{'chargeCons'}, I}       , ...
                        };
@@ -308,7 +308,7 @@ classdef ActiveMaterial < BaseModel
 
             coef = cElyte.*c;
             
-            th = cmax * 1e-12;
+            th = cmax * 1e-10;
 
             coef(coef < 0) = 0;
             state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
@@ -351,7 +351,7 @@ classdef ActiveMaterial < BaseModel
             rp  = model.(sd).particleRadius;
             vsa = model.(itf).volumetricSurfaceArea;
             
-            vp = 4/3*pi*rp^3;
+            vp = (4/3)*pi*rp^3;
 
             interFlux   = state.(itf).intercalationFlux;
             I           = state.I;
@@ -381,9 +381,9 @@ classdef ActiveMaterial < BaseModel
             theta    = state.(lp).surfaceCoverage;
             
             Rvol    = op.mapFromBc*Rvol;
-            chemVol = op.mapFromBc*(vsa*chemFlux);
+            chemVol = op.mapFromBc*(vsa*chemFlux*theta);
             
-            state.(sd).massSource = - ((1 - theta)*Rvol + theta*chemVol).*((4*pi*rp^3)./(3*vf));
+            state.(sd).massSource = (Rvol - chemVol).*((4*pi*rp^3)./(3*vf));
 
         end
         
