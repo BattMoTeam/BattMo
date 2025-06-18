@@ -308,7 +308,7 @@ classdef ActiveMaterial < BaseModel
 
             coef = cElyte.*c;
             
-            th = cmax * 1e-10;
+            th = cmax * 1e-3;
 
             coef(coef < 0) = 0;
             state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
