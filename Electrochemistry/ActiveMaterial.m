@@ -383,7 +383,7 @@ classdef ActiveMaterial < BaseModel
             Rvol    = op.mapFromBc*Rvol;
             chemVol = op.mapFromBc*(vsa*chemFlux*theta);
             
-            state.(sd).massSource = (Rvol - chemVol).*((4*pi*rp^3)./(3*vf));
+            state.(sd).massSource = -(Rvol - chemVol).*((4*pi*rp^3)./(3*vf));
 
         end
         

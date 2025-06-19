@@ -146,7 +146,7 @@ tup = 1*second*(Iref/Imax);
 
 switch scenario
   case 'charge'
-    srcfunc = @(time) 0 %rampupControl(time, tup, -Imax); %0 pour tourner à vide
+    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
     control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'
