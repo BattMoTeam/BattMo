@@ -50,6 +50,127 @@ classdef ComputationalGraphPlot < handle
         end
 
 
+        function selection = parseSelector(cgp, selector)
+
+            cgt = cgp.computationalGraphTool;
+            
+            selectiontype = selector{1};
+
+            assert(ischar(selectiontype), 'The first element of the selector should be a string');
+            
+            switch selectiontype
+                
+              case 'set'
+
+                return
+                
+              case 'select'
+
+                nodenames = cgp.computationalGraphTool.nodenames;
+                inds = regexpSelect(nodenames, selector{2});
+
+                selection = {'set', cgp.nodenames(inds)};
+                return
+                
+              case {'and', 'or'}
+               
+                varnamesets = selector{2};
+
+                varnameset = cgp.parseSelector(varnamesets{1});
+                varnames = varnameset{2};
+                for iselect = 1 : numel(varnamesets)
+                    varnameset = cgp.parseSelector(varnamesets{iselect});
+                    switch selectiontype
+                      case 'and'
+                        varnames = intersect(varnames, varnameset{2});
+                      case 'or'
+                        varnames = union(varnames, varnameset{2});
+                    end
+                end
+
+                selection = {'set', varnames};
+
+                return
+
+              case {'parents', 'children'}
+
+                switch selectiontype
+                  case 'parents'
+                    B = cgp.A;
+                  case 'children'
+                    B = cgp.A';
+                end
+                
+                level      = selector{2};
+                varnameset = cgp.parseSelector(selector{3});
+
+                varnames   = varnameset{2};
+
+                for ivar = 1 : numel(varnames)
+
+                    varname = varnames{ivar};
+
+                    % setup from method getDependencyList. We could have cleaned up the implementation there.
+                    varnameind = cgt.findVarName(varname);
+                    [varnameinds, ~, ~, propdeplevels, ~, rootdeplevels] = getDependencyVarNameInds(varnameind, B);
+                    levels = [rootdeplevels; propdeplevels];  
+
+                    varnameinds = varnameinds(levels <= level);
+                    
+                    varnames = union(varnames, cgp.nodenames(varnameinds));
+                    
+                end
+
+                selection = {'set', varnames};
+                return
+                
+            end
+
+        end
+
+        function printSelector(cgp, selector)
+
+            indent0 = '  ';
+            
+            function lines = setupLines(selector, indent)
+
+                selectortype = selector{1};
+
+                switch selectortype
+
+                  case 'select'
+                    
+                    lines = sprintf('%s%s ''%s''', indent, selectortype, selector{2});
+
+                    return
+                  case {'and', 'or'}
+
+                    lines{1} = sprintf('%s%s', indent, selectortype);
+                    subselectors = selector{2};
+                    for isel = 1 : numel(subselectors)
+                        lines = horzcat(lines, setupLines(subselectors{isel}, [indent, indent0]));
+                    end
+                    return
+
+                  case {'parents', 'children'}
+
+                    level = selector{2};
+                    lines{1} = sprintf('%s%s (level %d)', indent, selectortype, level);
+                    lines = horzcat(lines, setupLines(selector{3}, [indent, indent0]))
+                    return
+                end
+                
+
+            end
+
+            lines = setupLines(selector, '');
+
+            for iline = numel(lines) : -1 : 1  
+                fprintf('%s\n', lines{iline});
+            end
+            
+        end
+        
         function cgp = addFilters(cgp, filters, varargin)
 
             opt = struct('doPlot', true);
@@ -363,6 +484,25 @@ classdef ComputationalGraphPlot < handle
             end
             
         end
+    end
+
+    methods (Static)
+
+        function selection = getIntersection(selection1, selection2)
+        % Get the intersection of two selections
+            if iscell(selection1) && iscell(selection2)
+                selection = intersect(selection1, selection2);
+            elseif ischar(selection1) && ischar(selection2)
+                if strcmp(selection1, selection2)
+                    selection = {selection1};
+                else
+                    selection = {};
+                end
+            else
+                error('Selection types do not match');
+            end
+        end
+
     end
     
 end
