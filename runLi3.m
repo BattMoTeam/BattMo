@@ -1,18 +1,14 @@
-%% Multi-kInter simulation with lithium plating (clean structure)
-
 clear
 close all
 
-%% Define kInter values to test
-kInter_values = 6 * 10.^(-11:1:0);
-n_simulations = length(kInter_values);
+j0_modes = {'Arrhenius', 'Simplified'};
+styles = {'-', '--'};
+labels = {'Arrhenius', 'Simplified'};
 
-results = cell(n_simulations, 1);
+results = cell(2, 1);
 
-line_styles = {'-', '--', ':'};
-
-for sim_idx = 1:n_simulations
-    fprintf('\nRunning simulation %d/%d with kInter = %.1e\n', sim_idx, n_simulations, kInter_values(sim_idx));
+for idx = 1:2
+    j0_case = j0_modes{idx};
 
     jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples','Advanced','Plating','lithium_plating.json'));
@@ -25,10 +21,10 @@ for sim_idx = 1:n_simulations
 
     jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
     jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
-    jsonstruct.(ne).(co).(am).useLithiumPlating = true;
+    jsonstruct.(ne).(co).(am).useLithiumPlating = false;
     jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
-    jsonstruct_lithium_plating.LithiumPlating.kInter = kInter_values(sim_idx);
+    jsonstruct_lithium_plating.LithiumPlating.kInter = 6e3;
     jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
     jsonstruct.Control.controlPolicy = 'CCCharge';
@@ -39,6 +35,8 @@ for sim_idx = 1:n_simulations
 
     model = ActiveMaterial(inputparams);
     model = model.setupForSimulation();
+
+    model.Interface.j0_case = j0_case;
 
     sd = 'SolidDiffusion'; itf = 'Interface';
     cElectrolyte = 0.5 * mol / litre;
@@ -102,15 +100,10 @@ for sim_idx = 1:n_simulations
     time = cellfun(@(s) s.time, states);
 
     varsToEval = { ...
-        {'SolidDiffusion', 'cSurface'}, ...
         {'Interface', 'eta'}, ...
         {'Interface', 'intercalationFlux'}, ...
-        {'LithiumPlating', 'etaPlating'}, ...
-        {'LithiumPlating', 'etaChemical'}, ...
-        {'LithiumPlating', 'platingFlux'}, ...
-        {'LithiumPlating', 'chemicalFlux'}, ...
-        {'LithiumPlating', 'surfaceCoverage'}, ...
-        {'LithiumPlating', 'platedConcentrationNorm'}};
+        {'Interface', 'j0'}, ...
+        {'SolidDiffusion', 'cSurface'}};
 
     for k = 1:numel(states)
         for var = 1:numel(varsToEval)
@@ -119,32 +112,27 @@ for sim_idx = 1:n_simulations
     end
 
     for v = 1:length(varsToEval)
-        varname = varsToEval{v}{end};
-        results{sim_idx}.(varname) = cellfun(@(s) getfield(s.(varsToEval{v}{1}), varname), states);
+        field = varsToEval{v}{end};
+        results{idx}.(field) = cellfun(@(s) getfield(s.(varsToEval{v}{1}), field), states);
     end
-    results{sim_idx}.time = time;
-    results{sim_idx}.kInter = kInter_values(sim_idx);
+    results{idx}.time = time;
 end
 
-labels = {'cSurface', 'eta', 'etaPlating', 'etaChemical', 'platingFlux', ...
-          'chemicalFlux', 'intercalationFlux', 'surfaceCoverage', 'platedConcentrationNorm'};
-ylabels = {'Surface concentration [mol/m3]', 'Overpotential [V]', 'Plating η [V]', 'Chemical η [V]', ...
-           'Plating Flux [mol/m²/s]', 'Chemical Flux [mol/m²/s]', ...
-           'Intercalation Flux [mol/m²/s]', 'Surface Coverage', ...
-           'Normalized Plated Conc.'};
+varnames = {'eta', 'intercalationFlux', 'j0', 'cSurface'};
 
-for i = 1:length(labels)
+ylabels = {'\eta [V]', 'interflux', 'j0', 'c_{surface} [mol/L]'};
+
+for i = 1:length(varnames)
     figure;
     hold on;
-    for sim_idx = 1:n_simulations
-        plot(results{sim_idx}.time/hour, results{sim_idx}.(labels{i}), ...
-            'LineStyle', line_styles{mod(sim_idx-1, length(line_styles))+1}, ...
-            'LineWidth', 2, ...
-            'DisplayName', sprintf('kInter = %.1e', results{sim_idx}.kInter));
+    for idx = 1:2
+        plot(results{idx}.time/hour, results{idx}.(varnames{i}), ...
+             'LineStyle', styles{idx}, 'LineWidth', 2, ...
+             'DisplayName', labels{idx});
     end
     xlabel('Time [hour]');
     ylabel(ylabels{i});
-    title(labels{i});
+    title(varnames{i});
     legend show;
     grid on;
     hold off;

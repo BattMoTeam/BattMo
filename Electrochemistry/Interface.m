@@ -15,7 +15,7 @@ classdef Interface < BaseModel
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
         activationEnergyOfReaction   % the activation energy of the electrochemical reaction
         reactionRateConstant         % the reaction rate constant of the electrochemical reaction
-
+        j0_case
         % The exchange current at the electrode-electrolyte interface under equilibrium conditions.
         % Tf empty, the default expression using the reaction rate constant is used, see method
         % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
@@ -257,9 +257,13 @@ classdef Interface < BaseModel
                 j0 = computeJ0(soc);
 
             else
+                j0mode = 'Arrhenius'; % Valeur par défaut, sera surchargée par le script
 
-                Tref = 298.15;  % [K]
+                if isprop(model, 'j0_case') && ~isempty(model.j0_case)
+                    j0mode = model.j0_case;
+                end
 
+                Tref = 298.15;
                 cmax = model.saturationConcentration;
                 k0   = model.reactionRateConstant;
                 Eak  = model.activationEnergyOfReaction;
@@ -271,15 +275,20 @@ classdef Interface < BaseModel
                 cElyte = state.cElectrolyte;
                 c      = state.cElectrodeSurface;
 
-                % Calculate reaction rate constant
-                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+                th = 1e-3 * cmax;
 
-                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3*cmax;
-                coef = cElyte.*(cmax - c).*c;
-                coef(coef < 0) = 0;
-                j0 = k.*regularizedSqrt(coef, th)*n*F;
-
+                if strcmp(j0mode, 'Arrhenius')
+                    k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+                    coef = cElyte.*(cmax - c).*c;
+                    coef(coef < 0) = 0;
+                    j0 = k.*regularizedSqrt(coef, th)*n*F;
+                elseif strcmp(j0mode, 'Simplified')
+                    coef = cElyte.*c;
+                    coef(coef < 0) = 0;
+                    j0 = 6.342e-8*0.5*regularizedSqrt(coef, th)*n*F;
+                else
+                    error('Unknown j0_case');
+                end
             end
 
             state.j0 = j0;
