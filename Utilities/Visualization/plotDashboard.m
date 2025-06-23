@@ -694,8 +694,12 @@ function setPlot(ax, style, varargin)
                  'griddim', 1 , ...
                  'timeBar', []);
     opt = merge_options(opt, varargin{:});
-
-    colormap(crameri('nuuk'));
+    
+    try
+        colormap(crameri('nuuk'));
+    catch
+        % warning('crameri colormap not installed')
+    end
 
     set(ax, ...
         'FontSize' , style.fontSize       , ...
