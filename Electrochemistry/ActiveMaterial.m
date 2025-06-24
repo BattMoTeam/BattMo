@@ -360,7 +360,7 @@ classdef ActiveMaterial < BaseModel
             platingFlux = state.(lp).platingFlux;
 
             
-            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*interFlux - theta*platingFlux); % flux are to the outside
+            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*interFlux + theta*platingFlux); % flux are to the outside
 
         end
 
