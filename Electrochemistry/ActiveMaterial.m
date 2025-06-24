@@ -377,14 +377,14 @@ classdef ActiveMaterial < BaseModel
             vf  = model.(sd).volumeFraction;
             vsa = model.(itf).volumetricSurfaceArea;
             
-            Rvol     = state.(sd).Rvol;
-            chemFlux = state.(lp).chemicalFlux;
-            theta    = state.(lp).surfaceCoverage;
+            interFlux = state.(itf).intercalationFlux;
+            chemFlux  = state.(lp).chemicalFlux;
+            theta     = state.(lp).surfaceCoverage;
+
+            flux = (1 - theta)*interFlux + theta*chemFlux;
+            volflux = op.mapFromBc*(vsa*flux);
             
-            Rvol    = op.mapFromBc*Rvol;
-            chemVol = op.mapFromBc*(vsa*chemFlux*theta);
-            
-            state.(sd).massSource = -(Rvol - chemVol).*((4*pi*rp^3)./(3*vf));
+            state.(sd).massSource = - volflux.*((4*pi*rp^3)./(3*vf));
 
         end
         
