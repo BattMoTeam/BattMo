@@ -455,7 +455,12 @@ classdef ComputationalGraphPlot < handle
         
         function h = plot(cgp)
 
-            selection = cgp.parseSelector(cgp.stack{1});
+            if isempty(cgp.stack)
+                selection = {'set', cgp.nodenames};
+            else
+                selection = cgp.parseSelector(cgp.stack{1});
+            end
+            
             varnames = selection{2};
 
             nodeinds = ismember(cgp.nodenames, varnames);
