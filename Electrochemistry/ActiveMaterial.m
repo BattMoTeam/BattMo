@@ -482,6 +482,23 @@ classdef ActiveMaterial < BaseModel
             state.(lp).cElectrodeSurface = state.(itf).cElectrodeSurface;
            
         end
+
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            sd  = 'SolidDiffusion';
+
+            state.(sd).cSurface = max(0, state.(sd).cSurface);
+            state.(sd).c        = max(0, state.(sd).c);
+
+            if model.useLithiumPlating
+                state.(lp).platedConcentrationNorm = max(0, state.(lp).platedConcentrationNorm);
+            end
+            
+        end
         
     end
 
