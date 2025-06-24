@@ -103,7 +103,11 @@ classdef ActiveMaterial < BaseModel
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
+            if model.useLithiumPlating
+                model = model.removeVarName({sd, 'Rvol'});
+            end
 
+            
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
@@ -139,9 +143,6 @@ classdef ActiveMaterial < BaseModel
 
             if model.useLithiumPlating
                 
-                fn = @ActiveMaterial.updateRvolLithiumPlating;
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
-
                 fn = @ActiveMaterial.updateInterfaceLithiumPlatingJ0;
                 model = model.registerPropFunction({{itf, 'j0'}, fn, {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}}});
                 
@@ -188,16 +189,16 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
 
                 fn = @ActiveMaterial.updateLithiumPlatingSolidDiffusionMassSource;
-                inputvarnames = {{sd, 'Rvol'}, ...
+                inputvarnames = {{itf, 'intercalationFlux'}, ...
                                  {lp, 'chemicalFlux'}};
                 model = model.registerPropFunction({{sd, 'massSource'}, fn, inputvarnames});
                 
                 if model.isRootSimulationModel
                     
                     fn = @ActiveMaterial.updateLithiumPlatingChargeCons;
-                    inputnames = {'I'                    , ...
-                                  {sd, 'Rvol'}           , ...
-                                  {lp, 'surfaceCoverage'}, ...
+                    inputnames = {'I'                       , ...
+                                  {itf, 'intercalationFlux'}, ...
+                                  {lp, 'surfaceCoverage'}   , ...
                                   {lp, 'platingFlux'}};
                     model = model.registerPropFunction({'chargeCons', fn, inputnames});
                     
@@ -415,24 +416,6 @@ classdef ActiveMaterial < BaseModel
 
         %% assembly functions use in this model
 
-        function state = updateRvolLithiumPlating(model, state)
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            lp  = 'LithiumPlating';
-            F = model.(lp).F;
-
-            vsa   = model.(itf).volumetricSurfaceArea;
-            R     = state.(itf).intercalationFlux;
-            theta = state.(lp).surfaceCoverage;
-            
-            Rvol = vsa * R .* (1 - theta);
-
-            state.(sd).Rvol = Rvol;
-            
-        end
-
-        
         function state = updateRvol(model, state)
             
             itf = 'Interface';
