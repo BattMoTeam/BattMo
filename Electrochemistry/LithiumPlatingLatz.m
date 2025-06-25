@@ -27,7 +27,7 @@ classdef LithiumPlatingLatz < BaseModel
         nPl0                                    % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
         nPlLimit                                % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
         platedConcentrationRef                  % Reference concentration for plated lithium [mol/m^3]
-
+        c
         volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
         particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
         volumeFraction                          % Porosity
@@ -192,7 +192,9 @@ classdef LithiumPlatingLatz < BaseModel
             ce  = state.cElectrolyte;
             T   = state.T;
 
-            i0 = model.kPl * ce.^model.alphaPl;
+            th = model.platedConcentrationRef * 0.1;
+
+            i0 = model.kPl * regularizedPow(ce, model.alphaPl, th);
             j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
                        exp((-model.alphaStr * F * eta) / (R * T)));
             
@@ -206,7 +208,9 @@ classdef LithiumPlatingLatz < BaseModel
             T   = state.T;
             F = model.F;
             cSo = state.cElectrodeSurface;
-            jCh = model.kChInt * (cSo)^(1/2)  * (exp(model.alphaChInt * F * eta / (model.R * T)) - ...
+
+            th = model.platedConcentrationRef * 0.001;
+            jCh = model.kChInt * regularizedSqrt(cSo, th)  * (exp(model.alphaChInt * F * eta / (model.R * T)) - ...
                                   exp(-model.alphaChInt * F * eta / (model.R * T)));
             
             state.chemicalFlux = jCh; %mol/s/m2

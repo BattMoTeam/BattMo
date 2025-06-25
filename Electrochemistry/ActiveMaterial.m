@@ -252,7 +252,7 @@ classdef ActiveMaterial < BaseModel
                 
                 cLimit = nLimit * vf / ((4/3)*pi*r^3);
 
-                scaling_masscons_lp = vsa*kPl*ce^alphaPl*(cp/cLimit);
+                scaling_masscons_lp = vsa*kPl*ce^alphaPl*(cp/cLimit); %ce is fixed so no need to set up a fancy root
                 
                 scalings{end + 1} = {{lp, 'platedConcentrationCons'}, scaling_masscons_lp};
                 
