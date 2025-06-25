@@ -188,6 +188,7 @@ classdef LithiumPlatingLatz < BaseModel
 
             R = model.R;
             F = model.F;
+            
             eta = state.etaPlating;
             ce  = state.cElectrolyte;
             T   = state.T;
@@ -229,14 +230,14 @@ classdef LithiumPlatingLatz < BaseModel
             % coeff_plating = 1 - model.SEIFraction * model.useSEI;
             % flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
 
-            flux  = (state.chemicalFlux - state.platingFlux) * surfcov;
+            flux  = (state.platingFlux - state.chemicalFlux) * surfcov;
             
             accum = state.platedConcentrationAccum;
             
             % multiplying the flux by vsa to get a volumetric flux
             % (mol/s/m3)
             
-            state.platedConcentrationCons = accum - flux*vsa;
+            state.platedConcentrationCons = accum + flux*vsa;
             
         end
 
@@ -254,3 +255,4 @@ classdef LithiumPlatingLatz < BaseModel
         end
     end
 end
+

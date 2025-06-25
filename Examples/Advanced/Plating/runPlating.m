@@ -135,7 +135,7 @@ end
 
 %% setup schedule
 
-Iref = 5e-12; % calibrated set to work on this example
+Iref = 5e-13; % calibrated set to work on this example
 Imax = 5e1*Iref;
 total = 1*hour*(Iref/Imax);
 n     = 100;
@@ -147,6 +147,7 @@ tup = 1*second*(Iref/Imax);
 switch scenario
   case 'charge'
     srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+    % srcfunc = @(time) 0; %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
     control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'

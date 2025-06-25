@@ -103,7 +103,11 @@ classdef ActiveMaterial < BaseModel
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
+            if model.useLithiumPlating
+                model = model.removeVarName({sd, 'Rvol'});
+            end
 
+            
             fn = @ActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
@@ -139,9 +143,6 @@ classdef ActiveMaterial < BaseModel
 
             if model.useLithiumPlating
                 
-                fn = @ActiveMaterial.updateRvolLithiumPlating;
-                model = model.registerPropFunction({{sd, 'Rvol'}, fn, {{itf, 'intercalationFlux'}, {lp, 'surfaceCoverage'}, {lp, 'chemicalFlux'}}});
-
                 fn = @ActiveMaterial.updateInterfaceLithiumPlatingJ0;
                 model = model.registerPropFunction({{itf, 'j0'}, fn, {{itf, 'cElectrolyte'}, {itf, 'cElectrodeSurface'}}});
                 
@@ -188,16 +189,16 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'cElectrodeSurface'}, fn, inputvarnames});
 
                 fn = @ActiveMaterial.updateLithiumPlatingSolidDiffusionMassSource;
-                inputvarnames = {{sd, 'Rvol'}, ...
+                inputvarnames = {{itf, 'intercalationFlux'}, ...
                                  {lp, 'chemicalFlux'}};
                 model = model.registerPropFunction({{sd, 'massSource'}, fn, inputvarnames});
                 
                 if model.isRootSimulationModel
                     
                     fn = @ActiveMaterial.updateLithiumPlatingChargeCons;
-                    inputnames = {'I'                    , ...
-                                  {sd, 'Rvol'}           , ...
-                                  {lp, 'surfaceCoverage'}, ...
+                    inputnames = {'I'                       , ...
+                                  {itf, 'intercalationFlux'}, ...
+                                  {lp, 'surfaceCoverage'}   , ...
                                   {lp, 'platingFlux'}};
                     model = model.registerPropFunction({'chargeCons', fn, inputnames});
                     
@@ -359,7 +360,7 @@ classdef ActiveMaterial < BaseModel
             platingFlux = state.(lp).platingFlux;
 
             
-            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*interFlux - theta*platingFlux); % flux are to the outside
+            state.chargeCons = I - vp*vsa*n*F*((1 - theta)*interFlux + theta*platingFlux); % flux are to the outside
 
         end
 
@@ -376,14 +377,14 @@ classdef ActiveMaterial < BaseModel
             vf  = model.(sd).volumeFraction;
             vsa = model.(itf).volumetricSurfaceArea;
             
-            Rvol     = state.(sd).Rvol;
-            chemFlux = state.(lp).chemicalFlux;
-            theta    = state.(lp).surfaceCoverage;
+            interFlux = state.(itf).intercalationFlux;
+            chemFlux  = state.(lp).chemicalFlux;
+            theta     = state.(lp).surfaceCoverage;
+
+            flux = (1 - theta)*interFlux + theta*chemFlux;
+            volflux = op.mapFromBc*(vsa*flux);
             
-            Rvol    = op.mapFromBc*Rvol;
-            chemVol = op.mapFromBc*(vsa*chemFlux*theta);
-            
-            state.(sd).massSource = -(Rvol - chemVol).*((4*pi*rp^3)./(3*vf));
+            state.(sd).massSource = - volflux.*((4*pi*rp^3)./(3*vf));
 
         end
         
@@ -415,24 +416,6 @@ classdef ActiveMaterial < BaseModel
 
         %% assembly functions use in this model
 
-        function state = updateRvolLithiumPlating(model, state)
-
-            itf = 'Interface';
-            sd  = 'SolidDiffusion';
-            lp  = 'LithiumPlating';
-            F = model.(lp).F;
-
-            vsa   = model.(itf).volumetricSurfaceArea;
-            R     = state.(itf).intercalationFlux;
-            theta = state.(lp).surfaceCoverage;
-            
-            Rvol = vsa * R .* (1 - theta);
-
-            state.(sd).Rvol = Rvol;
-            
-        end
-
-        
         function state = updateRvol(model, state)
             
             itf = 'Interface';
@@ -498,6 +481,23 @@ classdef ActiveMaterial < BaseModel
             state.(lp).OCP               = state.(itf).OCP;
             state.(lp).cElectrodeSurface = state.(itf).cElectrodeSurface;
            
+        end
+
+        function [state, report] = updateState(model, state, problem, dx, drivingForces)
+
+            [state, report] = updateState@BaseModel(model, state, problem, dx, drivingForces);
+
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            sd  = 'SolidDiffusion';
+
+            state.(sd).cSurface = max(0, state.(sd).cSurface);
+            state.(sd).c        = max(0, state.(sd).c);
+
+            if model.useLithiumPlating
+                state.(lp).platedConcentrationNorm = max(0, state.(lp).platedConcentrationNorm);
+            end
+            
         end
         
     end
