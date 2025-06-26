@@ -40,6 +40,11 @@ classdef LithiumPlatingLatz < BaseModel
 
         useSEI                                  % Boolean flag: whether SEI effects are included in overpotential calculations
 
+        % numerical parameters
+        logReg  = 1e-6 % Value used for regularization of the logarithm in the
+                       % activity of plated lithium, to avoid numerical issues when
+                       % the concentration is very low (default 1e-6)
+        
     end
 
     methods
@@ -169,7 +174,7 @@ classdef LithiumPlatingLatz < BaseModel
             aPl  = state.activityPlated;
             T    = state.T;
 
-            eta = phiS - phiE  + (model.R * T / model.F) .* log(aPl);
+            eta = phiS - phiE  + (model.R * T / model.F) .* log(aPl + model.logReg);
             state.etaPlating = eta;
         end
 
@@ -179,7 +184,7 @@ classdef LithiumPlatingLatz < BaseModel
             T   = state.T;
             OCP = state.OCP;
 
-            eta = -OCP -(model.R * T / model.F) .* log(aPl);
+            eta = -OCP -(model.R * T / model.F) .* log(aPl + model.logReg);
             state.etaChemical = eta;
             
         end
