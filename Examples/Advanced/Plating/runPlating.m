@@ -1,6 +1,6 @@
 %% run stand-alone active material model with lithium plating
 
-clear
+clear all
 close all
 
 %% Setup the properties of Li-ion battery materials and cell design
@@ -24,9 +24,6 @@ if use_cccv
     cccvinputparams = CcCvControlModelInputParams(cccvstruct);
     inputparams.Control = cccvinputparams;
 end
-
-
-
 
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -92,7 +89,8 @@ T              = 298;
 
 switch scenario
   case 'charge'
-    cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+    % cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
+    cElectrodeInit = 30*mol/litre;
   case 'discharge'
     cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
   otherwise
@@ -136,9 +134,9 @@ end
 %% setup schedule
 
 Iref = 5e-13; % calibrated set to work on this example
-Imax = 5e1*Iref;
+Imax = Iref;
 total = 1*hour*(Iref/Imax);
-n     = 100;
+n     = 10000;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -149,7 +147,7 @@ switch scenario
     srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
     % srcfunc = @(time) 0; %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-    control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
+    % control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'
     srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
     cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
@@ -175,8 +173,10 @@ model = model.setupScalings(scalingparams);
 %% setup non-linear solver
 
 nls = NonLinearSolver();
-nls.errorOnFailure = false;
-model.nonlinearTolerance = 1e-2;
+nls.errorOnFailure  = false;
+nls.maxTimestepCuts = 20;
+
+model.nonlinearTolerance = 1e-6;
 
 %% Run simulation
 % model.G = cartGrid([1, 1]);  % grille fictive 1x1 si pas de spatialisation
@@ -273,7 +273,7 @@ vars{end + 1} = cellfun(@(s) s.(lp).platedConcentrationNorm, states);
 
 for ivar = 1 : numel(varnames)
     figure
-    plot(time, vars{ivar});
+    plot(time, vars{ivar}, '*-');
     title(varnames{ivar});
 end
 
