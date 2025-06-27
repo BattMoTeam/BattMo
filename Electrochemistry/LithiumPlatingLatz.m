@@ -97,6 +97,8 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames{end + 1} = 'platedConcentrationCons';  % Conservation equation for plated concentration [mol/m^2/s]
 
+            % update this comment
+            
             % Warning : we use the conventions from Rein et al paper, where the fluxes are considered from the inside to
             % the outside, except for the intercalation flux which has been defined before for which the convention is
             % that the flux goes from the electrolyte to the electrode
@@ -255,6 +257,7 @@ classdef LithiumPlatingLatz < BaseModel
             cLimit = nLimit * vf / ((4/3)*pi*r^3); %and we computed the associated concentration
 
             platedConcentration = state.platedConcentration;
+            % check for AD
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             
         end
