@@ -85,7 +85,7 @@ itf = 'Interface';
 
 cElectrolyte   = 5e-1*mol/litre;
 phiElectrolyte = 0;
-T              = 298;
+T              = 178;
 
 switch scenario
   case 'charge'
@@ -133,10 +133,10 @@ end
 
 %% setup schedule
 
-Iref = 5e-13; % calibrated set to work on this example
+Iref = 3e-13; % calibrated set to work on this example
 Imax = Iref;
-total = 1*hour*(Iref/Imax);
-n     = 10000;
+total = 1e-2*hour*(Iref/Imax);
+n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -258,7 +258,7 @@ varnames = {'eta', ...
             'chemicalFlux', ...    
             'intercalationFlux', ...               
             'surfaceCoverage', ...
-            'platedConcentrationNorm'};
+            'platedConcentration'};
 
 vars = {};
 
@@ -269,11 +269,16 @@ vars{end + 1} = cellfun(@(s) s.(lp).platingFlux, states);
 vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux, states);
 vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux, states);
 vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
-vars{end + 1} = cellfun(@(s) s.(lp).platedConcentrationNorm, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
 
 for ivar = 1 : numel(varnames)
     figure
-    plot(time, vars{ivar}, '*-');
+    plot(time/hour, vars{ivar}, '-');
+    xlabel('time [hour]');
+    ylabel(varnames{ivar});
     title(varnames{ivar});
+    dim = [0.7 0.1 0.2 0.2]; % Position and size of the annotation box [x, y, width, height] (normalized)
+    str = sprintf('n = %.2f\nT = %.2f\nIref = %.2e', n, T, Iref);
+    annotation('textbox', dim, 'String', str, 'EdgeColor', 'black', 'BackgroundColor', [1 1 1], 'FontSize', 10);
 end
 

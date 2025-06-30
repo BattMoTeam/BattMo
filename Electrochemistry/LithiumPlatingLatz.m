@@ -31,6 +31,8 @@ classdef LithiumPlatingLatz < BaseModel
         volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
         particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
         volumeFraction                          % Porosity
+        
+        platedLiMonolayerThickness              % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 
         SEIFraction                             % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
         MSEI                                    % Molar mass of SEI [kg/mol]
@@ -63,6 +65,7 @@ classdef LithiumPlatingLatz < BaseModel
                        'volumetricSurfaceArea' , ...
                        'particleRadius',...
                        'volumeFraction', ...
+                       'platedLiMonolayerThickness', ...
                        'SEIFraction', ... 
                        'MSEI'       , ...        
                        'rhoSEI'     , ...      
@@ -117,6 +120,8 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames{end + 1} = 'cElectrodeSurface'; % Concentration of solid lithium at Surface of particule [mol/m3]
 
+            % varnames{end + 1} = 'platedThickness';   % Thickness of plated lithium around a particle [m]. See equation (27)
+
             model = model.registerVarNames(varnames);
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationAccum;
@@ -146,6 +151,9 @@ classdef LithiumPlatingLatz < BaseModel
 
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
             model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
+            
+            % fn = @LithiumPlatingLatz.updatePlatedThickness;
+            % model = model.registerPropFunction({'platedThickness', fn, {'platedConcentration'}});
 
         end
         
@@ -261,6 +269,22 @@ classdef LithiumPlatingLatz < BaseModel
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             
         end
+        % 
+        % function state = updatePlatedThickness(model, state)
+        % 
+        %     nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+        %     r      = model.particleRadius;
+        %     vf     = model.volumeFraction;
+        %     thck1layer = model.platedLiMonolayerThickness;
+        % 
+        %     cLimit = nLimit * vf / ((4/3)*pi*r^3); %and we computed the associated concentration
+        %     cPl = state.platedConcentration;
+        % 
+        %     dPl = thck1layer .* cPl ./ cLimit;
+        % 
+        %     state.platedThickness = dPl;
+        % 
+        % end
     end
 end
 
