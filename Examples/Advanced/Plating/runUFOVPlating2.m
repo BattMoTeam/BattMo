@@ -135,7 +135,7 @@ end
 
 Iref = 7e-13; % calibrated set to work on this example
 Imax = Iref;
-total = 4*hour*(Iref/Imax);
+total = 2*hour*(Iref/Imax);
 n     = 200;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -147,7 +147,7 @@ switch scenario
     srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
     % srcfunc = @(time) 0; %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-    control.stopFunction = @(model, state, state0_inner) (state.time >= total/2);
+    control.stopFunction = @(model, state, state0_inner) (1 == 0);
   case 'discharge'
     srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
     cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
@@ -223,35 +223,12 @@ jsonstruct.Control.controlPolicy = 'CCDischarge';
 
 scenario = 'discharge';
 
-%% following is not used at particle level (but necessary to initiliaze full battery below)
-switch scenario
-  case 'charge'
-    jsonstruct.Control.controlPolicy = 'CCCharge';
-  case 'discharge'
-    jsonstruct.Control.controlPolicy = 'CCDischarge';
-  otherwise
-    error('scenario not recognized');
-end
-
-% Setup InputParams
-inputparams = BatteryInputParams(jsonstruct);
-inputparams = inputparams.(ne).(co).(am);
-inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
-
-%% Setup the model
-
-model = ActiveMaterial(inputparams);
-
-%% Equip model for simulation
-
-model = model.setupForSimulation();
-
 %% setup schedule
 
 Iref = 7e-13; % calibrated set to work on this example
 Imax = Iref;
 
-srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
 control.stopFunction = @(model, state, state0_inner) (1 == 0);
 
 control.src = srcfunc;
@@ -260,8 +237,7 @@ schedule = struct('control', control, 'step', step);
 
 %% Run simulation
 
-model.verbose = true;
-[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
 %% plotting
 
