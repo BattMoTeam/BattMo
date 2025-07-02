@@ -120,9 +120,11 @@ classdef LithiumPlatingLatz < BaseModel
 
             varnames{end + 1} = 'cElectrodeSurface'; % Concentration of solid lithium at Surface of particule [mol/m3]
 
-            % varnames{end + 1} = 'platedThickness';   % Thickness of plated lithium around a particle [m]. See equation (27)
+            varnames{end + 1} = 'platedThickness';   % Thickness of plated lithium around a particle [m]. See equation (27)
 
             model = model.registerVarNames(varnames);
+
+            model = model.setAsExtraVarName('platedThickness');
 
             fn = @LithiumPlatingLatz.updatePlatedConcentrationAccum;
             fn = {fn, @(pf) PropFunction.accumFuncCallSetupFn(pf)};
@@ -152,8 +154,8 @@ classdef LithiumPlatingLatz < BaseModel
             fn = @LithiumPlatingLatz.updateSurfaceCoverage;
             model = model.registerPropFunction({'surfaceCoverage', fn, {'platedConcentration'}});
             
-            % fn = @LithiumPlatingLatz.updatePlatedThickness;
-            % model = model.registerPropFunction({'platedThickness', fn, {'platedConcentration'}});
+            fn = @LithiumPlatingLatz.updatePlatedThickness;
+            model = model.registerPropFunction({'platedThickness', fn, {'platedConcentration'}});
 
         end
         
@@ -269,22 +271,22 @@ classdef LithiumPlatingLatz < BaseModel
             state.surfaceCoverage = min(platedConcentration ./ cLimit, 1.0);
             
         end
-        % 
-        % function state = updatePlatedThickness(model, state)
-        % 
-        %     nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
-        %     r      = model.particleRadius;
-        %     vf     = model.volumeFraction;
-        %     thck1layer = model.platedLiMonolayerThickness;
-        % 
-        %     cLimit = nLimit * vf / ((4/3)*pi*r^3); %and we computed the associated concentration
-        %     cPl = state.platedConcentration;
-        % 
-        %     dPl = thck1layer .* cPl ./ cLimit;
-        % 
-        %     state.platedThickness = dPl;
-        % 
-        % end
+
+        function state = updatePlatedThickness(model, state)
+
+            nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+            r      = model.particleRadius;
+            vf     = model.volumeFraction;
+            thck1layer = model.platedLiMonolayerThickness;
+
+            cLimit = nLimit * vf / ((4/3)*pi*r^3); %and we computed the associated concentration
+            cPl = state.platedConcentration;
+
+            dPl = thck1layer .* cPl ./ cLimit;
+
+            state.platedThickness = dPl;
+
+        end
     end
 end
 

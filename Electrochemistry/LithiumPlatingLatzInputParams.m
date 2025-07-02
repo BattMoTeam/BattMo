@@ -22,6 +22,8 @@ classdef LithiumPlatingLatzInputParams < InputParams
         deltaSEI0  
         sigmaSEI   
 
+        platedLiMonolayerThickness
+
         useSEI
         
         volumetricSurfaceArea
