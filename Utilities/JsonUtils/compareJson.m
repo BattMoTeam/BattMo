@@ -5,8 +5,8 @@ function flatjsonviewer = compareJson(jsonstruct1, jsonstruct2, name1, name2)
         name2 = 'jsonstruct2';
     end
 
-    flatjsonviewer1 = flattenJsonStruct(jsonstruct1);
-    flatjsonviewer2 = flattenJsonStruct(jsonstruct2);
+    flatjsonviewer1 = flattenJsonStruct(jsonstruct1, 'doprint', false);
+    flatjsonviewer2 = flattenJsonStruct(jsonstruct2, 'doprint', false);
 
     flatjson1 = flatjsonviewer1.flatjson;
     flatjson2 = flatjsonviewer2.flatjson;
