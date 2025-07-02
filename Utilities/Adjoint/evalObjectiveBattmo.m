@@ -149,6 +149,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                                                                            'state'          , state);
                 nms = applyFunction(@(x) x.name, parameters);
 
+                % function that computes the sensitivities (the gradients) with respect to the parameters
                 sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
                                                            'LinearSolver', opt.AdjointLinearSolver);
 
