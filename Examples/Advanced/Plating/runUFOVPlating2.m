@@ -225,11 +225,7 @@ scenario = 'discharge';
 
 %% setup schedule
 
-Iref = 7e-13; % calibrated set to work on this example
-Imax = Iref;
-
 srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
-control.stopFunction = @(model, state, state0_inner) (1 == 0);
 
 control.src = srcfunc;
 
