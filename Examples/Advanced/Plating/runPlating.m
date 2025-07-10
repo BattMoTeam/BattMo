@@ -255,28 +255,29 @@ for k = 1:numel(states)
     end
 end
 
-varnames = {'eta', ...             
+varnames = {
+            'platedConcentration', ...    
+            'eta', ...             
             'etaPlating', ...      
             'etaChemical', ...     
             'platingFlux', ...     
             'chemicalFlux', ...    
             'intercalationFlux', ...               
             'surfaceCoverage', ...
-            'platedConcentration', ...
             'platedThickness'};
 
-% vars = {};
-% 
-% vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
-% vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
-% vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
-% vars{end + 1} = cellfun(@(s) s.(lp).etaChemical, states);
-% vars{end + 1} = cellfun(@(s) s.(lp).platingFlux .* s.(lp).surfaceCoverage, states);
-% vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux .* s.(lp).surfaceCoverage, states);
-% vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux .* (1 - s.(lp).surfaceCoverage), states);
-% vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
-% vars{end + 1} = cellfun(@(s) s.(lp).platedThickness, states);
-% 
+vars = {};
+
+vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
+vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
+vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
+vars{end + 1} = cellfun(@(s) s.(lp).etaChemical, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platingFlux .* s.(lp).surfaceCoverage, states);
+vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux .* s.(lp).surfaceCoverage, states);
+vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux .* (1 - s.(lp).surfaceCoverage), states);
+vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platedThickness, states);
+
 % 
 % for ivar = 5 : numel(varnames)
 %     figure
@@ -296,7 +297,11 @@ plot(time, vars{8}, '-');
 xlabel('time [second]');
 ylabel(varnames{8});
 title(varnames{8});
-% Area fraction that is plated. We can obser
+% Area fraction that is plated. The more lithium is plated, the less it can
+% pass from the electrolyte to intercalate into the electrode. Thus, if
+% surfaceCoverage = 1, no more lithium can be intercalated from the solution. 
+% The electrode can still be filled with plated lithium through the
+% chemical flux
 
 % Variable : platingFlux .* surfaceCoverage
 figure
@@ -304,7 +309,17 @@ plot(time, vars{5}, '-');
 xlabel('time [second]');
 ylabel(varnames{5});
 title(varnames{5});
-% TODO: Ajouter commentaire ici pour le flux de placage
+% We can see clearly here the 4 differents steps of the lithium plating phenomenon.
+% First, at the end of the charge, the amount of lithium being plated grows
+% faster and faster as the area where plating is possible increases. 
+% 
+% Then, as the plated lithium covers the whole particle, the plating flux stabilises. 
+%
+% At the beginning of the discharge, the plated lithium begins to strip, as
+% the plated layer is the only electron source available (the intercalated
+% lithium has no contact with the electrolyte)
+
+% Finally, the surfaceCoverage decreases, resulting in a slower stripping.
 
 % Variable : chemicalFlux .* surfaceCoverage
 figure
@@ -320,7 +335,8 @@ plot(time, vars{7}, '-');
 xlabel('time [second]');
 ylabel(varnames{7});
 title(varnames{7});
-% TODO: Ajouter commentaire ici pour le flux d'intercalation
+% No more lithium is intercalated during the time the whole surface is covered
+% with plated lithium.
 
 
 
