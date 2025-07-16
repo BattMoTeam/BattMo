@@ -53,6 +53,8 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
+% jsonstruct.(ne).(co).(am).(sd).referenceDiffusionCoefficient = 1e-10;
+
 scenario = 'charge';
 
 %% following is not used at particle level (but necessary to initiliaze full battery below)
@@ -90,7 +92,7 @@ T              = 50;
 switch scenario
   case 'charge'
     % cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    cElectrodeInit = 29.5*mol/litre;
+    cElectrodeInit = 25*mol/litre;
   case 'discharge'
     cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
   otherwise
@@ -141,7 +143,7 @@ nls.maxTimestepCuts = 20;
 model.nonlinearTolerance = 1e-6;
 
 % --- Paramètres de simulation ---
-Iref_vals = [1e-12, 3e-12, 5e-12];  % différentes intensités à tester
+Iref_vals = 1e-5*[1e-12, 3e-12, 5e-12];  % différentes intensités à tester
 varnames = {'eta', 'etaPlating', 'etaChemical', ...
             'platingFlux', 'chemicalFlux', 'intercalationFlux', ...
             'surfaceCoverage', 'platedConcentration'};
@@ -149,21 +151,25 @@ varnames = {'eta', 'etaPlating', 'etaChemical', ...
 allResults = struct();
 
 % --- Boucle sur les intensités ---
+% Iref_vals = Iref_vals(1);
+
 for i = 1:length(Iref_vals)
+    
     Iref = Iref_vals(i);
     Imax = Iref;
 
-    total = 3e-5*hour*(Iref/Imax);
+    total = 3e-5*hour*(Iref/Imax)*1e9;
     n     = 500;
     dt    = total/n;
     step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
-    tup = 1*second*(Iref/Imax);
+    tup = 1e-1*total;
 
     switch scenario
         case 'charge'
             srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
             % srcfunc = @(time) 0; %0 pour tourner à vide
+            % srcfunc = @(time) -Imax;
             cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
             % control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
         case 'discharge'
@@ -178,8 +184,8 @@ for i = 1:length(Iref_vals)
 
     schedule = struct('control', control, 'step', step);
 
-    scalingparams = struct('I'                  , Imax                              , ...
-        'elyteConcentration' , initState.(itf).cElectrolyte);
+    scalingparams = struct('I'                  , Imax                             , ...
+                           'elyteConcentration' , initState.(itf).cElectrolyte);
 
     if model.useLithiumPlating
         scalingparams.platedConcentration = platedConcentrationInit;
@@ -199,12 +205,18 @@ for i = 1:length(Iref_vals)
 
     % Simulation
     [~, states, ~] = simulateScheduleAD(initStateCurrent, model, schedule, ...
-        'OutputMinisteps', true, 'NonLinearSolver', nls);
+                                        'OutputMinisteps', true, 'NonLinearSolver', nls);
 
     % Nettoyage
     states = states(cellfun(@(s) ~isempty(s), states));
+    states = cellfun(@(s) model.evalVarName(s, {sd, 'cAverage'}), states, 'uniformoutput', false);
+    
     time = cellfun(@(s) s.time, states);
-    Q = time * Imax;            % Coulombs
+    time = [0; time];
+    
+    Q = -diff(time).* srcfunc(time(2 : end));
+    Q = cumsum(Q);
+    
     Q_mAh = Q / 3.6;            % milliampère-heure
 
     % % Évaluer les variables d’intérêt
@@ -235,7 +247,9 @@ for i = 1:length(Iref_vals)
     % values{8} = cellfun(@(s) s.(lp).platedConcentration, states);
 
     cSurface = cellfun(@(s) s.(sd).cSurface, states);
+    cAverage = cellfun(@(s) s.(sd).cAverage, states);
     allResults(i).cSurface = cSurface;
+    allResults(i).cAverage = cAverage;
     % Stockage
     allResults(i).Iref = Iref;
     allResults(i).Q_mAh = Q_mAh;
