@@ -79,7 +79,7 @@ T              = 298;
 switch scenario
   case 'charge'
     % cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    cElectrodeInit = 28*mol/litre;
+    cElectrodeInit = 29.5*mol/litre;
   case 'discharge'
     cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
   otherwise
@@ -127,7 +127,7 @@ end
 
 Iref = 7e-13;
 Imax = Iref;
-total = 4e-1*hour*(Iref/Imax); %total time of the charge
+total = 1e-1*hour*(Iref/Imax); %total time of the charge
 n     = 500;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));

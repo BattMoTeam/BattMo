@@ -204,7 +204,7 @@ for i = 1:length(Iref_vals)
     % Nettoyage
     states = states(cellfun(@(s) ~isempty(s), states));
     time = cellfun(@(s) s.time, states);
-    Q = time;            % Coulombs
+    Q = time * Imax;            % Coulombs
     Q_mAh = Q / 3.6;            % milliampère-heure
 
     % % Évaluer les variables d’intérêt
