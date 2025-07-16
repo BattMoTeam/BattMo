@@ -1,6 +1,4 @@
-%% Run stand-alone active material model with lithium plating
-% This example shows how to simulate a single particle of a silicon graphite
-% electrode, taking into account the plating phenomenon
+%% run stand-alone active material model with lithium plating
 
 clear all
 close all
@@ -10,6 +8,22 @@ close all
 jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
 
 inputparams = BatteryInputParams(jsonstruct);
+
+use_cccv = true;
+if use_cccv
+    inputparams.SOC = 0;
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV'       , ...
+                         'initialControl'    , 'charging', ...
+                         'numberOfCycles'    , 2            , ...
+                         'CRate'             , 1.5          , ...
+                         'DRate'             , 1            , ...
+                         'lowerCutoffVoltage', 3            , ...
+                         'upperCutoffVoltage', 4            , ...
+                         'dIdtLimit'         , 1e-2         , ...
+                         'dEdtLimit'         , 1e-4);
+    cccvinputparams = CcCvControlModelInputParams(cccvstruct);
+    inputparams.Control = cccvinputparams;
+end
 
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -26,12 +40,13 @@ cc      = 'CurrentCollector';
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
+
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
 jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
-% Flag for stand-alone model
+% Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
@@ -40,8 +55,7 @@ jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPla
 
 scenario = 'charge';
 
-%% following is not used at particle level
-
+%% following is not used at particle level (but necessary to initiliaze full battery below)
 switch scenario
   case 'charge'
     jsonstruct.Control.controlPolicy = 'CCCharge';
@@ -51,12 +65,9 @@ switch scenario
     error('scenario not recognized');
 end
 
-
 % Setup InputParams
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
-
-%OCP is computed via a function described in the article (S-5)
 inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
 
 %% Setup the model
@@ -74,7 +85,7 @@ itf = 'Interface';
 
 cElectrolyte   = 5e-1*mol/litre;
 phiElectrolyte = 0;
-T              = 298;
+T              = 178;
 
 switch scenario
   case 'charge'
@@ -108,8 +119,7 @@ if model.useLithiumPlating
     vf                   = model.LithiumPlating.volumeFraction;
     platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
     
-    %initialisation so that overpotential are = 0 and reaction at equilibrium
-    %at the beginning
+    %initialisation so that overpotential are =0 at the beginning
     platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
     model.(lp).platedConcentrationRef = platedConcentrationInit;
@@ -122,13 +132,11 @@ if model.useLithiumPlating
 end
 
 %% setup schedule
-%This part is essential to see the lithium plating effect. Increasing Iref
-%strengthen the effect.
 
-Iref = 7e-13;
+Iref = 3e-13; % calibrated set to work on this example
 Imax = Iref;
-total = 1e-3*hour*(Iref/Imax); %total time of the charge
-n     = 400;
+total = 1e-2*hour*(Iref/Imax);
+n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -136,19 +144,17 @@ tup = 1*second*(Iref/Imax);
 
 switch scenario
   case 'charge'
-    srcfunc = @(time) rampupControl(time, tup, -Imax);
+    srcfunc = @(time) rampupControl(time, tup, -Imax); %0 pour tourner à vide
+    % srcfunc = @(time) 0; %0 pour tourner à vide
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
     % control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
   case 'discharge'
-    srcfunc = @(time) rampupControl(time, tup, Imax);
+    srcfunc = @(time) rampupControl(time, tup, Imax); %0 pour tourner à vide
     cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
     control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
   otherwise
     error('scenario not recognized');
 end
-
-% uncomment to make the simulation run without current (debugging)
-% srcfunc = @(time) 0;
 
 control.src = srcfunc;
 
@@ -172,44 +178,14 @@ nls.maxTimestepCuts = 20;
 
 model.nonlinearTolerance = 1e-6;
 
-%% Run simulation by charging the particle
+%% Run simulation
+% model.G = cartGrid([1, 1]);  % grille fictive 1x1 si pas de spatialisation
+% model.G = computeGeometry(model.G); !!!
 
 model.verbose = true;
 [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
-%% Then discharge it
-%Comment this part to only see the charge
-
-%We use the last state of the previous simulation to initialise the new one
-initstate = states{end};
-jsonstruct.(ctrl).DRate = -1;
-jsonstruct.Control.controlPolicy = 'CCDischarge';
-
-% And we save the charging states for later
-
-chargeStates = states;
-
-% Setup schedule
-
-% Set up a StopFunction if necessary
-% Control.stopFunction = @(model, state, state0_inner) (1 == 0);
-
-srcfunc = @(time) rampupControl(time, tup, Imax);
-
-control.src = srcfunc;
-
-schedule = struct('control', control, 'step', step);
-
-% Run simulation
-
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-% And concatenate the states
-
-dischargeStates = states;
-states = vertcat(chargeStates, dischargeStates);
-
-%% Plot
+%% plotting
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
@@ -219,14 +195,14 @@ cSurface = cellfun(@(state) state.(sd).cSurface, states);
 E        = cellfun(@(state) state.E, states);
 
 figure
-plot(time, cSurface/(1/litre));
-xlabel('time [second]');
+plot(time/hour, cSurface/(1/litre));
+xlabel('time [hour]');
 ylabel('Surface concentration [mol/L]');
 title('Surface concentration');
 
 figure
-plot(time, E);
-xlabel('time [second]');
+plot(time/hour, E);
+xlabel('time [hour]');
 ylabel('Potential [mol/L]');
 title('Potential difference');
 
@@ -236,6 +212,27 @@ cmax = cellfun(@(state) max(state.(sd).c), states);
 for istate = 1 : numel(states)
     states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
 end
+
+caver = cellfun(@(state) max(state.(sd).cAverage), states);
+
+% figure
+% hold on
+% plot(time/hour, cmin /(mol/litre), 'displayname', 'cmin');
+% plot(time/hour, cmax /(mol/litre), 'displayname', 'cmax');
+% plot(time/hour, caver/(mol/litre), 'displayname', 'total concentration');
+% title('Concentration in particle / mol/L')
+% xlabel('time [hour]');
+% ylabel('Concentration [mol/L]');
+% legend show
+% 
+% c = states{end}.(sd).c;
+% r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+% 
+% figure
+% plot(r, c/(mol/litre));
+% xlabel('radius / m')
+% ylabel('concentration / mol/L')
+% title('Particle concentration profile (last time step)')
 
 %% Lithium plating plotting
 
@@ -247,116 +244,41 @@ varsToEval = {{'Interface'     , 'eta'}         , ...
               {'Interface'     , 'intercalationFlux'}           , ...
               {'LithiumPlating', 'platingFlux'} , ...
               {'LithiumPlating', 'chemicalFlux'}, ...
-              {'LithiumPlating', 'surfaceCoverage'}, ...
-              {'LithiumPlating', 'platedThickness'}};
+              {'LithiumPlating', 'surfaceCoverage'}};
 for k = 1:numel(states)
     for var = 1:numel(varsToEval)
         states{k} = model.evalVarName(states{k}, varsToEval{var});
     end
 end
 
-varnames = {
-            'platedConcentration', ...    
-            'eta', ...             
+varnames = {'eta', ...             
             'etaPlating', ...      
             'etaChemical', ...     
             'platingFlux', ...     
             'chemicalFlux', ...    
             'intercalationFlux', ...               
             'surfaceCoverage', ...
-            'platedThickness'};
+            'platedConcentration'};
 
 vars = {};
 
-vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
 vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaChemical, states);
-vars{end + 1} = cellfun(@(s) s.(lp).platingFlux .* s.(lp).surfaceCoverage, states);
-vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux .* s.(lp).surfaceCoverage, states);
-vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux .* (1 - s.(lp).surfaceCoverage), states);
+vars{end + 1} = cellfun(@(s) s.(lp).platingFlux, states);
+vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux, states);
+vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux, states);
 vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
-vars{end + 1} = cellfun(@(s) s.(lp).platedThickness, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
 
-% 
-% for ivar = 5 : numel(varnames)
-%     figure
-%     plot(time, vars{ivar}, '-');
-%     xlabel('time [second]');
-%     ylabel(varnames{ivar});
-%     title(varnames{ivar});
-%     dim = [0.7 0.1 0.2 0.2]; % Position and size of the annotation box [x, y, width, height] (normalized)
-%     str = sprintf('n = %.2f\nT = %.2f\nIref = %.2e', n, T, Iref);
-%     annotation('textbox', dim, 'String', str, 'EdgeColor', 'black', 'BackgroundColor', [1 1 1], 'FontSize', 10);
-% end
-% 
+for ivar = 1 : numel(varnames)
+    figure
+    plot(time/hour, vars{ivar}, '-');
+    xlabel('time [hour]');
+    ylabel(varnames{ivar});
+    title(varnames{ivar});
+    dim = [0.7 0.1 0.2 0.2]; % Position and size of the annotation box [x, y, width, height] (normalized)
+    str = sprintf('n = %.2f\nT = %.2f\nIref = %.2e', n, T, Iref);
+    annotation('textbox', dim, 'String', str, 'EdgeColor', 'black', 'BackgroundColor', [1 1 1], 'FontSize', 10);
+end
 
-
-% Variable : surfaceCoverage
-figure
-plot(time, vars{8}, '-');
-xlabel('time [second]');
-ylabel(varnames{8});
-title(varnames{8});
-% Area fraction that is plated. The more lithium is plated, the less it can
-% pass from the electrolyte to intercalate into the electrode. Thus, if
-% surfaceCoverage = 1, no more lithium can be intercalated from the solution. 
-% The electrode can still be filled with plated lithium through the
-% chemical flux
-
-% Variable : platingFlux .* surfaceCoverage
-figure
-plot(time, vars{5}, '-');
-xlabel('time [second]');
-ylabel(varnames{5});
-title(varnames{5});
-% We can see clearly here the 4 differents steps of the lithium plating phenomenon.
-% First, at the end of the charge, the amount of lithium being plated grows
-% faster and faster as the area where plating is possible increases. 
-% 
-% Then, as the plated lithium covers the whole particle, the plating flux stabilises. 
-%
-% At the beginning of the discharge, the plated lithium begins to strip, as
-% the plated layer is the only electron source available (the intercalated
-% lithium has no contact with the electrolyte)
-
-% Finally, the surfaceCoverage decreases, resulting in a slower stripping.
-
-% Variable : chemicalFlux .* surfaceCoverage
-figure
-plot(time, vars{6}, '-');
-xlabel('time [second]');
-ylabel(varnames{6});
-title(varnames{6});
-% TODO: Ajouter commentaire ici pour le flux chimique
-
-% Variable : intercalationFlux .* (1 - surfaceCoverage)
-figure
-plot(time, vars{7}, '-');
-xlabel('time [second]');
-ylabel(varnames{7});
-title(varnames{7});
-% No more lithium is intercalated during the time the whole surface is covered
-% with plated lithium.
-
-
-
-% Variable : platedThickness
-figure
-plot(time, vars{9}, '-');
-xlabel('time [second]');
-ylabel(varnames{9});
-title(varnames{9});
-% TODO: Ajouter commentaire ici pour l'épaisseur du dépôt
-
-figure
-plot(time, vars{2}, '-');
-xlabel('time [second]');
-ylabel(varnames{2});
-title(varnames{2});
-
-figure
-plot(time, vars{3}, '-');
-xlabel('time [second]');
-ylabel(varnames{3});
-title(varnames{3});
