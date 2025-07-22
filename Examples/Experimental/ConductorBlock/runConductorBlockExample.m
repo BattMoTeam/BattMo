@@ -25,7 +25,7 @@ inputparams = gen.updateGridInputParams(inputparams, jsonstruct);
 
 model = ConductorBlock(inputparams);
 
-cgt = model.cgt;
+cgti = model.cgti;
 cgp = model.cgp;
 
 initstate = model.setupInitialState();
@@ -41,7 +41,7 @@ control = struct('src', []);
 schedule = struct('step'   , step, ...
                   'control', control);
 
-cgt = model.cgt;
+cgti = model.cgti;
 cgp = model.cgp;
 
 %% Running the simulation

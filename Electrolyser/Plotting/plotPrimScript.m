@@ -46,10 +46,10 @@ nt = numel(time);
 for ivar = 1 : numel(fds)
     fd = fds{ivar};
 
-    varind = cgt.regexpVarNameSelect(fd);
+    varind = cgti.regexpVarNameSelect(fd);
     assert(numel(varind) == 1, ['too many field selected for ' fd]);
-    varname = cgt.varNameList{varind};
-    nodenames = cgt.getNodeName(varname);
+    varname = cgti.varNameList{varind};
+    nodenames = cgti.getNodeName(varname);
     % should be unique here
     nodename = nodenames{1};
     [ymin, ymax, y] = getvals(nodename, states);

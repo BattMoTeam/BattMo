@@ -27,11 +27,11 @@ gen = BatteryGeneratorP2D();
 inputparams = gen.updateBatteryInputParams(inputparams);
 model = Battery(inputparams);
 
-cgt = ComputationalGraphTool(model);
+cgti = ComputationalGraphInteractiveTool(model);
 
-cgt.includeNodeNames = 'Negati.*Int.*R';
+cgti.includeNodeNames = 'Negati.*Int.*R';
 
-[g, edgelabels] = cgt.getComputationalGraph();
+[g, edgelabels] = cgti.getComputationalGraph();
 
 figure
 % h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);

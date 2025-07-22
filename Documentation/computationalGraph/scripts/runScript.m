@@ -10,7 +10,7 @@ model = UncoupledReactionThermalModel();
 % model = ConcentrationReactionModel();
 % model = ConcentrationReactionThermalModel();
 cgp = model.cgp;
-cgt = model.cgt;
+cgti = model.cgti;
 h = cgp.plot();
 % h = cgp.plotModelGraph();
 set(h, 'nodefontsize', 14);
