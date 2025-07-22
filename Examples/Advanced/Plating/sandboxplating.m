@@ -44,7 +44,7 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
-jsonstruct.(ne).(co).(am).useLithiumPlating = false;
+jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
 % Flag pour modèle stand-alone
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
@@ -143,7 +143,7 @@ nls.maxTimestepCuts = 20;
 model.nonlinearTolerance = 1e-6;
 
 % --- Paramètres de simulation ---
-Iref_vals = 1e-5*[1e-12, 3e-12, 5e-12];  % différentes intensités à tester
+Iref_vals = 1e-2*[1e-12, 3e-12, 5e-12];  % différentes intensités à tester
 varnames = {'eta', 'etaPlating', 'etaChemical', ...
             'platingFlux', 'chemicalFlux', 'intercalationFlux', ...
             'surfaceCoverage', 'platedConcentration'};
@@ -158,8 +158,8 @@ for i = 1:length(Iref_vals)
     Iref = Iref_vals(i);
     Imax = Iref;
 
-    total = 3e-5*hour*(Iref/Imax)*1e9;
-    n     = 500;
+    total = 3e-5*hour*(Iref/Imax)*1e-2;
+    n     = 2500;
     dt    = total/n;
     step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
@@ -219,32 +219,32 @@ for i = 1:length(Iref_vals)
     
     Q_mAh = Q / 3.6;            % milliampère-heure
 
-    % % Évaluer les variables d’intérêt
-    % varsToEval = {{'Interface'     , 'eta'}         , ...
-    %               {'LithiumPlating', 'etaPlating'}  , ...
-    %               {'LithiumPlating', 'etaChemical'} , ...
-    %               {'Interface'     , 'intercalationFlux'}           , ...
-    %               {'LithiumPlating', 'platingFlux'} , ...
-    %               {'LithiumPlating', 'chemicalFlux'}, ...
-    %               {'LithiumPlating', 'surfaceCoverage'}, ...
-    %               {'LithiumPlating', 'platedConcentration'}};
-    % 
-    % for k = 1:numel(states)
-    %     for var = 1:numel(varsToEval)
-    %         states{k} = model.evalVarName(states{k}, varsToEval{var});
-    %     end
-    % end
+    % Évaluer les variables d’intérêt
+    varsToEval = {{'Interface'     , 'eta'}         , ...
+                  {'LithiumPlating', 'etaPlating'}  , ...
+                  {'LithiumPlating', 'etaChemical'} , ...
+                  {'Interface'     , 'intercalationFlux'}           , ...
+                  {'LithiumPlating', 'platingFlux'} , ...
+                  {'LithiumPlating', 'chemicalFlux'}, ...
+                  {'LithiumPlating', 'surfaceCoverage'}, ...
+                  {'LithiumPlating', 'platedConcentration'}};
 
-    % % Extraction des valeurs
-    % values = cell(1, numel(varnames));
-    % values{1} = cellfun(@(s) s.(itf).eta, states);
-    % values{2} = cellfun(@(s) s.(lp).etaPlating, states);
-    % values{3} = cellfun(@(s) s.(lp).etaChemical, states);
-    % values{4} = cellfun(@(s) s.(lp).platingFlux, states);
-    % values{5} = cellfun(@(s) s.(lp).chemicalFlux, states);
-    % values{6} = cellfun(@(s) s.(itf).intercalationFlux, states);
-    % values{7} = cellfun(@(s) s.(lp).surfaceCoverage, states);
-    % values{8} = cellfun(@(s) s.(lp).platedConcentration, states);
+    for k = 1:numel(states)
+        for var = 1:numel(varsToEval)
+            states{k} = model.evalVarName(states{k}, varsToEval{var});
+        end
+    end
+
+    % Extraction des valeurs
+    values = cell(1, numel(varnames));
+    values{1} = cellfun(@(s) s.(itf).eta, states);
+    values{2} = cellfun(@(s) s.(lp).etaPlating, states);
+    values{3} = cellfun(@(s) s.(lp).etaChemical, states);
+    values{4} = cellfun(@(s) s.(lp).platingFlux, states);
+    values{5} = cellfun(@(s) s.(lp).chemicalFlux, states);
+    values{6} = cellfun(@(s) s.(itf).intercalationFlux, states);
+    values{7} = cellfun(@(s) s.(lp).surfaceCoverage, states);
+    values{8} = cellfun(@(s) s.(lp).platedConcentration, states);
 
     cSurface = cellfun(@(s) s.(sd).cSurface, states);
     cAverage = cellfun(@(s) s.(sd).cAverage, states);
@@ -253,30 +253,32 @@ for i = 1:length(Iref_vals)
     % Stockage
     allResults(i).Iref = Iref;
     allResults(i).Q_mAh = Q_mAh;
-    % for j = 1:numel(varnames)
-    %     allResults(i).(varnames{j}) = values{j};
-    % end
+    for j = 1:numel(varnames)
+        allResults(i).(varnames{j}) = values{j};
+    end
 end
 
 linestyles = {'-', '--', ':', '-.'};        
 colors     = lines(length(Iref_vals));       
 
-% for j = 1:numel(varnames)
-%     figure
-%     hold on
-%     for i = 1:length(Iref_vals)
-%         ls = linestyles{mod(i-1, length(linestyles)) + 1};
-%         plot(allResults(i).Q_mAh, allResults(i).(varnames{j}), ...
-%             'LineStyle', ls, ...
-%             'Color', colors(i,:), ...
-%             'DisplayName', sprintf('I_{ref} = %.0e A', allResults(i).Iref));
-%     end
-%     xlabel('Charge passed [mAh]');
-%     ylabel(varnames{j});
-%     title([varnames{j} ' vs Charge passed']);
-%     legend show
-%     grid on
-% end
+%% okok
+
+for j = 1:numel(varnames)
+    figure
+    hold on
+    for i = 1:length(Iref_vals)
+        ls = linestyles{mod(i-1, length(linestyles)) + 1};
+        plot(allResults(i).Q_mAh, allResults(i).(varnames{j}), ...
+            'LineStyle', ls, ...
+            'Color', colors(i,:), ...
+            'DisplayName', sprintf('I_{ref} = %.0e A', allResults(i).Iref));
+    end
+    xlabel('Charge passed [mAh]');
+    ylabel(varnames{j});
+    title([varnames{j} ' vs Charge passed']);
+    legend show
+    grid on
+end
 
 figure
 hold on

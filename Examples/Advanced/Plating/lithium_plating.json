@@ -3,7 +3,7 @@
   "alphaStr" : 0.7, 
   "alphaChInt" : 0.5, 
   "kPl" : 4.635e-6, 
-  "kChInt" : 2.89e-12, 
+  "kChInt" : 2.89e-9, 
   "kInter" : 6.656e-9, 
   "nPl0" : 1.173e-23, 
   "nPlLimit" : 1.173e-17,
