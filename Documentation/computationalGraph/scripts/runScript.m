@@ -5,17 +5,18 @@ set(0, 'defaultaxesfontsize', 15);
 % model = ReactionModel2();
 % model = ThermalModel();
 % model = ReactionThermalModel();
-model = UncoupledReactionThermalModel();
+% model = UncoupledReactionThermalModel();
 % model = ConcentrationModel();
 % model = ConcentrationReactionModel();
 % model = ConcentrationReactionThermalModel();
-cgp = model.cgp;
+model = GenericExampleModel();
+
 cgti = model.cgti;
-h = cgp.plot();
+h = cgti.plot();
 % h = cgp.plotModelGraph();
-set(h, 'nodefontsize', 14);
+set(h, 'nodefontsize', 20);
 % set(h, 'nodefontsize', 9);
-set(h, 'linewidth', 3);
+set(h, 'linewidth', 5);
 set(h, 'arrowsize', 20);
 
 dosave = true;
@@ -27,7 +28,8 @@ if dosave
     % filename = 'tempgraph.png';
     % filename = 'concreacgraph.png';
     % filename = 'tempconcreacgraphmodel.png';
-    filename = 'uncoupledreactemp.png';
+    % filename = 'uncoupledreactemp.png';
+    filename = 'genericexample.png';
     filename = fullfile(savedir, filename);
     saveas(gcf, filename)
 end
