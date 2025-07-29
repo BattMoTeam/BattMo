@@ -109,22 +109,49 @@ rest, it is easier to understand.
 Model hierarchy and composition
 ===============================
 
-As model developper, we want to reuse and extend existing models. First, we look at the model available through their
-computational graph. In fact, in a first step, a model can be **completely identified** as its computational graph. The
-first task in the design of a new model consists of creating the computational graph.
+As model developper, we want to reuse as much as possible existing models.
 
-We can modify an existing model by adding variables or changing the dependencies.
+Model explorability is important to inspect the already available models, understand their structure and figure out how
+they can be modified to our need.
 
+The computational graph provides a very synthetic representation on the model an in a first step, the model developper
+should only focus on getting the computational graph that corresponds to his/her model.
 
-model composition
+In the code of a given, there is a method where the computational graph is defined, see the example below. The
+developper gets there the possibility to edit the computational graph. The actions available are
 
-physical coupling by adding a model on top.
+  1. Add new variables to the model (meaning adding nodes to the computational graph).
+  2. Add functional dependencies (meaning adding directed edges from the *function input variables* nodes to the *function output variable* node).
+  3. Change the declared functional dependencies.
+  4. Change the status of the variables (see static variables below)
 
-We sew the graphs
+A simple and concrete way to create a new model from a given one is to setup a derived model using class
+inheritance. The new model will inherit the computational graph, which is a property of the model. We will see an
+example below.
 
-   
-Example
-=======
+Models are often obtained by coupling physical sub-systems. Each of the sub-systems are models in themselves. For us, it
+means that they have a computational graph. Coupling models will then consist of
+
+  1. Importing the graphs of the subsystems
+  2. Adding functional dependencies across the sub-models (adding edges that connect the nodes of the graphs)
+
+We can see this operation as *sewing* graphs. Concretely, we proceed by creating a new model and register the models we
+want to couple as sub-models. Each sub-model should be given a name. The graphs of all sub-models are imported and the
+names of the variables (the nodes) are extended with a kind of prefix which corresponds to the sub-model it originates
+from. This action is necessary to avoid name conflicts. Indeed, the sub-models have been developed independently and
+nothing guarantees that they do not share some of the same variable names.
+
+By repeatedly coupling models, we obtain a *hierarchy* of models. A model can get very complex but having a hierarchy
+significantly simplifies the navigation between the sub-models and the understanding of how they depend on each other.
+
+When a computational graph is setup or modified, we do not say anything about the function that will in practice update
+the variables - besides their name. We do not need a computational graph framework to develop models but we need precise
+definitions of the functions the defines the variables.
+
+This is the core. But, we decompose in two steps and break the complexity
+
+Basic Example
+=============
 
 by existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
 can understand the dependency easily and identify the part that should be changed in the model. In some cases,
