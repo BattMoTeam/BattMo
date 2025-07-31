@@ -148,8 +148,6 @@ When a computational graph is setup or modified, we do not say anything about th
 the variables - besides their name. We do not need a computational graph framework to develop models but we need precise
 definitions of the functions the defines the variables.
 
-This is the core. But, we decompose in two steps and break the complexity
-
 Basic Example
 =============
 
