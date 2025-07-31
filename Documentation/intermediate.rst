@@ -12,7 +12,8 @@ Intermediate Usage
    soliddiffusion
    parsets
    units
-   thermal
+   runThermalExample.nblink
+   runSiliconGraphiteBattery.ipynb
    optimisation
    Octave <octave>
 
@@ -51,8 +52,13 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Thermal simulation <thermal:Thermal Simulation>`
-           
+      :ref:`Thermal simulation <runThermalExample>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Composite material <runSiliconGraphiteBattery>`
+                    
    .. grid-item-card::
       :padding: 2
 

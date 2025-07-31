@@ -9,7 +9,7 @@
                       "tutorial_9_simulate_a_cylindrical_cell_live"))
 
 
-(defun clean-up-output ()
+(defun clean-up-ipynb-output ()
   "removes the verbose output from the simulations from a ipynb notebook"
   (interactive)
   (let* ((find-next-output-region (lambda ()

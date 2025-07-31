@@ -1,11 +1,11 @@
 function [fig] = plotElectrolyteChargeCarrierConcentration(model, states, varargin)
-%UNTITLED6 Summary of this function goes here
+%UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 %
 close all
 
-%% Parse inputs            
+%% Parse inputs
 defaultStep         = length(states);
 defaultTheme        = 'light';
 expectedTheme       = {'dark', 'light', 'blue', 'offwhite'};
@@ -30,13 +30,13 @@ step = p.Results.step;
 fig = figure;
 
 if step ~= 0
-    if model.G.griddim == 1
-        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000);
+    if model.grid.griddim == 1
+        plotCellData(model.Electrolyte.grid, states{step}.Electrolyte.c ./ 1000);
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Concentration  /  mol \cdot L^{-1}')
 
-    elseif model.G.griddim == 2
-        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+    elseif model.grid.griddim == 2
+        plotCellData(model.Electrolyte.grid, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
         colormap(cmocean('curl'));
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Position  /  m')
@@ -50,8 +50,8 @@ if step ~= 0
         caxis([cmin, cmax]);
         colorbar;
 
-    elseif model.G.griddim == 3
-        plotCellData(model.Electrolyte.G, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+    elseif model.grid.griddim == 3
+        plotCellData(model.Electrolyte.grid, states{step}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
         colormap(cmocean('curl'));
         xlabel(gca, 'Position  /  m')
         ylabel(gca, 'Position  /  m')
@@ -73,29 +73,29 @@ else
         if i == 1
             cmax = max(max(states{i}.Electrolyte.c ./ 1000));
             cmin = min(max(states{i}.Electrolyte.c ./ 1000));
-            xmin = min(model.Electrolyte.G.nodes.coords(:,1));
-            xmax = max(model.Electrolyte.G.nodes.coords(:,1));
-            if model.G.griddim == 2
-                ymin = min(model.Electrolyte.G.nodes.coords(:,2));
-                ymax = max(model.Electrolyte.G.nodes.coords(:,2));
-            elseif model.G.griddim == 3
-                ymin = min(model.Electrolyte.G.nodes.coords(:,2));
-                ymax = max(model.Electrolyte.G.nodes.coords(:,2));
-                zmin = min(model.Electrolyte.G.nodes.coords(:,3));
-                zmax = max(model.Electrolyte.G.nodes.coords(:,3));
+            xmin = min(model.Electrolyte.grid.nodes.coords(:,1));
+            xmax = max(model.Electrolyte.grid.nodes.coords(:,1));
+            if model.grid.griddim == 2
+                ymin = min(model.Electrolyte.grid.nodes.coords(:,2));
+                ymax = max(model.Electrolyte.grid.nodes.coords(:,2));
+            elseif model.grid.griddim == 3
+                ymin = min(model.Electrolyte.grid.nodes.coords(:,2));
+                ymax = max(model.Electrolyte.grid.nodes.coords(:,2));
+                zmin = min(model.Electrolyte.grid.nodes.coords(:,3));
+                zmax = max(model.Electrolyte.grid.nodes.coords(:,3));
             end
         else
             cmax = max( cmax, max(max(states{i}.Electrolyte.c ./ 1000)));
             cmin = min( cmin, min(min(states{i}.Electrolyte.c ./ 1000)));
         end
     end
-    
+
     for i = 1:length(states)
         if i == 1
-            style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single'); 
+            style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
         end
-        if model.G.griddim == 1
-            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'LineWidth', style.lineWidth);
+        if model.grid.griddim == 1
+            plotCellData(model.Electrolyte.grid, states{i}.Electrolyte.c ./ 1000, 'LineWidth', style.lineWidth);
             xlabel(gca, 'Position  /  m', 'FontSize', style.fontSize)
             ylabel(gca, 'Concentration  /  mol \cdot L^{-1}', 'FontSize', style.fontSize)
             set(gca, ...
@@ -108,13 +108,13 @@ else
             ylim([cmin, cmax]);
             xlim([xmin, xmax]);
 
-        elseif model.G.griddim == 2
-            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+        elseif model.grid.griddim == 2
+            plotCellData(model.Electrolyte.grid, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
             colormap(cmocean('curl'));
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
             title('Concentration  /  mol \cdot L^{-1}')
-            
+
             xlim([xmin, xmax]);
             ylim([ymin, ymax]);
             cnom = mean(states{1}.Electrolyte.c ./ 1000);
@@ -125,8 +125,8 @@ else
             c = colorbar;
             c.Color = style.fontColor;
 
-        elseif model.G.griddim == 3
-            plotCellData(model.Electrolyte.G, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
+        elseif model.grid.griddim == 3
+            plotCellData(model.Electrolyte.grid, states{i}.Electrolyte.c ./ 1000, 'edgealpha', 0.1);
             colormap(cmocean('curl'));
             xlabel(gca, 'Position  /  m')
             ylabel(gca, 'Position  /  m')
@@ -144,13 +144,13 @@ else
             c.Color = style.fontColor;
             view(45,45)
         end
-        
+
         drawnow
         pause(0.1)
     end
 end
-  
-    
+
+
 end
 
 %{

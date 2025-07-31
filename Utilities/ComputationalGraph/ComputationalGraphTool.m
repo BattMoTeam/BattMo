@@ -641,7 +641,7 @@ classdef ComputationalGraphTool
         end
 
 
-        function printRootVariables(cgt)
+        function printRootVariables(cgt, nodename)
         % Print the root variables in computational graph
 
             A = cgt.adjencyMatrix;
@@ -653,19 +653,28 @@ classdef ComputationalGraphTool
             staticnames = cgt.getStaticVarNames();
 
             ind = ismember(rootnames, staticnames);
-            rootind = find(~ind);
+            rootinds = find(~ind);
 
-            cgt.printHeader('Root Variables', numel(rootind));
+            if nargin > 1
+                inds = regexpSelect(cgt.nodenames, nodename);
+                rootinds = intersect(inds, rootinds);
+            end
+            
+            cgt.printHeader('Root Variables', numel(rootinds));
 
-            for irind = 1 : numel(rootind)
-                fprintf('%s\n', rootnames{rootind(irind)});
+            for irind = 1 : numel(rootinds)
+                fprintf('%s\n', rootnames{rootinds(irind)});
             end
 
             if nnz(ind)
-                staticind = find(ind);
-                cgt.printHeader('Static Variables', numel(staticind));
-                for isind = 1 : numel(staticind)
-                    fprintf('%s\n', rootnames{staticind(isind)});
+                staticinds = find(ind);
+                if nargin > 1
+                    inds = regexpSelect(cgt.nodenames, nodename);
+                    staticinds = intersect(inds, staticinds);
+                end
+                cgt.printHeader('Static Variables', numel(staticinds));
+                for isind = 1 : numel(staticinds)
+                    fprintf('%s\n', rootnames{staticinds(isind)});
                 end
             end
 
@@ -683,7 +692,7 @@ classdef ComputationalGraphTool
             tailinds = tailinds(~isadded);
 
             if nargin > 1
-                inds = cgt.regexpVarNameSelect(nodename);
+                inds = regexpSelect(cgt.nodenames, nodename);
                 tailinds = intersect(inds, tailinds);
             end
 

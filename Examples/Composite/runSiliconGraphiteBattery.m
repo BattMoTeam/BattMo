@@ -1,13 +1,43 @@
-%% Composite Silicon Graphite electrode
-clear
-close all
+%% Simulation of a composite active material
+% This example shows how to simulate a composite active material
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core
+%% Setup the properties of the battery
+%
+% We load the property of a composite silicon graphite electrode. 
 
-%% Shortcuts
-% We define shorcuts for the sub-models.
+jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
+
+%%
+% In this structure, we have the material property of two active materials, |ActiveMaterial1| and |ActiveMaterial2|.
+flattenJsonStruct(jsonstruct_composite_material);
+
+%%
+% For the remaining properties, we load a standard data set
+jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+
+%%
+% We remove from this structure active material field. This step is not necessary but is cleaner and we avoid a
+% warning.
+jsonstruct_cell = removeJsonStructField(jsonstruct_cell, {'NegativeElectrode', 'Coating', 'ActiveMaterial'});
+
+%%
+% we load a 1d geometry
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
+
+%%
+% We merge the json structures
+jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
+                               jsonstruct_cell              , ...
+                               jsonstruct_geometry});
+
+%%
+% We do not consider the thermal model and remove the current collector. We also use a CV switch control.
+jsonstruct.use_thermal                = false;
+jsonstruct.include_current_collectors = false;
+
+%% 
+% We define some shorcuts for the sub-models, for convenience
 
 ne   = 'NegativeElectrode';
 pe   = 'PositiveElectrode';
@@ -20,145 +50,128 @@ sd   = 'SolidDiffusion';
 itf  = 'Interface';
 ctrl = 'Control';
 
-%% Setup the properties of the battery
-%
-% We load the property of a composite silicon graphite electrode, see
-% :ref:`compositeElectrode`
-%
+%% We modify some parameters
+% We adjust the mass fractions  parameters of the active material in the negative electrode
 
-jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json');
-
-%%
-% For the remaining properties, we consider a standard data set
-jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
-
-%%
-% We remove form the standard data set the :code:`ActiveMaterial`
-% field. This step is not necessary but is cleaner and we avoid a
-% warning.
-jsonstruct_cell.(ne).(co) = rmfield(jsonstruct_cell.(ne).(co), 'ActiveMaterial');
-
-%%
-% We merge the two json structures
-jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
-                               jsonstruct_cell});
-
-%%
-% We do not consider the thermal model and remove the current
-% collector
-jsonstruct.use_thermal = false;
-jsonstruct.include_current_collectors = false;
-
-qjsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
+jsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, am2, 'massFraction'}, 0.08, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, bd , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
 jsonstruct = setJsonStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
 
-%%
-% We instantiate the battery :code:`InputParams` object
-inputparams = BatteryInputParams(jsonstruct);
-
-%%
-% Now, we update the inputparams with the properties of the grid.
-gen = BatteryGeneratorP2D();
-inputparams = gen.updateBatteryInputParams(inputparams);
-
-%% We change the given DRate
-
-DRate = 0.1;
-inputparams.(ctrl).DRate = DRate;
-
-% Allow for switching to voltage control
-inputparams.(ctrl).useCVswitch = true;
-
-%% Model Instantiation
-% We instantiate the model
-
-model = GenericBattery(inputparams);
-
-%% Setup schedule (control and time stepping)
-% We will simulate two consecutive periods: a discharge followed by a
-% charge.
+%% We run the simulations
 %
-% We start with the charge period
+output = runBatteryJson(jsonstruct);
 
-step    = model.(ctrl).setupScheduleStep();
-control = model.(ctrl).setupScheduleControl();
+%% Plotting
+% We extract the voltage, current and time from the simulation output
 
-schedule = struct('control', control, 'step', step);
+states = output.states;
+model  = output.model;
 
-%% Setup the initial state of the model
+E    = cellfun(@(x) x.Control.E, states);
+I    = cellfun(@(x) x.Control.I, states);
+time = cellfun(@(x) x.time, states);
+
+%%
+% We plot the voltage and current
+
+figure
+subplot(2, 1, 1);
+plot(time/hour, E);
+xlabel('Time / h');
+ylabel('Voltage / V');
+title('Voltage')
+subplot(2, 1, 2);
+plot(time/hour, I/milli);
+xlabel('Time / h');
+ylabel('Current / mA');
+title('Current')
+
+%%
+% We compute and plot the state of charges in the different material
+
+figure
+hold on
+
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {ne, co, 'SOC'});
+end
+
+SOC  = cellfun(@(x) x.(ne).(co).SOC, states);
+SOC1 = cellfun(@(x) x.(ne).(co).(am1).SOC, states);
+SOC2 = cellfun(@(x) x.(ne).(co).(am2).SOC, states);
+
+plot(time/hour, SOC, 'displayname', 'SOC - cumulated');
+plot(time/hour, SOC1, 'displayname', 'SOC - Graphite');
+plot(time/hour, SOC2, 'displayname', 'SOC - Silicon');
+
+xlabel('Time / h');
+ylabel('SOC / -');
+title('SOCs')
+
+legend show
+
+%% plot of the particle concentration distribution in the particle at the end time
 %
-% We use the default initialisation given by a method in the model
+%%
+% We recover the state at the last time step
+%
 
-initstate = model.setupInitialState();
-
-%% Setup the properties of the nonlinear solver
-% We adjust some settings for the nonlinear solver
-nls = NonLinearSolver();
+state = states{end};
 
 %%
-% Change default maximum iteration number in nonlinear solver
-nls.maxIterations = 10;
-%%
-% Change default behavior of nonlinear solver, in case of error
-nls.errorOnFailure = false;
-%%
-% We use a time step selector based on absolute change of a target
-% value, in our case the output voltage
-nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, ...
-                                                   'targetChangeAbs', 0.1);
-%%
-% We adjust the nonlinear tolerance
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+% We iterate over the two active materials. The first one is the graphite and the second one the silicon
+%
+ams = {am1, am2};
 
-%% Run the simulation for the discharge
+for iam = 1 : numel(ams)
 
-fprintf('Run the simulation for the discharge\n')
-[~, states] = simulateScheduleAD(initstate, model, schedule, ...
-                                 'OutputMinisteps', true, ...
-                                 'NonLinearSolver', nls);
+    am = ams{iam};
 
-dischargeStates = states;
+    model_sd = model.(ne).(co).(am).(sd);
+    state_sd = state.(ne).(co).(am).(sd);
 
-%% Setup charge schedule
+    %%
+    % We recover the concentration as an array. The column index corresponds to the spatial direction (here x as we are considering a 1D model) and the row index corresponds to the particle radia direction
+    c = model_sd.getParticleConcentrations(state_sd);
+    r = model_sd.operators.radii;
 
-% We use the last computed state of the discharge as the initial state
-% for the charge period.
+    figure
+    hold on
+    %%
+    % We plot the concentration distribution at the last point in the grid, which corresponds in this case to the
+    % closest to the positive electrode
+    plot(r/(micro*meter), c(size(c, 1), :)/(mol/litre));
+    title(sprintf('Particle concentration profile in %s', am));
+    xlabel('radius / m');
+    ylabel('concentration / mol/litre');
+    
+end
+
+
+%% Charge step
+
 initstate = states{end};
-
-% We use a new control model.
-
+jsonstruct.(ctrl).CRate = 1;
 jsonstruct = setJsonStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCharge', 'handleMisMatch', 'quiet');
-inputparams.Control = CCChargeControlModelInputParams(jsonstruct.Control);
-inputparams.(ctrl).CRate = DRate;
 
-model = GenericBattery(inputparams);
+jsonstruct.initializationSetup = 'given matlab object';
 
-step    = model.(ctrl).setupScheduleStep();
-control = model.(ctrl).setupScheduleControl();
-
-% Use the control in the schedule
-schedule = struct('control', control, 'step', step);
-
-%% Run the simulation for the charge period
-fprintf('Run the simulation for the charge\n');
-[~, states] = simulateScheduleAD(initstate, model, schedule, ...
-                                 'OutputMinisteps', true, ...
-                                 'NonLinearSolver', nls);
-
-chargeStates = states;
+output = runBatteryJson(jsonstruct, 'initstate', initstate);
 
 %% Visualisation
 
 %%
 % We concatenate the states we have computed
+
+dischargeStates = states; % see previous assignement
+chargeStates    = output.states; % assigned from last simulation output
+
 allStates = vertcat(dischargeStates, chargeStates);
 
 %%
+
 % We extract the voltage, current and time from the simulation output
-ind = cellfun(@(x) ~isempty(x), allStates);
-allStates = allStates(ind);
 E    = cellfun(@(x) x.Control.E, allStates);
 I    = cellfun(@(x) x.Control.I, allStates);
 time = cellfun(@(x) x.time, allStates);
@@ -201,24 +214,3 @@ title('SOCs')
 
 legend show
 
-
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The Battery Modeling Toolbox BattMo
-
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}

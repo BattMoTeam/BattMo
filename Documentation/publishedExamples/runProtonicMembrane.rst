@@ -1,9 +1,9 @@
 .. _runProtonicMembrane:
 
 
-=======================
-Protonic Membrane model
-=======================
+==========================================
+Proton Ceramic Electrolyser Membrane model
+==========================================
 *Generated from runProtonicMembrane.m*
 
 .. include:: runProtonicMembranePreamble.rst
@@ -41,7 +41,7 @@ We setup the grid, which is done by calling the function :battmo:`setupProtonicM
 
 Model setup
 ===========
-We instantiate the model for the protonic membrane cell
+We instantiate the model for the proton membrane cell
 
 .. code-block:: matlab
 
