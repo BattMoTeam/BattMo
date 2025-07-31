@@ -375,8 +375,11 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Computational Graph</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#a-simple-introduction-example">A simple introduction example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#graph-composition">Graph composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-assembly">Model assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-explorability">Model explorability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-hierarchy-and-composition">Model hierarchy and composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
 </ul>
 </li>
@@ -418,102 +421,138 @@
              
   <section id="computation-graph-model-design-ang-assembly">
 <h1>Computation Graph Model Design ang Assembly<a class="headerlink" href="#computation-graph-model-design-ang-assembly" title="Link to this heading"></a></h1>
-<p>We essentially define a model as a computational graph. We have identified variables. Variables are dependent one from
-the other. The dependence can be explicit or implicit. In the explicit case, a variable can be directly computed from
-the other using a function evaluation. In the implicit case, such function does not exist in a simple form. The
-relationship between the variables is given through equations. The purpose of our simulations is to solve these
-equations. The equations are added to the system of non-linear equation we solve, at each time step in the case of an
-evolution problem.</p>
-<p>In the computational graph, the nodes are given by the variables in the model. The directed edges represent the
-functional dependency between the variables.</p>
-<p>The <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class has two functions</p>
-<ol class="arabic simple">
-<li><p>Serve as an <strong>interactive</strong> tool to design, manipulate and explore the computational graph of a model. The interactive functions can be discovered by running the method <code class="code docutils literal notranslate"><span class="pre">help</span></code> (see below).</p></li>
-<li><p>From the computational graph, <strong>automatically</strong> identify</p>
-<ol class="arabic simple">
-<li><p>The unknown of the problems, also called <em>primary variables</em>. They corresponds to the root in the graph (see below)</p></li>
-<li><p>The <em>equations</em>, which are the variables located at the tail of the graph. The equations are solved when the value of the equation variables are equal to zero</p></li>
-<li><p>The function calls and the order they should be called to update all the intermediate variables that directly or indirectly enter in the definition of the equation.</p></li>
-</ol>
-</li>
-</ol>
-<section id="a-simple-introduction-example">
-<h2>A simple introduction example<a class="headerlink" href="#a-simple-introduction-example" title="Link to this heading"></a></h2>
-<p>Let us consider the example of a reaction model. The reaction rate <span class="math notranslate nohighlight">\(R\)</span> is given
-by</p>
-<div class="math notranslate nohighlight">
-\begin{align*}
-R &amp;= j\left(e^{-\alpha\frac{\eta}{RT}} + e^{(1-\alpha)\frac{\eta}{RT}}\right)\\
-j&amp;= k c_s(1 - c_e)^{\frac12}c_e^\frac12\\
-\eta &amp;= \phi_s - \phi_e - \text{OCP}\\
-\text{OCP} &amp;= \hat{\text{OCP}}(c_s)
-\end{align*}</div><p>We have seven variables <span class="math notranslate nohighlight">\(R,\ j, \eta, \text{OCP}, \phi_s, \phi_e, c_s, c_e\)</span>. The dependency graph we
-obtain from the equations above is</p>
-<figure class="align-center" id="reacmodelgraph">
-<a class="reference external image-reference" href="_images/reacmodelgraph.png"><img alt="../_images/reacmodelgraph.png" src="../_images/reacmodelgraph.png" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-text">Reaction model graph</span><a class="headerlink" href="#reacmodelgraph" title="Link to this image"></a></p>
-</figcaption>
-</figure>
-<p>This graph has been obtained in BattMo after we implemented the model. We will explain later how this can be
-done (for the impatient, see here)</p>
-<p>The graph is a <a class="reference external" href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed acyclic graph</a>, meaning that
-it has no loop. We can thus identify <em>root</em> and <em>tail</em> variables. In the case above, the root variables are
-<span class="math notranslate nohighlight">\(\phi_s, \phi_e, c_s, c_e\)</span> and there only one tail variable, <span class="math notranslate nohighlight">\(R\)</span>. Given values for the root
-variables, we can traverse the graph and evaluate all the intermediate variables to compute the tail
-variables. To evaluate variables, the functions we will implement will always need parameters (the opposite
-case where a function can be defined without any external parameters is expected to be rare in a physical
-context). Then, we can describe our model with</p>
-<ul class="simple">
-<li><p>A set of parameters (scalar variables, but maybe also functions)</p></li>
-<li><p>A computational graph</p></li>
-<li><p>A set of functions associated to each node (i.e. variable) which as an incoming edge in the computational
-graph</p></li>
-</ul>
-<p>For each of the function in the set above, we know the input and output arguments. They are given by the nodes
-connected by the edge.</p>
-<p>The motivation for introducing suuch graph representation is <strong>expressivity</strong>. It provides a synthetic overview
-of the model. Of course, the precise expression of the functions, which is not visible in the graph, is an
-essential part. All the physics is encoded there. But, the graph gives us access to the dependency between the
-variables and the variables have been chosen by the user in the model because of their specific physical
-meaning. The user has chosen them from a physical insight, that we want to preserve. Especially when we expand
-the models. In our previous examples, the variables we have introduced have all a name meaningfull for the
-expert in the domains.</p>
-<blockquote>
-<div><table class="docutils align-default">
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>We consider a generic physical system for which a mathematical model has been proposed. The mathematical model
+introduces <strong>variables</strong> and <strong>equations</strong>. Some of the variables are <em>state</em> variables in the sense that they directly
+fully describe the state of system. We call those variables <strong>primary variables</strong>. Other variables are defined through
+<strong>explicit</strong> dependencies from the primary variables. We call those variables <strong>secondary variables</strong>. The equations are
+then formulated as functions of the primary and/or secondary variables whose values should be equal to zero. As such, an
+equation, or more precisely the left-hand side of it, is a secondary variable, the right-hand side of the equatio being
+zero. We call the left-hand side of an equation, its <strong>residuals</strong>.</p>
+<p>In the setting we are interested in, that is numerical simulation, the primary variables are the unknown which we want
+to compute by solving the equations. For many system, some of the state variables are functions of time and/or
+space. The corresponding equations take then the form of ordinary and/or partial differential equations. A first task of
+the solver is then to discretize the variables and setup a system of equations in finite dimension. We assume here that
+this step is done and we will look at the variables as vector variables.</p>
+<table class="docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p>R</p></td>
-<td><p>Reaction Rate</p></td>
+<tr class="row-odd"><td><p>primary variables</p></td>
+<td><p>unknown</p></td>
+<td><p><span class="math notranslate nohighlight">\(x_1,...,x_n\)</span></p></td>
 </tr>
-<tr class="row-even"><td><p>j</p></td>
-<td><p>Exchange Current Density</p></td>
+<tr class="row-even"><td><p>secondary variables</p></td>
+<td><p>explicit expressions <span class="math notranslate nohighlight">\(y_i(x_1, ..., x_n)\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(y_1,...,y_p\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><p>eta</p></td>
-<td><p>Over-potential</p></td>
-</tr>
-<tr class="row-even"><td><p>OCP</p></td>
-<td><p>Open Circuit Potential</p></td>
-</tr>
-<tr class="row-odd"><td><p>phi_s, phi_e</p></td>
-<td><p>Solid and Electrolyte potentials</p></td>
-</tr>
-<tr class="row-even"><td><p>c_s, c_e</p></td>
-<td><p>Solid and Electrolyte concentrations</p></td>
+<tr class="row-odd"><td><p>equations</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_i(x_1, ..., x_n, y_1, ..., y_p)= 0\)</span></p></td>
+<td><p>residuals <span class="math notranslate nohighlight">\(f_1, ..., f_q\)</span></p></td>
 </tr>
 </tbody>
 </table>
-</div></blockquote>
-<p>A user can inspect a given model first by looking at the graph, recognized the variables that are named
-here. They should be meaningfull to him, as they should have been chosen to correspond to a given domain
-expertise terminology (here electrochemistry).</p>
-<p>Let us now see how we can compose computational graph</p>
+<p>A mathematical model introduces a set of variables and of <strong>functional relationships</strong> between the variables. Typically,
+the variables introduced in the model have a specific name which reflects their physical significance. We want to
+preserve the terminology introduced by the model as it is essential for its understanding. We recognize then the
+structure of a directed graph, where the nodes corresponds the variable names and the edges connect the variable through
+the functional dependencies introduced by the model.</p>
+<p>In the example below, we have 3 primary variables, 2 secondary and 3 equations. A model gives us definitions of the
+secondary variables and the equations, for example,</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}y_1 &amp;= y_1(x_1, x_2, y_2) \\
+y_2 &amp;= y_1(x_1, x_2, x_3)\\\end{split}\]</div>
+<p>with the equations</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}f_1(y_1, y_2)      &amp;= 0\\
+f_2(y_1, y_2, x_2) &amp;= 0\\
+f_3(x_1, x_3)      &amp;= 0\end{split}\]</div>
+<p>This information is completly contained in the following graph</p>
+<figure class="align-center" id="genericexample">
+<a class="reference external image-reference" href="_images/genericexample.png"><img alt="../_images/genericexample.png" src="../_images/genericexample.png" style="width: 100%;" />
+</a>
+</figure>
+<p>Given a mathematical model, we can therefore create a <strong>computational graph</strong> by collecting the variable names and
+encoding the variable dependencies in edges, as the one presented above.</p>
+<p>We observe that a computational graph offers a very usefull synthetic overview of a model. This observation will be
+hopefully confirmed by the example below.</p>
 </section>
-<section id="graph-composition">
-<h2>Graph composition<a class="headerlink" href="#graph-composition" title="Link to this heading"></a></h2>
-<p>This model representation as a graph brings also <strong>flexibility</strong> in model building and in particular <strong>code
-reusability</strong>. A user who wants to modify an existing model will typically be interested in keeping most of the
-existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
+<section id="model-assembly">
+<h2>Model assembly<a class="headerlink" href="#model-assembly" title="Link to this heading"></a></h2>
+<p>When solving a system of equation, an important task for the solver is the <strong>assembly</strong> of the equations: Given the
+values of the primary variables, <span class="math notranslate nohighlight">\(x_i\)</span>, we want to compute the values of the <strong>residuals</strong>, <span class="math notranslate nohighlight">\(f_i\)</span>.</p>
+<p>To do so we have to evaluate the intermediate secondary variables. The evaluation of the secondary variables up to the
+residuals can only be done in an order that is compatible with the functional dependencies.</p>
+<p>A compatible order can be obtained from the computational graph by using a <a class="reference external" href="https://en.wikipedia.org/wiki/Topological_sorting">topological sorting</a>.</p>
+<p>The order of the update sequence is not unique. For the example above, a possible sequence is to update</p>
+<div class="math notranslate nohighlight">
+\[y_2, f_3, y_1, f_2 \text{, and finally } f_1\]</div>
+<p>It is usefull to have a solver where the decleration of the computational graph can be done before implementing the
+update functions. In this way, we <strong>break the complexity</strong> in the implementation of a model. The first step is the
+design of the graphs, which can be done using interactive tools (see below), where we also declare all the update
+functions. Those are however implemented in a second step. Then, we can focus on them at the apriopriate scope level
+(see model hierarchy) not distracted by the overall architecture. The solver can then automatically generate from the
+sequence of function calls that will be used to update all the residuals.</p>
+<p>By using computational graph we aim at improving:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>model <strong>explorability</strong></p></li>
+<li><p>model <strong>reusability</strong> using model hierarchy and composition</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="model-explorability">
+<h2>Model explorability<a class="headerlink" href="#model-explorability" title="Link to this heading"></a></h2>
+<p>We consider a user that is given a simulation code which corresponds to a given physical system. The user may want to
+understand the mathematical model which is implemented in this simulator. All the variable definitions are of course
+implemented in the code but they are not easily accessible. We can use a computational graph interactively to get an
+overview of all the variables that are computed and, given a variable, be sent to the place in the code where the
+variable is computed. There, the user finds the precise definition.</p>
+<p>As we will see, models are implemented in a hierarchy. This structure contributes also to an easier model
+exploration. The variable dependency is declared at the lowest level in the model hierarchy so that, isolated from the
+rest, it is easier to understand.</p>
+</section>
+<section id="model-hierarchy-and-composition">
+<h2>Model hierarchy and composition<a class="headerlink" href="#model-hierarchy-and-composition" title="Link to this heading"></a></h2>
+<p>As model developper, we want to reuse as much as possible existing models.</p>
+<p>Model explorability is important to inspect the already available models, understand their structure and figure out how
+they can be modified to our need.</p>
+<p>The computational graph provides a very synthetic representation on the model an in a first step, the model developper
+should only focus on getting the computational graph that corresponds to his/her model.</p>
+<p>In the code of a given, there is a method where the computational graph is defined, see the example below. The
+developper gets there the possibility to edit the computational graph. The actions available are</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Add new variables to the model (meaning adding nodes to the computational graph).</p></li>
+<li><p>Add functional dependencies (meaning adding directed edges from the <em>function input variables</em> nodes to the <em>function output variable</em> node).</p></li>
+<li><p>Change the declared functional dependencies.</p></li>
+<li><p>Change the status of the variables (see static variables below)</p></li>
+</ol>
+</div></blockquote>
+<p>A simple and concrete way to create a new model from a given one is to setup a derived model using class
+inheritance. The new model will inherit the computational graph, which is a property of the model. We will see an
+example below.</p>
+<p>Models are often obtained by coupling physical sub-systems. Each of the sub-systems are models in themselves. For us, it
+means that they have a computational graph. Coupling models will then consist of</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Importing the graphs of the subsystems</p></li>
+<li><p>Adding functional dependencies across the sub-models (adding edges that connect the nodes of the graphs)</p></li>
+</ol>
+</div></blockquote>
+<p>We can see this operation as <em>sewing</em> graphs. Concretely, we proceed by creating a new model and register the models we
+want to couple as sub-models. Each sub-model should be given a name. The graphs of all sub-models are imported and the
+names of the variables (the nodes) are extended with a kind of prefix which corresponds to the sub-model it originates
+from. This action is necessary to avoid name conflicts. Indeed, the sub-models have been developed independently and
+nothing guarantees that they do not share some of the same variable names.</p>
+<p>By repeatedly coupling models, we obtain a <em>hierarchy</em> of models. A model can get very complex but having a hierarchy
+significantly simplifies the navigation between the sub-models and the understanding of how they depend on each other.</p>
+<p>When a computational graph is setup or modified, we do not say anything about the function that will in practice update
+the variables - besides their name. We do not need a computational graph framework to develop models but we need precise
+definitions of the functions the defines the variables.</p>
+</section>
+<section id="basic-example">
+<h2>Basic Example<a class="headerlink" href="#basic-example" title="Link to this heading"></a></h2>
+<p>by existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
 can understand the dependency easily and identify the part that should be changed in the model. In some cases,
 the dependency graph may not changed, only a different function should be called to update a variable. For
 example, the exchange current density function <span class="math notranslate nohighlight">\(j\)</span> rarely obeys the ideal case presented above but is a
@@ -717,7 +756,7 @@ combining existing models. Each of those should be assigned a unique name, which
 space. We end up with a graph of unique names. The process is the same as module import in programming language
 such as Python or Julia.</p>
 <p>We can use the example above to illustrate the mechanism. At the three different model levels
-(<a class="reference internal" href="#reacmodelgraph"><span class="std std-ref">reaction model</span></a>, <a class="reference internal" href="#concreacgraph"><span class="std std-ref">coupled reaction-concentration model</span></a> and
+(<span class="xref std std-ref">reaction model</span>, <a class="reference internal" href="#concreacgraph"><span class="std std-ref">coupled reaction-concentration model</span></a> and
 <a class="reference internal" href="#tempconcreacgraphmodel"><span class="std std-ref">coupled temperature-reaction-concentration model</span></a>), the concentration of the
 solid electrode takes different names</p>
 <blockquote>
@@ -727,7 +766,7 @@ solid electrode takes different names</p>
 <td><p>namespace</p></td>
 <td><p>name</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#reacmodelgraph"><span class="std std-ref">reaction</span></a></p></td>
+<tr class="row-even"><td><p><span class="xref std std-ref">reaction</span></p></td>
 <td><p><code class="code docutils literal notranslate"><span class="pre">{}</span></code></p></td>
 <td><p><code class="code docutils literal notranslate"><span class="pre">'c_s'</span></code></p></td>
 </tr>
@@ -804,7 +843,7 @@ syntaxic sugar and internally the variable name <code class="code docutils liter
 <p>To lighten the graph setup, we have introduced at several places syntaxic sugar.</p>
 </div>
 <p>We can now instantiate the model, setup the computational graph. The graph is given as a
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class instance. This class provides some computational and inspection methods
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphInteractiveTool.m">ComputationalGraphInteractiveTool</a> class instance. This class provides some computational and inspection methods
 that acts on the graph.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ThermalModel</span><span class="p">();</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupComputationalGraph</span><span class="p">();</span>
@@ -817,7 +856,7 @@ that acts on the graph.</p>
 </div>
 <p>When the computational graph is setup, the property <code class="code docutils literal notranslate"><span class="pre">varNameList</span></code> of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/BaseModel.m">BaseModel</a> is populated
 with <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a> variables. We will rarely look at this list directly. Instead, we use the method
-<code class="code docutils literal notranslate"><span class="pre">printVarNames</span></code> in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> which, as its name indicates, print the variables
+<code class="code docutils literal notranslate"><span class="pre">printVarNames</span></code> in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphInteractiveTool.m">ComputationalGraphInteractiveTool</a> which, as its name indicates, print the variables
 that have been registered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">()</span>
 
@@ -828,7 +867,7 @@ that have been registered.</p>
 <span class="n">energyCons</span>
 </pre></div>
 </div>
-<p>Similary, we setup a <a class="reference internal" href="#reacmodelgraph"><span class="std std-ref">reaction model</span></a> as follows</p>
+<p>Similary, we setup a <span class="xref std std-ref">reaction model</span> as follows</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">ReactionModel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BaseModel</span>
 
 <span class="w">    </span><span class="k">methods</span>
@@ -1029,7 +1068,7 @@ graph.</p>
 <p><span class="caption-text">Temperature model graph</span><a class="headerlink" href="#tempgraphcopy" title="Link to this image"></a></p>
 </figcaption>
 </figure>
-<p>We can use the <code class="code docutils literal notranslate"><span class="pre">printOrderedFunctionCallList</span></code> method of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphTool.m">ComputationalGraphTool</a> class to
+<p>We can use the <code class="code docutils literal notranslate"><span class="pre">printOrderedFunctionCallList</span></code> method of the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphInteractiveTool.m">ComputationalGraphInteractiveTool</a> class to
 print the sequence of function calls that is used to update all the variables in the model
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>, which examplify how we can automatize the assembly. The order of the function
 evaluation is computed from the graph structure.</p>
@@ -1043,7 +1082,7 @@ evaluation is computed from the graph structure.</p>
 </pre></div>
 </div>
 <p>Similarly we implement the property functions of the reaction model, see <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>. The
-corresponding graph is plotted <a class="reference internal" href="#reacmodelgraph"><span class="std std-ref">above</span></a></p>
+corresponding graph is plotted <span class="xref std std-ref">above</span></p>
 <p>For the sake of the illustration we introduce and <code class="code docutils literal notranslate"><span class="pre">UncoupledReactionThermalModel</span></code>, which consists only of
 the following line (see also <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/UncoupledReactionThermalModel.m">here</a>)</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">classdef</span><span class="w"> </span><span class="n">UncoupledReactionThermalModel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">BaseModel</span>
