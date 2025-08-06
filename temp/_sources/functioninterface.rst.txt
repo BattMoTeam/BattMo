@@ -74,6 +74,16 @@ The keys :code:`dataX` and :code:`dataY` are used to provide the data points of 
 
 You can find an example in the json file :battmofile:`LFP_Xu2015.json <ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#11>`
 
+Example
+=======
+
+:ref:`Example script<functionInterfaceExample>`
+
+.. toctree::
+   :hidden:
+
+   functionInterfaceExample.nblink
+
 
 
 
