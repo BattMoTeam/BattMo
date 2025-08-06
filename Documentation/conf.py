@@ -121,7 +121,43 @@ author = 'Simon Clark'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'pynbnotebooks', 'publishedExamples',
+                    'app_calculations.rst',
+                    'app_features.rst',
+                    'app.rst',
+                    'app_troubleshooting.rst',
+                    'app_unnatural_artifacts.rst',
+                    'app_unsuccessful_simulation.rst',
+                    'architecture.rst',
+                    'basicusage.rst',
+                    'bibliography.rst',
+                    'compositeElectrode.rst',
+                    'controlinput.rst',
+                    'fair.rst.inc',
+                    'runSiliconGraphiteBattery.nblink', 
+                    'runThermalExample.nblink', 
+                    'geometryinput.rst',
+                    'installation.rst',
+                    'intermediate.rst',
+                    'jsonexample.rst',
+                    'json.rst',
+                    'juliabridge.rst',
+                    'mergejsonstruct.rst',
+                    'modeling.rst',
+                    'modelinitialisation.rst',
+                    'mrst.rst.inc',
+                    'octave.rst',
+                    'optimisation.rst',
+                    'parsets.rst',
+                    'protonicmembrane.rst',
+                    'run_temperature_example.rst',
+                    'seealso.rst',
+                    'soliddiffusion.rst',
+                    'thermal.rst',
+                    'tutorials.rst',
+                    'units.rst',
+                    'computationalGraph'
+                    ]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

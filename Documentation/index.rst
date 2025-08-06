@@ -6,21 +6,24 @@
 .. toctree::
    :hidden:
 
-   Installation <installation>
-   basicusage
-   tutorials
-   intermediate
-   modeling
-   architecture
-   json
-   geometryinput
-   juliabridge
-   Electrolyser simulation <publishedExamples/runElectrolyser>
-   protonicmembrane
-   app
-   Computational Graph <computationalGraph/graphdoc>
-   seealso
-   References <bibliography>
+   functioninterface
+   ..
+      Installation <installation>
+      basicusage
+      tutorials
+      intermediate
+      modeling
+      architecture
+      json
+      geometryinput
+      juliabridge
+      Electrolyser simulation <publishedExamples/runElectrolyser>
+      protonicmembrane
+      Computational Graph <computationalGraph/graphdoc>
+      app
+   ..
+      seealso
+      References <bibliography>
 
 
 Welcome
