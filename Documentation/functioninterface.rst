@@ -56,11 +56,29 @@ an expression using an other language, even if it is not supported in the matlab
 The key :code:`formula` is used to give the expression that we will be run and return the value. The variable names
 should be given using the key :code:`variableNames`.
 
-You can find an other example 
+You can find an example in the json file :battmofile:`chen2020_positive_electrode_interface.json <ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json#10>`.
+
+Tabulated function
+==================
+
+.. literalinclude:: exampleCodeSnippets/function_interface_tabulated.json
+   :language: json
+
+
+Tabulated functions are given by a set of point values in the form of a table. Between the given points, the value is
+obtained by linear interpolation.
+
+For a tabulated function, the function format is set to :code:`"tabulated"`.
+
+The keys :code:`dataX` and :code:`dataY` are used to provide the data points of the function.
+
+You can find an example in the json file :battmofile:`LFP_Xu2015.json <ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#11>`
+
+
+
+
 
 
 
    
-
-
             
