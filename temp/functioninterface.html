@@ -52,6 +52,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Functional parameters</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#function-name">Function name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#function-formula">Function formula</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tabulated-function">Tabulated function</a></li>
 </ul>
 </li>
 </ul>
@@ -131,7 +132,22 @@ default value is <code class="code docutils literal notranslate"><span class="pr
 an expression using an other language, even if it is not supported in the matlab code.</p>
 <p>The key <code class="code docutils literal notranslate"><span class="pre">formula</span></code> is used to give the expression that we will be run and return the value. The variable names
 should be given using the key <code class="code docutils literal notranslate"><span class="pre">variableNames</span></code>.</p>
-<p>You can find an other example</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json#L10">chen2020_positive_electrode_interface.json</a>.</p>
+</section>
+<section id="tabulated-function">
+<h2>Tabulated function<a class="headerlink" href="#tabulated-function" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tabulated&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataX&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataY&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Tabulated functions are given by a set of point values in the form of a table. Between the given points, the value is
+obtained by linear interpolation.</p>
+<p>For a tabulated function, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;tabulated&quot;</span></code>.</p>
+<p>The keys <code class="code docutils literal notranslate"><span class="pre">dataX</span></code> and <code class="code docutils literal notranslate"><span class="pre">dataY</span></code> are used to provide the data points of the function.</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#L11">LFP_Xu2015.json</a></p>
 </section>
 </section>
 
