@@ -63,8 +63,13 @@
    [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/utils/MLXnotebookExporter.m][here]]. The following [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/utils/exportMLXnotebooks.m][script]] gives example on how it can be used. I have noticed problems with older Matlab
    version. Please update to R24b.
 ** Output
-   Write the output in the ~Documentation~ directory. At the moment, the notebooks are located in the directory
-   [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/pynbnotebooks/][pynbnotebooks]]
+*** direct
+    Write the output in the ~Documentation~ directory. At the moment, the notebooks are located in the directory
+    [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/pynbnotebooks/][pynbnotebooks]]
+*** link using nbsphinx-link
+    - We use [[https://github.com/vidartf/nbsphinx-link][nbsphinx-link]]
+    - Create a link file with extension ~nblink~, see example [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/runThermalExample.nblink][here]]
+    - insert link in index, see example [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/intermediate.rst#L15][here]]
 ** Include in the index or in pages
    See example to the tutorial pages [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/tutorials.rst][here]]
    
