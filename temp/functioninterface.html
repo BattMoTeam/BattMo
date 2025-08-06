@@ -1,0 +1,139 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Functional parameters &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c92655ae" />
+
+  
+    <link rel="shortcut icon" href="_static/battmologo.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BattMo
+              <img src="_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Functional parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#function-name">Function name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#function-formula">Function formula</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Functional parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/functioninterface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="functional-parameters">
+<h1>Functional parameters<a class="headerlink" href="#functional-parameters" title="Link to this heading"></a></h1>
+<p>Battery models contain functional parameters. The most important one is probably the OCV function, but we have also the
+ionic conductivity and diffusion in the electrolyte. The function definitions can be entered in the input json
+file using one of the following format</p>
+<ol class="arabic simple">
+<li><p>Function name</p></li>
+<li><p>Function formula</p></li>
+<li><p>Tabulated function</p></li>
+</ol>
+<p>The json schema that describes the interface is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Function.schema.json">here</a>.</p>
+<p>The keyword to choose the format is given by <code class="code docutils literal notranslate"><span class="pre">functionFormat</span></code>.</p>
+<p>Let us go through each different format separatly. We start with en example for each</p>
+<section id="function-name">
+<h2>Function name<a class="headerlink" href="#function-name" title="Link to this heading"></a></h2>
+<p>For a formula, the function format is <code class="code docutils literal notranslate"><span class="pre">&quot;named</span> <span class="pre">function&quot;</span></code>. With the key <code class="code docutils literal notranslate"><span class="pre">&quot;functionName&quot;</span></code>, we give the name of
+the function. In matlab, this function should then be found in the function path (see <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/addpath.html">matlab doc</a>). The key</p>
+</section>
+<section id="function-formula">
+<h2>Function formula<a class="headerlink" href="#function-formula" title="Link to this heading"></a></h2>
+<p>For a formula, the function format is <code class="code docutils literal notranslate"><span class="pre">&quot;string</span> <span class="pre">expression&quot;</span></code>. With the key <code class="code docutils literal notranslate"><span class="pre">&quot;function&quot;</span></code>, we give the
+expression which, once evaluated, will give the value of the function. With the key <code class="code docutils literal notranslate"><span class="pre">&quot;argumentList&quot;</span></code>, we declare
+the arguments of the function.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
