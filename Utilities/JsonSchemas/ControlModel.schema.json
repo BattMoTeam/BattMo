@@ -2,126 +2,221 @@
   "$id": "file://./ControlModel.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "properties" : {
-    "Control" : {
-      "type" : "object",
-      "properties" : {
+  "properties": {
+    "Control": {
+      "type": "object",
+      "properties": {
         "controlPolicy": {
           "type": "string",
-          "enum": ["CCDischarge",
-                   "CCCharge",
-                   "CC",
-                   "CCCV",
-                   "powerControl",
-		   "timeControl"]}}
-    }},
-    "allOf": [
-      {"if": {
-        "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
+          "enum": [
+            "CCDischarge",
+            "CCCharge",
+            "CC",
+            "CCCV",
+            "powerControl",
+            "timeControl"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "controlPolicy": {
+            "const": "CCDischarge"
+          }
+        },
         "then": {
-          "$ref" : "#/$defs/CCDischarge"}}},
-      {"if": {
-        "properties": {"controlPolicy" : {"const" : "CCCharge"}},
+          "$ref": "#/$defs/CCDischarge"
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "controlPolicy": {
+            "const": "CCCharge"
+          }
+        },
         "then": {
-          "$ref" : "#/$defs/CCCharge"}}},
-      {"if": {
-        "properties": {"controlPolicy" : {"const" : "CCCV"}},
-        "then":{
-          "$ref" : "#/$defs/CCCV"}}},
-      {"if": {
-        "properties": {"controlPolicy" : {"const" : "powerControl"}},
+          "$ref": "#/$defs/CCCharge"
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "controlPolicy": {
+            "const": "CCCV"
+          }
+        },
         "then": {
-          "$ref" : "#/$defs/powerControl"}}}
-    ],
-
-  "$defs" : {
-    "CCDischarge" : {
-      "properties" : {
-        "DRate" : {
-          "type" : "number",
-          "description" : "discharge rate"},
-        "rampupTime" : {
-          "type" : "number",
-          "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time"},
-        "lowerCutoffVoltage" : {
-          "type" : "number"},
-        "useCVswitch" : {
-          "type" : "boolean",
-          "description" : "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
-        }}},
-    "CCCharge" : {
-      "properties" : {
-        "CRate" : {
-          "type" : "number",
-          "description" : "charge rate"},
-        "rampupTime" : {
-        "type" : "number",
-        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
-       "upperCutoffVoltage" : {
-         "type" : "number"},
-       "useCVswitch" : {
-         "type" : "boolean",
-         "description" : "Switch to control voltage when the upper cutoff voltage is reached. Default value is true."
-       }
+          "$ref": "#/$defs/CCCV"
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "controlPolicy": {
+            "const": "powerControl"
+          }
+        },
+        "then": {
+          "$ref": "#/$defs/powerControl"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "CCDischarge": {
+      "properties": {
+        "DRate": {
+          "type": "number",
+          "description": "discharge rate"
+        },
+        "rampupTime": {
+          "type": "number",
+          "description": "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time"
+        },
+        "lowerCutoffVoltage": {
+          "type": "number"
+        },
+        "useCVswitch": {
+          "type": "boolean",
+          "description": "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
+        }
+      }
+    },
+    "CCCharge": {
+      "properties": {
+        "CRate": {
+          "type": "number",
+          "description": "charge rate"
+        },
+        "rampupTime": {
+          "type": "number",
+          "description": "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."
+        },
+        "upperCutoffVoltage": {
+          "type": "number"
+        },
+        "useCVswitch": {
+          "type": "boolean",
+          "description": "Switch to control voltage when the upper cutoff voltage is reached. Default value is true."
+        }
       }
     },
     "CCCV": {
-      "properties" : {
-        "CRate" : {
-          "type" : "number",
-          "description" : "charge rate"},
-        "DRate" : {
-          "type" : "number",
-          "description" : "discharge rate"},
-        "lowerCutoffVoltage" : {
-          "type" : "number"},
-        "upperCutoffVoltage" : {
-	  "type" : "number"},
-        "dEdtLimit" : {"type" : "number"},
-        "dIdtLimit" : {"type" : "number"},
-        "numberOfCycles" : {"type" : "number"},
-        "initialControl" : {"type" : "string",
-                            "enum" : ["discharging", "charging"]},
-        "switchTolerances" : {
-          "type" : "object",
-          "description" : "tolerances for the computation of the control switching (relative tolerances)",
-          "properties" : {
-            "CC_discharge1" : { "type" : "number",
-                                "description" : "control corresponding to constant current discharge until lower cutoff voltage is reached, default value : 1e-2"},
-            "CC_discharge2" : { "type" : "number",
-                                "description" :  "control corresponding to zero current until dEdtLimit is reached. Default value : 0.9"},
-            "CC_charge1" : { "type" : "number",
-                             "description" :  "control corresponding to constant current charge until upper cutoff voltage is reached. Default value : 1e-2"},
-            "CV_charge2" : { "type" : "number",
-                             "description" :  "control corresponding to constant voltage until dIdtLimit is reached. Default value : 0.9"}
+      "properties": {
+        "CRate": {
+          "type": "number",
+          "description": "charge rate"
+        },
+        "DRate": {
+          "type": "number",
+          "description": "discharge rate"
+        },
+        "lowerCutoffVoltage": {
+          "type": "number"
+        },
+        "upperCutoffVoltage": {
+          "type": "number"
+        },
+        "dEdtLimit": {
+          "type": "number"
+        },
+        "dIdtLimit": {
+          "type": "number"
+        },
+        "numberOfCycles": {
+          "type": "number"
+        },
+        "initialControl": {
+          "type": "string",
+          "enum": [
+            "discharging",
+            "charging"
+          ]
+        },
+        "switchTolerances": {
+          "type": "object",
+          "description": "tolerances for the computation of the control switching (relative tolerances)",
+          "properties": {
+            "CC_discharge1": {
+              "type": "number",
+              "description": "control corresponding to constant current discharge until lower cutoff voltage is reached, default value : 1e-2"
+            },
+            "CC_discharge2": {
+              "type": "number",
+              "description": "control corresponding to zero current until dEdtLimit is reached. Default value : 0.9"
+            },
+            "CC_charge1": {
+              "type": "number",
+              "description": "control corresponding to constant current charge until upper cutoff voltage is reached. Default value : 1e-2"
+            },
+            "CV_charge2": {
+              "type": "number",
+              "description": "control corresponding to constant voltage until dIdtLimit is reached. Default value : 0.9"
+            }
           }
         }
-      }},
-
+      }
+    },
     "powerControl": {
-      "properties" : {
-        "case" : {"type" : "string",
-                  "enum" : ["time limited", "voltage limited", "CPCV"]},
-        "dischargingPower" : {"type" : "number"},
-        "chargingPower" : {"type" : "number"}},
-
-      "anyOf" : [
-        { "properties" : {
-          "powerControlCase" : {"const" : "time limited"},
-          "dischargingTime" : {"type" : "number"},
-          "chargingTime" : {"type" : "number"}
-        }},
-
-        { "properties" : {
-          "powerControlCase" : {"const" : "voltage limited"}
-        }},
-
-        { "properties" : {
-          "powerControlCase" : {"const" : "CPCV"},
-          "lowerCutoffPower" : {"type" : "number"},
-          "upperCutoffPower" : {"type" : "number"}
+      "properties": {
+        "case": {
+          "type": "string",
+          "enum": [
+            "time limited",
+            "voltage limited",
+            "CPCV"
+          ]
+        },
+        "dischargingPower": {
+          "type": "number"
+        },
+        "chargingPower": {
+          "type": "number"
         }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "powerControlCase": {
+              "const": "time limited"
+            },
+            "dischargingTime": {
+              "type": "number"
+            },
+            "chargingTime": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "properties": {
+            "powerControlCase": {
+              "const": "voltage limited"
+            }
+          }
+        },
+        {
+          "properties": {
+            "powerControlCase": {
+              "const": "CPCV"
+            },
+            "lowerCutoffPower": {
+              "type": "number"
+            },
+            "upperCutoffPower": {
+              "type": "number"
+            }
+          }
         }
-      ]}
+      ]
+    }
   }
 }
