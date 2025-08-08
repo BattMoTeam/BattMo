@@ -16,7 +16,8 @@ The json schema that describes the interface is available :battmofile:`here <Uti
 The keyword to choose the format is given by :code:`functionFormat`.
 
 The keyword :code:`argumentList` is common to all the formats and is used to describe the list of arguments that will be
-sent to the function. The argument names given there are independent to the implementation in itself.
+sent to the function. The argument names given there are independent to the implementation in itself. They indicates the
+meaning of the arguments.
 
 Let us go through each different format separatly. For each format, we start by giving an example.
 
