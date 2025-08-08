@@ -13,7 +13,7 @@
           "allOf": [
             {"$ref": "Function.schema.json"},
             { "properties" : {
-              "argumentlist": {"type" : "array",
+              "argumentList": {"type" : "array",
                                "prefixItems": [{"const": "soc"}]
                               },
               "symbol": {"const" : "D"}}}

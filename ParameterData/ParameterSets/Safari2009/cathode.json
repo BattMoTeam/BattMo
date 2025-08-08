@@ -2,7 +2,8 @@
   "electronicConductivity": 215,
   "diffusionModelType": "full",
   "volumeFraction": 0.665,
-  "Interface" : { "name": "cathode(safari)",
+  "Interface" : {
+    "Comment": "cathode data from Safari paper",
                   "guestStoichiometry0": 0.99,
                   "guestStoichiometry100": 0.5,
                   "saturationConcentration": 51555,
@@ -10,10 +11,10 @@
                   "activationEnergyOfReaction": 17800,
                   "volumetricSurfaceArea": 382183,
                   "numberOfElectronsTransferred" : 1,
-                  "openCircuitPotential" : {"type" : "function",
-                           "functionname" : "computeOCP_NMC111",
-                           "argumentlist" : ["concentration", "temperature", "cmax"]}
-                },
+    "openCircuitPotential" : {
+      "functionFormat" : "named function",
+      "functionName" : "computeOCP_NMC111",
+      "argumentList" : ["concentration", "temperature", "cmax"]}},
   "SolidDiffusion" : {
     "activationEnergyOfDiffusion": 0,
     "referenceDiffusionCoefficient": 1e-14,

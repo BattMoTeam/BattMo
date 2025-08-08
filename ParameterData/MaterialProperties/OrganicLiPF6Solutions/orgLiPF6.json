@@ -11,17 +11,17 @@
     "unit": "mol/litre"
   },
   "ionicConductivity": {
-    "type": "function",
-    "functionname": "computeElectrolyteConductivity_default",
-    "argumentlist": [
+    "functionFormat": "named function",
+    "functionName": "computeElectrolyteConductivity_default",
+    "argumentList": [
       "concentration",
       "temperature"
     ]
   },
   "diffusionCoefficient": {
-    "type": "function",
-    "functionname": "computeDiffusionCoefficient_default",
-    "argumentlist": [
+    "functionFormat": "named function",
+    "functionName": "computeDiffusionCoefficient_default",
+    "argumentList": [
       "concentration",
       "temperature"
     ]

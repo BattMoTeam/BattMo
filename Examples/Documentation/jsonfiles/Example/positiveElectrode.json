@@ -18,9 +18,9 @@
         "guestStoichiometry0": 0.99174,
         "chargeTransferCoefficient": 0.5,
         "openCircuitPotential": {
-          "type": "function",
-          "functionname": "computeOCP_NMC111",
-          "argumentlist": [
+          "functionFormat": "named function",
+          "functionName": "computeOCP_NMC111",
+          "argumentList": [
             "concentration",
             "temperature",
             "cmax"

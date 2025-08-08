@@ -1,0 +1,5 @@
+{
+  "functionFormat" : "named function",
+  "functionName" : "computeOCP_Graphite_Torchio",
+  "argumentList" : ["stoichiometry"]
+}

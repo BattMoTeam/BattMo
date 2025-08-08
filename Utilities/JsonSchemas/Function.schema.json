@@ -4,29 +4,96 @@
   "description": "A standard function input",
   "type": "object",
   "properties": {
-    "type": {
+    "functionFormat": {
       "enum": [
-        "function",
+        "tabulated",
+        "string expression",
+        "named function",
         "constant"
-      ]
+      ],
+      "description" : "Four input formats are supported for functions. The descriptions are provided in the schema below for each case."
     },
-    "functionname": {
-      "type": "string",
-      "description": "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"
-    },
-    "argumentlist": {
+    "argumentList": {
       "type": "array",
       "items": {
         "type": "string",
         "description": "name of the argument"
       },
-      "description": "list of arguments ordered as in function call. This is used in the schema themselves for the given function to describe the expected argument list. It is not necessary to include it in the json input file itself."
+      "description": "list of arguments ordered as in function call. This is used in the schema themselves for the given function to describe the expected argument list. It necessary to include it when a string expression is given. It can be used to infer the number of arguments"
     }
   },
-  "allOf": [{"if": {"properties": {"type": {"const":"function"}}},
-             "then":{
-               "required": [
-                 "functionname",
-                 "argumentlist"
-               ]}}]
+  "oneOf": [
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "tabulated",
+        "description" : "The function is provided as tabulated data.  We give arrays for the input and output values. The output value for an arbitrary argument value is obtained by linear interpolation using the tabulated value"},
+      "oneOf" : [
+        {"properties" : {
+          "argumentList" : {
+            "minItems" : 1,
+            "maxItems" : 1},
+          "dataX" : {
+            "type" : "array",
+            "items" : {"type" : "number"},
+            "description" : "vector of values for the input"},
+          "dataY" : {
+            "type" : "array",
+            "items" : {"type" : "number"},
+            "description" : "vector of values for the output"}}},
+        {"properties" : {
+          "argumentList" : {
+            "minItems" : 2,
+            "maxItems" : 2},
+          "dataX1" : {
+            "type" : "array",
+            "items" : {"type" : "number"},
+            "description" : "vector of values for the first input argument (size N1)"},
+          "dataX2" : {
+            "type" : "array",
+            "items" : {"type" : "number"},
+            "description" : "vector of values for the second input argument (size N2)"},
+          "dataY" : {
+            "type" : "array",
+            "items" : {"type" : "array",
+                       "items" : "number"},
+            "description" : "matrix (array of array) of size N1 x N2"}}}]}},
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "named function",
+        "description" : "The function is implemented and available in the path so that it can be called directly"},
+      "functionName": {
+        "type": "string",
+        "description": "The name of the function file without the matlab suffix (.m)" }}},
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "string expression",
+        "description" : "The evaluation of the string should return the value of the function."},
+      "expression": {"$ref": "#/$defs/expression"},
+      "expressions" : {"type" : "array",
+                       "items" : {"$ref": "#/$defs/expression"},
+                       "description" : "We use an array when expressions for several languages are used"}}},
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "constant",
+        "description" : "The evaluation of the string should return the value of the function."},
+      "value" : {"type" : "number"}
+    }}],
+  
+  "$defs" : {
+    "expression" : {
+      "type" : "object",
+        "properties" : {
+          "language": {
+            "type" : "string",
+            "description" : "language the function string is supposed to be evaluated"},
+          "formula" : {"type": "string",
+                       "description": "The string to be evaluated"},
+          "variablesNames" : {
+            "type" : "array",
+            "items" : {"type" : "string"},
+            "description" : "name of the variables used in the string expresssion. There must be there one value per argument in argument list."}}
+    }
+  }
 }
+
+
