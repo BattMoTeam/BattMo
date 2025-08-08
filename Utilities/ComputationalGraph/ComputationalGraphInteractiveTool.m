@@ -764,7 +764,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
         function children(cgti, level)
             
-            if nargin < 3
+            if nargin < 2
                 level = inf;
             end
 
@@ -940,7 +940,7 @@ classdef ComputationalGraphInteractiveTool < handle
                     varname = varnames{ivar};
 
                     % setup from method getDependencyList. We could have cleaned up the implementation there.
-                    varnameind = cgt.findVarName(sprintf('%s$', varname));
+                    varnameind = cg.findVarName(sprintf('%s$', varname));
                     [varnameinds, ~, ~, propdeplevels, ~, rootdeplevels] = getDependencyVarNameInds(varnameind, B);
                     levels = [rootdeplevels; propdeplevels];  
 
