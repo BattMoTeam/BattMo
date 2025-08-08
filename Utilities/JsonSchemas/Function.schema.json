@@ -67,7 +67,7 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "string expression",
-        "description" : "The evaluation of the string should return the value of the function. In this case, the name of the argument matters. This feature is not yet supported in matlab"},
+        "description" : "The evaluation of the string should return the value of the function."},
       "expression": {"$ref": "#/$defs/expression"},
       "expressions" : {"type" : "array",
                        "items" : {"$ref": "#/$defs/expression"},
@@ -75,7 +75,7 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "constant",
-        "description" : "The evaluation of the string should return the value of the function. In this case, the name of the argument matters. This feature is not yet supported in matlab"},
+        "description" : "The evaluation of the string should return the value of the function."},
       "value" : {"type" : "number"}
     }}],
   
