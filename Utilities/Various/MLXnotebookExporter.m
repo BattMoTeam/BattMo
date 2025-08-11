@@ -142,6 +142,10 @@ classdef MLXnotebookExporter
                 fwrite(fid, txt);
                 fclose(fid);
             end
+
+            pyfilename = fullfile(battmoDir(), 'Utilities', 'Various', 'setupIpynbForBattMo.py');
+
+            pyrunfile([pyfilename ' ' outputfilename]);
             
         end
 
