@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Functional parameters &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c92655ae" />
+
+  
+    <link rel="shortcut icon" href="_static/battmologo.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example of the function interface" href="functionInterfaceExample.html" />
+    <link rel="prev" title="Welcome" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BattMo
+              <img src="_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Functional parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#function-name">Function name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#function-formula">Function formula</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tabulated-function">Tabulated function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="functionInterfaceExample.html">Example of the function interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Functional parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/functioninterface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="functional-parameters">
+<h1>Functional parameters<a class="headerlink" href="#functional-parameters" title="Link to this heading"></a></h1>
+<p>Battery models contain functional parameters. The most important one is probably the OCV function, but we have also the
+ionic conductivity and diffusion in the electrolyte.</p>
+<p>The function definitions are given in the input json file, using one of the following formats:</p>
+<ol class="arabic simple">
+<li><p>Function name</p></li>
+<li><p>Function formula</p></li>
+<li><p>Tabulated function</p></li>
+</ol>
+<p>The json schema that describes the interface is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/Utilities/JsonSchemas/Function.schema.json">here</a>.</p>
+<p>The keyword to choose the format is given by <code class="code docutils literal notranslate"><span class="pre">functionFormat</span></code>.</p>
+<p>The keyword <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is common to all the formats and is used to describe the list of arguments that will be
+sent to the function. The argument names given there are independent to the implementation in itself. They indicates the
+meaning of the arguments.</p>
+<p>Let us go through each different format separatly. For each format, we start by giving an example.</p>
+<section id="function-name">
+<h2>Function name<a class="headerlink" href="#function-name" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;functionFormat&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;functionName&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For a formula, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;named</span> <span class="pre">function&quot;</span></code>.</p>
+<p>With the key <code class="code docutils literal notranslate"><span class="pre">&quot;functionName&quot;</span></code>, we give the name of the function. In matlab, this function should then be found in
+the function path (more on the in  <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/addpath.html">matlab documentation</a>).</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is used to describe the list of arguments that will be sent to the function. Note that the
+names do not necessarily to the one used in the implementation itself, as we can check in the implementation of
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/ParameterData/MaterialProperties/Graphite/computeOCP_Graphite_Torchio.m">computeOCP_Graphite_Torchio</a> where the argument there is set to the variable name <code class="code docutils literal notranslate"><span class="pre">theta</span></code>.</p>
+</section>
+<section id="function-formula">
+<h2>Function formula<a class="headerlink" href="#function-formula" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string expression&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;var1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;var2&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;expression&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;language&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;matlab&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;variableNames&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">],</span>
+<span class="w">                    </span><span class="nt">&quot;formula&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;x + y&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For a formula, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;string</span> <span class="pre">expression&quot;</span></code>.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is used to describe the list of arguments that will be sent to the functions. Again, it is not related to the actual implementation described under the key <code class="code docutils literal notranslate"><span class="pre">expression</span></code>.</p>
+<p>With the key <code class="code docutils literal notranslate"><span class="pre">&quot;expression&quot;</span></code>, we give the expression which, once evaluated, will give the value of the
+function.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">language</span></code> is used to provide the programming language that the expression should be evaluated with. The
+default value is <code class="code docutils literal notranslate"><span class="pre">matlab</span></code> but we aim at a language agnostic interface and we open for the possibility to include
+an expression using an other language, even if it is not supported in the matlab code.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">formula</span></code> is used to give the expression that we will be run and return the value. The variable names
+should be given using the key <code class="code docutils literal notranslate"><span class="pre">variableNames</span></code>.</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json#L10">chen2020_positive_electrode_interface.json</a>.</p>
+</section>
+<section id="tabulated-function">
+<h2>Tabulated function<a class="headerlink" href="#tabulated-function" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tabulated&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataX&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataY&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Tabulated functions are given by a set of point values in the form of a table. Between the given points, the value is
+obtained by linear interpolation.</p>
+<p>For a tabulated function, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;tabulated&quot;</span></code>.</p>
+<p>The keys <code class="code docutils literal notranslate"><span class="pre">dataX</span></code> and <code class="code docutils literal notranslate"><span class="pre">dataY</span></code> are used to provide the data points of the function.</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/functionInterface/ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#L11">LFP_Xu2015.json</a></p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="functionInterfaceExample.html#functioninterfaceexample"><span class="std std-ref">Example script</span></a></p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="functionInterfaceExample.html" class="btn btn-neutral float-right" title="Example of the function interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
