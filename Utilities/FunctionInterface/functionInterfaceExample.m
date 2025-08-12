@@ -39,7 +39,7 @@ ylabel('Voltage / V');
 title('OCP function LFP Xu 2015')
 
 %%
-% The interface is the same for a functin defined with an other format. Let us load a function using a string format
+% The interface is the same for a function defined with an other format. Let us load a function using a string format 
 
 jsonstruct = parseBattmoJson('ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json');
 
@@ -50,7 +50,7 @@ disp(jsonstruct.openCircuitPotential)
 disp(jsonstruct.openCircuitPotential.expressions(1))
 
 %%
-% We setup the function and obtain a function object of the class |FormulaFunction| and the function handler.
+% We setup the function and obtain a function object of the class :battmo:`FormulaFunction` and the function handler.
 %
 
 [func, fn] = setupFunction(jsonstruct.openCircuitPotential);
