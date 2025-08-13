@@ -475,8 +475,10 @@ classdef BaseModel < PhysicalModel
                     if ~isfield(newstate, submodelname)
                         newstate.(submodelname) = [];
                     end
-                    
-                    newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+
+                    if isa(model.(submodelname), 'BaseModel')
+                        newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+                    end
                     
                 end
 
