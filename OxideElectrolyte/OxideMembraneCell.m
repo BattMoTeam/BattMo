@@ -477,7 +477,7 @@ classdef OxideMembraneCell < BaseModel
                 model = model.setupComputationalGraph();
             end
 
-            cgt = model.computationalGraph;
+            cgti = model.computationalGraph;
             
             model.primaryVarNames      = cgt.getPrimaryVariableNames();
             model.equationVarNames     = cgt.getEquationVariableNames();

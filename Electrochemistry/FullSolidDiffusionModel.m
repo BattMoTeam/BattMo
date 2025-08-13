@@ -146,6 +146,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
             G.cells.centroids = (r(2 : end) + r(1 : (end - 1)))./2;
 
+            radii = G.cells.centroids;
+
             G.faces.centroids = r;
             G.faces.areas     = 4*pi*r.^2;
             G.faces.normals   = G.faces.areas;
@@ -270,7 +272,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                                'mapToParticle', mapToParticle, ...
                                'mapToBc'      , mapToBc      , ...
                                'Tbc'          , Tbc          , ...
-                               'vols'         , vols);
+                               'vols'         , vols         , ...
+                               'radii'        , radii);
 
         end
 
@@ -417,6 +420,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         end
 
+        function c = getParticleConcentrations(model, state)
+        % Reshape the particle concentration distribution as an array
+            np = model.np;
+            N  = model.N;
+
+            c = reshape(state.c, np, N)';
+            
+        end
+        
     end
 
 end

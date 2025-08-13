@@ -8,6 +8,35 @@
                       "tutorial_8_simulate_a_multilayer_pouch_cell_live"
                       "tutorial_9_simulate_a_cylindrical_cell_live"))
 
+
+(defun clean-up-ipynb-output ()
+  "removes the verbose output from the simulations from a ipynb notebook"
+  (interactive)
+  (let* ((find-next-output-region (lambda ()
+                                   (if (re-search-forward "outputs\": " nil t)
+                                       (save-excursion
+                                         (let ((start (point))
+                                               (end (progn (forward-sexp)
+                                                           (point))))
+                                           (list start end)
+                                           ))
+                                     nil
+                                     )))
+         (res (funcall find-next-output-region))
+         )
+    (while res
+      (if (and (re-search-forward "data" nil t)
+               (re-search-forward "Solving timestep" nil t)
+               (< (point) (cadr res)))
+          (progn (goto-char (car res))
+                 (delete-region (car res) (cadr res))
+                 (insert "[]"))
+        (goto-char (cadr res)))
+      (setq res (funcall find-next-output-region)))
+    )
+  (save-buffer)
+  )
+
 (defun get-details (filename)
   (with-current-buffer (find-file-noselect (concat "/home/xavier/Matlab/Projects/battmo/Documentation/utils/Temp/" filename ".m"))
     (beginning-of-buffer)

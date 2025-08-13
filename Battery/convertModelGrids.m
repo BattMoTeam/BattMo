@@ -1,5 +1,6 @@
 function model = convertModelGrids(model)
-
+% Convert the grids from sub-grid representation to a concrete grid with the data needed for a julia simulation.
+    
     if isprop(model, 'G') && ~isempty(model.G)
         G = model.G.mrstFormat;
         rock.perm = ones(G.cells.num, 1);

@@ -2,7 +2,7 @@ function [depvarnameinds, propfuncinds, propvarnameinds, propdeplevels, rootinds
 % The inputs are
 % - varnameinds : an array of indices (indices must  A)
 % - A           : a square matrix corresponding to the adjency matrix.
-%                 The values of of the coefficient in the matrix corresponds to the index of the PropFunction, see ComputationalGraphTool for details. 
+%                 The values of of the coefficient in the matrix corresponds to the index of the PropFunction, see ComputationalGraph for details. 
 %
 % The outputs are
 % - depvarnameinds  : Indices of the variables that are required for the evaluation of the variables given by varnameinds

@@ -20,7 +20,7 @@ function jsonstruct = setJsonStructField(jsonstruct, fieldnamelist, value, varar
         setValue = true;
     end
 
-    if ~isempty(jsonstruct) && isfield(jsonstruct, fieldname)
+    if ~isempty(jsonstruct) && (isfield(jsonstruct, fieldname) || isprop(jsonstruct, fieldname))
 
         if setValue
 

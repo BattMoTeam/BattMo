@@ -14,6 +14,10 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     linearSolverSetup_default.method  = 'direct';
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'}, linearSolverSetup_default);
     linearSolverSetup = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'});
+
+    if ~strcmp(linearSolverSetup.library, 'matlab') || ~strcmp(linearSolverSetup.method, 'direct')
+        assert(BatteryLinearSolver.checkAMGCL(), 'AMGCL not installed correctly');
+    end
     
     nls.maxIterations   = jsonstruct.NonLinearSolver.maxIterations;
     nls.maxTimestepCuts = jsonstruct.NonLinearSolver.maxTimestepCuts;

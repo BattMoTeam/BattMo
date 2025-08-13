@@ -38,7 +38,7 @@ function [fig] = plotDashboard(model, states, varargin)
     step = p.Results.step;
 
     fig = figure();
-    sgtitle(sprintf('step %g', step))
+    sgtitle(sprintf('step %g (time %g h)', step, states{step}.time/hour))
 
     time = cellfun(@(state) state.time, states);
     Enew = cellfun(@(state) state.(ctrl).E, states);
@@ -694,8 +694,12 @@ function setPlot(ax, style, varargin)
                  'griddim', 1 , ...
                  'timeBar', []);
     opt = merge_options(opt, varargin{:});
-
-    colormap(crameri('nuuk'));
+    
+    try
+        colormap(crameri('nuuk'));
+    catch
+        % warning('crameri colormap not installed')
+    end
 
     set(ax, ...
         'FontSize' , style.fontSize       , ...

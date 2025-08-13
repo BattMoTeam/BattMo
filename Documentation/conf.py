@@ -53,6 +53,7 @@ nbsphinx_prolog = r"""
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['nbsphinx',
+              'nbsphinx_link',
               'sphinxcontrib.globalsubs',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
@@ -144,8 +145,9 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
-#keep_warnings = False
-
+suppress_warnings = [
+    'nbsphinx',
+]
 
 # -- Options for HTML output ----------------------------------------------
 

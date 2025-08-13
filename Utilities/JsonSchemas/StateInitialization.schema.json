@@ -8,7 +8,8 @@
       "type": "string",
       "enum": [
         "given SOC",
-        "given input"
+        "given input",
+        "given matlab object"
       ],
       "description": "Choice of initialization between a given state of charge (\"given SOC\") or a given input function (\"given input\"). If this property is not given, the default is a given SOC"
     },
