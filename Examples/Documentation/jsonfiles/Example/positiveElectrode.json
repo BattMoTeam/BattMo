@@ -19,7 +19,7 @@
         "chargeTransferCoefficient": 0.5,
         "openCircuitPotential": {
           "type": "function",
-          "functionname": "computeOCP_NMC111",
+          "functionname": "computeOCP_LCO",
           "argumentlist": [
             "concentration",
             "temperature",
