@@ -2,24 +2,28 @@ clear
 close all
 clc
 
-jsonstruct = parseBattmoJson(['params_initial.json']);
+jsonstruct = parseBattmoJson('params_initial.json');
 
 % Control
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cccv_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
+
 jsonstruct_control.Control.lowerCutoffVoltage = 4;
 jsonstruct_control.Control.upperCutoffVoltage = 4.8;
-jsonstruct_control.Control.DRate = 1;
-jsonstruct_control.Control.CRate = 1;
-jsonstruct_control.Control.dIdtLimit = 1E-4;
-jsonstruct_control.Control.dEdtLimit = 1E-2;
-jsonstruct_control.Control.numberOfCycles = 5;
+jsonstruct_control.Control.DRate              = 1;
+jsonstruct_control.Control.CRate              = 1;
+jsonstruct_control.Control.dIdtLimit          = 1E-4;
+jsonstruct_control.Control.dEdtLimit          = 1E-2;
+jsonstruct_control.Control.numberOfCycles     = 5;
 
 jsonstruct = mergeJsonStructs({jsonstruct_control, jsonstruct});
+
 jsonstruct.TimeStepping.numberOfTimeSteps = 1000;
 
+% For this simulation, to resolve the control switc we need to increase the number of time step cut allowed.
+jsonstruct.NonLinearSolver.maxTimestepCuts = 20;
 
-output = runBatteryJson(jsonstruct);
+output = runBatteryJson(jsonstruct, 'runSimulation', true);
 
 % Define the vectors
 I = output.I; % Vector containing current values
