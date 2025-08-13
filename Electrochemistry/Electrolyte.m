@@ -91,10 +91,10 @@ classdef Electrolyte < BaseModel
                 model.bruggemanCoefficient = b;
             end
             
-            [model.computeConductivityFunc, ...
-             model.computeConductivity] = setupFunction(inputparams.ionicConductivity);
-            [model.computeDiffusionCoefficientFunc, ...
-             model.computeDiffusionCoefficient] = setupFunction(inputparams.diffusionCoefficient);
+            [model.computeConductivity, ...
+             model.computeConductivityFunc] = setupFunction(inputparams.ionicConductivity);
+            [model.computeDiffusionCoefficient, ...
+             model.computeDiffusionCoefficientFunc] = setupFunction(inputparams.diffusionCoefficient);
 
             model.constants = PhysicalConstants();
 

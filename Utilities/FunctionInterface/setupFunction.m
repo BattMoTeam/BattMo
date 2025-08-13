@@ -1,4 +1,4 @@
-function [fn, fn_handler] = setupFunction(jsonstruct)
+function [fn_handler, fn] = setupFunction(jsonstruct)
 
     switch jsonstruct.functionFormat
         

@@ -12,10 +12,10 @@ disp(jsonstruct.openCircuitPotential)
 %%
 % We use the function |setupFunction| to parse the input structure
 %
-[func, fn] = setupFunction(jsonstruct.openCircuitPotential);
+[fn, func] = setupFunction(jsonstruct.openCircuitPotential);
 
 %%
-% The function returns a |Function| object and a function handler that can be directly evaluated.
+% The function returns a function handler and a |Function| object. The function handler can be directly evaluated.
 %
 
 disp(func)
@@ -53,7 +53,7 @@ disp(jsonstruct.openCircuitPotential.expressions(1))
 % We setup the function and obtain a function object of the class :battmo:`FormulaFunction` and the function handler.
 %
 
-[func, fn] = setupFunction(jsonstruct.openCircuitPotential);
+[fn, func] = setupFunction(jsonstruct.openCircuitPotential);
 disp(func)
 
 %%

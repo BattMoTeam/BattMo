@@ -90,12 +90,12 @@ classdef Interface < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            [model.computeOCPFunc, ...
-             model.computeOCP] = setupFunction(inputparams.openCircuitPotential);
+            [model.computeOCP, ...
+             model.computeOCPFunc] = setupFunction(inputparams.openCircuitPotential);
 
-            if ~isempty(model.entropyChange)
-                [model.computeEntropyChangeFunc, ...
-                 model.computeEntropyChange] = setupFunction(inputparams.entropyChange);
+            if model.includeEntropyChange
+                [model.computeEntropyChange, ...
+                 model.computeEntropyChangeFunc] = setupFunction(inputparams.entropyChange);
             end
             
             j0 = inputparams.exchangeCurrentDensity;
@@ -103,8 +103,8 @@ classdef Interface < BaseModel
             if ~isempty(j0)
                 if isa(j0, 'struct') && isfield(j0, 'functionFormat')
                     model.useJ0Func = true;
-                    [model.computeJ0Func, ...
-                     model.computeJ0] = setupFunction(inputparams.exchangeCurrentDensity);
+                    [model.computeJ0, ...
+                     model.computeJ0Func] = setupFunction(inputparams.exchangeCurrentDensity);
                 else
                     model.useJ0Func = false;
                 end
