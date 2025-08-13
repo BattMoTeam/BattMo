@@ -193,7 +193,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 fprintf('Several property functions are matching\n\n');
                 for iprop = 1 : numel(propfunc)
                     varname = propfunc{iprop}.varname;
-                    nodenames = ComputationalGraphInteractiveTool.getNodeName(varname);
+                    nodenames = cg.getNodeName(varname);
                     for inode = 1 : numel(nodenames)
                         fprintf('%d : %s\n', iprop, nodenames{inode});
                     end
