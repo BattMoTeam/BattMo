@@ -8,7 +8,11 @@
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
   "openCircuitPotential" : {
-    "functionFormat" : "named function",
-    "functionName" : "computeOCP_LNMO_Pron",
-    "argumentList" : ["concentration", "temperature", "maximum concentration"]},
+    "isFile" : true,
+    "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
+  },
+  "entropyChange" : {
+    "isFile" : true,
+    "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_entropyChange.json"    
+  },
   "chargeTransferCoefficient" : 0.5}
