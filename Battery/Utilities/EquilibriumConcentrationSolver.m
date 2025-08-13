@@ -585,19 +585,19 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
             % Define the call list to update the constraint equations
             
-            cgt = model.cgt;
+            cg = model.computationalGraph;
             
             funcCallList = {};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if model.(elde).numberOfActiveMaterial > 1
                     funcCallList = horzcat(funcCallList, ...
-                                           cgt.getPropFunctionCallList({elde, 'potentialEquations'}));
+                                           cg.getPropFunctionCallList({elde, 'potentialEquations'}));
                 end
             end
             
             funcCallList = horzcat(funcCallList, ...
-                                   cgt.getPropFunctionCallList({'massConsEq'}));
+                                   cg.getPropFunctionCallList({'massConsEq'}));
 
             funcCallList = unique(funcCallList, 'stable');
 

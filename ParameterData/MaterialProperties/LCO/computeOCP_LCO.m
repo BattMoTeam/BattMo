@@ -1,4 +1,6 @@
-function OCP = computeOCP_NMC111(theta)
+function OCP = computeOCP_LCO(theta)
+    
+    % From Ramadass et al 2004. 10.1149/1.1634273
     
     coeff1 = [ -4.656   , ...
                0        , ...
@@ -25,7 +27,7 @@ function OCP = computeOCP_NMC111(theta)
               + 95.960];
     
     OCP = polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1), theta);
-    
+
 end
 
 

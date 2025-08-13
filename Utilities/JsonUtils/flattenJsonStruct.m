@@ -1,10 +1,16 @@
-function flatjsonviewer = flattenJsonStruct(jsonstruct)
+function flatjsonviewer = flattenJsonStruct(jsonstruct, varargin)
 
+    opt = struct('doprint', true);
+    opt = merge_options(opt, varargin{:});
+    
     flatjson = flattenJsonStruct_({}, jsonstruct, []);
     flatjson = reshape(flatjson, 2, [])';
 
     flatjsonviewer = FlatJsonViewer(flatjson);
-    flatjsonviewer.print();
+
+    if opt.doprint
+        flatjsonviewer.print();
+    end
 
 end
 
