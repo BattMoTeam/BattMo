@@ -54,7 +54,7 @@
           "openCircuitPotential": {
             "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
-            "argumentList": ["guestStoichiometry"],
+            "argumentList": ["stoichiometry"],
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,
@@ -121,16 +121,13 @@
           "guestStoichiometry0": 0.9811,
           "guestStoichiometry100": 0.00014001,
           "numberOfElectronsTransferred": 1,
-          "openCircuitPotential": {
-            "functionFormat": "named function",
-            "functionName": "computeOCP_LNMO_Pron",
-            "argumentList": [
-              "guestStoichiometry"
-            ]},
+          "openCircuitPotential" : {
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
+          },
           "entropyChange" : {
-            "functionFormat": "named function",
-            "functionName" : "computeEntropyChange_LNMO_Pron",
-            "argumentList" : ["guestStoichiometry"]
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_entropyChange.json"    
           },
           "referenceTemperature": 293.15,
           "saturationConcentration": 24358,

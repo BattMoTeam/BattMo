@@ -57,9 +57,7 @@
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
             "argumentList": [
-              "concentration",
-              "temperature",
-              "cmax"
+              "stoichiometry"
             ],
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
             "functionFormat": "named function"
@@ -124,13 +122,8 @@
           "guestStoichiometry100": 0.00014001,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentList": [
-              "concentration",
-              "temperature",
-              "maximum concentration"
-            ],
-            "functionName": "computeOCP_LNMO_Pron",
-            "functionFormat": "named function"
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
           },
           "reactionRateConstant": 2.33e-11,
           "saturationConcentration": 24358,
