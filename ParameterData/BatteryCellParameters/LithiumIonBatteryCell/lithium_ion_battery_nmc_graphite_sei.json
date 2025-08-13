@@ -87,7 +87,6 @@
              "specificHeatCapacity": 700.0,
              "thermalConductivity": 2.1,
              "electronicConductivity": 100},
-            ,
             {
               "isFile": true,
               "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json"
