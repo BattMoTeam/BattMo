@@ -215,7 +215,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                     vs        = sum(comodel.G.getVolumes()*vfs);
 
                     computeOCPs = cell(1, 1);
-                    computeOCPs{1} = @(c) comodel.(am).(itf).computeOCP(c, model.T, satConcs);
+                    computeOCPs{1} = @(c) comodel.(am).(itf).computeOCP(c./satConcs);
 
                     model.(elde).numberOfActiveMaterial   = 1;
                     model.(elde).saturationConcentrations = satConcs;

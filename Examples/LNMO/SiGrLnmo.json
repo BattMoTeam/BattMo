@@ -55,9 +55,9 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "functionFormat": "named function"
+            "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_Torchio",
-            "argumentList": ["stoichiometry"],
+            "argumentList": ["stoichiometry"]
           },
           "referenceTemperature": 298.15,
           "entropyChange" : {
@@ -91,9 +91,8 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "functionFormat": "named function"
-            "functionName": "computeOCP_Silicon_Li2012",
-            "argumentList": ["stoichiometry"],
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/Silicon/Silicon_Li_OCP.json"
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 311307.4,
@@ -130,7 +129,9 @@
         "thermalConductivity": 1.04
       },
       "N": 300,
-      "active_material_type": "composite",
+      "activeMaterialModelSetup": {
+        "composite": true
+      },
       "bruggemanCoefficient": 1.5,
       "effectiveDensity": 1427.2111504281352,
       "effectiveElectronicConductivity": 109.54067227961187,
