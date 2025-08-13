@@ -68,10 +68,12 @@
           { "properties" : {
             "argumentList": {
               "type" : "array",
-              "prefixItems": [{"const": "guestStoichiometry"}]}}}]}],
+              "prefixItems": [{"const": "stoichometry"}]}}}]}],
       "description": "open-circuit potential function of the electrode under a reference temperature. Temperature dependence is added via the entropy change."},
     "referenceTemperature" : {"type" : "number",
                               "description" : "Reference temperature used to compute the OCP from the entropy change, OCP = OCP_ref + dUdT*(T - T_ref)"},
+    "includeEntropyChange" : {"type" : "boolean",
+                              "description" : "set to true if we include entropy change. The default is true if the entropyChange function is given, false otherwise."},
     "entropyChange" : {
       "allOf": [
       { "$ref": "Function.schema.json"},
@@ -86,7 +88,7 @@
         { "properties" : {
           "argumentList": {
             "type" : "array",
-            "prefixItems": [{"const": "guestStoichiometry"}]}}}]}],
+            "prefixItems": [{"const": "stoichiometry"}]}}}]}],
       "description": "Entropy change function. If not set, it will be evaluated to zero."
     },
     "chargeTransferCoefficient": {

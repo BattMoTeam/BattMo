@@ -282,12 +282,13 @@ classdef Interface < BaseModel
 
         function state = updatedUdT(model, state)
 
-            computeEntCh = model.computeEntropyChangeFunc;
-            cmax         = model.saturationConcentration;
+            computeEntCh     = model.computeEntropyChange;
+            computeEntChFunc = model.computeEntropyChangeFunc;
+            cmax             = model.saturationConcentration;
 
             c = state.cElectrodeSurface;
             
-            if computeEntCh.numberOfArguments
+            if computeEntChFunc.numberOfArguments == 1
                 state.dUdT = computeEntCh(c/cmax);
             else
                 state.dUdT = computeEntCh(c, cmax);

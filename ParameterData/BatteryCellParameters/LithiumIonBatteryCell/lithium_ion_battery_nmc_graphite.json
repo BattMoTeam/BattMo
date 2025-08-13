@@ -71,8 +71,7 @@
           [
           {
             "isFile" : true,
-            "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json",
-            "description" : "Interface input"
+            "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json"
           },
           {
             "massFraction": 0.95,

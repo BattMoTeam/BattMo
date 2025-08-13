@@ -15,6 +15,8 @@
       "functionFormat" : "named function",
       "functionName" : "computeOCP_LCO",
       "argumentList" : ["guestStoichiometry"]},
+    "includeEntropyChange" : false,
+    "comment" : "for the moment, we remove the entropy change",
     "entropyChange" : {
       "functionFormat" : "named function",
       "functionName" : "computeEntropyChange_LCO",
