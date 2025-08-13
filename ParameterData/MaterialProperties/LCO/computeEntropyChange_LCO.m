@@ -1,19 +1,31 @@
-function dUdT = computeEntropyChange_NMC111(theta)
+function dUdT = computeEntropyChange_LCO(theta)
+
+    % This data is taken from PyBamm. 
+
+    % Lithium Cobalt Oxide (LiCO2) entropic change in open-circuit potential (OCP) at
+    % a temperature of 298.15K as a function of the stoichiometry. The fit is taken
+    % from Scott Moura's FastDFN code [1].
+
+    % References
+    % ----------
+    % https://github.com/scott-moura/fastDFN
+
     
-    % Calculate the entropy change at the given lithiation
+    stretch = 1.062
+    theta = stretch * theta
+    % Original parametrization was expressed in terms of c_s_max, but we want to
+    % express it in terms of thetaichiometry only
+    c_s_max = 51217.9257309275
     
-    coeff1 = [0.199521039        , ...
-                   - 0.928373822      , ...
-                   + 1.364550689000003, ...
-                   - 0.611544893999998];
+    du_dT = 0.07645 * (-54.4806 / c_s_max) .* ((1.0 / cosh(30.834 - 54.4806 * theta)) .^ 2) ...
+            + 2.1581 * (-50.294 / c_s_max) .* ((cosh(52.294 - 50.294 * theta)) .^ (-2)) ...
+            + 0.14169 * (19.854 / c_s_max) .* ((cosh(11.0923 - 19.8543 * theta)) .^ (-2)) ...
+            - 0.2051 * (5.4888 / c_s_max) .* ((cosh(1.4684 - 5.4888 * theta)) .^ (-2)) ...
+            - (0.2531 / 0.1316 / c_s_max) .* ((cosh((-theta + 0.56478) / 0.1316)) .^ (-2)) ...
+            - (0.02167 / 0.006 / c_s_max) .* ((cosh((theta - 0.525) / 0.006)) .^ (-2));
     
-    coeff2 = [1                  , ...
-                   - 5.661479886999997, ...
-                   + 11.47636191      , ... 
-                   - 9.82431213599998 , ...
-                   + 3.048755063];
-    
-    dUdT = -1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1), theta);
+
+    return dUdT
     
 end
 

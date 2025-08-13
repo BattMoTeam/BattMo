@@ -1,0 +1,31 @@
+{
+  "description" : "Lithium Cobalt Oxide (LiCO2) from P. Ramadass, Bala Haran, Parthasarathy M. Gomadam, Ralph White, and Branko N. Popov. \"Development of First Principles Capacity Fade Model for Li-Ion Cells.\" (2004)",
+  "Interface" :
+  {
+    "saturationConcentration": 55555,
+    "volumetricSurfaceArea": 885000,
+    "density": 4650,
+    "numberOfElectronsTransferred" : 1,
+    "activationEnergyOfReaction": 37480,
+    "reactionRateConstant": 2.33e-11,
+    "guestStoichiometry100": 0.4955,
+    "guestStoichiometry0": 0.99174,
+    "chargeTransferCoefficient" : 0.5,
+    "openCircuitPotential" : {
+      "functionFormat" : "named function",
+      "functionName" : "computeOCP_LCO",
+      "argumentList" : ["guestStoichiometry"]},
+    "entropyChange" : {
+      "functionFormat" : "named function",
+      "functionName" : "computeEntropyChange_LCO",
+      "argumentList" : ["guestStoichiometry"]},  
+    "referenceTemperature": 298.15
+  },
+  "electronicConductivity": 100,
+  "SolidDiffusion": {
+    "activationEnergyOfDiffusion": 5000,
+    "referenceDiffusionCoefficient": 1e-14,
+    "particleRadius": 1e-06}
+}
+  
+

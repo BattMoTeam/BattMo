@@ -66,23 +66,24 @@
       "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
-        "massFraction": 0.95,
-        "density": 4650,
-        "specificHeatCapacity": 700.0,
-        "thermalConductivity": 2.1,
-        "electronicConductivity": 100,
-        "Interface": {
-          "isFile": true,
-          "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
-        },
-        "diffusionModelType": "full",
-        "SolidDiffusion": {
-          "activationEnergyOfDiffusion": 5000,
-          "referenceDiffusionCoefficient": 1e-14,
-          "particleRadius": 1e-06,
-          "N": 10
-        }
-      },
+        "MergeInputs": {
+          "Inputs" :
+          [
+          {
+            "isFile" : true,
+            "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json",
+            "description" : "Interface input"
+          },
+          {
+            "massFraction": 0.95,
+            "density": 4650,
+            "specificHeatCapacity": 700.0,
+            "thermalConductivity": 2.1,
+            "diffusionModelType": "full",
+            "SolidDiffusion": {
+              "N": 10
+            }
+          }]}},
       "Binder": {
         "density": {
           "value": 1.75,
