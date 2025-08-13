@@ -5,7 +5,8 @@ name: Running runGitHubTests
 on:
   # Triggers the workflow on push or pull request events
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
+  pull_request:
     
 jobs:
   # This workflow contains a single job called "build"
