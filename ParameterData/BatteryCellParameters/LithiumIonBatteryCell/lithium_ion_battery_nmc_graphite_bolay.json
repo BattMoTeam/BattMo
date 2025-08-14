@@ -33,9 +33,9 @@
           "guestStoichiometry100": 0.88551,
           "guestStoichiometry0": 0.1429,
           "chargeTransferCoefficient": 0.5,
-          "openCircuitPotential" : {"type": "function",
-                                    "functionname" : "computeOCP_Graphite_Torchio",
-                                    "argumentlist" : ["concentration", "temperature", "cmax"]
+          "openCircuitPotential" : {"functionFormat": "named function",
+                                    "functionName" : "computeOCP_Graphite_Torchio",
+                                    "argumentList" : ["stoichiometry"]
                                    }
         },
         "diffusionModelType": "full",
@@ -93,9 +93,9 @@
           "guestStoichiometry100": 0.4955,
           "guestStoichiometry0": 0.99174,
           "chargeTransferCoefficient" : 0.5,
-          "openCircuitPotential" : {"type" : "function",
-                                    "functionname" : "computeOCP_LCO",
-                                    "argumentlist" : ["concentration", "temperature", "cmax"]}
+          "openCircuitPotential" : {"functionFormat" : "named function",
+                                    "functionName" : "computeOCP_LCO",
+                                    "argumentList" : ["stoichiometry"]}
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
@@ -144,16 +144,16 @@
       "unit": "mol/litre"
     },
     "ionicConductivity": {
-      "type": "function",
-      "functionname": "computeElectrolyteConductivity_bolay",
+      "functionFormat": "named function",
+      "functionName": "computeElectrolyteConductivity_bolay",
       "argumentlist": [
         "concentration",
         "temperature"
       ]
     },
     "diffusionCoefficient": {
-      "type": "function",
-      "functionname": "computeDiffusionCoefficient_bolay",
+      "functionFormat": "named function",
+      "functionName": "computeDiffusionCoefficient_bolay",
       "argumentlist": [
         "concentration",
         "temperature"

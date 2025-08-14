@@ -7,7 +7,13 @@
   "reactionRateConstant": 2.33e-11,
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
-  "openCircuitPotential" : {"type" : "function",
-                            "functionname" : "computeOCP_LNMO_Pron",
-                            "argumentlist" : ["concentration", "temperature", "maximum concentration"]},
+  "openCircuitPotential" : {
+    "isFile" : true,
+    "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
+  },
+  "entropyChange" : {
+    "isFile" : true,
+    "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_entropyChange.json"    
+  },
+  "referenceTemperature" : 298.75,
   "chargeTransferCoefficient" : 0.5}

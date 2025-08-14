@@ -18,5 +18,8 @@
   "ThermalModel": {
     "isFile": true,
     "filename": "thermalComponent.json"
-  }
+  },
+  "SOC": 0.9900,
+  "initT": 298.1500,
+  "use_thermal": true
 }

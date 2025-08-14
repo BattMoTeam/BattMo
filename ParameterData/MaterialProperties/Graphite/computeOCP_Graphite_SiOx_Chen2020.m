@@ -1,4 +1,4 @@
-function [OCP, dUdT] = computeOCP_Graphite_SiOx_Chen2020(c, ~, cmax)
+function OCP = computeOCP_Graphite_SiOx_Chen2020(sto)
     % LG M50 graphite open circuit potential as a function of stochiometry, fit taken
     % from [1].
 
@@ -9,10 +9,7 @@ function [OCP, dUdT] = computeOCP_Graphite_SiOx_Chen2020(c, ~, cmax)
     % Parameterization of Multi-scale Lithium-ion Battery Models." Journal of the
     % Electrochemical Society 167 (2020): 080534.
 
-    sto = c./cmax;
     OCP = 1.9793*exp(-39.3631*sto) + 0.2482 - 0.0909*tanh(29.8538*(sto - 0.1234)) - 0.04478*tanh(14.9159*(sto - 0.2769)) - 0.0205*tanh(30.4444*(sto - 0.6103));
-    
-    dUdT = 0;
     
 end
 

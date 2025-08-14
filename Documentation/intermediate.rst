@@ -7,6 +7,7 @@ Intermediate Usage
    :hidden:
 
    mergejsonstruct
+   functioninterface
    modelinitialisation
    controlinput
    soliddiffusion
@@ -23,7 +24,12 @@ Intermediate Usage
       :padding: 2
       
       :ref:`Merging parameters<mergejsonstruct:Merging parameters>`
-                     
+
+   .. grid-item-card::
+      :padding: 2
+      
+      :ref:`Functional parameters<functioninterface:Functional parameters>`
+                                
    .. grid-item-card::
       :padding: 2
       

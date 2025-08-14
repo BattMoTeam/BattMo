@@ -7,50 +7,69 @@
       "density": 4650,
       "specificHeatCapacity": 700,
       "thermalConductivity": 2.1,
-      "electronicConductivity": 100,
+      "diffusionModelType": "full",
+      "SolidDiffusion": {
+        "N": 10,
+        "activationEnergyOfDiffusion": 5000,
+        "referenceDiffusionCoefficient": 1E-14,
+        "particleRadius": 1E-6
+      },
+      "description": "Lithium Cobalt Oxide (LiCO2) from P. Ramadass, Bala Haran, Parthasarathy M. Gomadam, Ralph White, and Branko N. Popov. \"Development of First Principles Capacity Fade Model for Li-Ion Cells.\" (2004)",
       "Interface": {
-        "saturationConcentration": 55554,
+        "saturationConcentration": 55555,
         "volumetricSurfaceArea": 885000,
+        "density": 4650,
         "numberOfElectronsTransferred": 1,
-        "activationEnergyOfReaction": 5000,
-        "reactionRateConstant": 2.33e-11,
+        "activationEnergyOfReaction": 37480,
+        "reactionRateConstant": 2.33E-11,
         "guestStoichiometry100": 0.4955,
         "guestStoichiometry0": 0.99174,
         "chargeTransferCoefficient": 0.5,
         "openCircuitPotential": {
-          "type": "function",
-          "functionname": "computeOCP_LCO",
-          "argumentlist": [
-            "concentration",
-            "temperature",
-            "cmax"
-          ]}},
-      "diffusionModelType": "full",
-      "SolidDiffusion": {
-        "activationEnergyOfDiffusion": 5000,
-        "referenceDiffusionCoefficient": 1e-14,
-        "particleRadius": 1e-06}},
-    "Binder": {
-      "density": {
-        "value": 1.75,
-        "unit": "gram/((centi*meter)^3)"
+          "functionFormat": "named function",
+          "functionName": "computeOCP_LCO",
+          "argumentList": [
+            "stoichiometry"
+          ]
+        },
+        "entropyChange": {
+          "functionFormat": "named function",
+          "functionName": "computeEntropyChange_LCO",
+          "argumentList": [
+            "stoichiometry"
+          ]
+        },
+        "referenceTemperature": 298.15
       },
+      "electronicConductivity": 100
+    },
+    "Binder": {
+      "density": 1749.9999999999998,
       "massFraction": 0.025,
       "electronicConductivity": 100,
       "specificHeatCapacity": 700,
       "thermalConductivity": 2.1
     },
     "ConductingAdditive": {
-      "density": {
-        "value": 1.83,
-        "unit": "gram/((centi*meter)^3)"
-      },
+      "density": 1829.9999999999998,
       "massFraction": 0.025,
       "electronicConductivity": 100,
       "specificHeatCapacity": 700,
-      "thermalConductivity": 2.1}},
+      "thermalConductivity": 2.1
+    }
+  },
   "CurrentCollector": {
-    "electronicConductivity": 35500000.0,
+    "thickness": 1E-5,
+    "N": 2,
+    "tab": {
+      "width": 0.004,
+      "height": 0.001,
+      "Nw": 3,
+      "Nh": 3
+    },
+    "electronicConductivity": 3.55E+7,
     "thermalConductivity": 170,
     "specificHeatCapacity": 875,
-    "density": 2700 }}
+    "density": 2700
+  }
+}

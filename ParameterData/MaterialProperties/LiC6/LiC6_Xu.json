@@ -1,0 +1,23 @@
+{
+  "description" : "Data from Xu et al (2015) doi:10.1016/j.energy.2014.11.073",
+  "saturationConcentration": 31540,
+  "volumetricSurfaceArea": 142372,
+  "density": 1852,
+  "numberOfElectronsTransferred" : 1,
+  "activationEnergyOfReaction": 4000,
+  "reactionRateConstant": 1.76e-11,
+  "guestStoichiometry100": 0.51873811,
+  "guestStoichiometry0": 0.001,
+  "chargeTransferCoefficient": 0.5,
+  "openCircuitPotential": {"functionFormat": "tabulated",
+                           "argumentList" : ["stoichiometry"],
+                           "dataX" : [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.96, 0.97, 0.98, 0.99, 1.00],
+                           "dataY" : [1.28683, 0.65272, 0.52621, 0.44128, 0.37552, 0.32567, 0.21665, 0.18623, 0.16445, 0.14548, 0.13293, 0.12635, 0.12300, 0.12036, 0.11606, 0.10811, 0.09833, 0.09146, 0.08829, 0.08696, 0.08592, 0.08369, 0.07698, 0.05692, 0.04980, 0.04118, 0.03086, 0.01865, 0.00443]                           
+                          },
+  "entropyChange" : {"functionFormat": "tabulated",
+                     "argumentList" : ["stoichiometry"],
+                     "dataX" : [0.01049, 0.03146, 0.05244, 0.07711, 0.1006 , 0.1302 , 0.145  , 0.1672 , 0.2153 , 0.2696 , 0.3399 , 0.3991 , 0.4497 , 0.4806 , 0.5484 , 0.6292 , 0.7199 , 0.76],
+                     "dataY" : [3.00e-04, 2.47e-04, 1.95e-04, 1.33e-04, 7.21e-05, 5.09e-05, 3.38e-05, 2.46e-06, -6.32e-05, -1.36e-04, -1.55e-04, -1.45e-04, -1.25e-04, -8.22e-05, -7.41e-05, -7.31e-05, -9.32e-05, -1.14e-04]
+                     
+                    }
+}

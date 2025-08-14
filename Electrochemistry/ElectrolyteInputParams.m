@@ -43,6 +43,7 @@ classdef ElectrolyteInputParams < ComponentInputParams
         function inputparams = ElectrolyteInputParams(jsonstruct)
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'useRegionBruggemanCoefficients', false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'species', 'chargeNumber'}, 1);
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 

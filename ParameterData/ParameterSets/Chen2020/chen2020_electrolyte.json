@@ -2,17 +2,17 @@
   "initialConcentration": {"value" : 1,
                            "unit" : "mol/litre"},
   "ionicConductivity": {
-    "type": "function",
-    "functionname": "computeElectrolyteConductivity_Nyman2008",
-    "argumentlist": [
+    "functionFormat": "named function",
+    "functionName": "computeElectrolyteConductivity_Nyman2008",
+    "argumentList": [
       "concentration",
       "temperature"
     ]
   },
   "diffusionCoefficient": {
-    "type": "function",
-    "functionname": "computeDiffusionCoefficient_Nyman2008",
-    "argumentlist": [
+    "functionFormat": "named function",
+    "functionName": "computeDiffusionCoefficient_Nyman2008",
+    "argumentList": [
       "concentration",
       "temperature"
     ]
