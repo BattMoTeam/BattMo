@@ -99,15 +99,11 @@ classdef Interface < BaseModel
             end
             
             j0 = inputparams.exchangeCurrentDensity;
-
-            if ~isempty(j0)
-                if isa(j0, 'struct') && isfield(j0, 'functionFormat')
-                    model.useJ0Func = true;
-                    [model.computeJ0, ...
-                     model.computeJ0Func] = setupFunction(inputparams.exchangeCurrentDensity);
-                else
-                    model.useJ0Func = false;
-                end
+            
+            if isAssigned(j0, 'functionFormat')
+                model.useJ0Func = true;
+                [model.computeJ0, ...
+                 model.computeJ0Func] = setupFunction(inputparams.exchangeCurrentDensity);
             else
                 model.useJ0Func = false;
             end
