@@ -15,4 +15,5 @@
     "isFile" : true,
     "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_entropyChange.json"    
   },
+  "referenceTemperature" : 298.75,
   "chargeTransferCoefficient" : 0.5}
