@@ -30,6 +30,7 @@ jsonstruct.Control.numberOfCycles = 1;
 output = runBatteryJson(jsonstruct);
 
 states = output.states;
+model  = output.model;
 
 %% plot
 
