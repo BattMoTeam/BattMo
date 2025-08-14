@@ -14,11 +14,11 @@
     "openCircuitPotential" : {
       "functionFormat" : "named function",
       "functionName" : "computeOCP_LCO",
-      "argumentList" : ["guestStoichiometry"]},
+      "argumentList" : ["stoichiometry"]},
     "entropyChange" : {
       "functionFormat" : "named function",
       "functionName" : "computeEntropyChange_LCO",
-      "argumentList" : ["guestStoichiometry"]},  
+      "argumentList" : ["stoichiometry"]},
     "referenceTemperature": 298.15
   },
   "electronicConductivity": 100,
