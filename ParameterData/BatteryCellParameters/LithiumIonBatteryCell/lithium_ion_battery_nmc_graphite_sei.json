@@ -80,7 +80,7 @@
       "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
-        "mergeInputs" : {
+        "MergeInputs" : {
           "Inputs" : [
             {"massFraction": 0.95,
              "density": 4650,
@@ -96,8 +96,8 @@
               "SolidDiffusion": {
                 "activationEnergyOfDiffusion": 5000,
                 "referenceDiffusionCoefficient": 1e-14,
-              "particleRadius": 1e-06,
-              "N": 10
+                "particleRadius": 1e-06,
+                "N": 10
               }}]}},
       "Binder": {
         "density": {
