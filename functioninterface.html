@@ -1,0 +1,541 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Functional parameters &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c92655ae" />
+
+  
+    <link rel="shortcut icon" href="_static/battmologo.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example of the function interface" href="functionInterfaceExample.html" />
+    <link rel="prev" title="Merging parameters" href="mergejsonstruct.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BattMo
+              <img src="_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basicusage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#show-the-dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#explore-the-output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#explore-the-grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#explore-the-states">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basicusage.html#plot-a-result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-control-parameters">Change Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-material-parameters">Change Material Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#notebooks">Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basicusage.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html">Tutorial 1 - Your First BattMo Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Define-Parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Run-Simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Show-the-Dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-Output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-Grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Explore-the-States">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_1_a_simple_p2d_model_live.html#Plot-a-Result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_2_changing_control_protocol_live.html">Tutorial 2 - Change the Control Protocol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Explore-the-Control-Protocol">Explore the Control Protocol</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_2_changing_control_protocol_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_3_modify_structural_parameters_live.html">Tutorial 3 - Modify Structural Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Explore-the-Structural-Parameters">Explore the Structural Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_3_modify_structural_parameters_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html">Tutorial 4 - Modify Material Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Explore-the-Material-Parameters">Explore the Material Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Make-a-Simple-Change">Make a Simple Change</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Swap-Active-Materials">Swap Active Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_4_modify_material_parameters_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html">Tutorial 5 - Simulate CC-CV Cycling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Explore-the-Control-Definition">Explore the Control Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html">Tutorial 6 - Simulate Thermal Performance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Setup-material-properties">Setup material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Setup-the-geometry">Setup the geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Visualisation-of-the-results">Visualisation of the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#Temperature-distribution-at-final-time">Temperature distribution at final time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_6_simulate_thermal_performance_live.html#The-external-heat-transfer-coefficient">The external heat transfer coefficient</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html">Tutorial 8 - Simulate a Multilayer Pouch Cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html">Tutorial 9 - Simulate a cylindrical cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="intermediate.html">Intermediate Usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mergejsonstruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#visualize-results">Visualize Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Functional parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#function-name">Function name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#function-formula">Function formula</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tabulated-function">Tabulated function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="functionInterfaceExample.html">Example of the function interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="controlinput.html">Control models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="controlinput.html#json-input-control-interface">Json input control interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runThermalExample.html">Thermal simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-minimum-and-maximum-values-of-the-temperature">Plot of the minimum and maximum values of the temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#We-change-setup-for-cooling-coefficient">We change setup for cooling coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-temperatures">Plot of temperatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-temperature-distribution">Plot of the temperature distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runSiliconGraphiteBattery.html">Simulation of a composite active material</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Setup-the-properties-of-the-battery">Setup the properties of the battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#We-modify-some-parameters">We modify some parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#We-run-the-simulations">We run the simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#plot-of-the-particle-concentration-distribution-in-the-particle-at-the-end-time">plot of the particle concentration distribution in the particle at the end time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Charge-step">Charge step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Visualisation">Visualisation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html">Part1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.3-Battery-Properties">1.3 Battery Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.4-Operational-Protocols"><strong>1.4 Operational Protocols</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#2.-Modelling-with-BattMo"><strong>2. Modelling with BattMo</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#2.1-P2D/P3D/P4D-Models"><strong>2.1 P2D/P3D/P4D Models</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#2.2-Influence-of-structural-and-material-parameters-on-the-capacity"><strong>2.2 Influence of structural and material parameters on the capacity</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#3.-Summary">3. Summary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#4.-References"><strong>4. References</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html">Part2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-2.-Mass-fraction-of-active-material-and-binder-in-electrode"><strong>Example 2. Mass</strong> fraction of active material and binder in electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-3.-Temperature">Example 3. Temperature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-4.-Saturation-concentration-of-the-material">Example 4. Saturation concentration of the material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-5.-Charge-transfer-coefficient,-anodic-and-cathodic-at-the-surface-of-the-active-particles:-Butler-Volmer-equation"><strong>Example 5.</strong> Charge transfer coefficient, anodic and cathodic at the surface of the active particles: Butler-Volmer equation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-6.-Reaction-rate-constant-at-the-surface-of-the-active-particles:-Butler-Volmer-equation-(exchange-current-density)"><strong>Example 6.</strong> Reaction rate constant at the surface of the active particles: Butler-Volmer equation (exchange current density)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-7.-Reference-diffusion-coefficient-(Solid-diffusion)">Example 7. Reference diffusion coefficient (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-8.-Active-particle-radius-(Solid-diffusion)"><strong>Example 8.</strong> Active particle radius (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-9.-Electronic-conductivity-of-the-active-material-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 9.</strong> Electronic conductivity of the active material in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-10.-Bruggeman-coefficient-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 10.</strong> Bruggeman coefficient in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-11.-Bruggeman-coefficient-in-the-electrolyte-(effective-ionic-conductivity)">Example 11. Bruggeman coefficient in the electrolyte (effective ionic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-12.-Initial-electrolyte-concentration-(electrolyte-diffusion)"><strong>Example 12. Initial e</strong>lectrolyte concentration (electrolyte diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-13.-Transference-number-(electrolyte-diffusion)"><strong>Example 13.</strong> Transference number (electrolyte diffusion)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">BattMo Model Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="json.html">JSON input specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="json.html#simulation-schema">Simulation Schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#material-parameters">Material Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="json.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#electrode">Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#thermal-model">Thermal Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#geometry-setup">Geometry Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#simulation-control-parameters">Simulation Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#solver-parameters">Solver Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="json.html#output-parameters">Output Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="geometryinput.html">Battery Geometries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#batterygeneratorp2d">BatteryGeneratorP2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#batterygeneratorp3d">BatteryGeneratorP3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="juliabridge.html">BattMo Julia bridge</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="juliabridge.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="juliabridge.html#start-server">Start Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="juliabridge.html#send-simulation-parameters">Send simulation parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="juliabridge.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="juliabridge.html#post-process-the-output">Post process the output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="protonicmembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-overview">Model overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#governing-equations">Governing equations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicCell.html">Full Cell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">BattMoApp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="app_features.html">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#download-input-data">Download Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#upload-input-data">Upload Input Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="app_features.html#upload-your-previous-results">Upload your previous results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="app_troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app_unnatural_artifacts.html">Unnatural artifacts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="app_unnatural_artifacts.html#discritization-issues">Discritization issues</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="app_unsuccessful_simulation.html">Unsuccessful simulation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="app_unsuccessful_simulation.html#using-lifepo4-datasets">Using LiFePO4 datasets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="computationalGraph/graphdoc.html">Computational Graph</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#model-assembly">Model assembly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#model-explorability">Model explorability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#model-hierarchy-and-composition">Model hierarchy and composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#basic-example">Basic Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="seealso.html">See Also</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="seealso.html#mrst">MRST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seealso.html#visualization">Visualization Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="seealso.html#id2">Grid Factory Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seealso.html#fair-data">FAIR Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="intermediate.html">Intermediate Usage</a></li>
+      <li class="breadcrumb-item active">Functional parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/functioninterface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="functional-parameters">
+<h1>Functional parameters<a class="headerlink" href="#functional-parameters" title="Link to this heading"></a></h1>
+<p>Battery models contain functional parameters. The most important one is probably the OCV function, but we have also the
+ionic conductivity and diffusion in the electrolyte.</p>
+<p>The function definitions are given in the input json file, using one of the following formats:</p>
+<ol class="arabic simple">
+<li><p>Function name</p></li>
+<li><p>Function formula</p></li>
+<li><p>Tabulated function</p></li>
+</ol>
+<p>The json schema that describes the interface is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/Function.schema.json">here</a>.</p>
+<p>The keyword to choose the format is given by <code class="code docutils literal notranslate"><span class="pre">functionFormat</span></code>.</p>
+<p>The keyword <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is common to all the formats and is used to describe the list of arguments that will be
+sent to the function. The argument names given there are independent to the implementation in itself. They indicates the
+meaning of the arguments.</p>
+<p>Let us go through each different format separatly. For each format, we start by giving an example.</p>
+<section id="function-name">
+<h2>Function name<a class="headerlink" href="#function-name" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;functionFormat&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;functionName&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For a formula, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;named</span> <span class="pre">function&quot;</span></code>.</p>
+<p>With the key <code class="code docutils literal notranslate"><span class="pre">&quot;functionName&quot;</span></code>, we give the name of the function. In matlab, this function should then be found in
+the function path (more on the in  <a class="reference external" href="https://se.mathworks.com/help/matlab/ref/addpath.html">matlab documentation</a>).</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is used to describe the list of arguments that will be sent to the function. Note that the
+names do not necessarily to the one used in the implementation itself, as we can check in the implementation of
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/computeOCP_Graphite_Torchio.m">computeOCP_Graphite_Torchio</a> where the argument there is set to the variable name <code class="code docutils literal notranslate"><span class="pre">theta</span></code>.</p>
+</section>
+<section id="function-formula">
+<h2>Function formula<a class="headerlink" href="#function-formula" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string expression&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;var1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;var2&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;expression&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;language&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;matlab&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;variableNames&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">],</span>
+<span class="w">                    </span><span class="nt">&quot;formula&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;x + y&quot;</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For a formula, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;string</span> <span class="pre">expression&quot;</span></code>.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">argumentList</span></code> is used to describe the list of arguments that will be sent to the functions. Again, it is not related to the actual implementation described under the key <code class="code docutils literal notranslate"><span class="pre">expression</span></code>.</p>
+<p>With the key <code class="code docutils literal notranslate"><span class="pre">&quot;expression&quot;</span></code>, we give the expression which, once evaluated, will give the value of the
+function.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">language</span></code> is used to provide the programming language that the expression should be evaluated with. The
+default value is <code class="code docutils literal notranslate"><span class="pre">matlab</span></code> but we aim at a language agnostic interface and we open for the possibility to include
+an expression using an other language, even if it is not supported in the matlab code.</p>
+<p>The key <code class="code docutils literal notranslate"><span class="pre">formula</span></code> is used to give the expression that we will be run and return the value. The variable names
+should be given using the key <code class="code docutils literal notranslate"><span class="pre">variableNames</span></code>.</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json#L10">chen2020_positive_electrode_interface.json</a>.</p>
+</section>
+<section id="tabulated-function">
+<h2>Tabulated function<a class="headerlink" href="#tabulated-function" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tabulated&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataX&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">&quot;dataY&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Tabulated functions are given by a set of point values in the form of a table. Between the given points, the value is
+obtained by linear interpolation.</p>
+<p>For a tabulated function, the function format is set to <code class="code docutils literal notranslate"><span class="pre">&quot;tabulated&quot;</span></code>.</p>
+<p>The keys <code class="code docutils literal notranslate"><span class="pre">dataX</span></code> and <code class="code docutils literal notranslate"><span class="pre">dataY</span></code> are used to provide the data points of the function.</p>
+<p>You can find an example in the json file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#L11">LFP_Xu2015.json</a></p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="functionInterfaceExample.html#functioninterfaceexample"><span class="std std-ref">Example script</span></a></p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mergejsonstruct.html" class="btn btn-neutral float-left" title="Merging parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="functionInterfaceExample.html" class="btn btn-neutral float-right" title="Example of the function interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
