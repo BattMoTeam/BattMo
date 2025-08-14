@@ -1434,7 +1434,7 @@ classdef GenericBattery < BaseModel
 
                 if model.(elde).(co).(am).(itf).includeEntropyChange
                     dUdT = state.(elde).(co).(am).(itf).dUdT;
-                    itf_src = itf_src + T(co_map).*dUdT;
+                    itf_src = itf_src + n*F*vols.*Rvol.*T(co_map).*dUdT;
                 end
                 
                 src = subsetPlus(src, itf_src, co_map);
