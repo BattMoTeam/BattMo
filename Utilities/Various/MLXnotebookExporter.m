@@ -20,7 +20,7 @@ classdef MLXnotebookExporter
         
         % input directories for the mlx notebooks (for info)
         inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
-        outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
+        outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
         
     end
 
@@ -35,6 +35,8 @@ classdef MLXnotebookExporter
 
         function updateIpynbs(mne)
         % Update all the ipynb in the documentation.
+
+            error('do not use for the moment. not updated. see setupIpynbFromMlx instead')
 
             run_note_book = false;
             
