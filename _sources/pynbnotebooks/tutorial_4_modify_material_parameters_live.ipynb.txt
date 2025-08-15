@@ -190,7 +190,8 @@
     "    hold on\n",
     "end"
    ],
-   "outputs": []
+   "outputs": [
+]
   },
   {
    "cell_type": "code",
@@ -333,7 +334,8 @@
     "% run the simulation\n",
     "output = runBatteryJson(jsonstruct);"
    ],
-   "outputs": []
+   "outputs": [
+]
   },
   {
    "cell_type": "markdown",
@@ -403,7 +405,7 @@
    "name": "matlab",
    "nbconvert_exporter": "matlab",
    "pygments_lexer": "matlab",
-   "version": "24.2.0.2863752"
+   "version": "24.1.0.2689473"
   }
  },
  "nbformat": 4,
