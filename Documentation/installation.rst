@@ -33,3 +33,21 @@ Here is video which guides you through the installation in details
 For a detailed guided installation of git, you can consult this `video <https://www.youtube.com/watch?v=FMXpZjXhaFY>`_
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
+
+Update existing installation
+============================
+
+In the case where we alread have installed BattMo and you want to update to the latest version. As usual in git, you
+will do that by runnin
+
+.. code-block:: shell
+
+   git pull
+
+In addition to that, the dependencies that are given through git submodules. To update those you need to run in addition
+to the previous command,
+
+.. code-block:: shell
+
+   git submodule update --recursive
+
