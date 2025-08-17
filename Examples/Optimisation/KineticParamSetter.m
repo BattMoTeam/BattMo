@@ -16,7 +16,7 @@ classdef KineticParamSetter
 
     methods
 
-        function paramsetter = ParamSetter()
+        function paramsetter = KineticParamSetter()
 
 
             % Some default values for the bounding box
@@ -25,7 +25,8 @@ classdef KineticParamSetter
                        [1, 2];
                        [0.5, 2];
                        [1e-14, 1e-9];
-                       [1e-15, 1e-8]
+                       [1e-15, 1e-8];
+                       [1.0, 3];
                       ];
 
             paramsetter.boxLims = boxLims;
