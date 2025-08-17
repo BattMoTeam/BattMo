@@ -1,23 +1,24 @@
-classdef Simulator
+classdef SimulationSetup
 %
 %
 % SYNOPSIS:
-%   Simulator(model, varargin)
+%   SimulationSetup(model, varargin)
 %
-% DESCRIPTION: Setup a simulator instance. The setup of the simulation can be modified by changing the properties in the
+% DESCRIPTION: Setup a simulation setup instance. The setup of the simulation can be modified by changing the properties in the
 %              class. The simulation is run and the output returned using the method `run` (see below)
 %              
 %              
 %
-% PARAMETERS:
-%   model    - Simulation model (see below)
-%   varargin - Properties can be changed at setup using option argument key-value pair
+% PARAMETERS: struct with fields
+% - model 
+% - initstate
+% - schedule 
 %
 % RETURNS:
 %   class instance
 %
-% EXAMPLE: simulator = Simulator(model);
-%          [states, globVars, reports] = simulator.run();
+% EXAMPLE: simsetup = SimulationSetup(model);
+%          [states, globVars, reports] = simsetup.run();
 %
 % SEE ALSO: simulateScheduleAD (underlying function that is called for the simulation), 
 %
@@ -29,14 +30,14 @@ classdef Simulator
               % must be a subclass of the `BaseModel` base class.  Examples are
               % the `Battery`, `GenericBattery` or `Electrolyser` models
 
-        initialState % Initial state of the system. It should have whatever fields
-                     % are associated with the physical model, with reasonable
-                     % values. It is the responsibility of the user to ensure that
-                     % the state is properly initialized.
-                     %
-                     % If the model has a `setupInitialState` method, this method
-                     % is used to setup the `initialState` (if none is given)
-                     % 
+        initstate % Initial state of the system. It should have whatever fields
+                  % are associated with the physical model, with reasonable
+                  % values. It is the responsibility of the user to ensure that
+                  % the state is properly initialized.
+                  %
+                  % If the model has a `setupInitialState` method, this method
+                  % is used to setup the `initialState` (if none is given)
+                  % 
 
         schedule  % Schedule containing fields step and control, defined as follows:
                   % - `schedule.control` is a struct array containing
@@ -136,71 +137,66 @@ classdef Simulator
 
     methods
         
-        function simulator = Simulator(model, varargin)
+        function simsetup = SimulationSetup(simInput)
 
-            simulator.model = model;
+            model = simInput.model;
             
-            simulator = merge_options(simulator, varargin{:});
+            simsetup.model = model;
 
             %% Setup default initial state, if possible
-            if isempty(simulator.initialState) && ismethod(model, 'setupInitialState')
-                
-                simulator.initialState = model.setupInitialState();
-                
+            
+            if ismethod(model, 'setupInitialState')
+                simInput = setDefaultJsonStructField(simInput, 'initstate', model.setupInitialState());
             end
             
             %% Setup default schedule (time stepping), if possible
-            if isempty(simulator.schedule)
-
-                if isprop(model, 'Control') && ismethod(model.Control, 'setupSchedule')
-
-                    simulator.schedule = model.Control.setupSchedule();
-                    
-                end
+            
+            if isAssigned(model, 'Control') && ismethod(model.Control, 'setupSchedule')
+                simInput = setDefaultJsonStructField(simInput, 'schedule', model.Control.setupSchedule());
             end
             
-            %% Setup default solver properties
-            if isempty(simulator.NonLinearSolver)
-
-                nls = NonLinearSolver();
-                nls.errorOnFailure    = false;
-                nls.continueOnFailure = false;
-
-                simulator.NonLinearSolver = nls;
-                
-            end
+            %% Set default nonlinear solver
             
+            nls = NonLinearSolver();
+            nls.errorOnFailure    = false;
+            nls.continueOnFailure = false;
+
+            simInput = setDefaultJsonStructField(simInput, 'NonLinearSolver', nls);
+
             %% Setup default solver properties
-            if isempty(simulator.OutputMinisteps)            
-                simulator.OutputMinisteps = true;
-            end
+            
+            simInput = setDefaultJsonStructField(simInput, 'OutputMinisteps', true);
+
+            simsetup.schedule        = getJsonStructField(simInput, 'schedule');
+            simsetup.NonLinearSolver = getJsonStructField(simInput, 'NonLinearSolver');
+            simsetup.initstate       = getJsonStructField(simInput, 'initstate');
             
         end
 
-        function [states, globVars, reports] = run(simulator)
+        function [states, globVars, reports] = run(simsetup)
 
-            initialState = simulator.initialState;
-            model        = simulator.model;
-            schedule     = simulator.schedule;
+            initstate = simsetup.initstate;
+            model     = simsetup.model;
+            schedule  = simsetup.schedule;
 
-            fds = {'Verbose'              , ...
-                   'OutputMinisteps'      , ...
-                   'Verbose'              , ...
-                   'OutputMinisteps'      , ...
-                   'NonLinearSolver'      , ...
-                   'OutputHandler'        , ...
+            fds = {'Verbose'             , ...
+                   'OutputMinisteps'     , ...
+                   'Verbose'             , ...
+                   'OutputMinisteps'     , ...
+                   'NonLinearSolver'     , ...
+                   'OutputHandler'       , ...
                    'GlobVarOutputHandler', ...
-                   'ReportHandler'        , ...
-                   'LinearSolver'         , ...
-                   'afterStepFn'          , ...
-                   'processOutputFn'      , ...
+                   'ReportHandler'       , ...
+                   'LinearSolver'        , ...
+                   'afterStepFn'         , ...
+                   'processOutputFn'     , ...
                    'controlLogicFn'};
 
-            vals = cellfun(@(fd) simulator.(fd), fds, 'uniformoutput', false);
+            vals = cellfun(@(fd) simsetup.(fd), fds, 'uniformoutput', false);
 
             opts = reshape(vertcat(fds, vals), [], 1);
             
-            [globVars, states, report] = simulateScheduleAD(initialState, model, schedule, opts{:});
+            [globVars, states, report] = simulateScheduleAD(initstate, model, schedule, opts{:});
             
         end
         
