@@ -18,15 +18,14 @@ classdef KineticParamSetter
 
         function paramsetter = KineticParamSetter()
 
-
-            % Some default values for the bounding box
-            boxLims = [[1e5, 1e7];
-                       [1e4, 1e10];
-                       [1, 2];
-                       [0.5, 2];
+            % Some default values for the bounding box are given here but they should be checked.
+            boxLims = [[1e4, 1e9];
+                       [1e4, 1e9];
+                       [0.5, 3];
+                       [0.5, 3];
                        [1e-14, 1e-9];
-                       [1e-15, 1e-8];
-                       [1.0, 3];
+                       [1e-14, 1e-9];
+                       [0.5, 3];
                       ];
 
             paramsetter.boxLims = boxLims;
@@ -94,6 +93,8 @@ classdef KineticParamSetter
 
             end
 
+            model.jsonstruct = [];
+            
         end
 
 
@@ -208,6 +209,35 @@ classdef KineticParamSetter
             end
 
         end
+
+        function printBoxLims(paramsetter)
+            
+            boxLims = paramsetter.boxLims;
+            boxLims = num2cell(boxLims);
+
+            params = paramsetter.shortnames();
+
+            T = cell2table(horzcat(params, boxLims), 'VariableNames', {'parameters', 'min', 'max'});
+            display(T);
+            
+        end
+        
+        function paramsetter = setupRelBox(paramsetter, relsize, X)
+
+            if numel(relsize) == 1
+                relsize = relsize*ones(size(X));
+            end
+
+            boxLims = paramsetter.boxLims;
+            for k = 1:numel(X)
+                boxLims(k, 1) = X(k)*(1 - relsize(k));
+                boxLims(k, 2) = X(k)*(1 + relsize(k));
+            end
+
+            paramsetter.boxLims = boxLims;
+
+        end
+
     end
 
 end
