@@ -489,15 +489,13 @@ classdef EquilibriumCalibrationSetup
             totalAmount           = vals.(pe).totalAmount;
 
             theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals0.(pe).saturationConcentration;
-            fpe = ecs.model.(pe).(co).(am).(itf).computeOCP(theta*cmax, T, cmax);
+            fpe = ecs.model.(pe).(co).(am).(itf).computeOCP(theta);
 
             guestStoichiometry100 = vals.(ne).guestStoichiometry100;
             totalAmount           = vals.(ne).totalAmount;
 
             theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals0.(ne).saturationConcentration;
-            fne = ecs.model.(ne).(co).(am).(itf).computeOCP(theta*cmax, T, cmax);
+            fne = ecs.model.(ne).(co).(am).(itf).computeOCP(theta);
 
             f = fpe - fne;
 
