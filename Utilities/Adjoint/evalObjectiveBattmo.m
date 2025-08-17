@@ -18,7 +18,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %
 %   objFunc      - Objective function. The signature of the objective function is
 %
-%                  objval = objFunc(model, states, schedule, varargin)
+%                  objval = objFunc(simsetup, states, varargin)
 %
 %                  where optional keyword arguments are
 %
@@ -96,32 +96,16 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
 
-    if isempty(opt.NonLinearSolver)
-        nls = NonLinearSolver;
-        nls.errorOnFailure    = false;
-        nls.continueOnFailure = false;
-    else
-        nls = opt.NonLinearSolver;
-    end
-
-    [globVars, states] = simulateScheduleAD(setupNew.state0               , ...
-                                            setupNew.model                , ...
-                                            setupNew.schedule             , ...
-                                            'NonLinearSolver', nls        , ...
-                                            'OutputMinisteps', false      , ...
-                                            'Verbose'        , opt.Verbose, ...
-                                            extra{:});
-
+    states = setupNew.run();
+    
     failure = false;
     try
-        objValues = objFunc(setupNew.model, states, setupNew.schedule);
+        objValues = objFunc(setupNew, states);
         objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
     catch
         objValue = NaN;
         failure = true;
     end
-
-
 
     if nargout > 1
 
@@ -137,13 +121,14 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
               case 'None'
 
                 if nargout > 2
-                    [varargout{2:3}] = deal(globVars, states);
+                    varargout{3} = states;
                 end
+                
                 return
 
               case 'AdjointAD'
 
-                objh = @(tstep, model, state, computeStatePartial) objFunc(model, states, setupNew.schedule, ...
+                objh = @(tstep, model, state, computeStatePartial) objFunc(setupNew, states, ...
                                                                            'ComputePartials', computeStatePartial , ...
                                                                            'tStep'          , tstep, ...
                                                                            'state'          , state);
