@@ -27,12 +27,12 @@ classdef KineticParamSetter
 
             
             % Some default values for the bounding box are given here but they should be checked.
-            boxLims = [[1e4, 1e9];
-                       [1e4, 1e9];
+            boxLims = [[1e4, 1e7];
+                       [1e4, 1e7];
                        [0.5, 3];
                        [0.5, 3];
-                       [1e-14, 1e-9];
-                       [1e-14, 1e-9];
+                       [1e-14, 1e-11];
+                       [1e-14, 1e-11];
                        [0.5, 3];
                       ];
 
