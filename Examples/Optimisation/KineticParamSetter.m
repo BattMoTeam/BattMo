@@ -12,12 +12,20 @@ classdef KineticParamSetter
 
         boxLims
 
+
+        active_parameters_inds
+        active_parameters_shortnames
     end
 
     methods
 
-        function paramsetter = KineticParamSetter()
+        function paramsetter = KineticParamSetter(varargin)
 
+            opt = struct('active_parameters_inds'                   , []   , ...
+                         'active_parameters_shortnames'             , []);
+            opt = merge_options(opt, varargin{:});
+
+            
             % Some default values for the bounding box are given here but they should be checked.
             boxLims = [[1e4, 1e9];
                        [1e4, 1e9];
@@ -30,11 +38,127 @@ classdef KineticParamSetter
 
             paramsetter.boxLims = boxLims;
 
+            sn = paramsetter.shortnames(paramsetter.allLocations);
+
+            if isempty(opt.active_parameters_inds)
+
+                if isempty(opt.active_parameters_shortnames)
+                    active_parameters_inds = (1 : size(boxLims, 1));
+                else
+                    psn = opt.active_parameters_shortnames;
+                    active_parameters_inds = find(ismember(sn, psn));
+                end
+            else
+                active_parameters_inds = opt.active_parameters_inds
+            end
+            
+            paramsetter.boxLims                      = boxLims(active_parameters_inds, :);
+            paramsetter.active_parameters_inds       = active_parameters_inds;
+            paramsetter.active_parameters_shortnames = sn(active_parameters_inds);
+            
+        end
+
+        function locs = allLocations(paramsetter)
+
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            co    = 'Coating';
+            cc    = 'CurrentCollector';
+            am    = 'ActiveMaterial';
+            sd    = 'SolidDiffusion';
+            itf   = 'Interface';
+            elyte = 'Electrolyte';
+            sep   = 'Separator';
+
+            locs = {};
+
+            locs{1} = {ne, co, am, itf, 'volumetricSurfaceArea'};
+            locs{2} = {pe, co, am, itf, 'volumetricSurfaceArea'};
+
+            locs{3} = {ne, co, 'bruggemanCoefficient'};
+            locs{4} = {pe, co, 'bruggemanCoefficient'};
+
+            locs{5} = {ne, co, am, sd, 'referenceDiffusionCoefficient'};
+            locs{6} = {pe, co, am, sd, 'referenceDiffusionCoefficient'};
+
+            locs{7} = {elyte, 'bruggemanCoefficient'};
+
+        end
+
+        function locs = locations(paramsetter)
+
+            locs = paramsetter.allLocations();
+            locs = locs(paramsetter.active_parameters_inds);
+
+            assert(numel(locs) == size(paramsetter.boxLims, 1), 'Number of locations and box limits must match');
+
+        end
+
+        function s = shortlocs(paramsetter, locations)
+
+            s = cellfun(@(loc) {loc{1}, loc{end}}, locations, 'un', false);
+
+        end
+
+        function sn = shortnames(paramsetter, locations, join)
+
+            if (nargin < 2) | (nargin >= 2 && isempty(locations))
+                locations = paramsetter.locations();
+            end
+            
+            if nargin < 3
+                join = false;
+            end
+
+            dict = struct('NegativeElectrode'              , 'ne'   , ...
+                          'PositiveElectrode'              , 'pe'   , ...
+                          'effectiveElectronicConductivity', 'kappa', ...
+                          'Electrolyte'                    , 'elyte', ...
+                          'volumetricSurfaceArea'          , 'vsa'  , ...
+                          'bruggemanCoefficient'           , 'bg'   , ...
+                          'referenceDiffusionCoefficient'  , 'D'    , ...
+                          'Separator'                      , 'sep');
+
+            slocs = paramsetter.shortlocs(locations);
+            sn = cell(numel(slocs), 1);
+
+            for k = 1:numel(slocs)
+                loc = slocs{k};
+                sn{k} = [dict.(loc{1}), '_', dict.(loc{2})];
+            end
+
+            if join
+                sn = strjoin(sn, ' ');
+            end
+
+        end
+
+        function vals = setFromVector(paramsetter, X)
+        % convert from vector to struct representation of the parameter 
+            slocs = paramsetter.shortlocs(paramsetter.locations());
+            vals = struct();
+
+            for k = 1:numel(slocs)
+                s = slocs{k};
+                vals = setfield(vals, s{:}, X(k));
+            end
+
+        end
+
+        function X = setToVector(paramsetter, vals)
+        % convert from struct to vector representation of the parameter 
+            locs = paramsetter.shortlocs(paramsetter.locations());
+            X = nan(numel(locs), 1);
+
+            for k = 1:numel(locs)
+                loc = locs{k};
+                X(k) = getfield(vals, loc{:});
+            end
+
         end
 
         function simsetup = setValues(paramsetter, simsetup, X)
-        %%
-        % Given the vector of parameters X, set the model with those parameters
+        % Given a parameter vector X, change the model parameter values accordingly.
 
             model = simsetup.model;
             
@@ -46,7 +170,7 @@ classdef KineticParamSetter
             sd      = 'SolidDiffusion';
             itf     = 'Interface';
 
-            %% Automatic part of the update
+            % Automatic update
             locs = paramsetter.locations();
 
             for k = 1:numel(locs)
@@ -54,25 +178,34 @@ classdef KineticParamSetter
                 model = setfield(model, loc{:}, X(k));
             end
 
-            %% Update dependencies (manual work)
-            eldes = {ne, pe};
-
+            sn = paramsetter.shortnames;
+            
+            % Update dependencies (manual work)
+            eldes    = {ne, pe};
+            sn_eldes = {'ne', 'pe'};
+            
             for ielde = 1 : numel(eldes)
 
-                elde = eldes{ielde};
-
-                bg    = model.(elde).(co).bruggemanCoefficient;
-                kappa = model.(elde).(co).electronicConductivity;
-                vf    = model.(elde).(co).volumeFraction;
-
-                model.(elde).(co).effectiveElectronicConductivity = kappa*vf^bg;
-
-                model.(elde).(co).(am).(sd).volumetricSurfaceArea = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                elde    = eldes{ielde};
+                sn_elde = sn_eldes{ielde};
+                
+                if ismember(sprintf('%s_bg', sn_elde), sn)
+                    bg    = model.(elde).(co).bruggemanCoefficient;
+                    kappa = model.(elde).(co).electronicConductivity;
+                    vf    = model.(elde).(co).volumeFraction;
+                    model.(elde).(co).effectiveElectronicConductivity = kappa*vf^bg;
+                end
+                
+                if ismember(sprintf('%s_vsa', elde), sn)
+                    model.(elde).(co).(am).(sd).volumetricSurfaceArea = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                end
+                
 
             end
 
             if model.(elyte).useRegionBruggemanCoefficients
 
+                error('does not support yet active index')
                 nc = model.(elyte).G.getNumberOfCells();
                 bg = zeros(nc, 1);
 
@@ -95,21 +228,17 @@ classdef KineticParamSetter
 
             end
 
-            model.jsonstruct = [];
-
             simsetup.model = model;
-            
+
         end
 
-
         function X = getValues(paramsetter, simsetup)
-        %%
-        % Given a model, retrieve the value of the optimization parameter in a vector X
+        % Fetch in the model the parameter values and return those as a vector
 
             model = simsetup.model;
             
             locs  = paramsetter.locations();
-            short = paramsetter.shortlocs();
+            short = paramsetter.shortlocs(locs);
 
             vals = struct();
 
@@ -124,6 +253,7 @@ classdef KineticParamSetter
 
         end
 
+        
         function params = setupModelParameters(paramsetter, simsetup, varargin)
 
             function vals = localGetValues(model)
@@ -158,98 +288,6 @@ classdef KineticParamSetter
 
         end
         
-        function vals = setFromVector(paramsetter, X)
-        %%
-        % Conversion from vector format to structure with human readable names
-            slocs = paramsetter.shortlocs();
-            vals = struct();
-
-            for k = 1:numel(slocs)
-                s = slocs{k};
-                vals = setfield(vals, s{:}, X(k));
-            end
-
-        end
-
-        function X = setToVector(paramsetter, vals)
-        %%
-        % Conversion from structure with human readable names to vector format
-            locs = paramsetter.shortlocs();
-            X = nan(numel(locs), 1);
-
-            for k = 1:numel(locs)
-                loc = locs{k};
-                X(k) = getfield(vals, loc{:});
-            end
-
-        end
-
-        function locs = locations(paramsetter)
-        % Utility function, which gives the name of where the values of the parameter are stored in the model
-            
-            ne    = 'NegativeElectrode';
-            pe    = 'PositiveElectrode';
-            co    = 'Coating';
-            cc    = 'CurrentCollector';
-            am    = 'ActiveMaterial';
-            sd    = 'SolidDiffusion';
-            itf   = 'Interface';
-            elyte = 'Electrolyte';
-            sep   = 'Separator';
-
-            locs = {};
-
-            locs{1} = {ne, co, am, itf, 'volumetricSurfaceArea'};
-            locs{2} = {pe, co, am, itf, 'volumetricSurfaceArea'};
-
-            locs{3} = {ne, co, 'bruggemanCoefficient'};
-            locs{4} = {pe, co, 'bruggemanCoefficient'};
-
-            locs{5} = {ne, co, am, sd, 'referenceDiffusionCoefficient'};
-            locs{6} = {pe, co, am, sd, 'referenceDiffusionCoefficient'};
-
-            locs{7} = {elyte, 'bruggemanCoefficient'};
-
-            assert(numel(locs) == size(paramsetter.boxLims,1), 'Number of locations and box limits must match');
-
-        end
-
-        function s = shortlocs(paramsetter)
-        % Utility function that provides short names for the optimization parameters
-            s = cellfun(@(loc) {loc{1}, loc{end}}, paramsetter.locations(), 'un', false);
-
-        end
-
-        function sn = shortnames(paramsetter, join)
-        % Utility function that provides the conversion from long to short name
-            s = cellfun(@(loc) {loc{1}, loc{end}}, paramsetter.locations(), 'un', false);
-
-            if nargin < 2
-                join = false;
-            end
-
-            dict = struct('NegativeElectrode'              , 'ne'   , ...
-                          'PositiveElectrode'              , 'pe'   , ...
-                          'effectiveElectronicConductivity', 'kappa', ...
-                          'Electrolyte'                    , 'elyte', ...
-                          'volumetricSurfaceArea'          , 'vsa'  , ...
-                          'bruggemanCoefficient'           , 'bg'   , ...
-                          'referenceDiffusionCoefficient'  , 'D'    , ...
-                          'Separator'                      , 'sep');
-
-            slocs = paramsetter.shortlocs();
-            sn = cell(numel(slocs), 1);
-
-            for k = 1:numel(slocs)
-                loc = slocs{k};
-                sn{k} = [dict.(loc{1}), '_', dict.(loc{2})];
-            end
-
-            if join
-                sn = strjoin(sn, ' ');
-            end
-
-        end
 
         function printBoxLims(paramsetter)
             
