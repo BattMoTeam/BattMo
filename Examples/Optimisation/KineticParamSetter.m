@@ -32,9 +32,11 @@ classdef KineticParamSetter
 
         end
 
-        function model = setValues(paramsetter, model, X)
+        function simsetup = setValues(paramsetter, simsetup, X)
         %%
         % Given the vector of parameters X, set the model with those parameters
+
+            model = simsetup.model;
             
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
@@ -94,13 +96,18 @@ classdef KineticParamSetter
             end
 
             model.jsonstruct = [];
+
+            simsetup.model = model;
             
         end
 
 
-        function X = getValues(paramsetter, model)
+        function X = getValues(paramsetter, simsetup)
         %%
         % Given a model, retrieve the value of the optimization parameter in a vector X
+
+            model = simsetup.model;
+            
             locs  = paramsetter.locations();
             short = paramsetter.shortlocs();
 
@@ -114,6 +121,40 @@ classdef KineticParamSetter
             end
 
             X = paramsetter.setToVector(vals);
+
+        end
+
+        function params = setupModelParameters(paramsetter, simsetup, varargin)
+
+            function vals = localGetValues(model)
+
+                newsimsetup = simsetup;
+                newsimsetup.model = model;
+                vals = paramsetter.getValues(newsimsetup);
+                
+            end
+
+            function model = localSetValues(model, v)
+
+                newsimsetup = simsetup;
+                newsimsetup.model = model;
+                newsimsetup = paramsetter.setValues(newsimsetup, v);
+                model = newsimsetup.model;
+                
+            end
+
+            getValues = @(model, notused) localGetValues(model);
+            setValues = @(model, notused, v) localSetValues(model, v);
+            
+            params{1} = ModelParameter(simsetup, ...
+                                       'name'     , 'ParamSetter'      , ...
+                                       'belongsTo', 'model'            , ...
+                                       'location' , {''}               , ...
+                                       'boxLims'  , paramsetter.boxLims, ...
+                                       'getfun'   , getValues          , ...
+                                       'setfun'   , setValues          , ...
+                                       varargin{:});
+            
 
         end
         
