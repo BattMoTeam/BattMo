@@ -127,13 +127,12 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
               case 'AdjointAD'
 
-                objh = @(tstep, model, state, computeStatePartial) objFunc(setupNew, states, ...
-                                                                           'ComputePartials', computeStatePartial , ...
-                                                                           'tStep'          , tstep, ...
-                                                                           'state'          , state);
                 nms = applyFunction(@(x) x.name, parameters);
 
-                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
+                % prepare objective function fo
+                getObj = @(tstep, model, state, computeStatePartial) getObjective(objFunc, setupNew, tstep, model, state, computeStatePartial);
+                
+                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, getObj, ...
                                                            'LinearSolver', opt.AdjointLinearSolver);
 
                 gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
@@ -210,6 +209,17 @@ function pert_pvec = perturb(pvec, iparam, i, eps_pert)
 
 end
 
+
+function obj = getObjective(objFunc, simsetup, tstep, model, states, computeStatePartial)
+
+    newsimsetup = simsetup;
+    newsimsetup.model = model;
+
+    obj = objFunc(simsetup, states, ...
+                  'ComputePartials', computeStatePartial , ...
+                  'tStep'          , tstep, ...
+                  'state'          , state);
+end
 
 
 
