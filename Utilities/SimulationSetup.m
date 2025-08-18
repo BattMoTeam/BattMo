@@ -163,13 +163,10 @@ classdef SimulationSetup
 
             simInput = setDefaultJsonStructField(simInput, 'NonLinearSolver', nls);
 
-            %% Setup default solver properties
-            
-            simInput = setDefaultJsonStructField(simInput, 'OutputMinisteps', true);
-
             simsetup.schedule        = getJsonStructField(simInput, 'schedule');
-            simsetup.NonLinearSolver = getJsonStructField(simInput, 'NonLinearSolver');
             simsetup.initstate       = getJsonStructField(simInput, 'initstate');
+            simsetup.NonLinearSolver = getJsonStructField(simInput, 'NonLinearSolver');
+            simsetup.OutputMinisteps = getJsonStructField(simInput, 'OutputMinisteps', true);
             
         end
 
@@ -196,7 +193,7 @@ classdef SimulationSetup
 
             opts = reshape(vertcat(fds, vals), [], 1);
             
-            [globVars, states, report] = simulateScheduleAD(initstate, model, schedule, opts{:});
+            [globVars, states, reports] = simulateScheduleAD(initstate, model, schedule, opts{:});
             
         end
         
