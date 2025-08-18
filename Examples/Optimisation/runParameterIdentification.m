@@ -42,8 +42,7 @@ validateJson = false;
 json0 = json;
 output0 = runBatteryJson(json0);
 
-simInput = subsetJsonStruct(output0, {'model', 'schedule', 'initstate'});
-simsetup = SimulationSetup(simInput);
+simsetup = output0.simsetup;
 
 %% Setup parameters to be optimized
 params = [];
