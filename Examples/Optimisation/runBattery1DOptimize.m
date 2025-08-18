@@ -145,13 +145,17 @@ p_base = max(0, p_base - 0.1);
 % optimum.
 [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 20);
 
-return
-% Compute objective at optimum
+%%
+% We compute objective at optimum
+
 opt_simsetup = updateSetupFromScaledParameters(simsetup, parameters, p_opt);
-[~, states_opt, ~] = simulateScheduleAD(opt_simsetup.state0, opt_simsetup.model, opt_simsetup.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-time_opt = cellfun(@(x) x.time, states_opt);
-E_opt = cellfun(@(x) x.Control.E, states_opt);
-I_opt = cellfun(@(x) x.Control.I, states_opt);
+
+opt_states = opt_simsetup.run();
+
+time_opt = cellfun(@(x) x.time, opt_states);
+E_opt    = cellfun(@(x) x.Control.E, opt_states);
+I_opt    = cellfun(@(x) x.Control.I, opt_states);
+
 totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
 
 % Print optimal parameters
