@@ -25,7 +25,7 @@ function value = getJsonStructField(jsonstruct, fieldnamelist, defaultValue)
         
     end
 
-    if ~isfield(jsonstruct, fieldname)
+    if isempty(jsonstruct) || (~isfield(jsonstruct, fieldname) && ~isprop(jsonstruct, fieldname))
 
         value = UnAssigned();
 
