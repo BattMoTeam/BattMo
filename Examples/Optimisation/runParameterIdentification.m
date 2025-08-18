@@ -192,6 +192,7 @@ if do_plot
 end
 
 %% Summarize
+
 pOrig = cellfun(@(p) p.getParameter(simsetup), params)';
 
 fprintf('Initial guess:\n');
@@ -207,7 +208,7 @@ for k = 1:numel(params)
     fprintf('%g %s\n', pOpt(k), hit);
 end
 
-pExp = cellfun(@(p) p.getParameter(expSimSetup), params)';
+pExp = cellfun(@(p) p.getParameter(experimental_simsetup), params)';
 
 fprintf('\nExperimental values:\n');
 fprintf('%g\n', pExp);
