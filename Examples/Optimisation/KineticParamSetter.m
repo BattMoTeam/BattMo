@@ -12,139 +12,54 @@ classdef KineticParamSetter
 
         boxLims
 
+
+        active_parameters_inds
+        active_parameters_shortnames
     end
 
     methods
 
-        function paramsetter = KineticParamSetter()
+        function paramsetter = KineticParamSetter(varargin)
 
+            opt = struct('active_parameters_inds'                   , []   , ...
+                         'active_parameters_shortnames'             , []);
+            opt = merge_options(opt, varargin{:});
 
-            % Some default values for the bounding box
-            boxLims = [[1e5, 1e7];
-                       [1e4, 1e10];
-                       [1, 2];
-                       [0.5, 2];
-                       [1e-14, 1e-9];
-                       [1e-15, 1e-8];
-                       [1.0, 3];
+            
+            % Some default values for the bounding box are given here but they should be checked.
+            boxLims = [[1e4, 1e7];
+                       [1e4, 1e7];
+                       [0.5, 3];
+                       [0.5, 3];
+                       [1e-14, 1e-11];
+                       [1e-14, 1e-11];
+                       [0.5, 3];
                       ];
 
             paramsetter.boxLims = boxLims;
 
-        end
+            sn = paramsetter.shortnames(paramsetter.allLocations);
 
-        function model = setValues(paramsetter, model, X)
-        %%
-        % Given the vector of parameters X, set the model with those parameters
-            
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            elyte   = 'Electrolyte';
-            co      = 'Coating';
-            am      = 'ActiveMaterial';
-            sd      = 'SolidDiffusion';
-            itf     = 'Interface';
+            if isempty(opt.active_parameters_inds)
 
-            %% Automatic part of the update
-            locs = paramsetter.locations();
-
-            for k = 1:numel(locs)
-                loc = locs{k};
-                model = setfield(model, loc{:}, X(k));
-            end
-
-            %% Update dependencies (manual work)
-            eldes = {ne, pe};
-
-            for ielde = 1 : numel(eldes)
-
-                elde = eldes{ielde};
-
-                bg    = model.(elde).(co).bruggemanCoefficient;
-                kappa = model.(elde).(co).electronicConductivity;
-                vf    = model.(elde).(co).volumeFraction;
-
-                model.(elde).(co).effectiveElectronicConductivity = kappa*vf^bg;
-
-                model.(elde).(co).(am).(sd).volumetricSurfaceArea = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
-
-            end
-
-            if model.(elyte).useRegionBruggemanCoefficients
-
-                nc = model.(elyte).G.getNumberOfCells();
-                bg = zeros(nc, 1);
-
-                tagmap = struct('NegativeElectrode', 1, 'PositiveElectrode', 2, 'Separator', 3);
-                tags = model.(elyte).regionTags;
-
-                for k = 1:numel(locs)
-                    loc = locs{k};
-                    if strcmp(loc{1}, elyte) && strcmp(loc{2}, 'regionBruggemanCoefficients')
-                        % Should be set by the automatic update above:
-                        % bval = X(k);
-                        % model.(elyte).regionBruggemanCoefficients.(loc{3}) = bval;
-                        bval = model.(elyte).regionBruggemanCoefficients.(loc{3});
-                        bg = subsetPlus(bg, bval, (tags == tagmap.(loc{3})));
-                    end
-
+                if isempty(opt.active_parameters_shortnames)
+                    active_parameters_inds = (1 : size(boxLims, 1));
+                else
+                    psn = opt.active_parameters_shortnames;
+                    active_parameters_inds = find(ismember(sn, psn));
                 end
-
-                model.(elyte).bruggemanCoefficient = bg;
-
+            else
+                active_parameters_inds = opt.active_parameters_inds
             end
-
-        end
-
-
-        function X = getValues(paramsetter, model)
-        %%
-        % Given a model, retrieve the value of the optimization parameter in a vector X
-            locs  = paramsetter.locations();
-            short = paramsetter.shortlocs();
-
-            vals = struct();
-
-            for k = 1:numel(locs)
-                loc = locs{k};
-                mval = getfield(model, loc{:});
-                s = short{k};
-                vals = setfield(vals, s{:}, mval);
-            end
-
-            X = paramsetter.setToVector(vals);
-
-        end
-        
-        function vals = setFromVector(paramsetter, X)
-        %%
-        % Conversion from vector format to structure with human readable names
-            slocs = paramsetter.shortlocs();
-            vals = struct();
-
-            for k = 1:numel(slocs)
-                s = slocs{k};
-                vals = setfield(vals, s{:}, X(k));
-            end
-
-        end
-
-        function X = setToVector(paramsetter, vals)
-        %%
-        % Conversion from structure with human readable names to vector format
-            locs = paramsetter.shortlocs();
-            X = nan(numel(locs), 1);
-
-            for k = 1:numel(locs)
-                loc = locs{k};
-                X(k) = getfield(vals, loc{:});
-            end
-
-        end
-
-        function locs = locations(paramsetter)
-        % Utility function, which gives the name of where the values of the parameter are stored in the model
             
+            paramsetter.boxLims                      = boxLims(active_parameters_inds, :);
+            paramsetter.active_parameters_inds       = active_parameters_inds;
+            paramsetter.active_parameters_shortnames = sn(active_parameters_inds);
+            
+        end
+
+        function locs = allLocations(paramsetter)
+
             ne    = 'NegativeElectrode';
             pe    = 'PositiveElectrode';
             co    = 'Coating';
@@ -168,21 +83,30 @@ classdef KineticParamSetter
 
             locs{7} = {elyte, 'bruggemanCoefficient'};
 
-            assert(numel(locs) == size(paramsetter.boxLims,1), 'Number of locations and box limits must match');
+        end
+
+        function locs = locations(paramsetter)
+
+            locs = paramsetter.allLocations();
+            locs = locs(paramsetter.active_parameters_inds);
+
+            assert(numel(locs) == size(paramsetter.boxLims, 1), 'Number of locations and box limits must match');
 
         end
 
-        function s = shortlocs(paramsetter)
-        % Utility function that provides short names for the optimization parameters
-            s = cellfun(@(loc) {loc{1}, loc{end}}, paramsetter.locations(), 'un', false);
+        function s = shortlocs(paramsetter, locations)
+
+            s = cellfun(@(loc) {loc{1}, loc{end}}, locations, 'un', false);
 
         end
 
-        function sn = shortnames(paramsetter, join)
-        % Utility function that provides the conversion from long to short name
-            s = cellfun(@(loc) {loc{1}, loc{end}}, paramsetter.locations(), 'un', false);
+        function sn = shortnames(paramsetter, locations, join)
 
-            if nargin < 2
+            if (nargin < 2) | (nargin >= 2 && isempty(locations))
+                locations = paramsetter.locations();
+            end
+            
+            if nargin < 3
                 join = false;
             end
 
@@ -195,7 +119,7 @@ classdef KineticParamSetter
                           'referenceDiffusionCoefficient'  , 'D'    , ...
                           'Separator'                      , 'sep');
 
-            slocs = paramsetter.shortlocs();
+            slocs = paramsetter.shortlocs(locations);
             sn = cell(numel(slocs), 1);
 
             for k = 1:numel(slocs)
@@ -208,6 +132,191 @@ classdef KineticParamSetter
             end
 
         end
+
+        function vals = setFromVector(paramsetter, X)
+        % convert from vector to struct representation of the parameter 
+            slocs = paramsetter.shortlocs(paramsetter.locations());
+            vals = struct();
+
+            for k = 1:numel(slocs)
+                s = slocs{k};
+                vals = setfield(vals, s{:}, X(k));
+            end
+
+        end
+
+        function X = setToVector(paramsetter, vals)
+        % convert from struct to vector representation of the parameter 
+            locs = paramsetter.shortlocs(paramsetter.locations());
+            X = nan(numel(locs), 1);
+
+            for k = 1:numel(locs)
+                loc = locs{k};
+                X(k) = getfield(vals, loc{:});
+            end
+
+        end
+
+        function simsetup = setValues(paramsetter, simsetup, X)
+        % Given a parameter vector X, change the model parameter values accordingly.
+
+            model = simsetup.model;
+            
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            elyte   = 'Electrolyte';
+            co      = 'Coating';
+            am      = 'ActiveMaterial';
+            sd      = 'SolidDiffusion';
+            itf     = 'Interface';
+
+            % Automatic update
+            locs = paramsetter.locations();
+
+            for k = 1:numel(locs)
+                loc = locs{k};
+                model = setfield(model, loc{:}, X(k));
+            end
+
+            sn = paramsetter.shortnames;
+            
+            % Update dependencies (manual work)
+            eldes    = {ne, pe};
+            sn_eldes = {'ne', 'pe'};
+            
+            for ielde = 1 : numel(eldes)
+
+                elde    = eldes{ielde};
+                sn_elde = sn_eldes{ielde};
+                
+                if ismember(sprintf('%s_bg', sn_elde), sn)
+                    bg    = model.(elde).(co).bruggemanCoefficient;
+                    kappa = model.(elde).(co).electronicConductivity;
+                    vf    = model.(elde).(co).volumeFraction;
+                    model.(elde).(co).effectiveElectronicConductivity = kappa*vf^bg;
+                end
+                
+                if ismember(sprintf('%s_vsa', elde), sn)
+                    model.(elde).(co).(am).(sd).volumetricSurfaceArea = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                end
+                
+
+            end
+
+            if model.(elyte).useRegionBruggemanCoefficients
+
+                error('does not support yet active index')
+                nc = model.(elyte).G.getNumberOfCells();
+                bg = zeros(nc, 1);
+
+                tagmap = struct('NegativeElectrode', 1, 'PositiveElectrode', 2, 'Separator', 3);
+                tags = model.(elyte).regionTags;
+
+                for k = 1:numel(locs)
+                    loc = locs{k};
+                    if strcmp(loc{1}, elyte) && strcmp(loc{2}, 'regionBruggemanCoefficients')
+                        % Should be set by the automatic update above:
+                        % bval = X(k);
+                        % model.(elyte).regionBruggemanCoefficients.(loc{3}) = bval;
+                        bval = model.(elyte).regionBruggemanCoefficients.(loc{3});
+                        bg = subsetPlus(bg, bval, (tags == tagmap.(loc{3})));
+                    end
+
+                end
+
+                model.(elyte).bruggemanCoefficient = bg;
+
+            end
+
+            simsetup.model = model;
+
+        end
+
+        function X = getValues(paramsetter, simsetup)
+        % Fetch in the model the parameter values and return those as a vector
+
+            model = simsetup.model;
+            
+            locs  = paramsetter.locations();
+            short = paramsetter.shortlocs(locs);
+
+            vals = struct();
+
+            for k = 1:numel(locs)
+                loc = locs{k};
+                mval = getfield(model, loc{:});
+                s = short{k};
+                vals = setfield(vals, s{:}, mval);
+            end
+
+            X = paramsetter.setToVector(vals);
+
+        end
+
+        
+        function params = setupModelParameters(paramsetter, simsetup, varargin)
+
+            function vals = localGetValues(model)
+
+                newsimsetup = simsetup;
+                newsimsetup.model = model;
+                vals = paramsetter.getValues(newsimsetup);
+                
+            end
+
+            function model = localSetValues(model, v)
+
+                newsimsetup = simsetup;
+                newsimsetup.model = model;
+                newsimsetup = paramsetter.setValues(newsimsetup, v);
+                model = newsimsetup.model;
+                
+            end
+
+            getValues = @(model, notused) localGetValues(model);
+            setValues = @(model, notused, v) localSetValues(model, v);
+            
+            params{1} = ModelParameter(simsetup, ...
+                                       'name'     , 'ParamSetter'      , ...
+                                       'belongsTo', 'model'            , ...
+                                       'location' , {''}               , ...
+                                       'boxLims'  , paramsetter.boxLims, ...
+                                       'getfun'   , getValues          , ...
+                                       'setfun'   , setValues          , ...
+                                       varargin{:});
+            
+
+        end
+        
+
+        function printBoxLims(paramsetter)
+            
+            boxLims = paramsetter.boxLims;
+            boxLims = num2cell(boxLims);
+
+            params = paramsetter.shortnames();
+
+            T = cell2table(horzcat(params, boxLims), 'VariableNames', {'parameters', 'min', 'max'});
+            display(T);
+            
+        end
+        
+        function paramsetter = setupRelBox(paramsetter, relsize, X)
+
+            if numel(relsize) == 1
+                relsize = relsize*ones(size(X));
+            end
+
+            boxLims = paramsetter.boxLims;
+            for k = 1:numel(X)
+                boxLims(k, 1) = X(k)*(1 - relsize(k));
+                boxLims(k, 2) = X(k)*(1 + relsize(k));
+            end
+
+            paramsetter.boxLims = boxLims;
+
+        end
+
     end
 
 end

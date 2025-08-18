@@ -43,6 +43,19 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
 
         fn = ConstantFunction(jsonstruct);
 
+      case 'csv'
+
+        data = readmatrix(jsonstruct.filename);
+
+        jsonstruct = struct('functionFormat', 'tabulated'            , ...
+                            'argumentList'  , jsonstruct.argumentList, ...
+                            'dataX'         , data(:                 , 1), ...
+                            'dataY'         , data(:                 , 2));
+        
+        [fn_handler, fn] = setupFunction(jsonstruct);
+
+        return
+        
       otherwise
 
         error('function format not recognized');
