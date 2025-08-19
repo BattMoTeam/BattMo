@@ -1,16 +1,27 @@
 {
   "saturationConcentration": 30555,
-  "numberOfElectronsTransferred": 1,
   "volumetricSurfaceArea": 723600,
+  "numberOfElectronsTransferred": 1,
   "activationEnergyOfReaction": 5000,
-  "reactionRateConstant": 5.031e-11,
+  "reactionRateConstant": 5.031E-11,
   "guestStoichiometry100": 0.88551,
   "guestStoichiometry0": 0.1429,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
-    "type": "function",
-    "functionname": "computeOCP_Graphite_Torchio",
-    "argumentlist": [
-      "concentration",
-      "temperature",
-      "cmax"]}}
+    "functionFormat": "named function",
+    "functionName": "computeOCP_Graphite_Torchio",
+    "argumentList": [
+      "stoichiometry"
+    ]
+  },
+  "entropyChange": {
+    "functionFormat": "named function",
+    "functionName": "computeEntropyChange_Graphite_Torchio",
+    "argumentList": [
+      "stoichiometry"
+    ]
+  },
+  "referenceTemperature": 298.15,
+  "density": 2240,
+  "includeEntropyChange": true
+}

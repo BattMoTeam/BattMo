@@ -1,4 +1,4 @@
-function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
+function obj = leastSquaresEI(simsetup, states, refStates, varargin)
 %
 %
 % SYNOPSIS:
@@ -9,10 +9,9 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
 %
 %
 % PARAMETERS:
-%   model     - Battery model that is used by the solver
+%   simsetup  - Instance of SimulatorSetup
 %   states    - Input states
 %   refStates - Reference states
-%   schedule  - Schedule used for the simulation
 %
 % KEYWORD ARGUMENTS:
 %
@@ -38,6 +37,9 @@ function obj = leastSquaresEI(model, states, refStates, schedule, varargin)
 
     opt = merge_options(opt, varargin{:});
 
+    model    = simsetup.model;
+    schedule = simsetup.schedule;
+    
     dts = schedule.step.val;
 
     if isempty(opt.tStep) % do all

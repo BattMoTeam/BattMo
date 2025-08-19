@@ -11,9 +11,17 @@ classdef FlatJsonViewer
 
         function fjv  = FlatJsonViewer(flatjson, columnnames)
 
+            if isa(flatjson, 'table')
+                columnnames = flatjson.Properties.VariableNames;
+                flatjson = table2cell(flatjson);
+                skip_column_name_set = true;
+            else
+                skip_column_name_set = false;                
+            end
+            
             fjv.flatjson = flatjson;
 
-            if nargin < 2
+            if (nargin < 2) & ~skip_column_name_set
                 ncol = size(flatjson, 2);
                 % default values for the column
                 columnnames{1} = 'parameter name';
@@ -32,6 +40,11 @@ classdef FlatJsonViewer
 
         end
 
+        function T = getTable(fjv)
+
+            T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
+            
+        end
 
         function T = print(fjv, varargin)
 
@@ -48,7 +61,7 @@ classdef FlatJsonViewer
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
 
             if opt.print
-                disp(T);
+                display(T, 'view');
             end
 
             if ~isempty(opt.filename)

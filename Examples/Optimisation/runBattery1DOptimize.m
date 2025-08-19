@@ -4,13 +4,22 @@
 clear all
 close all
 
-% Load MRST modules
-mrstModule add ad-core mrst-gui mpfa optimization
-
 %% Setup the properties of Li-ion battery materials and cell design
 
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-jsonstruct.include_current_collectors = false;
+jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
+                        'lithium_ion_battery_nmc_graphite.json');
+jsonstruct_material = parseBattmoJson(jsonfilename);
+
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
+
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
+jsonstruct_control = parseBattmoJson(jsonfilename);
+
+jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+                               jsonstruct_material , ...
+                               jsonstruct_control});
+
 jsonstruct.use_thermal = false;
 
 % We define some shorthand names for simplicity.
@@ -28,46 +37,11 @@ sep     = 'Separator';
 jsonstruct.(ne).(am).diffusionModelType = 'simple';
 jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
-inputparams = BatteryInputParams(jsonstruct);
+jsonstruct.(ctrl).useCVswitch = true;
 
-inputparams.(ctrl).useCVswitch = true;
+output = runBatteryJson(jsonstruct, 'runSimulation', false);
 
-%% Setup the geometry and computational grid
-
-gen = BatteryGeneratorP2D();
-
-% Now, we update the inputparams with the properties of the grid.
-inputparams = gen.updateBatteryInputParams(inputparams);
-
-%  Initialize the battery model.
-
-model = Battery(inputparams);
-
-%% Setup the time step schedule
-% Smaller time steps are used to ramp up the current from zero to its
-% operational value. Larger time steps are then used for the normal
-% operation.
-
-DRate = model.Control.DRate;
-total = 1.2*hour/DRate;
-
-n    = 40;
-dt   = total*0.7/n;
-step = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
-
-% Setup the control by assigning a source and stop function.
-
-control = model.Control.setupScheduleControl();
-
-nc = 1;
-nst = numel(step.control);
-ind = floor(((0 : nst - 1)/nst)*nc) + 1;
-
-step.control = ind;
-control.Imax = model.Control.Imax;
-control = repmat(control, nc, 1);
-
-schedule = struct('control', control, 'step', step);
+simsetup = output.simsetup;
 
 %% Setup the nonlinear solver
 
@@ -79,21 +53,14 @@ nls.maxIterations = 10;
 % Change default behavior of nonlinear solver, in case of error
 nls.errorOnFailure = false;
 
+simsetup.NonLinearSolver = nls;
 % Change tolerance for the nonlinear iterations
-model.nonlinearTolerance = 1e-3*model.Control.Imax;
+simsetup.model.nonlinearTolerance = 1e-3*simsetup.model.Control.Imax;
 
 % Set verbosity
-model.verbose = false;
+simstup.model.verbose = false;
 
-%% Setup the initial state and solve
-
-% Setup the initial state
-initstate = model.setupInitialState();
-
-% Run the simulation
-[~, states, ~] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-
-model0 = model;
+states = simsetup.run;
 
 %% Process output and recover the output voltage and current from the output states.
 
@@ -115,8 +82,12 @@ if doPlot
 end
 
 %% Calculate the energy
-obj = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
-vals = obj(model, states, schedule);
+
+model    = simsetup.model;
+schedule = simsetup.schedule;
+
+obj = @(simsetup, states, varargin) EnergyOutput(simsetup, states, varargin{:});
+vals = obj(simsetup, states);
 totval = sum([vals{:}]);
 
 % Compare with trapezoidal integral: they should be about the same
@@ -124,8 +95,6 @@ totval_trapz = trapz(time, E.*I);
 fprintf('Rectangle rule: %g Wh, trapezoidal rule: %g Wh\n', totval/hour, totval_trapz/hour);
 
 %% Setup the optimization problem
-state0 = initstate;
-SimulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
 
 parameters = {};
 
@@ -134,40 +103,40 @@ paramsetter = PorositySetter(model, {ne, sep, pe});
 getporo = @(model, notused) paramsetter.getValues(model);
 setporo = @(model, notused, v) paramsetter.setValues(model, v);
 
-parameters = addParameter(parameters , SimulatorSetup, ...
-                          'name'     , 'porosity'    , ...
-                          'belongsTo', 'model'       , ...
-                          'boxLims'  , [0.1 , 0.9]   , ...
-                          'location' , {''}          , ...
-                          'getfun'   , getporo       , ...
+parameters = addParameter(parameters , simsetup   , ...
+                          'name'     , 'porosity' , ...
+                          'belongsTo', 'model'    , ...
+                          'boxLims'  , [0.1 , 0.9], ...
+                          'location' , {''}       , ...
+                          'getfun'   , getporo    , ...
                           'setfun'   , setporo);
 
 getfun = @(model, notused) model.Control.Imax;
 setfun = @(model, notused, v) setImax(model, v);
 
-parameters = addParameter(parameters, SimulatorSetup                 , ...
-                          'name'        , 'Imax'                     , ...
-                          'belongsTo'   , 'model'                    , ...
-                          'boxLims'     , model.Control.Imax*[0.5, 2], ...
-                          'location'    , {''}                       , ...
-                          'getfun'      , getfun                     , ...
-                          'setfun'      , setfun);
+parameters = addParameter(parameters , simsetup               , ...
+                          'name'     , 'Imax'                 , ...
+                          'belongsTo', 'model'                , ...
+                          'boxLims'  , model.Control.Imax*[0.5, 2], ...
+                          'location' , {''}                   , ...
+                          'getfun'   , getfun                 , ...
+                          'setfun'   , setfun);
 
 %% Setup the objective function and auxiliary plotting
 
-objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
+objmatch = @(simsetup, states, varargin) EnergyOutput(simsetup, states, varargin{:});
 if doPlot
     fn = @plotAfterStepIV;
 else
     fn = [];
 end
-obj = @(p) evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
+obj = @(p) evalObjectiveBattmo(p, objmatch, simsetup, parameters, 'objScaling', totval, 'afterStepFn', fn);
 
 %% Setup initial parameters
 
 % The parameters must be scaled to [0,1]
-p_base = getScaledParameterVector(SimulatorSetup, parameters);
-p_base = p_base - 0.1;
+p_base = getScaledParameterVector(simsetup, parameters);
+p_base = max(0, p_base - 0.1);
 
 %% Optimize
 
@@ -176,20 +145,25 @@ p_base = p_base - 0.1;
 % optimum.
 [v, p_opt, history] = unitBoxBFGS(p_base, obj, 'gradTol', 1e-7, 'objChangeTol', 1e-4, 'maxIt', 20);
 
-% Compute objective at optimum
-setup_opt = updateSetupFromScaledParameters(SimulatorSetup, parameters, p_opt);
-[~, states_opt, ~] = simulateScheduleAD(setup_opt.state0, setup_opt.model, setup_opt.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
-time_opt = cellfun(@(x) x.time, states_opt);
-E_opt = cellfun(@(x) x.Control.E, states_opt);
-I_opt = cellfun(@(x) x.Control.I, states_opt);
+%%
+% We compute objective at optimum
+
+opt_simsetup = updateSetupFromScaledParameters(simsetup, parameters, p_opt);
+
+opt_states = opt_simsetup.run();
+
+time_opt = cellfun(@(x) x.time, opt_states);
+E_opt    = cellfun(@(x) x.Control.E, opt_states);
+I_opt    = cellfun(@(x) x.Control.I, opt_states);
+
 totval_trapz_opt = trapz(time_opt, E_opt.*I_opt);
 
 % Print optimal parameters
 fprintf('Base and optimized parameters:\n');
 for k = 1:numel(parameters)
     % Get the original and optimized values
-    p0 = parameters{k}.getParameter(SimulatorSetup);
-    pu = parameters{k}.getParameter(setup_opt);
+    p0 = parameters{k}.getParameter(simsetup);
+    pu = parameters{k}.getParameter(opt_simsetup);
 
     % Print
     fprintf('%s\n', parameters{k}.name);
@@ -216,9 +190,9 @@ end
 doCompareGradient = false;
 if doCompareGradient
 
-    p = getScaledParameterVector(SimulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'AdjointAD');
-    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, SimulatorSetup, parameters, 'gradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
+    p = getScaledParameterVector(simsetup, parameters);
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, simsetup, parameters, 'gradientMethod', 'AdjointAD');
+    [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simsetup, parameters, 'gradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
 
     fprintf('Gradient computed using adjoint:\n');
     display(gad);

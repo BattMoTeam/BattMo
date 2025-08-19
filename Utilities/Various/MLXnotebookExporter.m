@@ -18,9 +18,6 @@ classdef MLXnotebookExporter
         % list of registered m-scripts (obtained from the test suite)
         mscripts
         
-        % input directories for the mlx notebooks (for info)
-        inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
-        outputdir = fullfile(battmoDir(), 'Documentation', '_static', 'notebooks');
         
     end
 
@@ -33,22 +30,21 @@ classdef MLXnotebookExporter
             
         end
 
-        function updateIpynbs(mne)
+        function updateDocumentationIpynbs(mne)
         % Update all the ipynb in the documentation.
 
             run_note_book = false;
             
-            inputdir  = mne.inputdir;
-            outputdir = mne.outputdir;
+            inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
+            outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
             
             for inote = 1 : numel(mne.notebooknames)
                 
                 notebookname = mne.notebooknames{inote};
                 
                 inputfilename  = fullfile(inputdir, [notebookname, '.mlx']);
-                outputfilename = fullfile(outputdir, [notebookname, '.ipynb']);
                 
-                export(inputfilename, outputfilename, 'format', 'ipynb', 'Run', run_note_book);
+                mne.setupIpynbFromMlx(inputfilename, 'outputDirectory', outputdir);
                 
             end
 
@@ -67,6 +63,7 @@ classdef MLXnotebookExporter
                 export(inputfilename, outputfilename, 'format', 'm');
                 
             end
+            
         end
 
         function setupMfromMlx(mne, filename, varargin)
@@ -142,6 +139,10 @@ classdef MLXnotebookExporter
                 fwrite(fid, txt);
                 fclose(fid);
             end
+
+            pyfilename = fullfile(battmoDir(), 'Utilities', 'Various', 'setupIpynbForBattMo.py');
+
+            pyrunfile([pyfilename ' ' outputfilename]);
             
         end
 

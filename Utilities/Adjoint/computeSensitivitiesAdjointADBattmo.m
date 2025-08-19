@@ -79,7 +79,7 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
 
     nstep    = numel(setup.schedule.step.val);
     lambda   = [];
-    getState = @(i) getStateFromInput(setup.schedule, states, setup.state0, i);
+    getState = @(i) getStateFromInput(setup.schedule, states, setup.initstate, i);
 
     getObjectiveState = @(tstep, model, state) getObjective(tstep, model, state, true);
     getObjectiveModel = @(tstep, model, state) getObjective(tstep, model, state, false);
@@ -122,12 +122,12 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
         forces   = merge_options(setup.model.getValidDrivingForces(), forces{:});
         model    = setup.model.validateModel(forces);
 
-        state0 = model.validateState(setup.state0);
+        initstate = model.validateState(setup.initstate);
         % set wellSols just to make subsequent function-calls happy, sensitivities wrt wellSols doesn't make sense anyway
-        state0.wellSol = states{1}.wellSol;
+        initstate.wellSol = states{1}.wellSol;
         dt = schedule.step.val(1);
 
-        linProblem = model.getAdjointEquations(state0, states{1}, dt, forces,...
+        linProblem = model.getAdjointEquations(initstate, states{1}, dt, forces,...
                                                'iteration', inf,  ...
                                                'reverseMode', true);
 
@@ -181,9 +181,9 @@ function [eqdth, obj] = partialWRTparam(model, getState, schedule, step, getObje
 
 end
 
-function state = getStateFromInput(schedule, states, state0, i)
+function state = getStateFromInput(schedule, states, initstate, i)
     if i == 0
-        state = state0;
+        state = initstate;
     elseif i > numel(schedule.step.val)
         state = [];
     else

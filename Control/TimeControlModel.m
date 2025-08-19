@@ -171,7 +171,7 @@ classdef TimeControlModel < ControlModel
             if ~isempty(params.timeStepDuration)
                 dt = params.timeStepDuration;
                 givendt = true;
-            elseif ~isempty(params.timeStepDuration)
+            elseif ~isempty(params.numberOfTimeSteps)
                 n  = params.numberOfTimeSteps;
                 dt = totalTime/n;
                 givendt = true;

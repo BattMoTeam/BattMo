@@ -353,10 +353,14 @@ classdef Coating < ElectronicComponent
                 model = model.setAsExtraVarNames(varnames);
 
                 % We remove the dUdT variable (not used for non thermal simulation)
-                varnames = {{am1, itf, 'dUdT'}, ...
-                            {am2, itf, 'dUdT'}};
-
-                model = model.removeVarNames(varnames);
+                ams = {am1, am2};
+                for iam = 1 : numel(ams)
+                    am = ams{iam};
+                    if ~model.(am).(itf).includeEntropyChange
+                        varname = {am, itf, 'dUdT'};
+                        model = model.removeVarNames(varname);
+                    end
+                end
 
                 fn = @Coating.updateCompositeEsource;
                 inputnames = {{am1, sd, 'Rvol'}, ...

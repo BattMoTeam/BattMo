@@ -13,24 +13,24 @@
     "bruggemanCoefficient": 1.5,
     "density": 1200,
     "diffusionCoefficient": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
-      "functionname": "computeDiffusionCoefficient_default",
-      "type": "function"
+      "functionName": "computeDiffusionCoefficient_default",
+      "functionFormat": "named function"
     },
     "initialConcentration": {
       "unit": "mol/litre",
       "value": 1
     },
     "ionicConductivity": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
-      "functionname": "computeElectrolyteConductivity_default",
-      "type": "function"
+      "functionName": "computeElectrolyteConductivity_default",
+      "functionFormat": "named function"
     },
     "species": {
       "chargeNumber": 1,
@@ -55,13 +55,15 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
-            "functionname": "computeOCP_Graphite_Torchio",
-            "type": "function"
+            "functionFormat": "named function",
+            "functionName": "computeOCP_Graphite_Torchio",
+            "argumentList": ["stoichiometry"]
+          },
+          "referenceTemperature": 298.15,
+          "entropyChange" : {
+            "functionFormat": "named function",
+            "functionName" : "computeEntropyChange_Graphite_Torchio",
+            "argumentList" : ["stoichiometry"]
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 30555,
@@ -89,13 +91,8 @@
           "guestStoichiometry100": 0.88551,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
-            "functionname": "computeOCP_Silicon_Li2012",
-            "type": "function"
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/Silicon/Silicon_Li_OCP.json"
           },
           "reactionRateConstant": 5.031e-11,
           "saturationConcentration": 311307.4,
@@ -132,7 +129,9 @@
         "thermalConductivity": 1.04
       },
       "N": 300,
-      "active_material_type": "composite",
+      "activeMaterialModelSetup": {
+        "composite": true
+      },
       "bruggemanCoefficient": 1.5,
       "effectiveDensity": 1427.2111504281352,
       "effectiveElectronicConductivity": 109.54067227961187,
@@ -163,13 +162,8 @@
           "guestStoichiometry100": 1.4001e-04,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
-              "concentration",
-              "temperature",
-              "maximum concentration"
-            ],
-            "functionname": "computeOCP_LNMO_Pron",
-            "type": "function"
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"            
           },
           "reactionRateConstant": 2.33e-11,
           "saturationConcentration": 24358,

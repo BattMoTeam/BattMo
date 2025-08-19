@@ -4,15 +4,6 @@
   "SOC": 0.99,
   "initT": 293.15,
   "use_thermal": true,
-  "include_current_collectors": true,
-  "Control": {
-    "controlPolicy": "CCDischarge",
-    "DRate": 1,
-    "lowerCutoffVoltage": 2,
-    "upperCutoffVoltage": 4.1,
-    "dIdtLimit": 0.01,
-    "dEdtLimit": 0.01
-  },
   "NegativeElectrode": {
     "Coating": {
       "bruggemanCoefficient": 1.5,
@@ -49,7 +40,7 @@
         "electronicConductivity": 0.01,
         "Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/LFP/LFP.json"
+          "filename": "ParameterData/MaterialProperties/LFP/LFP_Xu2015.json"
         },
         "diffusionModelType": "full",
         "SolidDiffusion": {
