@@ -71,7 +71,7 @@
         },
         "SolidDiffusion": {
           "N": 50,
-          "activationEnergyOfDiffusion": 5000,
+          "activationEnergyoOfDiffusion": 5000,
           "particleRadius": 1e-06,
           "referenceDiffusionCoefficient": 3.9e-14
         },
