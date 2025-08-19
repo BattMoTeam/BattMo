@@ -854,27 +854,38 @@ classdef EquilibriumCalibrationSetup
             opt = struct('X0', ecs.X0);
             [opt, extra] = merge_options(opt, varargin{:});
 
+            X0 = opt.X0;
+            
             f = @(X) ecs.objective(X);
 
             n = size(ecs.bounds.lower, 1);
-            linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [-ecs.bounds.lower; ecs.bounds.upper];
+
+            scaledX0 = (X0 - ecs.bounds.lower)./(ecs.bounds.upper - ecs.bounds.lower); 
 
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
                       'maxit'           , 1000 , ...
                       'maxInitialUpdate', 1e-6 , ...
                       'enforceFeasible' , true , ...
-                      'lineSearchMaxIt' , 10   , ...
-                      'wolfe2'          , 0.99 , ...
-                      'linIneq'         , linIneq};
+                      'lineSearchMaxIt' , 10};
 
             % NB: will prefer options in extra over params
             [~, Xopt, hist] = unitBoxBFGS(opt.X0, f, params{:}, extra{:});
 
         end
 
+        function scaledX = scaleVariable(ecs, X)
+            
+            scaledX = (X - ecs.bounds.lower)./(ecs.bounds.upper - ecs.bounds.lower);
+            
+        end
+        
+        function X = scaleVariable(ecs, scaledX)
 
+            X = scaledX.*(ecs.bounds.upper - ecs.bounds.lower) + ecs.bounds.lower;
+            
+        end
+        
         function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
             X0 = ecs.X0;
