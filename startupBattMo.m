@@ -88,7 +88,7 @@ if mrstPlatform('octave')
 
 end
 
-mrstModule add ad-core mpfa mrst-gui optimization
+mrstModule add ad-core mpfa mrst-gui optimization linearsolvers
 
 end
 
