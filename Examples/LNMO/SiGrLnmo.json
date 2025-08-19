@@ -71,7 +71,7 @@
         },
         "SolidDiffusion": {
           "N": 50,
-          "activationEnergyoOfDiffusion": 5000,
+          "activationEnergyOfDiffusion": 5000,
           "particleRadius": 1e-06,
           "referenceDiffusionCoefficient": 3.9e-14
         },
@@ -163,7 +163,7 @@
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
             "isFile" : true,
-            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"            
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
           },
           "reactionRateConstant": 2.33e-11,
           "saturationConcentration": 24358,
