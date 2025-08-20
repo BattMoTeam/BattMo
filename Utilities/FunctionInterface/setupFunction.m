@@ -46,11 +46,14 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
       case 'csv'
 
         data = readmatrix(jsonstruct.filename);
+        
+        argumentList = jsonstruct.argumentList;
 
-        jsonstruct = struct('functionFormat', 'tabulated'            , ...
-                            'argumentList'  , jsonstruct.argumentList, ...
-                            'dataX'         , data(:                 , 1), ...
-                            'dataY'         , data(:                 , 2));
+        jsonstruct = struct('functionFormat', 'tabulated' , ...
+                            'dataX'         , data(: , 1) , ...
+                            'dataY'         , data(: , 2));
+
+        jsonstruct.argumentList = argumentList; 
         
         [fn_handler, fn] = setupFunction(jsonstruct);
 

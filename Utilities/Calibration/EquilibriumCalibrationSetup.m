@@ -854,27 +854,56 @@ classdef EquilibriumCalibrationSetup
             opt = struct('X0', ecs.X0);
             [opt, extra] = merge_options(opt, varargin{:});
 
-            f = @(X) ecs.objective(X);
+            X0 = opt.X0;
 
-            n = size(ecs.bounds.lower, 1);
-            linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [-ecs.bounds.lower; ecs.bounds.upper];
+            scaledX0 = ecs.scaleVector(X0);
+            f = @(scaledX) ecs.scaledObjective(scaledX);
 
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
                       'maxit'           , 1000 , ...
                       'maxInitialUpdate', 1e-6 , ...
                       'enforceFeasible' , true , ...
-                      'lineSearchMaxIt' , 10   , ...
-                      'wolfe2'          , 0.99 , ...
-                      'linIneq'         , linIneq};
+                      'lineSearchMaxIt' , 10};
 
             % NB: will prefer options in extra over params
-            [~, Xopt, hist] = unitBoxBFGS(opt.X0, f, params{:}, extra{:});
+            [~, scaledXopt, hist] = unitBoxBFGS(scaledX0, f, params{:}, extra{:});
+
+            Xopt = ecs.unscaleVector(scaledXopt);
 
         end
 
+        function [z, scaleddz] = scaledObjective(ecs, scaledX)
 
+            X = ecs.unscaleVector(scaledX);
+            
+            [z, dz] = ecs.objective(X);
+            
+            scaleddz = ecs.scaleGradient(dz);
+           
+        end
+        
+        function scaledX = scaleVector(ecs, X)
+        %% scaling function used for unitBoxBFGS
+            scaledX = (X - ecs.bounds.lower)./(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        function X = unscaleVector(ecs, scaledX)
+        %% scaling function used for unitBoxBFGS
+            X = scaledX.*(ecs.bounds.upper - ecs.bounds.lower) + ecs.bounds.lower;
+        end
+
+        function scaledgrad = scaleGradient(ecs, grad)
+        %% scaling function used for unitBoxBFGS
+            scaledgrad = grad./(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        function grad = unscaleGradient(ecs, scaledgrad)
+        %% scaling function used for unitBoxBFGS
+            grad = scalegrad.*(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        
         function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
             X0 = ecs.X0;
