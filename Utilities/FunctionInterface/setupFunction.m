@@ -42,7 +42,8 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
       case 'constant'
 
         fn = ConstantFunction(jsonstruct);
-
+        fn_handler = @(varargin) fn.eval(varargin{:});
+        
       case 'csv'
 
         data = readmatrix(jsonstruct.filename);
