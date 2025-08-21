@@ -129,13 +129,10 @@
       ]},
     "timeControl" : {
       "properties" : {
-        "usetable" : {
-          "type" : "boolean"
-          "description" : "The time dependent control will be given using tables, using the values key and either the times or the durations key"
-        },
-        "usefunction" : {
-          "type" : "boolean",
-          "description" : "The time dependent control will be given using a function given by the function key. To define the function, we use the function interface"
+        "inputype" : {
+          "type" : "string",
+          "enum" : ["table", "function"]
+          "description" : "If inputtype is table, The time dependent control will be given using tables, using the values key and either the times or the durations key. If inputtype is function, the time dependent control will be given using a function given by the function key. To define the function, we use the function interface"
         },        
         "times" : {
           "type" : "array",
