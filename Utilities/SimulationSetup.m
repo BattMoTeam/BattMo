@@ -144,15 +144,19 @@ classdef SimulationSetup
             simsetup.model = model;
 
             %% Setup default initial state, if possible
-            
-            if ismethod(model, 'setupInitialState')
-                simInput = setDefaultJsonStructField(simInput, 'initstate', model.setupInitialState());
+
+            if isUnAssigned(simInput, 'initstate')
+                if ismethod(model, 'setupInitialState')
+                    simInput = setJsonStructField(simInput, 'initstate', model.setupInitialState());
+                end
             end
             
             %% Setup default schedule (time stepping), if possible
             
-            if isAssigned(model, 'Control') && ismethod(model.Control, 'setupSchedule')
-                simInput = setDefaultJsonStructField(simInput, 'schedule', model.Control.setupSchedule());
+            if isUnAssigned(simInput, 'schedule')
+                if isAssigned(model, 'Control') && ismethod(model.Control, 'setupSchedule')
+                    simInput = setJsonStructField(simInput, 'schedule', model.Control.setupSchedule());
+                end
             end
             
             %% Set default nonlinear solver
