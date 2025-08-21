@@ -55,7 +55,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the time step schedule
     %
 
-    if isfield(jsonstruct, 'TimeStepping')
+    if isAssigned(jsonstruct, 'TimeStepping')
         timeSteppingParams = jsonstruct.TimeStepping;
     else
         timeSteppingParams = [];
