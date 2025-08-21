@@ -3,29 +3,38 @@ classdef TimeControlModel < ControlModel
 
     properties
 
-        usetable % true if table is used
+        inputtype % type used to give the time control input. It can be
+                  % - table
+                  % - function
+
+        %% property used in case of table input
         
         times        % Array with time value (should include at the end the end time, so that length(times) = length(durations) + 1)
-        durations    % Array with time value
+        durations    % Array with duration value
         values       % Array with control value
         controltypes % Array with control type. The convention is
                      % - 1 for current
                      % - 2 for voltage
 
+        
+        %% property used in case of function input
+
+        controlValueFunction % function of time for the control value
+        controlTypeFunction  % function of time for the type control value (1 : current, 2 : voltage)
+        
+        %% Helpers 
+
+        usetable    % true if table is used
         usefunction % true if we use a matlab function
-        
-        functionname % function name, should be in matlab path
-
-        % Advanced parameters
-
-        tolerance = 1e-4 % tolerance to skip timesteps (in second)
-        
-        % Helpers
 
         computeInput % function called to give update
          
         use_durations   % Setup when usetable is true
-        functionhandler % Setup when usefunction is true
+        
+        % Function handlers instantiated from controlValueFunction controlTypeFunction  
+
+        controlValueFunc 
+        controlTypeFunc
         
     end
 
@@ -35,16 +44,25 @@ classdef TimeControlModel < ControlModel
             
             model = model@ControlModel(inputparams);
 
-            fdnames = {'usetable'    , ...
-                       'times'       , ...
-                       'durations'   , ...
-                       'values'      , ...
-                       'controltypes', ...
-                       'usefunction' , ...
-                       'functionname' };
-        
+            fdnames = {'inputtype'           , ...
+                       'times'               , ...
+                       'durations'           , ...
+                       'values'              , ...
+                       'controltypes'        , ...
+                       'controlValueFunction', ...
+                       'controlTypeFunction'};
+
             model = dispatchParams(model, inputparams, fdnames);
 
+            switch model.inputtype
+              case 'table'
+                model.usetable = true;
+              case 'function'
+                model.usefunction = true;
+              otherwise
+                error('input type not recognized');
+            end
+            
             if model.usetable
                 
                 model.computeInput = @(t) model.computeInputFromTable(t);
@@ -53,9 +71,11 @@ classdef TimeControlModel < ControlModel
 
             if model.usefunction
 
-                model.functionhandler = str2func(model.functionname);
-                model.computeInput = @(t) model.computeInputFromFunction(t);
+                model.controlValueFunc = setupFunction(model.controlValueFunction);
+                model.controlTypeFunc  = setupFunction(model.controlTypeFunction);
                 
+                model.computeInput = @(t) model.computeInputFromFunction(t);
+
             end
             
         end
@@ -107,8 +127,18 @@ classdef TimeControlModel < ControlModel
         
         function [ctrlVal, ctrlType] = computeInputFromFunction(model, t)
 
-            [ctrlVal, ctrlType] = model.functionhandler(t);
+            ctrlVal  = model.controlValueFunc(t);
+            ctrlType = model.controlTypeFunc(t);
 
+            switch ctrlType
+              case 1
+                ctrlType = 'constantCurrent';
+              case 2
+                ctrlType = 'constantVoltage';
+              otherwise
+                error('ctrlType not recognized. It should be equal to 1 or 2')
+            end
+            
         end
 
         function state = updateControlEquation(model, state)
@@ -165,7 +195,11 @@ classdef TimeControlModel < ControlModel
             % Call parser for TimeStepping structure with some default values
             params = model.parseTimeSteppingStruct(params);
 
-            totalTime = model.times(end);
+            if model.usetable
+                totalTime = model.times(end);
+            else
+                totalTime = params.totalTime;
+            end
 
             givendt = false;
             if ~isempty(params.timeStepDuration)
