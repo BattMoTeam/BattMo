@@ -158,8 +158,13 @@
           "description" : "Control type for each interval. It can be either current, then we set the control type value to 1, or voltage, then we set the control type value to 2."
  
         },        
-        "function" : {
-          "$ref": "Function.schema.json"
+        "controlValueFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the control"
+        },
+        "controlTypeFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the type control, where 1 corresponds to current control and 2 corresponds to voltage control"
         }
       }
 
