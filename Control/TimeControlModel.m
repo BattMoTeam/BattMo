@@ -3,29 +3,38 @@ classdef TimeControlModel < ControlModel
 
     properties
 
-        usetable % true if table is used
+        usetable    % true if table is used
+        usefunction % true if we use a matlab function
+
+        %% property used in case usetable is true
         
         times        % Array with time value (should include at the end the end time, so that length(times) = length(durations) + 1)
-        durations    % Array with time value
+        durations    % Array with duration value
         values       % Array with control value
         controltypes % Array with control type. The convention is
                      % - 1 for current
                      % - 2 for voltage
 
-        usefunction % true if we use a matlab function
         
-        functionname % function name, should be in matlab path
+        %% property used in case usefunction is true
 
-        % Advanced parameters
+        controlValueFunction % function of time for the control value
+        controlTypeFunction  % function of time for the type control value (1 : current, 2 : voltage)
+
+        %% Advanced parameters
 
         tolerance = 1e-4 % tolerance to skip timesteps (in second)
         
-        % Helpers
+        %% Helpers
 
         computeInput % function called to give update
          
         use_durations   % Setup when usetable is true
-        functionhandler % Setup when usefunction is true
+        
+        % Function handlers instantiated from controlValueFunction controlTypeFunction  
+
+        controlValueFunc 
+        controlTypeFunc
         
     end
 
@@ -35,13 +44,14 @@ classdef TimeControlModel < ControlModel
             
             model = model@ControlModel(inputparams);
 
-            fdnames = {'usetable'    , ...
-                       'times'       , ...
-                       'durations'   , ...
-                       'values'      , ...
-                       'controltypes', ...
-                       'usefunction' , ...
-                       'functionname' };
+            fdnames = {'usetable'            , ...
+                       'usefunction'         , ...
+                       'times'               , ...
+                       'durations'           , ...
+                       'values'              , ...
+                       'controltypes'        , ...
+                       'controlValueFunction', ...
+                       'controlTypeFunction'};
         
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -53,9 +63,11 @@ classdef TimeControlModel < ControlModel
 
             if model.usefunction
 
-                model.functionhandler = str2func(model.functionname);
-                model.computeInput = @(t) model.computeInputFromFunction(t);
+                model.controlValueFunc = setupFunction(controlValueFunction);
+                model.controlTypeFunc  = setupFunction(controlTypeFunction);
                 
+                model.computeInput = @(t) model.computeInputFromFunction(t);
+
             end
             
         end
@@ -107,7 +119,8 @@ classdef TimeControlModel < ControlModel
         
         function [ctrlVal, ctrlType] = computeInputFromFunction(model, t)
 
-            [ctrlVal, ctrlType] = model.functionhandler(t);
+            ctrlVal  = model.controlValueFunc(t);
+            ctrlType = model.controlTypeFunc(t);
 
         end
 

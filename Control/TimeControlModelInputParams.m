@@ -2,7 +2,10 @@ classdef TimeControlModelInputParams < ControlModelInputParams
 
     properties
 
-        usetable % true if table is used
+        usetable    % true if table is used
+        usefunction % true if we use a matlab function
+
+        %% property used in case usetable is true
         
         times        % Array with time value (should include at the end the end time, so that length(times) = length(durations) + 1)
         durations    % Array with duration value
@@ -11,13 +14,16 @@ classdef TimeControlModelInputParams < ControlModelInputParams
                      % - 1 for current
                      % - 2 for voltage
 
-        usefunction % true if we use a matlab function
         
-        functionname % function name, should be in matlab path
+        %% property used in case usefunction is true
 
+        controlValueFunction % function of time for the control value
+        controlTypeFunction  % function of time for the type control value (1 : current, 2 : voltage)
+        
     end
 
     methods
+        
         function inputparams = TimeControlModelInputParams(jsonstruct);
 
             jsonstruct = setDefaultJsonStructField(jsonstruct, 'usetable', true);
