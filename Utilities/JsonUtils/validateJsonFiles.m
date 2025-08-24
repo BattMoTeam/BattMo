@@ -12,9 +12,9 @@ function isValid = validateJsonFiles(jsonfiles)
     % Validate using python script
     for k = 1:numel(jsonfiles)
         jsonfile = jsonfiles{k};
-        dispif(mrstVerbose, 'Validating %s\n', jsonfile);
+        dispif(mrstVerbose, '\nValidating %s\n\n', jsonfile);
         try
-            isValid{k} = py.(modname).validate(battmoDir(), jsonfile); %#ok
+            isValid{k} = py.(modname).validate(battmoDir(), jsonfile, pyargs('verbose', mrstVerbose)); %#ok
         catch e
             disp(e);
             error('Error when running the validation');
