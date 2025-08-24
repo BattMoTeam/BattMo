@@ -12,7 +12,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40_jl_ud.json')         , ...
             fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40.json')               , ...
             fullfile('Examples'     , 'JsonDataFiles'        , 'sample_input.json')         , ...
-            };
+                      };
 
         jsonDataFile = {
             {'4680-geometry.json'          , 'Geometry'}    , ...
@@ -26,7 +26,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             {'linear_solver_setup.json'    , 'Solver'}      , ...
             {'silicongraphite.json'        , 'Coating'}     , ...
             {'simulation_parameters.json'  , 'TimeStepping'}, ...
-            };
+                       };
 
     end
 
@@ -85,7 +85,8 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             if test.isPySetup
                 dispif(mrstVerbose, 'Validating %s\n', jsonDataSet);
                 test.assumeFalse(contains(jsonDataSet, test.excludeJsonDataSet));
-                ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
+                %ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
+                ok = validateJsonFiles(jsonDataSet);
             end
 
             assert(ok);
@@ -109,26 +110,59 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
         end
 
+        function testJsonStructs(test, jsonDataFile)
+
+            function pyDict = struct_to_pydict(matStruct)
+                if isstruct(matStruct)
+                    pyDict = py.dict();
+                    fields = fieldnames(matStruct);
+                    for i = 1:numel(fields)
+                        field = fields{i};
+                        value = matStruct.(field);
+                        pyDict{field} = struct_to_pydict(value); % Recursively convert nested structs
+                    end
+                else
+                    pyDict = matStruct; % Base case: non-struct values
+                end
+            end
+
+            ok = false;
+
+            if test.isPySetup
+                jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
+                jsonstruct = parseBattMoJson(jsonfile);
+                pyDict = struct_to_pydict(jsonstruct);
+                schemafile = [jsonDataFile{2}, '.schema.json'];
+
+                dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
+                test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
+                ok = py.(test.validateModule).validateStructs(battmoDir(), pyDict, schemafile);
+            end
+
+            assert(ok);
+
+        end
+
     end
 
 end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
