@@ -40,16 +40,18 @@ import matlab.unittest.TestRunner
 %% Run tests
 
 % Setup
-mrstVerbose 'off';
-stopOnError        = false;
+mrstVerbose 'on';
+stopOnError        = true;
 runTestsInParallel = false;
 doAssertSuccess    = true;
 
 % Define which test cases to run
 testCases = {
-    'TestChen2020'   , ...
-    'TestRunExamples', ...
-    'TestMagnesium'};
+    'TestJsonFiles'  , ...
+    % 'TestChen2020'   , ...
+    % 'TestRunExamples', ...
+    % 'TestMagnesium'
+            };
 
 % Setup test suite
 for itestcase = 1 : numel(testCases)
