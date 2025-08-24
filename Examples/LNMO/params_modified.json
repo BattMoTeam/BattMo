@@ -54,7 +54,7 @@
           "openCircuitPotential": {
             "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
-            "argumentList": ["stoichiometry"],
+            "argumentList": ["stoichiometry"]
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,

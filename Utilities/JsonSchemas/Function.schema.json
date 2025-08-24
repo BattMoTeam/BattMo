@@ -9,7 +9,7 @@
         "tabulated",
         "string expression",
         "named function",
-        "constant"
+        "constant",
         "csv"
       ],
       "description" : "Four input formats are supported for functions. The descriptions are provided in the schema below for each case."
@@ -78,7 +78,7 @@
         "const" : "constant",
         "description" : "The evaluation of the string should return the value of the function."},
       "value" : {"type" : "number"}
-      
+
     }},
     {"properties" : {
       "functionFormat" : {
@@ -88,7 +88,7 @@
         "type" : "string",
         "description" : "path of the csv file"}}}
     ],
-  
+
   "$defs" : {
     "expression" : {
       "type" : "object",
@@ -105,5 +105,3 @@
     }
   }
 }
-
-
