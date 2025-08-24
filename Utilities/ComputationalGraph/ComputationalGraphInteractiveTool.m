@@ -935,6 +935,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
                 varnames   = varnameset{2};
 
+                familyvarnames = {};
                 for ivar = 1 : numel(varnames)
 
                     varname = varnames{ivar};
@@ -946,12 +947,12 @@ classdef ComputationalGraphInteractiveTool < handle
 
                     varnameinds = varnameinds(levels <= level);
                     
-                    varnames = union(varnames, cg.nodenames(varnameinds));
+                    familyvarnames = union(familyvarnames, cg.nodenames(varnameinds));
 
                     
                 end
 
-                selection = {'set', varnames};
+                selection = {'set', familyvarnames};
                 return
 
               case 'diff'
