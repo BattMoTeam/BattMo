@@ -132,7 +132,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'ylim', [min(Enew), max(Enew)], ...
                     'timeBar', timeBar);
 
-        else
+        else % 2D or 3D
 
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
@@ -299,7 +299,8 @@ function [fig] = plotDashboard(model, states, varargin)
 
         end
         %     setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-    else
+
+    else % step == 0, show ranges over all steps
 
         for i = 1 : length(states)
 
@@ -351,7 +352,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     zmin = min(model.(elyte).grid.nodes.coords(:,3));
                     zmax = max(model.(elyte).grid.nodes.coords(:,3));
                 end
-            else
+            else % i > 1
 
                 cmax_elyte = max(cmax_elyte, max(max(states{i}.(elyte).c ./ 1000)));
                 cmin_elyte = min(cmin_elyte, min(min(states{i}.(elyte).c ./ 1000)));
@@ -394,6 +395,8 @@ function [fig] = plotDashboard(model, states, varargin)
             end
         end
 
+        % Plot over all time steps like an animation
+
         for i = 1:length(states)
 
             timeBar = [  time(i)/hour, 0; ...
@@ -403,6 +406,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
             end
+
             if model.grid.griddim == 1
 
                 switch model.(ne).(co).(am).diffusionModelType
@@ -534,7 +538,8 @@ function [fig] = plotDashboard(model, states, varargin)
                     'YColor'   , style.fontColor      , ...
                     'GridColor', style.fontColor)
 
-            else
+            else % 2D or 3D
+
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
 
