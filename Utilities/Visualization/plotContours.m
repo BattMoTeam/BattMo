@@ -2,12 +2,19 @@ function plotContours(model, states, varargin)
 
     assert(model.grid.griddim == 1, 'This function only works for 1D grids');
 
-    opt = struct('subplot', true);
+    opt = struct('subplot', true, ...
+                 'varname', {'lithiation'}, ... % Or {'concentration'}
+                 'sgtitle', '', ...
+                 'plot_separators', false); % Not implemented
     opt = merge_options(opt, varargin{:});
 
+    assert(containsi(opt.varname, 'lith') || containsi(opt.varname, 'conc'), ...
+           'opt.varname must contain either ''lith'' or ''conc''');
+
+    fontsize = 18;
+
     if opt.subplot
-        figconc = figure;
-        figpot = figure;
+        fig = figure;
     end
 
     time = cellfun(@(s) s.time, states) / hour;
@@ -39,94 +46,123 @@ function plotContours(model, states, varargin)
     % Plot the concentration values at the given grid centroid
     % locations
     if opt.subplot
-        figure(figconc);
-        subplot(1, 3, 1);
+        figure(fig);
+        subplot(2, 3, 1);
     else
         figure;
     end
-    contourf(x_ne, time, c_ne / cmax_ne, 20, 'LineStyle', 'none')
+    if containsi(opt.varname, 'lith')
+        contourf(x_ne, time, c_ne / cmax_ne, 20, 'LineStyle', 'none')
+        titlestr = 'Lithiation  /  -';
+    elseif containsi(opt.varname, 'conc')
+        contourf(x_ne, time, c_ne, 20, 'LineStyle', 'none')
+        titlestr = 'Concentration  /  mol \cdot m^{-3}';
+    end
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Negative Electrode Lithiation  /  -')
+    title(sprintf('NE %s', titlestr));
     colorbar()
     cm = flipud(crameri('lajolla'));
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
     if opt.subplot
-        figure(figconc);
-        subplot(1, 3, 2);
+        figure(fig);
+        subplot(2, 3, 2);
     else
         figure;
     end
     contourf(x_elyte, time, c_elyte, 20, 'LineStyle', 'none')
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Electrolyte Concentration  /  mol \cdot m^{-3}')
+    title('Elyte Concentration  /  mol \cdot m^{-3}')
     colorbar()
-    cm = cmocean('curl', 'pivot', 1000);
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    cm = cmocean('curl');
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
     if opt.subplot
-        figure(figconc);
-        subplot(1, 3, 3);
+        figure(fig);
+        subplot(2, 3, 3);
     else
         figure;
     end
-    contourf(x_pe, time, c_pe / cmax_pe, 20, 'LineStyle', 'none')
+    if containsi(opt.varname, 'lith')
+        contourf(x_pe, time, c_pe / cmax_pe, 20, 'LineStyle', 'none')
+        titlestr = 'Lithiation  /  -';
+    elseif containsi(opt.varname, 'conc')
+        contourf(x_pe, time, c_pe, 20, 'LineStyle', 'none')
+        titlestr = 'Concentration  /  mol \cdot m^{-3}';
+    end
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Positive Electrode Lithiation  /  -')
+    title(sprintf('PE %s', titlestr));
     colorbar()
     cm = crameri('nuuk');
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
     % Plot the potential at the given grid centroid locations
     if opt.subplot
-        figure(figpot);
-        subplot(1, 3, 1);
+        figure(fig);
+        subplot(2, 3, 4);
     else
         figure;
     end
     contourf(x_ne, time, phi_ne, 20, 'LineStyle', 'none')
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Negative Electrode Potential  /  V')
+    title('NE Potential  /  V')
     colorbar()
     cm = flipud(crameri('lajolla'));
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
     if opt.subplot
-        figure(figpot);
-        subplot(1, 3, 2);
+        figure(fig);
+        subplot(2, 3, 5);
     else
         figure;
     end
     contourf(x_elyte, time, phi_elyte, 20, 'LineStyle', 'none')
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Electrolyte Potential  /  V')
+    title('Elyte Potential  /  V')
     colorbar()
     cm = cmocean('curl'); %, 'pivot', 1);
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
     if opt.subplot
-        figure(figpot);
-        subplot(1, 3, 3);
+        figure(fig);
+        subplot(2, 3, 6);
     else
         figure;
     end
     contourf(x_pe, time, phi_pe, 20, 'LineStyle', 'none')
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
-    title('Positive Electrode Potentials  /  V')
+    title('PE Potentials  /  V')
     colorbar()
     cm = crameri('nuuk');
-    colormap(cm)
-    set(gca, 'FontSize', 18);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
 
+    if opt.subplot
+        if ~isempty(opt.sgtitle)
+            sgtitle(opt.sgtitle, 'FontSize', fontsize+2);
+        end
+    end
+
+end
+
+
+function s = containsi(a, b)
+    s = contains(a, b, 'IgnoreCase', true);
 end
