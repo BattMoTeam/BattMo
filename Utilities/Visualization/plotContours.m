@@ -79,7 +79,9 @@ function plotContours(model, states, varargin)
     title('Elyte Concentration  /  mol \cdot m^{-3}')
     colorbar()
     cm = cmocean('curl');
-    colormap(gca, cm)
+    cmscaled = rescaleCmap(cm, min(c_elyte), max(c_elyte), model.Electrolyte.species.nominalConcentration);
+    colormap(gca, cmscaled)
+
     set(gca, 'FontSize', fontsize);
     drawnow
 
@@ -165,4 +167,27 @@ end
 
 function s = containsi(a, b)
     s = contains(a, b, 'IgnoreCase', true);
+end
+
+
+function cmap_scaled = rescaleCmap(cmap, vmin, vmax, center, Nout)
+
+    if nargin < 5
+        Nout = 256;
+    end
+
+    % Split colormap into two halves
+    N = size(cmap,1);
+    cmap_low  = cmap(1:floor(N/2),:);   % lower half (below center)
+    cmap_high = cmap(floor(N/2)+1:end,:); % upper half (above center)
+
+    % Number of colors for each side proportional to data range
+    n_low  = round(Nout * (center - vmin) / (vmax - vmin));
+    n_high = Nout - n_low;
+
+    % Interpolate each side independently
+    cmap_scaled = [ ...
+        interp1(linspace(0,1,size(cmap_low,1)), cmap_low,  linspace(0,1,n_low)); ...
+        interp1(linspace(0,1,size(cmap_high,1)), cmap_high, linspace(0,1,n_high)) ...
+                  ];
 end
