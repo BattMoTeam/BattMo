@@ -5,10 +5,22 @@ classdef Selector < handle
         stack = {} % stack of selectors (plotting tool)
 
         interactiveOptions
+        
     end
     
     methods
 
+        function slt = Selector(varargin)
+            
+            opt = struct('interactiveOptions', []);
+            opt = merge_options(opt, varargin{:});
+            
+            interactiveOptions = setDefaultJsonStructField(opt.interactiveOptions, 'printStackAfterUpdate', true);
+
+            slt.interactiveOptions = interactiveOptions;
+            
+        end
+        
         function booleanOperator(slt, op, n)
 
             assert(ismember(op, {'and', 'or'}), 'boolean operator not recognized');
@@ -197,15 +209,15 @@ classdef Selector < handle
                 boolean_arg_set = slt.parseSelector(givenset, boolean_arg_selectors{1});
 
                 % We recover the indices
-                boolean_arg_ind = boolean_arg_selector{2};
+                boolean_arg_ind = boolean_arg_set{2};
                 
                 for iselect = 1 : numel(boolean_arg_selectors)
-                    boolean_arg_selector = slt.parseSelector(givenset, boolean_arg_selectors{iselect});
+                    boolean_arg_set = slt.parseSelector(givenset, boolean_arg_selectors{iselect});
                     switch selectiontype
                       case 'and'
-                        boolean_arg_ind = intersect(boolean_arg_ind, boolean_arg_selector{2});
+                        boolean_arg_ind = intersect(boolean_arg_ind, boolean_arg_set{2});
                       case 'or'
-                        boolean_arg_ind = union(boolean_arg_ind, boolean_arg_selector{2});
+                        boolean_arg_ind = union(boolean_arg_ind, boolean_arg_set{2});
                     end
                 end
 
@@ -253,11 +265,39 @@ classdef Selector < handle
             
         end
 
+        function inds = parseStack(slt, givenset)
+
+            inds = slt.parseSelector(givenset, slt.stack{1});
+            
+        end
+        
+        function subset = extract(slt, givenset)
+
+            inds = slt.parseStack(givenset);
+            subset = givenset(inds{2});
+            
+        end
+        
+
         function printStackSelection(slt, givenset)
 
             assert(numel(slt.stack) > 0, 'stack is empty');
             
             slt.printSelection(givenset, slt.stack{1});
+            
+        end
+
+        function printsel(slt, givenset)
+
+            % shortcut
+            slt.printStackSelection(givenset);
+            
+        end
+
+        function printall(slt, givenset)
+
+            selection = {'set', (1 : numel(givenset))};
+            slt.printSelection(givenset, selection);
             
         end
         
