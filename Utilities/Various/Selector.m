@@ -37,7 +37,9 @@ classdef Selector < handle
 
             slt.stack = { {op, stack(1 : n)}, stack{n + 1 : end}};
 
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
             
         end
 
@@ -64,7 +66,9 @@ classdef Selector < handle
         function select(slt, expr)
 
             slt.stack = {{'select', expr}, slt.stack{:}};
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
             
         end
 
@@ -86,7 +90,9 @@ classdef Selector < handle
 
             slt.stack = stack(n + 1 : end);
             
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
 
         end
 
@@ -116,7 +122,9 @@ classdef Selector < handle
 
             end
 
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
 
         end
 
@@ -128,7 +136,9 @@ classdef Selector < handle
 
             slt.stack = {stack{1}, stack{1}, stack{2 : end}};
             
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
 
         end
         
@@ -149,7 +159,9 @@ classdef Selector < handle
             
             slt.stack = stack(inds);
 
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
             
         end
 
@@ -161,7 +173,10 @@ classdef Selector < handle
 
             slt.stack = {{'diff', {stack{1}, stack{2}}}, stack{3 : end}};
 
-            slt.printStack();
+            if slt.interactiveOptions.printStackAfterUpdate
+                slt.printStack();
+            end
+            
             
         end
         
