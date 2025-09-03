@@ -1,4 +1,4 @@
-classdef BatchProcessor
+classdef BatchProcessor < Selector
 
 %{
   Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
@@ -21,7 +21,9 @@ classdef BatchProcessor
 %}
 
     properties
+        
         paramnames
+
     end
     
     methods
@@ -351,7 +353,79 @@ classdef BatchProcessor
             [bp, simlist] = bp.mergeSimLists(simlist, simlist_to_merge);
             
         end
+
+        function str = selectSelectorToString(slt, selectSelector)
+        % Returns the printed form of a 'select' selector
+
+            assert(strcmp(selectSelector{1}, 'select'), 'this is not a select type selector');
+            str = sprintf('%s : %s', selectSelector{2}{1}, selectSelector{2}{2});
+            
+        end
+
+        function printSelection(slt, givenset, selection)
+
+            if ~strcmp(selection{1}, 'set')
+                selection = slt.parseSelector(givenset, selection);
+            end
+            
+            inds = selection{2};
+
+            simlist = givenset(inds);
+
+            printall = getStructField(slt.interactiveOptions, {'printSelection', 'all'}, true);
+
+            if printall
+                slt.printSimList(simlist, 'all');
+            else
+                slt.printSimList(simlist, 'all');
+            end
+
+        end
+
         
+        function found = find(bp, givenset, selector)
+            
+            paramname = selector{1};
+            filter    = selector{2};
+
+            found = [];
+            
+            for ielt = 1 : numel(givenset)
+                
+                elt = givenset{ielt};
+                
+                if isfield(elt, paramname)
+                    
+                    paramval = elt.(paramname);
+                    take = false;
+                    
+                    if (isempty(filter) | strcmp(filter, 'undefined'))
+                        if isempty(paramval)
+                            take = true;
+                        end
+                    elseif isa(filter, 'numeric') || isa(filter, 'logical')
+                        if paramval == filter
+                            take = true;
+                        end
+                    elseif isa(filter, 'char')
+                        if strcmp(paramval, filter)
+                            take = true;
+                        end
+                    elseif isa(filter, 'function_handle')
+                        if filter(paramval)
+                            take = true;
+                        end
+                    else
+                        error('filter type not recognized');
+                    end
+                    if take == true
+                        found(end + 1) = ielt;
+                    end
+                end
+                
+            end
+            
+        end
         
         function filteredsimlist = filterSimList(bp, simlist, varargin)
             assert(mod(numel(varargin), 2) == 0, 'wrong number of argument')
