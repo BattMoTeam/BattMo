@@ -77,7 +77,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                  'AdjointLinearSolver', []           , ...
                  'PerturbationSize'   , []           , ...
                  'objScaling'         , 1            , ...
-                 'enforceBounds'      , true);
+                 'enforceBounds'      , true         , ...
+                 'transposeGradient'  , false);
 
     [opt, extra] = merge_options(opt, varargin{:});
 
@@ -214,6 +215,10 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
             varargout{4} =  setupNew;
         end
 
+    end
+
+    if opt.transposeGradient
+        varargout{1} = varargout{1}';
     end
 
 end
