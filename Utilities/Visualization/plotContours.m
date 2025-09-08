@@ -77,10 +77,10 @@ function plotContours(model, states, varargin)
     xlabel('Position  /  µm')
     ylabel('Time  /  h')
     title('Elyte Concentration  /  mol \cdot m^{-3}')
-    colorbar()
     cm = cmocean('curl');
     cmscaled = rescaleCmap(cm, min(c_elyte), max(c_elyte), model.Electrolyte.species.nominalConcentration);
     colormap(gca, cmscaled)
+    colorbar()
 
     set(gca, 'FontSize', fontsize);
     drawnow
