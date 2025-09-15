@@ -63,8 +63,8 @@ function [fig, tlo] = plotDashboardAdjoint(model, lambdas, varargin)
     eqnames = eqnames(idx);
 
     if opt.step <= 0
-        % Plot all time steps
 
+        % Plot all time steps
         for k = 1:numel(lambdas)
 
             sgtitle(sprintf('Adjoint variables at step %d', k));
@@ -98,6 +98,10 @@ function tile = plotDashboardFcn(fig, grids, data, titles, varargin)
                  'tile', []);
     opt = merge_options(opt, varargin{:});
 
+    if isempty(opt.tile)
+        tile = cell(numel(grids), 1);
+    end
+
     figure(fig);
 
     for k = 1:numel(grids)
@@ -105,29 +109,21 @@ function tile = plotDashboardFcn(fig, grids, data, titles, varargin)
         if isempty(opt.tile)
             tile{k} = nexttile;
         else
-            tile{k} = opt.tile{k};
-            axes(tile{k});
+            nexttile(k);
         end
 
         plotCellData(grids{k}, data{k});
         grid on;
 
-        if isempty(opt.tile)
-            drawnow;
+        title(titles{k}, 'Interpreter', 'none');
 
-            if opt.scaleAxis
-                scaleAxis(gca, 'x', 1/micro);
-                xlabel(gca, 'Position  /  µm')
-            else
-                xlabel(gca, 'Position  /  m')
-            end
-
-            title(titles{k}, 'Interpreter', 'none');
+        if opt.scaleAxis
+            scaleAxis(gca, 'x', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+        else
+            xlabel(gca, 'Position  /  m')
         end
-    end
 
-    if ~isempty(opt.tile)
-        drawnow;
     end
 
 end
