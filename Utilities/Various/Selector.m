@@ -15,7 +15,7 @@ classdef Selector < handle
             opt = struct('interactiveOptions', []);
             opt = merge_options(opt, varargin{:});
             
-            interactiveOptions = setDefaultJsonStructField(opt.interactiveOptions, 'printStackAfterUpdate', true);
+            interactiveOptions = setDefaultStructField(opt.interactiveOptions, 'printStackAfterUpdate', true);
 
             slt.interactiveOptions = interactiveOptions;
             
