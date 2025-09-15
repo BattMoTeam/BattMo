@@ -1,4 +1,4 @@
-classdef BatchProcessor
+classdef BatchProcessor < Selector
 
 %{
   Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
@@ -21,12 +21,17 @@ classdef BatchProcessor
 %}
 
     properties
+        
         paramnames
+
     end
     
     methods
         
         function bp = BatchProcessor(varargin)
+
+            bp = bp@Selector();
+            
             bp.paramnames = {};
             if nargin > 0
                 simlist = varargin{1};
@@ -246,7 +251,8 @@ classdef BatchProcessor
             assert(ismember(paramname, bp.paramnames), sprintf('parameter %s not registered', paramname));
         end
         
-        function printSimList(bp, simlist, varargin)
+        function print(bp, simlist, varargin)
+            
             [T, singlevalued] = bp.setupTable(simlist);
             if nargin > 2 && strcmp(varargin{1}, 'all')
                 paramnames = bp.paramnames;
@@ -283,7 +289,7 @@ classdef BatchProcessor
             if numel(paramnames) == 0
                 if numel(simlist) > 1
                     % we print all the parameters instead of empty table
-                    printSimList(bp, simlist, 'all');
+                    bp.print(simlist, 'all');
                 else
                     simlist{1}
                 end
@@ -292,7 +298,7 @@ classdef BatchProcessor
             end
         end        
         
-        function sortedsimlist = sortSimList(bp, simlist, varargin)
+        function sortedsimlist = sort(bp, simlist, varargin)
             paramname = varargin{end};
             rest = varargin(1 : end - 1);
 
@@ -351,10 +357,10 @@ classdef BatchProcessor
             [bp, simlist] = bp.mergeSimLists(simlist, simlist_to_merge);
             
         end
-        
-        
-        function filteredsimlist = filterSimList(bp, simlist, varargin)
+
+        function filteredsimlist = filter(bp, simlist, varargin)
             assert(mod(numel(varargin), 2) == 0, 'wrong number of argument')
+            
             filteredsimlist = {};
             paramname = varargin{1};
             filter = varargin{2};
@@ -394,8 +400,102 @@ classdef BatchProcessor
             if ~isempty(rest)
                 filteredsimlist = bp.filterSimList(filteredsimlist, rest{:});
             end
-        end        
-    
+        end
+
+
+        %%%%%%%%%%%%
+        %% Selector class overloaded function
+        %%%%%%%%%%%%%%
+
+        function str = selectSelectorToString(slt, selectSelector)
+        % Returns the printed form of a 'select' selector
+
+            assert(strcmp(selectSelector{1}, 'select'), 'this is not a select type selector');
+            selector_type  = selectSelector{2}{1};
+            selector_value = selectSelector{2}{2};
+            
+            if isa(selector_value, 'function_handle')
+                selector_value = func2str(selector_value);
+            end
+            
+            str = sprintf('%s : %s', selector_type, selector_value);
+            
+        end
+
+        function printSelection(slt, givenset, selection)
+
+            if ~strcmp(selection{1}, 'set')
+                selection = slt.parseSelector(givenset, selection);
+            end
+            
+            inds = selection{2};
+
+            simlist = givenset(inds);
+
+            printall = getStructField(slt.interactiveOptions, {'printSelection', 'all'}, true);
+
+            if printall
+                slt.print(simlist, 'all');
+            else
+                slt.print(simlist, 'all');
+            end
+
+        end
+
+        function found = find(slt, givenset, selector)
+            
+            paramname = selector{1};
+            filter    = selector{2};
+
+            found = [];
+            
+            for ielt = 1 : numel(givenset)
+                
+                elt = givenset{ielt};
+
+                paramnames = fieldnames(elt);
+
+                indparams = regexpSelect(paramnames, paramname);
+                
+                for iindparams = 1 : numel(indparams)
+
+                    indparam = indparams(iindparams);
+                    
+                    paramval = elt.(paramnames{indparam});
+
+                    take = false;
+                    
+                    if (isempty(filter) | strcmp(filter, 'undefined'))
+                        if isempty(paramval)
+                            take = true;
+                        end
+                    elseif isa(filter, 'numeric') || isa(filter, 'logical')
+                        if paramval == filter
+                            take = true;
+                        end
+                    elseif isa(filter, 'char')
+                        if strcmp(paramval, filter)
+                            take = true;
+                        end
+                    elseif isa(filter, 'function_handle')
+                        if filter(paramval)
+                            take = true;
+                        end
+                    else
+                        error('filter type not recognized');
+                    end
+                    if take == true
+                        found(end + 1) = ielt;
+                    end
+                end
+                
+            end
+
+            found = unique(found);
+            
+        end
+        
+
     end
 
     methods(Static)
