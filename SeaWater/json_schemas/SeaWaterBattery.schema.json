@@ -65,7 +65,7 @@
         },
         "stochElectron": {
           "type": "integer",
-          "description": "Stoichiometric number of electrons in reaction"
+: "Stoichiometric number of electrons in reaction"
         },
         "etaMax": {
           "type": "number",
