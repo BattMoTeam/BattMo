@@ -1,135 +1,140 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "K": {
-      "type": "array",
-      "description": "List of reactions with the equilibrium constants for reactions",
-      "items": {
-        "type": "object",
-        "properties": {
-          "reaction": {
-            "type": "string",
-            "description": "Chemical reaction equation"
-          },
-          "value": {
-            "type": "number",
-            "description": "Logarithmic value of the equilibrium constant"
-          },
-          "eval": {
-            "type": "string",
-            "description": "Expression to evaluate the equilibrium constant. This string is a formatted string"
+  "allOf" : [
+    {
+      "$ref" : "ElectronicComponent"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "K": {
+          "type": "array",
+          "description": "List of reactions with the equilibrium constants for reactions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "reaction": {
+                "type": "string",
+                "description": "Chemical reaction equation"
+              },
+              "value": {
+                "type": "number",
+                "description": "Logarithmic value of the equilibrium constant"
+              },
+              "eval": {
+                "type": "string",
+                "description": "Expression to evaluate the equilibrium constant. This string is a formatted string"
+              }
+            }
           }
-        }
-      }
-    },
-    "dischargeProductMolarVolume": {
-      "type": "number",
-      "description": "Molar volume of the discharge product"
-    },
-    "superOversaturationRatio": {
-      "type": "number",
-      "description": "Ratio for super-oversaturation"
-    },
-    "solidPrecipitatePorosity": {
-      "type": "number",
-      "description": "Porosity of the solid precipitate"
-    },
-    "characteristicPoreDiameter": {
-      "type": "number",
-      "description": "Characteristic pore diameter"
-    },
-    "nucleationMaximum": {
-      "type": "number",
-      "description": "Maximum nucleation rate"
-    },
-    "nucleationRate": {
-      "type": "number",
-      "description": "Rate of nucleation"
-    },
-    "nucleationActivation": {
-      "type": "number",
-      "description": "Activation energy for nucleation"
-    },
-    "species": {
-      "type": "array",
-      "description": "List of chemical species",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the species"
-          },
-          "D": {
-            "type": ["number", "null"],
-            "description": "Diffusion coefficient. Set to null for H2O"
-          },
-          "z": {
-            "type": "integer",
-            "description": "Charge of the species"
-          },
-          "lambda0": {
-            "type": ["number", "null"],
-            "description": ""
+        },
+        "dischargeProductMolarVolume": {
+          "type": "number",
+          "description": "Molar volume of the discharge product"
+        },
+        "superOversaturationRatio": {
+          "type": "number",
+          "description": "Ratio for super-oversaturation"
+        },
+        "solidPrecipitatePorosity": {
+          "type": "number",
+          "description": "Porosity of the solid precipitate"
+        },
+        "characteristicPoreDiameter": {
+          "type": "number",
+          "description": "Characteristic pore diameter"
+        },
+        "nucleationMaximum": {
+          "type": "number",
+          "description": "Maximum nucleation rate"
+        },
+        "nucleationRate": {
+          "type": "number",
+          "description": "Rate of nucleation"
+        },
+        "nucleationActivation": {
+          "type": "number",
+          "description": "Activation energy for nucleation"
+        },
+        "species": {
+          "type": "array",
+          "description": "List of chemical species",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the species"
+              },
+              "D": {
+                "type": ["number", "null"],
+                "description": "Diffusion coefficient. Set to null for H2O"
+              },
+              "z": {
+                "type": "integer",
+                "description": "Charge of the species"
+              },
+              "lambda0": {
+                "type": ["number", "null"],
+                "description": "equivalent conductance. Set to null for non-charge species"
+              }
+            }
           }
-        }
-      }
-    },
-    "solutes": {
-      "type": "array",
-      "description": "Within the species, we provied the list of solute species using their declared names",
-      "items": {
-        "type": "string"
-      }
-    },
-    "solids": {
-      "type": "array",
-      "description": "Within the species, we provied the list of solid species using their declared names",
-      "items": {
-        "type": "string"
-      }
-    },
-    "logspecies": {
-      "type": "array",
-      "description": "Within the species, we provied the list of the species that will be used as primary variables, in addition to the quasi-partilcles - using their declared names",
-      "items": {
-        "type": "string"
-      }
-    },
-    "quasiparticles": {
-      "type": "array",
-      "description": "List of quasiparticles",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the quasiparticle"
-          },
-          "composition": {
-            "type": "array",
-            "description": "Composition of the quasiparticle",
-            "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Name of the species in the composition"
-                },
-                "coef": {
-                  "type": "number",
-                  "description": "Coefficient of the species in the composition"
+        },
+        "solutes": {
+          "type": "array",
+          "description": "Within the species, we provied the list of solute species using their declared names",
+          "items": {
+            "type": "string"
+          }
+        },
+        "solids": {
+          "type": "array",
+          "description": "Within the species, we provied the list of solid species using their declared names",
+          "items": {
+            "type": "string"
+          }
+        },
+        "logspecies": {
+          "type": "array",
+          "description": "Within the species, we provied the list of the species that will be used as primary variables, in addition to the quasi-partilcles - using their declared names",
+          "items": {
+            "type": "string"
+          }
+        },
+        "quasiparticles": {
+          "type": "array",
+          "description": "List of quasiparticles",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the quasiparticle"
+              },
+              "composition": {
+                "type": "array",
+                "description": "Composition of the quasiparticle",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the species in the composition"
+                    },
+                    "coef": {
+                      "type": "number",
+                      "description": "Coefficient of the species in the composition"
+                    }
+                  }
                 }
               }
             }
           }
+        },
+        "kappa": {
+          "type": "number",
+          "description": "conductivity"
         }
-      }
-    },
-    "kappa": {
-      "type": "number",
-      "description": ""
-    }
-  }
+      }}]
 }

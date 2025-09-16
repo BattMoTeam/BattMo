@@ -1,0 +1,15 @@
+{
+  "allOf" : [
+    {
+      "type": "object",
+      "properties": {
+        "V": {
+          "type": "number",
+          "description": "Molar Volume"
+        }
+     }},
+    {
+      "$ref" : "ElectronicComponent"
+    }
+  }
+}

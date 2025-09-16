@@ -10,69 +10,12 @@
       "description": "Whether to include precipitation in the simulation"
     },
     "Cathode": {
-      "type": "object",
-      "properties": {
-        "V": {
-          "type": "number",
-          "description": ""
-        }
-      }
-    },
+      "$ref" : "SeaWaterElectrode"},
     "CathodeActiveMaterial": {
-      "type": "object",
-      "properties": {
-        "Asurf": {
-          "type": "number",
-          "description": ""
-        },
-        "chargeCarrierName": {
-          "type": "string",
-          "description": "Name of the charge carrier"
-        },
-        "stochElectron": {
-          "type": "integer",
-          "description": "Stoichiometric number of electrons in reaction"
-        },
-        "etaMax": {
-          "type": "number",
-          "description": ""
-        }
-      }
-    },
+      "$ref" : "SeaWaterActiveMaterial"},
     "Anode": {
-      "type": "object",
-      "properties": {
-        "V": {
-          "type": "number",
-          "description": ""
-        },
-        "EffectiveElectricalConductivity": {
-          "type": "number",
-          "description": "Effective electrical conductivity of the anode"
-        }
-      }
-    },
+      "$ref" : "SeaWaterElectrode"},
     "AnodeActiveMaterial": {
-      "type": "object",
-      "properties": {
-        "Asurf": {
-          "type": "number",
-          "description": ""
-        },
-        "chargeCarrierName": {
-          "type": "string",
-          "description": "Name of the charge carrier"
-        },
-        "stochElectron": {
-          "type": "integer",
-: "Stoichiometric number of electrons in reaction"
-        },
-        "etaMax": {
-          "type": "number",
-          "description": ""
-        }
-      }
-    },
+      "$ref" : "SeaWaterActiveMaterial"},
     "Electrolyte": {
-      "$ref" : "magnesium_electrolyte" 
-    }}}
+      "$ref" : "SeaWaterElectrolyte"}}}
