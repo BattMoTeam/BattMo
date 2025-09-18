@@ -5,7 +5,8 @@ function plotContours(model, states, varargin)
     opt = struct('subplot', true, ...
                  'varname', {'lithiation'}, ... % Or {'concentration'}
                  'sgtitle', '', ...
-                 'plot_separators', false); % Not implemented
+                 'plot_separators', false, ...  % Not implemented
+                 'subset', []); % Index subset of states to plot, empty means all
     opt = merge_options(opt, varargin{:});
 
     assert(containsi(opt.varname, 'lith') || containsi(opt.varname, 'conc'), ...
@@ -18,6 +19,21 @@ function plotContours(model, states, varargin)
     end
 
     time = cellfun(@(s) s.time, states) / hour;
+
+    % Subset states if requested
+    if ~isempty(opt.subset)
+        time = time(opt.subset);
+        states = states(opt.subset);
+    end
+
+    % It can happen when simulation has failed that the end time is
+    % duplicated
+    if time(end) == time(end-1)
+        warning('plotContours: Last time value is duplicated, removing last state');
+        time = time(1:end-1);
+        states = states(1:end-1);
+    end
+
     cmax_ne = model.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;
     cmax_pe = model.PositiveElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;
 
