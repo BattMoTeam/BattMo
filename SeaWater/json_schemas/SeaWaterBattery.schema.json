@@ -7,7 +7,7 @@
     },
     "include_precipitation": {
       "type": "boolean",
-      "description": "Whether to include precipitation in the simulation"
+      "description": "Whether to include precipitation in the simulation. default is true"
     },
     "Cathode": {
       "$ref" : "SeaWaterElectrode"},
