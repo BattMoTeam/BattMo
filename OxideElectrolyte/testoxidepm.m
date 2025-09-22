@@ -25,7 +25,7 @@ model = model.setupComputationalGraph();
 
 % compute and get computationalGraph (just used for postprocessing)
 model = model.validateModel();
-cgt   = model.computationalGraph;
+cgti   = model.computationalGraph;
 
 model.verbose = true;
 

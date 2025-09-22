@@ -129,9 +129,11 @@ classdef ActiveMaterial < BaseModel
                 varnames{end + 1} = 'chargeCons';
                 model = model.registerVarNames(varnames);
 
-                varnames = {{itf, 'dUdT'}, ...
-                            'jCoupling'  , ...
+                varnames = {'jCoupling'  , ...
                             'jExternal'};
+                if ~model.(itf).includeEntropyChange
+                    varnames{end + 1} = {itf, 'dUdT'};
+                end
                 model = model.removeVarNames(varnames);
 
                 varnames = {'T',                  ...

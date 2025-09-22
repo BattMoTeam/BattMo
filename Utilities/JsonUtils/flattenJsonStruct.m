@@ -1,10 +1,20 @@
-function flatjsonviewer = flattenJsonStruct(jsonstruct)
-
+function flatjsonviewer = flattenJsonStruct(jsonstruct, varargin)
+%
+% A json struct is hierarchical by design. For visualization, it is however convenient to have a flattened version with
+% all the entries given in the structure at the same level. This function returns an object of the class
+% :battmo:`FlatJsonViewer` which offers visualization capabilities with sorting and filtering.
+    
+    opt = struct('doprint', true);
+    opt = merge_options(opt, varargin{:});
+    
     flatjson = flattenJsonStruct_({}, jsonstruct, []);
     flatjson = reshape(flatjson, 2, [])';
 
     flatjsonviewer = FlatJsonViewer(flatjson);
-    flatjsonviewer.print();
+
+    if opt.doprint
+        flatjsonviewer.print();
+    end
 
 end
 

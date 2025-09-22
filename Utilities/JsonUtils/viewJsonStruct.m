@@ -1,19 +1,8 @@
-function am = setupActiveMaterial(inputparams)
+function viewJsonStruct(jsonstruct)
 
-    amName = inputparams.name;
-    
-    switch amName 
-      case 'NMC111'
-        am = NMC111(inputparams);
-      case 'FirstMaterial'
-        am = FirstMaterial(inputparams);
-      otherwise
-        error('active material not recognized');
-    end
-    
+    display(jsonencode(jsonstruct, 'PrettyPrint', true));
+
 end
-
-
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

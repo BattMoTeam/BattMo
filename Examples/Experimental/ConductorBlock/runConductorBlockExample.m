@@ -25,9 +25,6 @@ inputparams = gen.updateGridInputParams(inputparams, jsonstruct);
 
 model = ConductorBlock(inputparams);
 
-cgt = model.cgt;
-cgp = model.cgp;
-
 initstate = model.setupInitialState();
 
 totalTime = 1*minute;
@@ -40,9 +37,6 @@ control = struct('src', []);
 
 schedule = struct('step'   , step, ...
                   'control', control);
-
-cgt = model.cgt;
-cgp = model.cgp;
 
 %% Running the simulation
 

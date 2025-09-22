@@ -41,8 +41,10 @@ classdef Electrolyte < BaseModel
         %%  helper properties
 
         constants
-        computeConductivityFunc
-        computeDiffusionCoefficientFunc
+        computeConductivityFunc         % Function object (see Utilities/FunctionInterface/Function.m)
+        computeConductivity             % function handler (can be called directly)
+        computeDiffusionCoefficientFunc % Function object (see Utilities/FunctionInterface/Function.m)
+        computeDiffusionCoefficient     % function handler (can be called directly)
         use_thermal
         
         regularisationConstant = 0 % can be useed in update of dmudcs to avoid singular value
@@ -89,8 +91,10 @@ classdef Electrolyte < BaseModel
                 model.bruggemanCoefficient = b;
             end
             
-            model.computeConductivityFunc         = str2func(inputparams.ionicConductivity.functionname);
-            model.computeDiffusionCoefficientFunc = str2func(inputparams.diffusionCoefficient.functionname);
+            [model.computeConductivity, ...
+             model.computeConductivityFunc] = setupFunction(inputparams.ionicConductivity);
+            [model.computeDiffusionCoefficient, ...
+             model.computeDiffusionCoefficientFunc] = setupFunction(inputparams.diffusionCoefficient);
 
             model.constants = PhysicalConstants();
 
@@ -305,12 +309,10 @@ classdef Electrolyte < BaseModel
 
         function state = updateConductivity(model, state)
 
-            computeConductivity = model.computeConductivityFunc;
-
             c = state.c;
             T = state.T;
 
-            state.conductivity = computeConductivity(c, T);
+            state.conductivity = model.computeConductivity(c, T);
 
         end
 
@@ -340,12 +342,10 @@ classdef Electrolyte < BaseModel
 
             brcoef = model.bruggemanCoefficient;
 
-            computeD = model.computeDiffusionCoefficientFunc;
-
             c = state.c;
             T = state.T;
 
-            D = computeD(c, T);
+            D = model.computeDiffusionCoefficient(c, T);
 
             % set effective coefficient
             state.D = D .* model.volumeFraction .^ brcoef;

@@ -8,12 +8,10 @@
   "guestStoichiometry0": 0.15,
   "chargeTransferCoefficient": 0.5,
   "openCircuitPotential": {
-    "type": "function",
-    "functionname": "computeOCP_Graphite_SiOx_Chen2020",
-    "argumentlist": [
-      "concentration",
-      "temperature",
-      "cmax"
+    "functionFormat": "named function",
+    "functionName": "computeOCP_Graphite_SiOx_Chen2020",
+    "argumentList": [
+      "stoichiometry"
     ]
   }
 }

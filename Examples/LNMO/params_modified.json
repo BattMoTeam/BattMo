@@ -10,24 +10,24 @@
     "bruggemanCoefficient": 1.5,
     "density": 1200,
     "diffusionCoefficient": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
-      "functionname": "computeDiffusionCoefficient_default",
-      "type": "function"
+      "functionName": "computeDiffusionCoefficient_default",
+      "functionFormat": "named function"
     },
     "initialConcentration": {
       "unit": "mol/litre",
       "value": 1
     },
     "ionicConductivity": {
-      "argumentlist": [
+      "argumentList": [
         "concentration",
         "temperature"
       ],
-      "functionname": "computeElectrolyteConductivity_default",
-      "type": "function"
+      "functionName": "computeElectrolyteConductivity_default",
+      "functionFormat": "named function"
     },
     "species": {
       "chargeNumber": 1,
@@ -52,13 +52,9 @@
           "guestStoichiometry100": 0.88,
           "numberOfElectronsTransferred": 1,
           "openCircuitPotential": {
-            "argumentlist": [
-              "concentration",
-              "temperature",
-              "cmax"
-            ],
-            "functionname": "computeOCP_Graphite_SiOx_Chen2020",
-            "type": "function"
+            "functionFormat": "named function",
+            "functionName": "computeOCP_Graphite_SiOx_Chen2020",
+            "argumentList": ["stoichiometry"],
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,
@@ -115,25 +111,25 @@
           "chargeTransferCoefficient": 0.5,
           "description": "Data from  @article{Pron_2019, title={Electrochemical Characterization and Solid Electrolyte Interface Modeling of LiNi0.5Mn1.5O4-Graphite Cells}, volume={166}, ISSN={1945-7111}, url={http://dx.doi.org/10.1149/2.0941910jes}, DOI={10.1149/2.0941910jes}, number={10}, journal={Journal of The Electrochemical Society}, publisher={The Electrochemical Society}, author={Pron, Vittorio Giai and Versaci, Daniele and Amici, Julia and Francia, Carlotta and Santarelli, Massimo and Bodoardo, Silvia}, year={2019}, pages={A2255–A2263} }",
           "exchangeCurrentDensity": {
-            "argumentlist": [
+            "argumentList": [
               "cElectrodeSurface",
               "cmax"
             ],
-            "functionname": "computeLNMOexchangeCurrentDensity",
-            "type": "function"
+            "functionName": "computeLNMOexchangeCurrentDensity",
+            "functionFormat": "named function"
           },
           "guestStoichiometry0": 0.9811,
           "guestStoichiometry100": 0.00014001,
           "numberOfElectronsTransferred": 1,
-          "openCircuitPotential": {
-            "argumentlist": [
-              "concentration",
-              "temperature",
-              "maximum concentration"
-            ],
-            "functionname": "computeOCP_LNMO_Pron",
-            "type": "function"
+          "openCircuitPotential" : {
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_OCV.json"
           },
+          "entropyChange" : {
+            "isFile" : true,
+            "filename" : "ParameterData/MaterialProperties/LNMO/LNMO_Pron_entropyChange.json"    
+          },
+          "referenceTemperature": 293.15,
           "saturationConcentration": 24358,
           "volumetricSurfaceArea": 221476
         },

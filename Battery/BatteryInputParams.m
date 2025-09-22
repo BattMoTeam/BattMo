@@ -37,7 +37,7 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            jsontruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
 
             jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors'      , ...
                                                                {ne, 'include_current_collectors'}, ...

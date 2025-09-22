@@ -10,9 +10,8 @@ classdef ComputationalGraphPlot < handle
     
     properties
 
-        filters   % list of filters
 
-        nodeinds % current index
+        stack = {} % stack of selectors
         
         plotOptions
         
@@ -49,196 +48,382 @@ classdef ComputationalGraphPlot < handle
             
         end
 
+        function booleanOperator(cgp, op, n)
 
-        function cgp = addFilters(cgp, filters, varargin)
+            assert(ismember(op, {'and', 'or'}), 'boolean operator not recognized');
 
-            opt = struct('doPlot', true);
-            [opt, extras] = merge_options(opt, varargin{:});
+            stack = cgp.stack;
 
-            for ifilter = 1 : numel(filters)
-                filter = filters{ifilter};
-                cgp = cgp.addFilter(filter, 'doPlot', false, extras{:});
+            if nargin < 3
+                n = 2;
             end
             
-            if opt.doPlot
-                
-                cgp.plot();
-                
+            if numel(stack) < n
+                error(sprintf('%s operation require %d elements in this call'), op, n);
             end
+
+            cgp.stack = { {op, stack(1 : n)}, stack{n + 1 : end}};
+
+            cgp.printStack();
             
+        end
+
+        function and(cgp, n)
+            
+            if nargin < 2
+                n = 2;
+            end
+
+            cgp.booleanOperator('and', n);
+            
+        end
+
+        function or(cgp, n)
+            
+            if nargin < 2
+                n = 2;
+            end
+
+            cgp.booleanOperator('or', n);
+            
+        end
+
+        function addFamily(cgp, branch, level)
+
+            assert(ismember(branch, {'parents', 'children'}), 'branch should be either parents or children');
+
+            if nargin < 3
+                level = inf;
+            end
+
+            stack = cgp.stack;
+
+            assert(numel(stack) > 0, 'stack is empty');
+
+            cgp.stack = {{branch, level, stack{1}}, stack{2 : end}};
+
+            cgp.printStack();
+            
+        end
+
+
+        function parents(cgp, level)
+            
+            if nargin < 2
+                level = inf;
+            end
+
+            cgp.addFamily('parents', level);
+            
+        end
+
+        function children(cgp, level)
+            
+            if nargin < 3
+                level = inf;
+            end
+
+            cgp.addFamily('children', level);
             
         end
         
-        function cgp = addFilter(cgp, filter, varargin)
+        function select(cgp, expr)
 
-            opt = struct('doPlot', true, ...
-                         'printFilters', true);
-            opt = merge_options(opt, varargin{:});
-
-            cgp.filters{end + 1} = filter;
-
-            if opt.doPlot
-                cgp = cgp.applyFilters('doPlot', opt.doPlot, ...
-                                       'printFilters', opt.printFilters);
-            end
+            cgp.stack = {{'select', expr}, cgp.stack{:}};
+            cgp.printStack();
             
         end
 
+        function reset(cgp)
 
-        function cgp = printFilters(cgp)
+            cgp.stack = {};
+            
+        end
 
-            filters = cgp.filters;
+        function del(cgp, n)
 
-            fprintf('\nFilter list:\n\n')
-            for ifilter = 1 : numel(filters)
-                filter = filters{ifilter};
-                if iscell(filter)
-                    if isnumeric(filter{2})
-                        str = sprintf('%s: (not printed)', filter{1});
-                    else
-                        str = sprintf('%s: ''%s''', filter{1}, filter{2});
-                    end
-                else
-                    str = filter;
-                end
-                fprintf('%d) %s\n', ifilter, str);
+            if nargin < 2
+                n = 1;
             end
+
+            stack = cgp.stack;
+
+            assert(numel(stack) >= n, sprintf('I cannot remove %d elements in the stack. Stack contains %d elements', n, numel(stack)));
+
+            cgp.stack = stack(n + 1 : end);
+            
+            cgp.printStack();
+
+        end
+
+        function delop(cgp)
+
+            stack = cgp.stack;
+            
+            assert(numel(stack) >= 1, 'stack is empty');
+
+            selector = stack{1};
+
+            stack = stack(2 : end);
+
+            selectortype = selector{1};
+
+            switch selectortype
+
+              case {'select', 'set'}
+
+                error('no operator at bottom of the stack');
+
+              case {'and', 'or', 'diff'}
+
+                cgp.stack = {selector{2}{:}, stack{:}};
+
+              case {'parents', 'children'}
+
+                cgp.stack = {selector{3}, stack{:}};
+
+            end
+
+            cgp.printStack();
+
+        end
+
+        function dup(cgp)
+
+            stack = cgp.stack;
+
+            assert(numel(stack) > 0, 'stack is empty');
+
+            cgp.stack = {stack{1}, stack{1}, stack{2 : end}};
+            
+            cgp.printStack();
 
         end
         
-        function cgp = reset(cgp, filter, varargin)
-            
-            opt = struct('doPlot', true);
-            opt = merge_options(opt, varargin{:});            
-            
-            cgp.nodeinds = (1 : numel(cgp.nodenames))';
+        
+        function swap(cgp, n)
 
-            if nargin > 1
-                cgp = cgp.applyFilter(filter, varargin{:});
+            stack = cgp.stack;
+
+            if nargin < 2
+                n = 2;
+            end
+            
+            assert(numel(stack) >= n, 'There should be at least %d elements in the stack to swap the %dth element', n);
+
+            inds = (1 : numel(stack));
+            inds(n) = [];
+            inds = [n, inds];
+            
+            cgp.stack = stack(inds);
+
+            cgp.printStack();
+            
+        end
+
+        function diff(cgp)
+
+            stack = cgp.stack;
+
+            assert(numel(stack) >= 2, 'There should be at least 2 elements in the stack to take a diff');
+
+            cgp.stack = {{'diff', {stack{1}, stack{2}}}, stack{3 : end}};
+
+            cgp.printStack();
+            
+        end
+        
+        
+        function selection = parseSelector(cgp, selector)
+
+            cgt = cgp.computationalGraphTool;
+            
+            selectiontype = selector{1};
+
+            assert(ischar(selectiontype), 'The first element of the selector should be a string');
+            
+            switch selectiontype
+                
+              case 'set'
+
                 return
-            end
-            
-            if opt.doPlot
                 
-                cgp.plot();
-                
-            end
-
-        end
-
-        function cgp = resetFilters(cgp)
-
-            cgp = cgp.reset();
-            cgp.filters = {};
-            
-        end
-
-        function cgp = applyFilters(cgp, varargin)
-            
-            opt = struct('doPlot', true, ...
-                         'printFilters', true);
-            [opt, extras] = merge_options(opt, varargin{:});
-
-            cgp = cgp.reset();
-            
-            filters = cgp.filters;
-            
-            for ifilter = 1 : numel(filters)
-                filter = filters{ifilter};
-                [cgp, filter] = cgp.applyFilter(filter, 'doPlot', false, extras{:});
-                filters{ifilter} = filter;
-            end
-
-            cgp.filters = filters;
-            
-            if opt.printFilters
-                cgp.printFilters();
-            end
-
-            if opt.doPlot
-                cgp.plot();
-            end
-            
-        end
-
-        function cgp = removeLast(cgp, varargin)
-            
-            opt = struct('doPlot', true, ...
-                         'printFilters', true);
-            opt = merge_options(opt, varargin{:});
-
-            cgp.filters = cgp.filters(1 : end - 1);
-
-            cgp = cgp.applyFilters('doPlot', opt.doPlot, ...
-                                   'printFilters', opt.printFilters);
-            
-        end
-
-        function [cgp, filter] = applyFilter(cgp, filter, varargin)
-            
-            opt = struct('doPlot', true);
-            opt = merge_options(opt, varargin{:});            
-
-            nodenames = cgp.computationalGraphTool.nodenames;
-            A         = cgp.A;
-
-
-            if iscell(filter)
-                action = filter{1};
-                arg = filter{2};
-            else
-                action = filter;
-            end
-            
-            switch action
-
               case 'select'
-                
-                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
-                cgp.nodeinds = cgp.nodeinds(inds);
 
-              case 'add nodes'
-                
-                nodeinds = vertcat(arg, cgp.nodeinds);
-                cgp.nodeinds = unique(nodeinds);
+                nodenames = cgp.computationalGraphTool.nodenames;
+                inds = regexpSelect(nodenames, selector{2});
 
-              case 'strict-select'
+                selection = {'set', cgp.nodenames(inds)};
+                return
                 
-                inds = strcmp(nodenames(cgp.nodeinds), arg);
-                cgp.nodeinds = cgp.nodeinds(inds);
-                
-              case 'remove'
-                
-                inds = regexpSelect(nodenames(cgp.nodeinds), arg);
-                cgp.nodeinds(inds) = [];
-                
-              case 'addParents'
+              case {'and', 'or'}
+               
+                varnamesets = selector{2};
 
-                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A);
-                cgp.nodeinds = unique(nodeinds);
+                varnameset = cgp.parseSelector(varnamesets{1});
+                varnames = varnameset{2};
+                for iselect = 1 : numel(varnamesets)
+                    varnameset = cgp.parseSelector(varnamesets{iselect});
+                    switch selectiontype
+                      case 'and'
+                        varnames = intersect(varnames, varnameset{2});
+                      case 'or'
+                        varnames = union(varnames, varnameset{2});
+                    end
+                end
+
+                selection = {'set', varnames};
+
+                return
+
+              case {'parents', 'children'}
+
+                switch selectiontype
+                  case 'parents'
+                    B = cgp.A;
+                  case 'children'
+                    B = cgp.A';
+                end
                 
-              case 'addChildren'
+                level      = selector{2};
+                varnameset = cgp.parseSelector(selector{3});
 
-                nodeinds = getDependencyVarNameInds(cgp.nodeinds, A');
-                cgp.nodeinds = unique(nodeinds);
+                varnames   = varnameset{2};
 
-              otherwise
+                for ivar = 1 : numel(varnames)
 
-                filter = {'select', filter};
-                cgp = applyFilter(cgp, filter, varargin{:});
+                    varname = varnames{ivar};
+
+                    % setup from method getDependencyList. We could have cleaned up the implementation there.
+                    varnameind = cgt.findVarName(sprintf('%s$', varname));
+                    [varnameinds, ~, ~, propdeplevels, ~, rootdeplevels] = getDependencyVarNameInds(varnameind, B);
+                    levels = [rootdeplevels; propdeplevels];  
+
+                    varnameinds = varnameinds(levels <= level);
+                    
+                    varnames = union(varnames, cgp.nodenames(varnameinds));
+
+                    
+                end
+
+                selection = {'set', varnames};
+                return
+
+              case 'diff'
+
+                args = selector{2};
+
+                assert(numel(args) == 2, 'we expect 2 arguments for a diff');
+
+                for iarg = 1 : numel(args)
+                    varnameset = cgp.parseSelector(args{iarg});
+                    varnames{iarg} = varnameset{2};
+                end
+
+                varnames = setdiff(varnames{2}, varnames{1});
+                selection = {'set', varnames};
+                
+                return
                 
             end
 
-            if opt.doPlot
+        end
+
+        function printStack(cgp)
+
+            stack = cgp.stack;
+            for iselector = numel(stack) : -1  : 1
+                lines = cgp.setupSelectorPrint(stack{iselector});
+                nlines = numel(lines);
+                for iline = nlines : -1 : 1
+                    if iline == 1
+                        start = sprintf('%2d: ', iselector);
+                    else
+                        start = '    ';
+                    end
+                    fprintf('%s%s\n', start, lines{iline});
+                end
+            end
+            
+        end
+
+        function printStackSelection(cgp)
+
+            assert(numel(cgp.stack) > 0, 'stack is empty');
+            
+            cgp.printSelection(cgp.stack{1});
+            
+        end
+        
+        function printSelection(cgp, selection)
+
+            if ~strcmp(selection{1}, 'set')
+                selection = cgp.parseSelector(selection);
+            end
+            
+            varnames = selection{2};
+            fprintf('\n');
+            
+            for ivar = 1 : numel(varnames)
+                fprintf('%s\n', varnames{ivar});
+            end
+
+        end
+
+        function lines = setupSelectorPrint(cgp, selector)
+            
+            indent0 = '  ';
+            
+            function lines = setupLines(selector, indent)
+
+                selectortype = selector{1};
+
+                switch selectortype
+
+                  case 'select'
+                    
+                    lines{1} = sprintf('%s%s ''%s''', indent, selectortype, selector{2});
+                    return
+
+                  case {'and', 'or', 'diff'}
+
+                    lines{1} = sprintf('%s%s', indent, selectortype);
+                    subselectors = selector{2};
+                    for isel = 1 : numel(subselectors)
+                        lines = horzcat(lines, setupLines(subselectors{isel}, [indent, indent0]));
+                    end
+                    return
+
+                  case {'parents', 'children'}
+
+                    level = selector{2};
+                    lines{1} = sprintf('%s%s (level %d)', indent, selectortype, level);
+                    lines = horzcat(lines, setupLines(selector{3}, [indent, indent0]));
+                    return
+
+                end
                 
-                cgp.plot();
-                
+
+            end
+
+            lines = setupLines(selector, '');
+
+        end
+        
+        function printSelector(cgp, selector)
+
+            lines = cgp.setupSelectorPrint(selector);
+            
+            for iline = numel(lines) : -1 : 1  
+                fprintf('%s\n', lines{iline});
             end
             
         end
 
         function help(cgp)
         % Print help for interactive use
+
+            error('update')
 
             str = {};
             str{end + 1} = '';
@@ -267,63 +452,19 @@ classdef ComputationalGraphPlot < handle
             
         end
 
-        function plotRelatives(cgp, varname, relative)
-            
-            cgt = cgp.computationalGraphTool;
-            
-            cgp.resetFilters();
-            varnameind = cgt.findVarName(varname);
-            if isempty(varnameind)
-                fprintf('no node found matching expression\n');
-                return
-            end
-            nodename = cgt.nodenames{varnameind};
-
-            filteropts = {'printFilters', false, 'doplot', false};
-
-            cgp.addFilter({'strict-select', nodename}, filteropts{:});
-
-            
-            switch relative
-              case 'children'
-                cgp.addFilter('addChildren', filteropts{:});
-              case 'parents'
-                cgp.addFilter('addParents', filteropts{:});
-              case 'both'
-                A = cgp.A;
-                nodeinds = getDependencyVarNameInds(varnameind, A);
-                nodeinds = vertcat(nodeinds, getDependencyVarNameInds(varnameind, A'));
-                cgp.addFilter({'add nodes', unique(nodeinds)}, filteropts{:});
-              otherwise
-                error('relative option not recognized');
-            end
-
-            cgp.applyFilters();
-                
-        end
-
-        function plotBoth(cgp, varname)
-
-            cgp.plotRelatives(varname, 'both');
-            
-        end
-        
-        function plotChildren(cgp, varname)
-
-            cgp.plotRelatives(varname, 'children');
-
-        end
-
-        function plotParents(cgp, varname)
-
-            cgp.plotRelatives(varname, 'parents');
-                
-        end
         
         function h = plot(cgp)
 
-            nodeinds = cgp.nodeinds;
+            if isempty(cgp.stack)
+                selection = {'set', cgp.nodenames};
+            else
+                selection = cgp.parseSelector(cgp.stack{1});
+            end
+            
+            varnames = selection{2};
 
+            nodeinds = ismember(cgp.nodenames, varnames);
+            
             A         = cgp.A(nodeinds, nodeinds);
             nodenames = cgp.nodenames(nodeinds);
             
@@ -363,6 +504,25 @@ classdef ComputationalGraphPlot < handle
             end
             
         end
+    end
+
+    methods (Static)
+
+        function selection = getIntersection(selection1, selection2)
+        % Get the intersection of two selections
+            if iscell(selection1) && iscell(selection2)
+                selection = intersect(selection1, selection2);
+            elseif ischar(selection1) && ischar(selection2)
+                if strcmp(selection1, selection2)
+                    selection = {selection1};
+                else
+                    selection = {};
+                end
+            else
+                error('Selection types do not match');
+            end
+        end
+
     end
     
 end
