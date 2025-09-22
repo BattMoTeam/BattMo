@@ -146,18 +146,9 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 1*second*(Iref/Imax);
 
-switch scenario
-  case 'charge'
     srcfunc = @(time) rampupControl(time, tup, -Imax);
     cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-    % control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
-  case 'discharge'
-    srcfunc = @(time) rampupControl(time, tup, Imax);
-    cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
-  otherwise
-    error('scenario not recognized');
-end
+
 
 control.src = srcfunc;
 
@@ -187,10 +178,7 @@ simsetup = SimulationSetup(inputSim);
 
 states = simsetup.run();
 
-%%
-% W save the charging states for later
-
-chargeStates = states;
+chargeStates = states; % for later
 
 %% Setup discharge simulation
 % 
@@ -199,19 +187,19 @@ chargeStates = states;
 
 simsetup.initstate = states{end};
 
-jsonstruct.(ctrl).DRate = -1;
-jsonstruct.Control.controlPolicy = 'CCDischarge';
+%%
+% Setup schedule structure for discharge
+%
 
+cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
 
-srcfunc = @(time) rampupControl(time, tup, Imax);
-
-control.src = srcfunc;
+control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
+control.src          = @(time) rampupControl(time, tup, Imax);
 
 simsetup.schedule = struct('control', control, 'step', step);
 
 %% Run second simulation, particle discharge
 %
-
 
 states = simsetup.run();
 
