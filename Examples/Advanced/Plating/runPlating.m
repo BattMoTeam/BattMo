@@ -127,7 +127,7 @@ end
 
 Iref = 7e-13;
 Imax = Iref;
-total = 1e-3*hour*(Iref/Imax); %total time of the charge
+total = 6e-3*hour*(Iref/Imax); %total time of the charge
 n     = 400;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -268,11 +268,14 @@ varnames = {
 
 vars = {};
 
+vsa = model.LithiumPlating.volumetricSurfaceArea;
+
+
 vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
 vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaChemical, states);
-vars{end + 1} = cellfun(@(s) s.(lp).platingFlux .* s.(lp).surfaceCoverage, states);
+vars{end + 1} = cellfun(@(s) s.(lp).platingFlux .* s.(lp).surfaceCoverage .* vsa, states);
 vars{end + 1} = cellfun(@(s) s.(lp).chemicalFlux .* s.(lp).surfaceCoverage, states);
 vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux .* (1 - s.(lp).surfaceCoverage), states);
 vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
@@ -360,3 +363,41 @@ plot(time, vars{3}, '-');
 xlabel('time [second]');
 ylabel(varnames{3});
 title(varnames{3});
+
+%% Sum up
+
+figure;
+
+yyaxis left
+plot(time, cSurface/(1/litre), '-', 'LineWidth', 1.5);
+ylabel('Surface concentration [mol/L]');
+
+yyaxis right
+plot(time, vars{5}, '-', 'LineWidth', 1.5);
+ylabel('Volumetric plating flux [mol/(m³·s)]');
+
+xlabel('Time [second]');
+title('Surface Concentration and Volumetric plating flux');
+legend('Surface concentration', 'Plating flux');
+grid on;
+
+% === Save figure to user folder ===
+
+% 1. Get user directory
+if ispc
+    userdir = getenv('USERPROFILE');
+else
+    userdir = getenv('HOME');
+end
+
+% 2. Create subfolder
+plotdir = fullfile(userdir, 'plotsLithiumPlating');
+if ~exist(plotdir, 'dir')
+    mkdir(plotdir);
+end
+
+% 3. Save figure
+filename = fullfile(plotdir, 'sumUpPlating.png');
+exportgraphics(gcf, filename, 'ContentType', 'vector');
+
+fprintf('Figure saved to: %s\n', filename);

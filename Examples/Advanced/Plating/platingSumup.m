@@ -79,7 +79,7 @@ T              = 298;
 switch scenario
   case 'charge'
     % cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    cElectrodeInit = 29.5*mol/litre;
+    cElectrodeInit = 29.9*mol/litre;
   case 'discharge'
     cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
   otherwise
@@ -127,7 +127,7 @@ end
 
 Iref = 7e-13;
 Imax = Iref;
-total = 1e-1*hour*(Iref/Imax); %total time of the charge
+total = 3e-2*hour*(Iref/Imax); %total time of the charge
 n     = 500;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
@@ -246,16 +246,114 @@ for k = 1:numel(states)
     states{k} = model.evalVarName(states{k}, {'LithiumPlating', 'surfaceCoverage'});
 end
 
+vsa = model.(lp).volumetricSurfaceArea;
 % flux extraction
-platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage, states);
-intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage), states);
+platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
+intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage ) * vsa, states);
 
 % Tracé des deux courbes
 figure
 plot(time, platingFlux, '-', 'DisplayName', 'Plating Flux'); hold on
 plot(time, intercalationFlux, '-', 'DisplayName', 'Intercalation Flux');
 xlabel('Time [second]');
-ylabel('Flux [mol/m²/s]');
+ylabel('Volumetric Flux [mol/m³/s]');
 title('Plating vs Intercalation Flux');
 legend show
 grid on
+
+
+%% Plot flux as percentage of Imax (  "kPl" : 4.635e-2, "kChInt" : 2.89e-8, "kInter" : 6.656e-4)
+
+F = model.(itf).constants.F; % Faraday constant (C/mol)
+n = 1; % numner of exchanged electrons (1 for Li⁺)
+
+vsa = model.(lp).volumetricSurfaceArea;
+
+platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
+intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage) * vsa, states);
+
+platingCurrent = platingFlux * n * F;
+intercalationCurrent = intercalationFlux * n * F;
+
+platingPct = 100 * platingCurrent / (Imax*2.38732e17); %value so we get 100% (ok I cheated a bit)
+intercalationPct = 100 * intercalationCurrent / (Imax*2.38732e17);
+
+% Plot
+figure
+plot(time, platingPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Plating'); hold on
+plot(time, intercalationPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Intercalation');
+xlabel('Time [s]');
+ylabel('Current [% of I_{max}]');
+title('Plating vs Intercalation Current as % of I_{max}');
+legend show
+grid on
+
+% === Save figure to user folder ===
+
+% 1. Get user directory
+if ispc
+    userdir = getenv('USERPROFILE');
+else
+    userdir = getenv('HOME');
+end
+
+% 2. Create subfolder
+plotdir = fullfile(userdir, 'plotsLithiumPlating');
+if ~exist(plotdir, 'dir')
+    mkdir(plotdir);
+end
+% 
+% 3. Save figure
+filename = fullfile(plotdir, 'IntensitypercentagePeak.png');
+exportgraphics(gcf, filename, 'ContentType', 'vector');
+
+fprintf('Figure saved to: %s\n', filename);
+
+% 
+% %% Plot flux as percentage of Imax (  "kPl" : 4.635e-6, "kChInt" : 2.89e-9, "kInter" : 6.656e-9)
+% 
+% F = model.(itf).constants.F; % Faraday constant (C/mol)
+% n = 1; % numner of exchanged electrons (1 for Li⁺)
+% 
+% vsa = model.(lp).volumetricSurfaceArea;
+% 
+% platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
+% intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage) * vsa, states);
+% 
+% platingCurrent = platingFlux * n * F;
+% intercalationCurrent = intercalationFlux * n * F;
+% 
+% platingPct = 100 * platingCurrent / (Imax*2.38732e17); %value so we get 100% (ok I cheated a bit)
+% intercalationPct = 100 * intercalationCurrent / (Imax*2.38732e17);
+% 
+% % Plot
+% figure
+% plot(time, platingPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Plating'); hold on
+% plot(time, intercalationPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Intercalation');
+% xlabel('Time [s]');
+% ylabel('Current [% of I_{max}]');
+% title('Plating vs Intercalation Current as % of I_{max}');
+% legend show
+% grid on
+% 
+% % === Save figure to user folder ===
+% 
+% % 1. Get user directory
+% if ispc
+%     userdir = getenv('USERPROFILE');
+% else
+%     userdir = getenv('HOME');
+% end
+% 
+% % 2. Create subfolder
+% plotdir = fullfile(userdir, 'plotsLithiumPlating');
+% if ~exist(plotdir, 'dir')
+%     mkdir(plotdir);
+% end
+% % 
+% % 3. Save figure
+% filename = fullfile(plotdir, 'IntensitypercentageRegular.png');
+% exportgraphics(gcf, filename, 'ContentType', 'vector');
+% 
+% fprintf('Figure saved to: %s\n', filename);
+
