@@ -177,10 +177,10 @@ model.nonlinearTolerance = 1e-6;
 model.verbose = true;
 [~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
 
-%% Then discharge it
-%Comment this part to only see the charge
-
-%We use the last state of the previous simulation to initialise the new one
+%%
+% Then discharge it
+%
+% We use the last state of the previous simulation to initialise the new one
 initstate = states{end};
 jsonstruct.(ctrl).DRate = -1;
 jsonstruct.Control.controlPolicy = 'CCDischarge';
@@ -270,7 +270,6 @@ vars = {};
 
 vsa = model.LithiumPlating.volumetricSurfaceArea;
 
-
 vars{end + 1} = cellfun(@(s) s.(lp).platedConcentration, states);
 vars{end + 1} = cellfun(@(s) s.(itf).eta, states);
 vars{end + 1} = cellfun(@(s) s.(lp).etaPlating, states);
@@ -301,6 +300,8 @@ plot(time, vars{8}, '-');
 xlabel('time [second]');
 ylabel(varnames{8});
 title(varnames{8});
+
+%%
 % Area fraction that is plated. The more lithium is plated, the less it can
 % pass from the electrolyte to intercalate into the electrode. Thus, if
 % surfaceCoverage = 1, no more lithium can be intercalated from the solution. 
@@ -313,6 +314,9 @@ plot(time, vars{5}, '-');
 xlabel('time [second]');
 ylabel(varnames{5});
 title(varnames{5});
+
+
+%%
 % We can see clearly here the 4 differents steps of the lithium plating phenomenon.
 % First, at the end of the charge, the amount of lithium being plated grows
 % faster and faster as the area where plating is possible increases. 
@@ -341,8 +345,6 @@ ylabel(varnames{7});
 title(varnames{7});
 % No more lithium is intercalated during the time the whole surface is covered
 % with plated lithium.
-
-
 
 % Variable : platedThickness
 figure
@@ -381,23 +383,3 @@ title('Surface Concentration and Volumetric plating flux');
 legend('Surface concentration', 'Plating flux');
 grid on;
 
-% === Save figure to user folder ===
-
-% 1. Get user directory
-if ispc
-    userdir = getenv('USERPROFILE');
-else
-    userdir = getenv('HOME');
-end
-
-% 2. Create subfolder
-plotdir = fullfile(userdir, 'plotsLithiumPlating');
-if ~exist(plotdir, 'dir')
-    mkdir(plotdir);
-end
-
-% 3. Save figure
-filename = fullfile(plotdir, 'sumUpPlating.png');
-exportgraphics(gcf, filename, 'ContentType', 'vector');
-
-fprintf('Figure saved to: %s\n', filename);
