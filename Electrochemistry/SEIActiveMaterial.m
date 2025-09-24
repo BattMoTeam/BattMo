@@ -182,7 +182,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
-            state.(sei).R = state.(sr).R;
+            state.(sei).reactionRate = state.(sr).reactionRate;
 
         end
 
@@ -201,8 +201,8 @@ classdef SEIActiveMaterial < ActiveMaterial
             vsa = model.(itf).volumetricSurfaceArea;
 
             Rint = state.(itf).intercalationFlux;
-            Rsei = state.(sr).R;
-            R = state.totalReactionRate;
+            Rsei = state.(sr).reactionRate;
+            R    = state.totalReactionRate;
 
             state.seiInterfaceChargeCons = R - Rint - Rsei;
 
