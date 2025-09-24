@@ -37,6 +37,9 @@ jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
 jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
+% OCP is computed via a function described in the article (S-5)
+jsonstruct.(ne).(co).(am).(itf).openCircuitPotential.functionName = 'computeOCP_Graphite_Latz';
+
 %%
 % Flag for stand-alone model
 %
@@ -67,8 +70,6 @@ end
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
 
-% OCP is computed via a function described in the article (S-5)
-inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
 
 %% Setup the model
 
