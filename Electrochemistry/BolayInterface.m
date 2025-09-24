@@ -167,7 +167,7 @@ classdef BolayInterface < Interface
 
             U = state.SEIvoltageDrop;
             L = state.SEIlength;
-            R = state.R;
+            R = state.intercalationFlux;
 
             state.SEIvoltageDropEquation = U - F*R.*L/k;
             
