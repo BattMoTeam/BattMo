@@ -35,8 +35,10 @@ jsonstruct.include_current_collectors = false;
 jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
 jsonstruct.(ne).(co).(am).useLithiumPlating  = true;
 
+%%
 % OCP is computed via a function described in the article (S-5)
 jsonstruct.(ne).(co).(am).(itf).openCircuitPotential.functionName = 'computeOCP_Graphite_Latz';
+jsonstruct.(ne).(co).(am).(itf).includeEntropyChange = false;
 
 %%
 % Add lithium plating parameters
@@ -45,7 +47,6 @@ jsonstruct.(ne).(co).(am).(itf).openCircuitPotential.functionName = 'computeOCP_
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
-
 
 %% Setup the model
 
@@ -73,7 +74,6 @@ Iref  = 3e-13;
 Imax  = Iref;
 total = 1e-2*hour*(Iref/Imax);
 n     = 500;
-n     = 100;
 dt    = total/n;
 step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 tup   = 1*second*(Iref/Imax);
@@ -118,12 +118,11 @@ phiElectrolyte = 0;
 cElectrodeInit = 30*mol/litre;
 
 
-%% Run first simulation, particle charge
+%% Run simulations at different temperatures
 %
 
-T_list = [150, 250, 350];  % different temperatures
-T_list = [350];  % different temperatures
-styles = {'-r', '-g', '-b'};  % couleurs et pointillés
+T_list = [150, 250, 350]; % some chosen temperature range
+styles = {'-r', '-g', '-b'}; % couleurs et pointillés
 results = struct();
 
 for iT = 1:length(T_list)
@@ -131,7 +130,7 @@ for iT = 1:length(T_list)
     T = T_list(iT);
 
     model = simsetup.model;
-    [model, initstate] = setupPlatingInitialState(model, ...
+    [model, initstate] = setupPlatingInitialState(model         , ...
                                                   T             , ...
                                                   cElectrolyte  , ...
                                                   phiElectrolyte, ...
@@ -139,15 +138,12 @@ for iT = 1:length(T_list)
                                                   Imax);
     simsetup.model     = model;
     simsetup.initstate = initstate;
-    
 
     %% Run simulation
     %
 
     states = simsetup.run();
 
-    return
-    
     states = states(cellfun(@(s) ~isempty(s), states));
     
     time     = cellfun(@(state) state.time, states);
@@ -185,46 +181,6 @@ for iT = 1:length(T_list)
     
 end
 
-%% Plotting all variables
-
-% varnames = {'eta', 'etaPlating', 'etaChemical', ...
-%             'platingFlux', 'chemicalFlux', 'intercalationFlux', ...
-%             'surfaceCoverage', 'platedConcentration'};
-% 
-% for ivar = 1:length(varnames)
-%     figure; hold on;
-%     for iT = 1:length(T_list)
-%         plot(results(iT).time/hour, results(iT).lp_vars{ivar}, ...
-%              styles{iT}, 'DisplayName', sprintf('T = %d K', T_list(iT)));
-%     end
-%     xlabel('Time [hour]');
-%     ylabel(varnames{ivar});
-%     title(varnames{ivar});
-%     legend show;
-% end
-% 
-% figure; hold on;
-% for iT = 1:length(T_list)
-%     plot(results(iT).time/hour, results(iT).cSurface/(1/litre), styles{iT}, ...
-%          'DisplayName', sprintf('T = %d K', T_list(iT)));
-% end
-% xlabel('Time [hour]');
-% ylabel('Surface concentration [mol/L]');
-% title('Surface concentration');
-% legend show;
-% 
-% figure; hold on;
-% for iT = 1:length(T_list)
-%     plot(results(iT).time/hour, results(iT).E, styles{iT}, ...
-%          'DisplayName', sprintf('T = %d K', T_list(iT)));
-% end
-% xlabel('Time [hour]');
-% ylabel('Potential [V]');
-% title('Potential difference');
-% legend show;
-
-%% Plot the final graph
-
 %% Combined Plot: Surface concentration + Surface coverage
 
 figure;
@@ -252,13 +208,6 @@ for iT = 1:length(T_list)
         'Color', customColors(iT,:), ...
         'LineWidth', 1.5);
 end
-
-% % Add critical concentration line
-% yline(30.0113, ':k', 'c_{crit}', ...
-%     'LineWidth', 1.2, ...
-%     'FontSize', 10, ...
-%     'LabelHorizontalAlignment', 'left', ...
-%     'LabelVerticalAlignment', 'bottom');
 
 yyaxis right;
 ylabel('Surface coverage [–]');
@@ -295,5 +244,3 @@ type_legend(2) = plot(nan, nan, '--', 'Color', 'k', ...
 % Show combined legend
 legend([temp_legend, type_legend], 'Location', 'best');
 
-% Save figure as high-resolution PNG
-saveas(gcf, 'surface_concentration_coverage_temperature.png');
