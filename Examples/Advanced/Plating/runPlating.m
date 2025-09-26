@@ -2,7 +2,7 @@
 % This example shows how to simulate a single particle of a silicon graphite
 % electrode, taking into account the plating phenomenon
 
-clear all
+% clear all
 close all
 
 %% Setup the properties of Li-ion battery materials and cell design
@@ -50,20 +50,6 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
-scenario = 'charge';
-
-%% following is not used at particle level
-%
-
-switch scenario
-  case 'charge'
-    jsonstruct.Control.controlPolicy = 'CCCharge';
-  case 'discharge'
-    jsonstruct.Control.controlPolicy = 'CCDischarge';
-  otherwise
-    error('scenario not recognized');
-end
-
 %%
 % Setup InputParams
 
@@ -82,26 +68,6 @@ model = ActiveMaterial(inputparams);
 model = model.setupForSimulation();
 model.verbose = true;
 
-%% Setup initial state
-
-sd  = 'SolidDiffusion';
-itf = 'Interface';
-
-cElectrolyte   = 5e-1*mol/litre;
-phiElectrolyte = 0;
-T              = 298;
-
-switch scenario
-  case 'charge'
-    cElectrodeInit = 30*mol/litre;
-  case 'discharge'
-    cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-  otherwise
-    error('scenario not recognized');
-end
-
-[model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit);
-
 
 %% setup schedule
 % This part is essential to see the lithium plating effect. Increasing Iref strengthens the effect.
@@ -116,25 +82,22 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 tup = 1*second*(Iref/Imax);
 
 srcfunc = @(time) rampupControl(time, tup, -Imax);
-cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step);
 
-scalingparams = struct('I'                  , Imax                              , ...
-                       'elyteConcentration' , initstate.(itf).cElectrolyte);
+%% Setup initial state
 
-if model.useLithiumPlating
-    scalingparams.platedConcentration = model.(lp).platedConcentrationRef;
-end
+sd  = 'SolidDiffusion';
+itf = 'Interface';
 
-%%
-% We setup the scaling of the parameters
-%
+cElectrolyte   = 5e-1*mol/litre;
+phiElectrolyte = 0;
+T              = 298;
+cElectrodeInit = 30*mol/litre;
 
-model = model.setupScalings(scalingparams);
-
+[model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit, Imax);
 
 %% Run first simulation, particle charge
 %

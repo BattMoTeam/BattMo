@@ -1,4 +1,4 @@
-function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit)
+function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit, Imax)
 
     %%
     % We define some shortcuts
@@ -52,4 +52,17 @@ function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, p
         
     end
 
+    scalingparams = struct('I'                  , Imax                              , ...
+                           'elyteConcentration' , initstate.(itf).cElectrolyte);
+
+    if model.useLithiumPlating
+        scalingparams.platedConcentration = model.(lp).platedConcentrationRef;
+    end
+
+    %%
+    % We setup the scaling for the residual equations
+    %
+
+    model = model.setupScalings(scalingparams);
+    
 end
