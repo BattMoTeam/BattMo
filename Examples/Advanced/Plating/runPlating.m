@@ -100,40 +100,8 @@ switch scenario
     error('scenario not recognized');
 end
 
-N = model.(sd).N;
-initstate.(sd).c        = cElectrodeInit*ones(N, 1);
-initstate.(sd).cSurface = cElectrodeInit;
+[model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit);
 
-initstate.T = T;
-initstate.(itf).cElectrolyte   = cElectrolyte;
-initstate.(itf).phiElectrolyte = phiElectrolyte;
-
-initstate = model.evalVarName(initstate, {itf, 'OCP'});
-OCP = initstate.(itf).OCP;
-initstate.E = OCP + phiElectrolyte;
-
-F = model.(itf).constants.F;
-R = model.(itf).constants.R;
-
-if model.useLithiumPlating
-    
-    nPl0                 = model.LithiumPlating.nPl0;
-    r                    = model.LithiumPlating.particleRadius;
-    vf                   = model.LithiumPlating.volumeFraction;
-    platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
-    
-    %%
-    % initialisation so that the overpotential are zero at the beginning
-    platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
-
-    model.(lp).platedConcentrationRef = platedConcentrationInit;
-
-    initstate.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
-    initstate.(lp).phiSolid            = initstate.E;
-    initstate.(lp).phiElectrolyte      = phiElectrolyte;
-    initstate.(lp).cElectrolyte        = cElectrolyte;
-    initstate.(lp).nSEI                = 0;
-end
 
 %% setup schedule
 % This part is essential to see the lithium plating effect. Increasing Iref strengthens the effect.
@@ -147,9 +115,8 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 1*second*(Iref/Imax);
 
-    srcfunc = @(time) rampupControl(time, tup, -Imax);
-    cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-
+srcfunc = @(time) rampupControl(time, tup, -Imax);
+cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 control.src = srcfunc;
 
@@ -159,7 +126,7 @@ scalingparams = struct('I'                  , Imax                              
                        'elyteConcentration' , initstate.(itf).cElectrolyte);
 
 if model.useLithiumPlating
-    scalingparams.platedConcentration = platedConcentrationInit;
+    scalingparams.platedConcentration = model.(lp).platedConcentrationRef;
 end
 
 %%
@@ -207,11 +174,10 @@ states = simsetup.run();
 %%
 % We concatenate the two phases
 
-
 dischargeStates = states;
 states = vertcat(chargeStates, dischargeStates);
 
-%% Plot
+%% Plotting
 
 ind = cellfun(@(state) ~isempty(state), states);
 states = states(ind);
@@ -238,8 +204,6 @@ cmax = cellfun(@(state) max(state.(sd).c), states);
 for istate = 1 : numel(states)
     states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
 end
-
-%% Lithium plating plotting
 
 lp = 'LithiumPlating';
 
@@ -282,20 +246,6 @@ vars{end + 1} = cellfun(@(s) s.(itf).intercalationFlux .* (1 - s.(lp).surfaceCov
 vars{end + 1} = cellfun(@(s) s.(lp).surfaceCoverage, states);
 vars{end + 1} = cellfun(@(s) s.(lp).platedThickness, states);
 
-% 
-% for ivar = 5 : numel(varnames)
-%     figure
-%     plot(time, vars{ivar}, '-');
-%     xlabel('time [second]');
-%     ylabel(varnames{ivar});
-%     title(varnames{ivar});
-%     dim = [0.7 0.1 0.2 0.2]; % Position and size of the annotation box [x, y, width, height] (normalized)
-%     str = sprintf('n = %.2f\nT = %.2f\nIref = %.2e', n, T, Iref);
-%     annotation('textbox', dim, 'String', str, 'EdgeColor', 'black', 'BackgroundColor', [1 1 1], 'FontSize', 10);
-% end
-% 
-
-
 % Variable : surfaceCoverage
 figure
 plot(time, vars{8}, '-');
@@ -317,7 +267,6 @@ xlabel('time [second]');
 ylabel(varnames{5});
 title(varnames{5});
 
-
 %%
 % We can see clearly here the 4 differents steps of the lithium plating phenomenon.
 % First, at the end of the charge, the amount of lithium being plated grows
@@ -337,7 +286,6 @@ plot(time, vars{6}, '-');
 xlabel('time [second]');
 ylabel(varnames{6});
 title(varnames{6});
-% TODO: Ajouter commentaire ici pour le flux chimique
 
 % Variable : intercalationFlux .* (1 - surfaceCoverage)
 figure
@@ -345,8 +293,7 @@ plot(time, vars{7}, '-');
 xlabel('time [second]');
 ylabel(varnames{7});
 title(varnames{7});
-% No more lithium is intercalated during the time the whole surface is covered
-% with plated lithium.
+% No more lithium is intercalated during the time the whole surface is covered with plated lithium.
 
 % Variable : platedThickness
 figure
@@ -354,7 +301,6 @@ plot(time, vars{9}, '-');
 xlabel('time [second]');
 ylabel(varnames{9});
 title(varnames{9});
-% TODO: Ajouter commentaire ici pour l'épaisseur du dépôt
 
 figure
 plot(time, vars{2}, '-');
