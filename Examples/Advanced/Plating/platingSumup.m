@@ -53,9 +53,6 @@ jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'P
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
-jsonstruct.NegativeElectrode.Coating.ActiveMaterial.LithiumPlating.kPl = 1e2*jsonstruct.NegativeElectrode.Coating.ActiveMaterial.LithiumPlating.kInter;
-
-
 %%
 % Setup InputParams
 
@@ -74,7 +71,9 @@ model = ActiveMaterial(inputparams);
 model = model.setupForSimulation();
 model.verbose = true;
 
-
+model.(lp).kPl    = 4.635e-2;
+model.(lp).kChInt = 2.89e-8;
+model.(lp).kInter = 6.656e-4;
 
 %% setup schedule
 %This part is essential to see the lithium plating effect. Increasing Iref
