@@ -2,7 +2,7 @@
 % This example shows how to simulate a single particle of a silicon graphite
 % electrode, taking into account the plating phenomenon
 
-% clear all
+clear all
 close all
 
 %% Setup the properties of Li-ion battery materials and cell design

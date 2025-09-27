@@ -7,9 +7,15 @@ close all
 
 %% Setup the properties of Li-ion battery materials and cell design
 
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+filename = fullfile('ParameterData'        , ...
+                    'BatteryCellParameters', ...
+                    'LithiumIonBatteryCell', ...
+                    'lithium_ion_battery_nmc_graphite.json');
 
-inputparams = BatteryInputParams(jsonstruct);
+jsonstruct = parseBattmoJson(filename);
+
+%%
+% We define some shortcuts
 
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -31,95 +37,44 @@ jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
 
 jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
+%%
+% OCP is computed via a function described in the article (S-5)
+jsonstruct.(ne).(co).(am).(itf).openCircuitPotential.functionName = 'computeOCP_Graphite_Latz';
+jsonstruct.(ne).(co).(am).(itf).includeEntropyChange = false;
+
+
+%%
 % Flag for stand-alone model
+%
+
 jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
 
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
-scenario = 'charge';
-
-%% following is not used at particle level
-
-switch scenario
-  case 'charge'
-    jsonstruct.Control.controlPolicy = 'CCCharge';
-  case 'discharge'
-    jsonstruct.Control.controlPolicy = 'CCDischarge';
-  otherwise
-    error('scenario not recognized');
-end
+jsonstruct.NegativeElectrode.Coating.ActiveMaterial.LithiumPlating.kPl = 1e2*jsonstruct.NegativeElectrode.Coating.ActiveMaterial.LithiumPlating.kInter;
 
 
+%%
 % Setup InputParams
+
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
 
-%OCP is computed via a function described in the article (S-5)
-inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
 
 %% Setup the model
 
 model = ActiveMaterial(inputparams);
 
-%% Equip model for simulation
+%%
+% We equip the model for simulation
+%
 
 model = model.setupForSimulation();
-
-%% Setup initial state
-
-sd  = 'SolidDiffusion';
-itf = 'Interface';
-
-cElectrolyte   = 5e-1*mol/litre;
-phiElectrolyte = 0;
-T              = 298;
-
-switch scenario
-  case 'charge'
-    % cElectrodeInit = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    cElectrodeInit = 29.9*mol/litre;
-  case 'discharge'
-    cElectrodeInit = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-  otherwise
-    error('scenario not recognized');
-end
-
-N = model.(sd).N;
-initState.(sd).c        = cElectrodeInit*ones(N, 1);
-initState.(sd).cSurface = cElectrodeInit;
-
-initState.T = T;
-initState.(itf).cElectrolyte   = cElectrolyte;
-initState.(itf).phiElectrolyte = phiElectrolyte;
-
-initState = model.evalVarName(initState, {itf, 'OCP'});
-OCP = initState.(itf).OCP;
-initState.E = OCP + phiElectrolyte;
+model.verbose = true;
 
 
-F = model.(itf).constants.F;
-R = model.(itf).constants.R;
-
-if model.useLithiumPlating
-    nPl0                 = model.LithiumPlating.nPl0;
-    r                    = model.LithiumPlating.particleRadius;
-    vf                   = model.LithiumPlating.volumeFraction;
-    platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
-    
-    %initialisation so that overpotential are = 0 and reaction at equilibrium
-    %at the beginning
-    platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
-
-    model.(lp).platedConcentrationRef = platedConcentrationInit;
-
-    initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
-    initState.(lp).phiSolid            = initState.E;
-    initState.(lp).phiElectrolyte      = phiElectrolyte;
-    initState.(lp).cElectrolyte        = cElectrolyte;
-    initState.(lp).nSEI                = 0;
-end
 
 %% setup schedule
 %This part is essential to see the lithium plating effect. Increasing Iref
@@ -134,35 +89,24 @@ step  = struct('val', dt*ones(n, 1), 'control', ones(n, 1));
 
 tup = 1*second*(Iref/Imax);
 
-switch scenario
-  case 'charge'
-    srcfunc = @(time) rampupControl(time, tup, -Imax);
-    cmax = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
-    % control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface >= cmax);
-  case 'discharge'
-    srcfunc = @(time) rampupControl(time, tup, Imax);
-    cmin = (model.(itf).guestStoichiometry0)*(model.(itf).saturationConcentration);
-    control.stopFunction = @(model, state, state0_inner) (state.(sd).cSurface <= cmin);
-  otherwise
-    error('scenario not recognized');
-end
-
-% uncomment to make the simulation run without current (debugging)
-% srcfunc = @(time) 0;
-
+srcfunc = @(time) rampupControl(time, tup, -Imax);
 control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step);
 
-scalingparams = struct('I'                  , Imax                              , ...
-                       'elyteConcentration' , initState.(itf).cElectrolyte);
 
-if model.useLithiumPlating
-    scalingparams.platedConcentration = platedConcentrationInit;
-end
+%% Setup initial state
 
+sd  = 'SolidDiffusion';
+itf = 'Interface';
 
-model = model.setupScalings(scalingparams);
+cElectrolyte   = 5e-1*mol/litre;
+phiElectrolyte = 0;
+T              = 298;
+cElectrodeInit = 29.9*mol/litre;
+
+[model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, phiElectrolyte, cElectrodeInit, Imax);
+
 
 %% setup non-linear solver
 
@@ -174,35 +118,30 @@ model.nonlinearTolerance = 1e-6;
 
 %% Run simulation by charging the particle
 
-model.verbose = true;
-[~, states, report] = simulateScheduleAD(initState, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+inputSim = struct('model'          , model    , ...
+                  'schedule'       , schedule , ...
+                  'initstate'      , initstate, ...
+                  'NonLinearSolver', nls);
+simsetup = SimulationSetup(inputSim);
 
-%% Then discharge it
-%Comment this part to only see the charge
+states = simsetup.run();
 
-%We use the last state of the previous simulation to initialise the new one
+chargeStates = states; % for later
+
+
 initstate = states{end};
-jsonstruct.(ctrl).DRate = -1;
-jsonstruct.Control.controlPolicy = 'CCDischarge';
-
-% And we save the charging states for later
-
-chargeStates = states;
-
-% Setup schedule
-
-% Set up a StopFunction if necessary
-% Control.stopFunction = @(model, state, state0_inner) (1 == 0);
 
 srcfunc = @(time) rampupControl(time, tup, Imax);
-
 control.src = srcfunc;
-
 schedule = struct('control', control, 'step', step);
+
+
+simsetup.initstate = initstate;
+simsetup.schedule = schedule;
 
 % Run simulation
 
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+states = simsetup.run();
 
 % And concatenate the states
 
@@ -230,28 +169,26 @@ xlabel('time [second]');
 ylabel('Potential [mol/L]');
 title('Potential difference');
 
-cmin = cellfun(@(state) min(state.(sd).c), states);
-cmax = cellfun(@(state) max(state.(sd).c), states);
 
-for istate = 1 : numel(states)
+%% plots
+%
+% Update the flux variables
+for istate = 1:numel(states)
     states{istate} = model.evalVarName(states{istate}, {sd, 'cAverage'});
-end
-
-
-%% Simple plots 
-% Necessary variables
-for k = 1:numel(states)
-    states{k} = model.evalVarName(states{k}, {'Interface', 'intercalationFlux'});
-    states{k} = model.evalVarName(states{k}, {'LithiumPlating', 'platingFlux'});
-    states{k} = model.evalVarName(states{k}, {'LithiumPlating', 'surfaceCoverage'});
+    states{istate} = model.evalVarName(states{istate}, {'Interface', 'intercalationFlux'});
+    states{istate} = model.evalVarName(states{istate}, {'LithiumPlating', 'platingFlux'});
+    states{istate} = model.evalVarName(states{istate}, {'LithiumPlating', 'surfaceCoverage'});
 end
 
 vsa = model.(lp).volumetricSurfaceArea;
-% flux extraction
-platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
+
+%%
+% Retrieve the fluxes
+platingFlux       = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
 intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage ) * vsa, states);
 
-% Tracé des deux courbes
+%%
+% Plot of the two fluxes
 figure
 plot(time, platingFlux, '-', 'DisplayName', 'Plating Flux'); hold on
 plot(time, intercalationFlux, '-', 'DisplayName', 'Intercalation Flux');
@@ -262,22 +199,25 @@ legend show
 grid on
 
 
-%% Plot flux as percentage of Imax (  "kPl" : 4.635e-2, "kChInt" : 2.89e-8, "kInter" : 6.656e-4)
+%% Plot flux as percentage of Imax
 
 F = model.(itf).constants.F; % Faraday constant (C/mol)
-n = 1; % numner of exchanged electrons (1 for Li⁺)
+n = 1; % numner of exchanged electrons (1 for Li^+)
 
 vsa = model.(lp).volumetricSurfaceArea;
 
-platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
-intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage) * vsa, states);
+platingFlux       = cellfun(@(s) s.LithiumPlating.platingFlux.*s.LithiumPlating.surfaceCoverage*vsa, states);
+intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux.*(1 - s.LithiumPlating.surfaceCoverage)*vsa, states);
 
-platingCurrent = platingFlux * n * F;
-intercalationCurrent = intercalationFlux * n * F;
+platingCurrent       = platingFlux*n*F;
+intercalationCurrent = intercalationFlux*n*F;
 
-platingPct = 100 * platingCurrent / (Imax*2.38732e17); %value so we get 100% (ok I cheated a bit)
-intercalationPct = 100 * intercalationCurrent / (Imax*2.38732e17);
+totalCurrent = abs(platingCurrent + intercalationCurrent);
 
+platingPct       = 100*platingCurrent./totalCurrent;
+intercalationPct = 100*intercalationCurrent./totalCurrent;
+
+%%
 % Plot
 figure
 plot(time, platingPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Plating'); hold on
@@ -287,73 +227,4 @@ ylabel('Current [% of I_{max}]');
 title('Plating vs Intercalation Current as % of I_{max}');
 legend show
 grid on
-
-% === Save figure to user folder ===
-
-% 1. Get user directory
-if ispc
-    userdir = getenv('USERPROFILE');
-else
-    userdir = getenv('HOME');
-end
-
-% 2. Create subfolder
-plotdir = fullfile(userdir, 'plotsLithiumPlating');
-if ~exist(plotdir, 'dir')
-    mkdir(plotdir);
-end
-% 
-% 3. Save figure
-filename = fullfile(plotdir, 'IntensitypercentagePeak.png');
-exportgraphics(gcf, filename, 'ContentType', 'vector');
-
-fprintf('Figure saved to: %s\n', filename);
-
-% 
-% %% Plot flux as percentage of Imax (  "kPl" : 4.635e-6, "kChInt" : 2.89e-9, "kInter" : 6.656e-9)
-% 
-% F = model.(itf).constants.F; % Faraday constant (C/mol)
-% n = 1; % numner of exchanged electrons (1 for Li⁺)
-% 
-% vsa = model.(lp).volumetricSurfaceArea;
-% 
-% platingFlux = cellfun(@(s) s.LithiumPlating.platingFlux .* s.LithiumPlating.surfaceCoverage * vsa, states);
-% intercalationFlux = cellfun(@(s) s.Interface.intercalationFlux .* (1 - s.LithiumPlating.surfaceCoverage) * vsa, states);
-% 
-% platingCurrent = platingFlux * n * F;
-% intercalationCurrent = intercalationFlux * n * F;
-% 
-% platingPct = 100 * platingCurrent / (Imax*2.38732e17); %value so we get 100% (ok I cheated a bit)
-% intercalationPct = 100 * intercalationCurrent / (Imax*2.38732e17);
-% 
-% % Plot
-% figure
-% plot(time, platingPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Plating'); hold on
-% plot(time, intercalationPct, '-', 'LineWidth', 1.5, 'DisplayName', 'Intercalation');
-% xlabel('Time [s]');
-% ylabel('Current [% of I_{max}]');
-% title('Plating vs Intercalation Current as % of I_{max}');
-% legend show
-% grid on
-% 
-% % === Save figure to user folder ===
-% 
-% % 1. Get user directory
-% if ispc
-%     userdir = getenv('USERPROFILE');
-% else
-%     userdir = getenv('HOME');
-% end
-% 
-% % 2. Create subfolder
-% plotdir = fullfile(userdir, 'plotsLithiumPlating');
-% if ~exist(plotdir, 'dir')
-%     mkdir(plotdir);
-% end
-% % 
-% % 3. Save figure
-% filename = fullfile(plotdir, 'IntensitypercentageRegular.png');
-% exportgraphics(gcf, filename, 'ContentType', 'vector');
-% 
-% fprintf('Figure saved to: %s\n', filename);
 
