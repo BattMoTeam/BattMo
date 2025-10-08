@@ -33,7 +33,9 @@ classdef EquilibriumCalibrationSetup
         exptime   % Time [s]
         expU      % Voltage [V]
         expI      % Current [A]
-        totalTime % total time (set as exptime(end))
+        totalTime % total time (set as exptime(end)). Note that this value is also used to determine when the cell is
+                  % fully discharged in the computation of the positive electrode guestStoichiometry0 (for
+                  % calibrationCase = 1, see below)
 
         packingMass % mass of packing
 
@@ -41,11 +43,11 @@ classdef EquilibriumCalibrationSetup
         % different calibration case depending on the parameters that are chosen. See method printVariableChoice below
         % At the moment, the following is implemented
         % case 1 (default) : The calibration parameters are guestStoichiometry100 and total amount Lithium for both electrodes
-        %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve
+        %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve, which is assumed to be the fully discharge state.
         %                    guestStoichiometry0 for the negative electrode is computed to match a given NP ration (default value 1.1)
         %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
-        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the total amount Lithium for both electrodes
-        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and total amount Lithium for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
+        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the total amount Lithium for both electrodes (not much tested)
+        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and total amount Lithium for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver), (not much tested)
 
         lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
