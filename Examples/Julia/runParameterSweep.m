@@ -30,6 +30,7 @@ switch testCase
 
     % If true a reference solution will be generated.
     generate_reference_solution = true;
+    error('fix that');
     export = setupMatlabModel(casenames, jsonfolder, generate_reference_solution);
 
     man.load('data'         , export  , ...

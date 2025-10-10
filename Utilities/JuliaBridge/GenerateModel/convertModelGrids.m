@@ -7,8 +7,8 @@ function model = convertModelGrids(model)
         % volumes        % volumes
 	    % neighborship   % Internal faces only
         % half_trans     % half transmissibilities for the internal faces
-	    % boundary_cells % indices of the boundary cells (some can can be repeated if a cell has two boundary faces). Same length as boundary_hfT.
-	    % boundary_hfT   % Boundary half face transmissibilities
+	    % boundary_cells % indices of the boundary cells (some can can be repeated if a cell has two boundary faces). Same length as boundary_hT.
+	    % boundary_hT   % Boundary half face transmissibilities
 
         G = model.G;
         
@@ -51,14 +51,27 @@ function model = convertModelGrids(model)
         map.mergefds = {'cells', 'faces'};
         map = map.setup();
 
-        boundary_hfT = map.eval(hT);
-        
-        model.G = struct('volumes'       , volumes       , ...
-	                     'neighborship'  , neighborship  , ...
-                         'half_trans'    , half_trans    , ...
-	                     'boundary_cells', boundary_cells, ...
-	                     'boundary_hfT'  , boundary_hfT);
+        boundary_hT = map.eval(hT);
 
+        %%
+
+        c = cellfacetbl.get('cells');
+        f = cellfacetbl.get('faces');
+
+        cell_face_tbl = [c'; f'];
+
+        G = G.mrstFormat;
+        
+        G.volumes        = volumes;
+	    G.neighborship   = neighborship;
+        G.half_trans     = half_trans;
+        G.cell_face_tbl  = cell_face_tbl ;
+        G.cell_face_hT   = hT;
+	    G.boundary_cells = boundary_cells;
+	    G.boundary_hT    = boundary_hT;
+
+        model.G = G;
+        
     end
 
     submodelnames = model.getSubModelNames();
