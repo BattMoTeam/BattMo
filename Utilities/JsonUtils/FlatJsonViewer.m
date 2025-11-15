@@ -165,19 +165,26 @@ classdef FlatJsonViewer
             columnnames = fjv.columnnames;
 
             if iscell(frontColumNames)
-                [isok, find] = ismember(frontColumNames, columnnames);
-                assert(all(isok), 'some column names are not recognized.');
+                found = [];
+                for icolname = 1 : numel(frontColumNames)
+                    frontColumName = frontColumNames{icolname};
+                    r = regexprep(frontColumName, ' +', '.*');
+                    ind = regexp(columnnames, r);
+                    ind = cellfun(@(res) ~isempty(res), ind);
+                    found = [found, find(ind)]; 
+                end
             else
-                find = frontColumNames;
+                fjv = fjv.reorderColumns({frontColumNames});
+                return
             end
 
             nind = true(numel(columnnames), 1);
-            nind(find) = false;
+            nind(found) = false;
 
-            fjv.columnnames = horzcat(columnnames(find), ...
+            fjv.columnnames = horzcat(columnnames(found), ...
                                       columnnames(nind));
 
-            fjv.flatjson = horzcat(fjv.flatjson(:, find), ...
+            fjv.flatjson = horzcat(fjv.flatjson(:, found), ...
                                    fjv.flatjson(:, nind));
 
         end
