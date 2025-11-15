@@ -25,6 +25,11 @@ function flatjson = flattenJsonStruct_(flatjson, jsonstruct, prefix)
     if isobject(jsonstruct)
         fds = properties(jsonstruct);
         dostruct = true;
+    elseif isstruct(jsonstruct) && numel(jsonstruct) > 2
+        for ijson = 1 : numel(jsonstruct)
+            subjsonstruct = jsonstruct(ijson);
+            flatjson = flattenJsonStruct_(flatjson, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
+        end
     elseif isstruct(jsonstruct)    
         fds = fieldnames(jsonstruct);
         dostruct = true;
