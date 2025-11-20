@@ -117,6 +117,8 @@ using a simple set of parameters (the gridding is included in the setup).
 
 ![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
+# Graph based modeling
+
 # Baseline P2D example
 
 We use Chen data. We match pybamm simulation. 
@@ -126,6 +128,12 @@ Example where we can easily change chemistry
 # Thermal P4D fully coupled simulation
 
 Multipouch cell, includes thermal, boundary conditions
+
+# Optimization using adjoint
+
+Calibration methods
+
+# Composite material
 
 # Acknowledgements
 
