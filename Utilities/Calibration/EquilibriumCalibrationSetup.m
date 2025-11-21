@@ -658,7 +658,7 @@ classdef EquilibriumCalibrationSetup
         end
 
 
-        function vals = updateGuestStoichiometries(ecs, X, varargin)
+        function [vals, valsNotTrunc] = updateGuestStoichiometries(ecs, X, varargin)
 
             opt = struct('includeGuestStoichiometry0', false);
             opt = merge_options(opt, varargin{:});
@@ -666,6 +666,7 @@ classdef EquilibriumCalibrationSetup
             totalTime = ecs.totalTime;
 
             vals = ecs.assignFromX(X);
+            valsNotTrunc = vals;
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -695,6 +696,8 @@ classdef EquilibriumCalibrationSetup
                     tend = tend(end);
 
                     vals.(pe).guestStoichiometry0 = ecs.computeTheta(tend, pe, 0, vals.(pe).guestStoichiometry100, vals.(pe).totalAmount);
+                    valsNotTrunc.(pe).guestStoichiometry0 = vals.(pe).guestStoichiometry0;
+
                     if vals.(pe).guestStoichiometry0 > 1
                         warning('Set guestStoichiometry0 of positive electrode to 1 (from %g)', vals.(pe).guestStoichiometry0);
                         vals.(pe).guestStoichiometry0 = 1;
@@ -704,6 +707,8 @@ classdef EquilibriumCalibrationSetup
                     np_ratio = data.np_ratio;
 
                     vals.(ne).guestStoichiometry0 = vals.(ne).guestStoichiometry100 - np_ratio*(vals.(pe).totalAmount/vals.(ne).totalAmount)*(vals.(pe).guestStoichiometry0 - vals.(pe).guestStoichiometry100);
+                    valsNotTrunc.(ne).guestStoichiometry0 = vals.(ne).guestStoichiometry0;
+
                     if vals.(ne).guestStoichiometry0 < 0
                         warning('Set guestStoichiometry0 of negative electrode to 0 (from %g)', vals.(ne).guestStoichiometry0);
                         vals.(ne).guestStoichiometry0 = 0;
