@@ -86,7 +86,7 @@ function [sens, lambdas] = computeSensitivitiesAdjointADBattmo(setup, states, pa
 
     % Run adjoint
     lambdaVec = [];
-
+    %adjointState = struct();
 
     for step = nstep : -1 : 1
 
@@ -96,7 +96,8 @@ function [sens, lambdas] = computeSensitivitiesAdjointADBattmo(setup, states, pa
         [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjectiveState, setup.schedule, lambdaVec, step);
 
         if nargout > 1
-            lambdas{step} = lambda;
+            %adjointState = updateAdjointState(setup.model, adjointState, lambda);
+            lamdas{step} = lambda;
         end
 
         % Compute derivatives of the residual equations with respect to the parameters
@@ -213,6 +214,22 @@ function setupParam = initModelParametersADI(setup, param)
 
 end
 
+function adjointState = updateAdjointState(model, adjointState, lambda)
+
+    keyboard;
+
+    p = model.getPrimaryVariableNames();
+    n = model.equationVarNames();
+
+    for i = 1 : numel(dx)
+        val = model.getProp(state, p{i});
+        val = val + dx{i};
+        state = model.setProp(state, p{i}, val);
+    end
+
+    lambdas{step} = lambda;
+
+end
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

@@ -18,12 +18,11 @@ function [fig, tlo] = plotDashboardAdjoint(model, lambdas, varargin)
 
     % Parse the output from the lambdas
     eqnames = model.equationNames;
-    varnames =  model.equationVarNames;
+    varnames = model.equationVarNames;
     assert(numel(eqnames) == numel(lambdas{1}));
     grids = cell(numel(eqnames), 1);
 
     for ieq = 1:numel(eqnames)
-        eqname = eqnames{ieq};
         varname = varnames{ieq};
 
         % Skip if control is the varname

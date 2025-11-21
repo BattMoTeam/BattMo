@@ -124,8 +124,6 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         failure = true;
     end
 
-
-
     if nargout > 1
 
         if failure
@@ -210,7 +208,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         end
 
         if nargout > 2
-            [varargout{2:3}] = deal(scaledGradient, states);
+            varargout{3} = states;
         end
 
         if nargout > 4
