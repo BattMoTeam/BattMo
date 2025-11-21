@@ -10,12 +10,12 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
 
     % needed to produce meaningfull error message
     tree = opt.tree;
-    
+
     if numel(jsonstructs) == 1
         jsonstruct = jsonstructs{1};
         return;
     end
-    
+
     jsonstruct1 = jsonstructs{1};
     jsonstruct2 = jsonstructs{2};
     if numel(jsonstructs) >= 2
@@ -30,9 +30,9 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
     jsonstruct = jsonstruct1;
 
     for ifd2 = 1 : numel(fds2)
-        
+
         fd2 = fds2{ifd2};
-        
+
         if ~ismember(fd2, fds1)
             % ok, add the substructure
             jsonstruct.(fd2) = jsonstruct2.(fd2);
@@ -47,7 +47,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
                 % ok. Both are given but same values
             elseif opt.warn
                 varname = horzcat(tree, fd2);
-                fprintf('mergeJsonStructs: Parameter %s is assigned twice with different values. Value from first jsonstruct is used.\n', strjoin(varname, '.'));
+                fprintf('mergeJsonStructs: Parameter %s is assigned twice with different values %g and %ge. Value from first jsonstruct is used.\n', strjoin(varname, '.'), jsonstruct.(fd2), jsonstruct2.(fd2));
             end
         end
     end
@@ -55,7 +55,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
     if ~isempty(jsonstructrests)
         jsonstruct = mergeJsonStructs({jsonstruct, jsonstructrests{:}}, 'warn', opt.warn, 'tree', {});
     end
-    
+
 end
 
 
