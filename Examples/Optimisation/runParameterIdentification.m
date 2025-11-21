@@ -124,11 +124,11 @@ objScaling        = sum([objVals{:}]);
 objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simSetup, params, 'objScaling', objScaling);
 
 %% Optional debug: Compare gradients using adjoints and finite difference approximation
-debug = false;
+debug = true
 if debug
     pTmp = getScaledParameterVector(simSetup, params);
 
-    [vad, gad] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
+    [vad, gad, tmp, statesx, setupNewx, lambdas] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
                                      'gradientMethod', 'AdjointAD');
 
     [vnum, gnum] = evalObjectiveBattmo(pTmp, objective, simSetup, params, ...
@@ -136,6 +136,9 @@ if debug
 
     fprintf('Adjoint and finite difference derivatives and the relative error:\n');
     disp([gad, gnum, abs(gad-gnum)./abs(gad)])
+
+    plotDashboardAdjoint(setupNewx.model, lambdas, 'step', 1);
+    plotDashboardAdjoint(setupNewx.model, lambdas, 'step', 0);
 
     return
 end
