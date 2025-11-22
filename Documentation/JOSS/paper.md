@@ -1,13 +1,11 @@
 ---
 title: 'BattMo - Battery Modelling Toolbox'
 tags:
-  - Battery
+  - Battery modeling
   - Numerical simulation
+  - MATLAB
 authors:
-  - name: Simon Clark
-    orcid: 0000-0002-8758-6109
-    affiliation: 1
-  - name: Xavier Raynaud
+  - name: Xavier Raynaud^[corresponding author]
     orcid: 0000-0002-4100-3035
     affiliation: 2
   - name: Halvor Møll Nilsen
@@ -30,6 +28,9 @@ authors:
   - name: Olav Møyner
     orcid: 0000-0001-9993-3879
     affiliation: 2
+  - name: Simon Clark
+    orcid: 0000-0002-8758-6109
+    affiliation: 1
 affiliations:
  - name: SINTEF Industry, Dept. of Sustainable Energy Technology, Norway
    index: 1
@@ -41,12 +42,12 @@ bibliography: paper.bib
 <!-- To compile this file, after installing docker, from this directory, run : docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara  -->
 # Summary
 
-This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework for
+This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework in MATLAB for
 simulating the performance of electrochemical cells. BattMo can quickly setup and solve models for a variety of battery
 chemistries, even considering complex designs like cylindical and prismatic cell jelly rolls.
 
 The simulation input parameters, including the material parameters and geometric descriptions, are specified through
-json schemas. In this respect, we follow the guidelines of the Battery Interface Ontology (BattINFO) to support semantic
+JSON schemas. In this respect, we follow the guidelines of the Battery Interface Ontology (BattINFO) to support semantic
 interoperability in accordance with the FAIR principles.
 
 The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
@@ -60,7 +61,7 @@ electrolyser model.
 
 The solver in BattMo uses automatic differentiation and support adjoint computation. We can therefore computute the
 derivative of objective functions with respect to all parameters in a very efficient way. Gradient-based optimization
-routine can be used to compute parameters from experimental data by minimizing the difference between observed and
+routines can be used to calibrate parameters from experimental data by minimizing the difference between observed and
 predicted results.
 
 # Statement of need
@@ -81,17 +82,17 @@ equations. We provide a library of standard battery geometry which is parameteri
 on the geometry, which is an essential part of the design.
 
 A challenge for physically based model for battery is the difficulty to calibrate the parameters. With an adjoint-based
-approach, we can effectively calibrate the models from experiments in a reasonable computationtime.
+approach, we can effectively calibrate the models from experiments in a reasonable computational time.
 
 # Functionality overview
 
-The default and easiest way to send the input parameters for the simulator is by using a json file. The json format is a
+The default and easiest way to send the input parameters for the simulator is by using a JSON file. The JSON format is a
 text based format, which means that the file can be read directly by the user and easily modify. The keywords used in a
-BattMo json input file are all specified through a set of Json schema.
+BattMo JSON input file are all specified through a set of JSON schema.
 
 List of features
 
-- Standard data input (json based with schema)
+- Standard data input (JSON based with schema)
 - Library of battery format (to be extended)
 - Flexible model design
 - Visualization
@@ -107,8 +108,8 @@ List of features
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@MRST:2025] which provides a reliable foundation for meshing
 intricate geometries, efficiently solving large systems of equations, and visualizing the results. It is implemented in
-MATLAB and seek to provide Octave compability. We do not rely on extra packages in matlab so that the basic license is enough. We use AMG open-source
-preconditionner from AMGCL [@Demidov2020].
+MATLAB and seeks to provide Octave compability. Neither BattMo nor MRST rely on extra MATLAB packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
+AMGCL package [@Demidov2020].
 
 # Battery format library
 
@@ -123,18 +124,18 @@ As models can be quite complex, we assist the development and implementation of 
 
 # Examples
 
-Numerous documented and tested examples are provided with the code and demonstrates the features listed above. Multiple different data sets with different chemistries are also provided, including NMC, NCA and LNMO as well as Silicon enriched negative electrodes, standard electrolyte models, separators and current collector material properties. We seek to be cross-compatible, allowing for any chemistry and material combination with any battery format.
+Numerous documented and tested examples are provided with the code and demonstrates the features listed above. Multiple different data sets with different chemistries are also provided, including NMC, NCA and LNMO as well as Silicon enriched negative electrodes, standard electrolyte models, separators and current collector material properties. We seek to be cross-compatible, allowing for any chemistry and material combination with any battery format. A selection of the examples are documented at [https://battmo.org/BattMo/](https://battmo.org/BattMo/). The complete list of examples are available at [https://github.com/BattMoTeam/BattMo/tree/main/Examples](https://github.com/BattMoTeam/BattMo/tree/main/Examples).
 
 # BattMo family
 
 The following software include the BattMo family:
 
-| Software | Description          |
-|----------|---------------|
-| [BattMo](https://github.com/BattMoTeam/BattMo)      | MATLAB and original version of BattMo presented in this publication |
-| [BattMo.jl](https://github.com/BattMoTeam/BattMo.jl)  | Julia version  |
-| [PyBattMo](https://github.com/BattMoTeam/PyBattMo)        | Python wrapper around BattMo.jl    |
-| [BattMoApp](https://app.battmo.org/)        | Web-application built on top of BattMo.jl    |
+| Software                                             | Description                                                         |
+|------------------------------------------------------|---------------------------------------------------------------------|
+| [BattMo](https://github.com/BattMoTeam/BattMo)       | MATLAB and original version of BattMo presented in this publication |
+| [BattMo.jl](https://github.com/BattMoTeam/BattMo.jl) | Julia version                                                       |
+| [PyBattMo](https://github.com/BattMoTeam/PyBattMo)   | Python wrapper around BattMo.jl                                     |
+| [BattMoApp](https://app.battmo.org/)                 | Web-application built on top of BattMo.jl                           |
 
 
 # Acknowledgements
