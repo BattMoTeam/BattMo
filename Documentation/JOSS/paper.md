@@ -47,7 +47,7 @@ chemistries, even considering complex designs like cylindical and prismatic cell
 
 The simulation input parameters, including the material parameters and geometric descriptions, are specified through
 json schemas. In this respect, we follow the guidelines of the Battery Interface Ontology (BattINFO) to support semantic
-interoperability in accordance with the FAIR principles. 
+interoperability in accordance with the FAIR principles.
 
 The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
 thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth) and the use of composite
@@ -87,13 +87,13 @@ approach, we can effectively calibrate the models from experiments in a reasonab
 
 The default and easiest way to send the input parameters for the simulator is by using a json file. The json format is a
 text based format, which means that the file can be read directly by the user and easily modify. The keywords used in a
-BattMo json input file are all specified through a set of Json schema. 
+BattMo json input file are all specified through a set of Json schema.
 
 List of features
 
 - Standard data input (json based with schema)
 - Library of battery format (to be extended)
-- Flexible model design 
+- Flexible model design
 - Visualization
 - Parameter calibration
 - Design optimization
@@ -107,36 +107,38 @@ List of features
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@MRST:2025] which provides a reliable foundation for meshing
 intricate geometries, efficiently solving large systems of equations, and visualizing the results. It is implemented in
-Matlab/Octave. We do not rely on extra packages in matlab so that the basic license is enough. We use AMG open-source
+MATLAB and seek to provide Octave compability. We do not rely on extra packages in matlab so that the basic license is enough. We use AMG open-source
 preconditionner from AMGCL [@Demidov2020].
 
-# Battery Format library
+# Battery format library
 
-We support coin cell, multipouch cell and prismatic jelly roll cell. The geometry are parameterized and can be modified
-using a simple set of parameters (the gridding is included in the setup).
+We support coin cells, jelly roll cells and multipouch cells with different tab layouts. The geometries are parameterized and can be modified
+using a simple set of parameters from which the computational grid is automatically generated. 1D and 2D grids for P2D and P3D models can also be generated.
 
 ![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
 # Graph based modeling
 
-# Baseline P2D example
+As models can be quite complex, we assist the development and implementation of models with a graph-based interface.
 
-We use Chen data. We match pybamm simulation. 
+# Examples
 
-Example where we can easily change chemistry
+Numerous documented and tested examples are provided with the code and demonstrates the features listed above. Multiple different data sets with different chemistries are also provided, including NMC, NCA and LNMO as well as Silicon enriched negative electrodes, standard electrolyte models, separators and current collector material properties. We seek to be cross-compatible, allowing for any chemistry and material combination with any battery format.
 
-# Thermal P4D fully coupled simulation
+# BattMo family
 
-Multipouch cell, includes thermal, boundary conditions
+The following software include the BattMo family:
 
-# Optimization using adjoint
+| Software | Description          |
+|----------|---------------|
+| [BattMo](https://github.com/BattMoTeam/BattMo)      | MATLAB and original version of BattMo presented in this publication |
+| [BattMo.jl](https://github.com/BattMoTeam/BattMo.jl)  | Julia version  |
+| [PyBattMo](https://github.com/BattMoTeam/PyBattMo)        | Python wrapper around BattMo.jl    |
+| [BattMoApp](https://app.battmo.org/)        | Web-application built on top of BattMo.jl    |
 
-Calibration methods
-
-# Composite material
 
 # Acknowledgements
 
-We acknowledge contributions from the EU, Grant agreements 101069765, 875527, 101104013, 101103997
+We acknowledge contributions from the European Union, Grant agreements 101069765 (IntelLiGent), 875527 (HYDRA), 957189 (BIG-MAP), 101104013 (BATMAX) and 101103997 (DigiBatt).
 
 # References
