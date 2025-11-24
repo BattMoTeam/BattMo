@@ -6,37 +6,37 @@ tags:
   - MATLAB
 authors:
   - name: Xavier Raynaud^[corresponding author]
-    orcid: 0000-0002-4100-3035
-    affiliation: 2
+	orcid: 0000-0002-4100-3035
+	affiliation: 2
   - name: Halvor Møll Nilsen
-    orcid: 0000-0002-2153-0962
-    affiliation: 2
+	orcid: 0000-0002-2153-0962
+	affiliation: 2
   - name: August Johansson
-    orcid: 0000-0001-6950-6016
-    affiliation: 2
+	orcid: 0000-0001-6950-6016
+	affiliation: 2
   - name: Eibar Flores
-    orcid: 0000-0003-2954-1233
+	orcid: 0000-0003-2954-1233
   - name: Lorena Hendrix
-    orcid: 0009-0006-9621-6122
-    affiliation: 1
+	orcid: 0009-0006-9621-6122
+	affiliation: 1
   - name: Francesca Watson
-    orcid: 0000-0002-4391-4166
-    affiliation: 2
+	orcid: 0000-0002-4391-4166
+	affiliation: 2
   - name: Sridevi Krishnamurthi
-    orcid: 0009-0006-0805-6713
-    affiliation: 1
+	orcid: 0009-0006-0805-6713
+	affiliation: 1
   - name: Olav Møyner
-    orcid: 0000-0001-9993-3879
-    affiliation: 2
+	orcid: 0000-0001-9993-3879
+	affiliation: 2
   - name: Simon Clark
-    orcid: 0000-0002-8758-6109
-    affiliation: 1
+	orcid: 0000-0002-8758-6109
+	affiliation: 1
 affiliations:
  - name: SINTEF Industry, Dept. of Sustainable Energy Technology, Norway
    index: 1
  - name: SINTEF Digital, Dept. of Mathematics and Cybernetics, Norway
    index: 2
-date: 4 February 2025
+date: 24 November 2025
 bibliography: paper.bib
 ---
 <!-- To compile this file, after installing docker, from this directory, run : docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara  -->
@@ -93,12 +93,12 @@ BattMo JSON input file are all specified through a set of JSON schema.
 List of features
 
 - Standard data input (JSON based with schema)
-- Library of battery format (to be extended)
+- Library of battery formats (to be extended)
 - Flexible model design
 - Visualization
 - Parameter calibration
 - Design optimization
-- Support for standard protocols (control switching, to be soon merged...)
+- Support for standard protocols such as CC, CV, CCCV, and time series
 - SEI layer growth model
 - Composite material model
 - Material database
@@ -106,7 +106,7 @@ List of features
 
 # Software dependencies
 
-BattMo builds on the MATLAB Reservoir Simulation Toolbox [@MRST:2025] which provides a reliable foundation for meshing
+BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i,@MRST:2025] which provides a reliable foundation for meshing
 intricate geometries, efficiently solving large systems of equations, and visualizing the results. It is implemented in
 MATLAB and seeks to provide Octave compability. Neither BattMo nor MRST rely on extra MATLAB packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
 AMGCL package [@Demidov2020].
@@ -116,7 +116,7 @@ AMGCL package [@Demidov2020].
 We support coin cells, jelly roll cells and multipouch cells with different tab layouts. The geometries are parameterized and can be modified
 using a simple set of parameters from which the computational grid is automatically generated. 1D and 2D grids for P2D and P3D models can also be generated.
 
-![Battery geometries \label{fig:geometries}](figs/batterygeometries.png){width=100%}
+![A selection of the parameterized battery geometries available. Clockwise from top left are: Single-layer pouch cell, coin cell, multi-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries.png){width=100%}
 
 # Graph based modeling
 
