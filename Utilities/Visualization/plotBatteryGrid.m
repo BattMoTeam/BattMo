@@ -5,7 +5,8 @@ function fig = plotBatteryGrid(model, varargin)
                  'fig', [], ...
                  'shortLegendText', false, ...
                  'legendLocation', 'sw', ...
-                 'axisLabels', false);
+                 'axisLabels', false, ...
+                 'legend', true);
     opt = merge_options(opt, varargin{:});
 
     ne    = 'NegativeElectrode';
@@ -35,17 +36,17 @@ function fig = plotBatteryGrid(model, varargin)
 
     if model.include_current_collectors
         plotGrid(model.(pe).(cc).grid, facecolorname, colors(5,:), edgeparams{:});
-        legtext{end+1} = 'positive electrode current collector';
+        legtext{end+1} = 'Positive electrode current collector';
     end
 
     plotGrid(model.(pe).(co).grid, facecolorname, colors(4,:), edgeparams{:});
     plotGrid(model.(sep).grid,     facecolorname, colors(3,:), edgeparams{:});
     plotGrid(model.(ne).(co).grid, facecolorname, colors(2,:), edgeparams{:});
-    legtext = [legtext, {'positive electrode active material', 'separator', 'negative electrode active material'}];
+    legtext = [legtext, {'Positive electrode active material', 'Separator', 'Negative electrode active material'}];
 
     if model.include_current_collectors
         plotGrid(model.(ne).(cc).grid, facecolorname, colors(1,:), edgeparams{:});
-        legtext{end+1} = 'negative electrode current collector';
+        legtext{end+1} = 'Negative electrode current collector';
     end
 
     if G.griddim == 3
@@ -63,11 +64,13 @@ function fig = plotBatteryGrid(model, varargin)
     end
 
     if opt.shortLegendText
-        legtext = cellfun(@(s) strrep(s, 'positive electrode', 'PE'), legtext, 'un', false);
-        legtext = cellfun(@(s) strrep(s, 'negative electrode', 'NE'), legtext, 'un', false);
+        legtext = cellfun(@(s) strrep(s, 'Positive electrode', 'PE'), legtext, 'un', false);
+        legtext = cellfun(@(s) strrep(s, 'Negative electrode', 'NE'), legtext, 'un', false);
     end
 
-    legend(legtext, 'location', opt.legendLocation);
+    if opt.legend
+        legend(legtext, 'location', opt.legendLocation);
+    end
     axis tight;
 
     if opt.setstyle
