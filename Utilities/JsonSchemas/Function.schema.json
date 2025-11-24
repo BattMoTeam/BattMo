@@ -15,11 +15,19 @@
       "description": "The name of the function file (for the moment should be included in path) without the matlab suffix (.m)"
     },
     "argumentlist": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "description": "name of the argument"
-      },
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "name of the argument"
+          }
+        },
+        {
+          "type": "string",
+          "description": "if only one argument is needed, a string can be given instead of a single element array"
+        }
+      ],
       "description": "list of arguments ordered as in function call. This is used in the schema themselves for the given function to describe the expected argument list. It is not necessary to include it in the json input file itself."
     }
   },

@@ -11,12 +11,33 @@
       "properties": {
         "diffusionCoefficient": {
           "allOf": [
-            {"$ref": "Function.schema.json"},
-            { "properties" : {
-              "argumentlist": {"type" : "array",
-                               "prefixItems": [{"const": "soc"}]
-                              },
-              "symbol": {"const" : "D"}}}
+            {
+              "$ref": "Function.schema.json"
+            },
+            {
+              "properties": {
+                "argumentlist": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "const": "soc"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "const": "soc"
+                    }
+                  ]
+                },
+                "description": "list of arguments ordered as in function call. Here we expect a single argument, the state of charge (soc) of the particle, defined as the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase.",
+                "symbol": {
+                  "const": "D"
+                }
+              }
+            }
           ],
           "description": "Function that is used to compute the diffusion coefficient. If not given, we use a constant diffusion coefficient as computed in SolidDiffusionModel."
         },
