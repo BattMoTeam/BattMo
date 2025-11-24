@@ -106,7 +106,7 @@ List of features
 
 # Software dependencies
 
-BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i,@MRST:2025] which provides a reliable foundation for meshing
+BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i][@MRST:2025] which provides a reliable foundation for meshing
 intricate geometries, efficiently solving large systems of equations, and visualizing the results. It is implemented in
 MATLAB and seeks to provide Octave compability. Neither BattMo nor MRST rely on extra MATLAB packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
 AMGCL package [@Demidov2020].
