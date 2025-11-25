@@ -120,16 +120,20 @@ using a simple set of parameters from which the computational grid is automatica
 
 # Graph based model development
 
-Models grow in complexity as we extend or couple them. We introduce in BattMo a computational graph model design whose
-aim is to help a developper to better control this complexity. A model is essentially defined through a computational
-graph. The nodes are the variable names, as they can be introduced by the model, and should be recognized as such by a
-user. The directed edges represents the functional relationships between the variables. A model is ready for simulation
-when the root of the graph consists of the governing variables and the leaves as the governing equations. Interactive
-tools to explore the computational graph of a model are available. Model hierarchy is an essential part of the
-framework. Coupling two models is achieved by introducing a new coupling model, where the two models are sub-models. We
-include their graph and add new edges corresponding to the coupling parts. We can focus on those as most part of the
-sub-model remain unchanged. For more about this approach, see
+BattMo has the ambition to deal with a variety of electro-chemical system. The complexity of a model increases rapidly
+as we extend it or couple models together. We introduce in BattMo a computational graph model design whose aim is to
+help a developper to deal with this growing complexity. In BattMo a model is essentially defined through a computational
+graph. The nodes are the variable names, as they can be introduced by the model in the literature, and should be
+recognized as such by a user. The directed edges represents the functional relationships between the variables. A model
+is ready for simulation when the root of the graph consists of the governing variables and the leaves to the governing
+equations. Interactive tools to explore the computational graph of a model are available. Model hierarchy is an
+essential part of the framework. Coupling two models is achieved by introducing a new coupling model, where the two
+models to be coupled are sub-models. The graph of the two models are included as sub-graphs and new edges between the
+two graphs are added to include the coupling mechanisms. We can then focus on implementing the corresponding functions
+and typically most of the sub-models remain unchanged. For more about this approach, see
 [documentation](https://battmo.org/BattMo/computationalGraph/graphdoc.html ).
+
+![The computational graph of an active material model. \label{fig:graph}](figs/graphexample.png){width=100%}
 
 # Examples
 
