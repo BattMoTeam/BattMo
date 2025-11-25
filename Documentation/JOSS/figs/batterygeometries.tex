@@ -6,12 +6,12 @@
 
 \graphicspath{{./},{../../img/}}
 
-\def\insertpic #1{\node{\includegraphics[width=0.3\textwidth]{#1}};}
+\def\insertpic #1{\node{\includegraphics[width=0.99\textwidth]{#1}};}
 
 \begin{document}
 \begin{tikzpicture}
-  \matrix {\insertpic{3dmodel} & \insertpic{coincell}\\
-    \insertpic{jellyrollmodel} &\insertpic{multilayerpouch} \\
+  \matrix {\insertpic{illustration3Dgeometry} & \insertpic{coincell_geometry}\\
+    \insertpic{jellyroll_combined} &\insertpic{multilayerpouch_geometry} \\
   };
 \end{tikzpicture}
 \end{document}
@@ -22,4 +22,3 @@
 % eval: (cl-delete "beamer" TeX-active-styles :test 'equal)
 % eval: (TeX-run-style-hooks "beamer")
 % End:
-  

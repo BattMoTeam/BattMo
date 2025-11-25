@@ -8,6 +8,8 @@ doplot.illustration3D  = true;
 doplot.jellyroll       = true;
 doplot.coincell        = true;
 doplot.multilayerpouch = true;
+dosave = true;
+savedir = fullfile(battmoDir, 'Documentation', 'JOSS', 'figs');
 
 %%
 if doplot.illustration1D
@@ -46,7 +48,7 @@ if doplot.illustration3D
 
     model = Battery(inputparams);
 
-    plotBatteryGrid(model, 'setstyle', false);
+    plotBatteryGrid(model, 'setstyle', false, 'legendlocation', 'east');
 
     axis equal tight
     view(3)
@@ -59,12 +61,17 @@ if doplot.illustration3D
 
     axis off
 
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'illustration3Dgeometry.png'), 'Resolution', 300);
+    end
+
 end
 
 %%
 
 if doplot.jellyroll
 
+    %%
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
@@ -76,14 +83,55 @@ if doplot.jellyroll
 
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
-    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
+    model = setupModelFromJson(jsonstruct);
 
-    % figure
-    % plotGrid(model.grid, 'edgealpha', 0.1);
-
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false);
+    fig1 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig1);
 
     axis equal tight off
+    camlight left
+
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_overview.png'), 'Resolution', 300);
+    end
+
+    %% Zoom inner
+
+    fig2 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig2);
+    axis equal tight off
+
+    cam = SetupCamera(model.grid);
+    rInner = jsonstruct_geometry.Geometry.rInner;
+    cam.target = [rInner; 0; cam.z];
+    cam.viewangle = 1.5;
+    cam.phi       = 50;
+    cam.theta     = 130;
+    cam.do();
+    camlight left
+
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoominner.png'), 'Resolution', 300);
+    end
+
+    % Zoom outer
+
+    fig3 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig3);
+    axis equal tight off
+
+    cam = SetupCamera(model.grid);
+    rOuter = jsonstruct_geometry.Geometry.rOuter;
+    cam.target = [rOuter; 0; cam.z];
+    cam.viewangle = 1.5;
+    cam.phi       = 50;
+    cam.theta     = 130;
+    cam.do();
+    camlight left
+
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoomouter.png'), 'Resolution', 300);
+    end
 
 end
 
@@ -106,7 +154,16 @@ if doplot.multilayerpouch
 
     plotBatteryGrid(model, 'setstyle', false, 'legend', false);
 
-    axis tight off
+    axis tight
+
+    scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
+    xlabel('x / mm')
+    ylabel('y / mm')
+    zlabel('z / mm')
+
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'multilayerpouch_geometry.png'), 'Resolution', 300);
+    end
 
 end
 
@@ -200,5 +257,8 @@ if doplot.coincell
 
     scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
 
+    if dosave
+        exportgraphics(gcf, fullfile(savedir, 'coincell_geometry.png'), 'Resolution', 300);
+    end
 
 end
