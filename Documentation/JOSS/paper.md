@@ -118,9 +118,18 @@ using a simple set of parameters from which the computational grid is automatica
 
 ![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries.pdf){width=100%}
 
-# Graph based modeling
+# Graph based model development
 
-As models can be quite complex, we assist the development and implementation of models with a graph-based interface.
+Models grow in complexity as we extend or couple them. We introduce in BattMo a computational graph model design whose
+aim is to help a developper to better control this complexity. A model is essentially defined through a computational
+graph. The nodes are the variable names, as they can be introduced by the model, and should be recognized as such by a
+user. The directed edges represents the functional relationships between the variables. A model is ready for simulation
+when the root of the graph consists of the governing variables and the leaves as the governing equations. Interactive
+tools to explore the computational graph of a model are available. Model hierarchy is an essential part of the
+framework. Coupling two models is achieved by introducing a new coupling model, where the two models are sub-models. We
+include their graph and add new edges corresponding to the coupling parts. We can focus on those as most part of the
+sub-model remain unchanged. For more about this approach, see
+[documentation](https://battmo.org/BattMo/computationalGraph/graphdoc.html ).
 
 # Examples
 
