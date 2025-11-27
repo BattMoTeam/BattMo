@@ -8,6 +8,7 @@ labels = {'Arrhenius', 'Simplified'};
 results = cell(2, 1);
 
 for idx = 1:2
+
     j0_case = j0_modes{idx};
 
     jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
