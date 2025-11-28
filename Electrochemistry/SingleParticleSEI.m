@@ -63,7 +63,7 @@ classdef SingleParticleSEI < BaseModel
             model = model.registerPropFunction({{ctrl, 'time'}, fn, {'time'}});
             
             fn = @SingleParticleSEI.setupEIequation;
-            model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, {{an, itf, 'R'}, {ctrl, 'I'}}});
+            model = model.registerPropFunction({{ctrl, 'EIequation'}, fn, {{an, itf, 'intercalationFlux'}, {ctrl, 'I'}}});
 
             fn = @SingleParticleSEI.setupElectrolyteCoupling;
             model = model.registerPropFunction({{an, itf, 'phiElectrolyte'}, fn, {{elyte, 'phi'}}});
@@ -71,7 +71,7 @@ classdef SingleParticleSEI < BaseModel
             model = model.registerPropFunction({{ct, itf, 'phiElectrolyte'}, fn, {{elyte, 'phi'}}});
             
             fn = @SingleParticleSEI.setupElectrolyteMassCons;
-            model = model.registerPropFunction({{elyte, 'massCons'}, fn, {{an, 'R'}, {ct, itf, 'R'}}});
+            model = model.registerPropFunction({{elyte, 'massCons'}, fn, {{an, 'intercalationFlux'}, {ct, itf, 'intercalationFlux'}}});
 
             eldes = {an, ct};
             for ielde = 1 : numel(eldes)
@@ -210,7 +210,7 @@ classdef SingleParticleSEI < BaseModel
             ctArea = model.cathodeArea;
 
             anR = state.(an).R;
-            ctR = state.(ct).(itf).R;
+            ctR = state.(ct).(itf).intercalationFlux;
             
             state.(elyte).massCons = anR*anArea + ctR*ctArea;
             

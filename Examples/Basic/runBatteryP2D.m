@@ -73,7 +73,7 @@ model = GenericBattery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgt = model.computationalGraph;
+    cgti = model.computationalGraph;
     return
 end
 

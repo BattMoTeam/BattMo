@@ -164,17 +164,16 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                    widthDict('Separator')];
         dr = sum(nwidths);
 
-        rOuter = jsonstruct.Geometry.rOuter;
-        rInner = jsonstruct.Geometry.rInner;
-        L      = jsonstruct.Geometry.L;
-        nL     = jsonstruct.Geometry.nL;
-        nas    = jsonstruct.Geometry.nas;
+        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsVertical'}, 4);
+        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsAngular'}, 6);
+        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'verticalRefinementParameter'}, []);
 
-        if isfield(jsonstruct.Geometry, 'refLcoef')
-            refLcoef = jsonstruct.Geometry.refLcoef;
-        else
-            refLcoef = [];
-        end
+        rOuter   = jsonstruct.Geometry.outerRadius;
+        rInner   = jsonstruct.Geometry.innerRadius;
+        L        = jsonstruct.Geometry.height;
+        nL       = jsonstruct.Geometry.numberOfDiscretizationCellsVertical;
+        nas      = jsonstruct.Geometry.numberOfDiscretizationCellsAngular;
+        refLcoef = jsonstruct.Geometry.verticalRefinementParameter;
         
         nrDict = containers.Map();
         nrDict('Separator')                = jsonstruct.Separator.N;

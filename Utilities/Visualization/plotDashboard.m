@@ -29,6 +29,7 @@ function [fig] = plotDashboard(model, states, varargin)
     pe      = 'PositiveElectrode';
     co      = 'Coating';
     am      = 'ActiveMaterial';
+    itf     = 'Interface';
     cc      = 'CurrentCollector';
     elyte   = 'Electrolyte';
     thermal = 'ThermalModel';
@@ -38,7 +39,7 @@ function [fig] = plotDashboard(model, states, varargin)
     step = p.Results.step;
 
     fig = figure();
-    sgtitle(sprintf('step %g', step))
+    sgtitle(sprintf('step %g (time %g h)', step, states{step}.time/hour))
 
     time = cellfun(@(state) state.time, states);
     Enew = cellfun(@(state) state.(ctrl).E, states);
@@ -62,7 +63,9 @@ function [fig] = plotDashboard(model, states, varargin)
               case 'simple'
                 plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).c ./ 1000, 'linewidth', 3);
               case 'full'
-                plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                state = states{step};
+                state = model.evalVarName(state, {ne, co, am, sd, 'cAverage'});
+                plotCellData(model.(ne).(co).grid, state.(ne).(co).(am).(sd).cAverage ./ 1000, 'linewidth', 3);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -81,7 +84,9 @@ function [fig] = plotDashboard(model, states, varargin)
               case 'simple'
                 plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).c ./ 1000, 'linewidth', 3);
               case 'full'
-                plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).(sd).cSurface ./ 1000, 'linewidth', 3);
+                state = states{step};
+                state = model.evalVarName(state, {pe, co, am, sd, 'cAverage'});
+                plotCellData(model.(pe).(co).grid, state.(pe).(co).(am).(sd).cAverage ./ 1000, 'linewidth', 3);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -188,7 +193,7 @@ function [fig] = plotDashboard(model, states, varargin)
               case 'simple'
                 subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).c ./ 1000, 'edgealpha', 0.1);
               case 'full'
-                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).(sd).c ./ 1000, 'edgealpha', 0.1);
+                subplot(2,4,3), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).(am).(sd).cSurface ./ 1000, 'edgealpha', 0.1);
               otherwise
                 error('diffusionModelType not recognized');
             end
@@ -217,7 +222,13 @@ function [fig] = plotDashboard(model, states, varargin)
             title('Cell Current  /  A')
             xlabel('Time  /  h')
             xlim([min(time/hour), max(time/hour)]);
-            ylim([min(Inew), max(Inew)]);
+            if max(Inew) - min(Inew) < 1e-12
+                refI = mean(Inew);
+                ylim_values = refI*(1 + [-0.01, 0.01]);
+            else
+                ylim_values = [min(Inew), max(Inew)];
+            end
+            ylim(ylim_values);
             set(gca, ...
                 'FontSize' , style.fontSize       , ...
                 'FontName' , style.fontName       , ...
@@ -694,8 +705,12 @@ function setPlot(ax, style, varargin)
                  'griddim', 1 , ...
                  'timeBar', []);
     opt = merge_options(opt, varargin{:});
-
-    colormap(crameri('nuuk'));
+    
+    try
+        colormap(crameri('nuuk'));
+    catch
+        % warning('crameri colormap not installed')
+    end
 
     set(ax, ...
         'FontSize' , style.fontSize       , ...

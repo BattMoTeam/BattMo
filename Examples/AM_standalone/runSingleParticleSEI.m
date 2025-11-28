@@ -61,14 +61,14 @@ end
 dograph = false;
 
 if dograph
-    cgt = ComputationalGraphTool(model);
-    % cgt.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
-    cgt.includeNodeNames = 'Control.I$';
-    % cgt.includeNodeNames = 'SideReaction.R';
-    % [g, edgelabels] = cgt.setupGraph('oneParentOnly', true, 'type', 'ascendant');
-    % [g, edgelabels] = cgt.setupGraph('oneParentOnly', true, 'type', 'descendant');
-    % [g, edgelabels] = cgt.setupGraph();
-    [g, edgelabels] = cgt.setupDescendantGraph();
+    cgti = ComputationalGraphInteractiveTool(model);
+    % cgti.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
+    cgti.includeNodeNames = 'Control.I$';
+    % cgti.includeNodeNames = 'SideReaction.R';
+    % [g, edgelabels] = cgti.setupGraph('oneParentOnly', true, 'type', 'ascendant');
+    % [g, edgelabels] = cgti.setupGraph('oneParentOnly', true, 'type', 'descendant');
+    % [g, edgelabels] = cgti.setupGraph();
+    [g, edgelabels] = cgti.setupDescendantGraph();
     figure
     h = plot(g, 'edgelabel', edgelabels,'edgefontsize', 15, 'nodefontsize', 12);
     return

@@ -8,7 +8,7 @@ Source code for runProtonicMembrane
 .. code:: matlab
 
 
-  %% Protonic Membrane model
+  %% Proton Membrane model
   
   %% Load and parse input from given json files
   % The source of the json files can be seen in :battmofile:`protonicMembrane.json<ProtonicMembrane/jsonfiles/protonicMembrane.json>` and
@@ -32,7 +32,7 @@ Source code for runProtonicMembrane
   [inputparams, gen] = setupProtonicMembraneGrid(inputparams, jsonstruct);
   
   %% Model setup
-  % We instantiate the model for the protonic membrane cell
+  % We instantiate the model for the proton membrane cell
   model = ProtonicMembrane(inputparams);
   
   %%

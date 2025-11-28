@@ -8,21 +8,34 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxTimestepCuts'},  6);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'nonlinearTolerance'},  []);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'verbose'},  false);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'timeStepSelector'}, 'stateChangeTimeStepSelector');
 
     linearSolverSetup_default.library = 'matlab';
     linearSolverSetup_default.method  = 'direct';
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'}, linearSolverSetup_default);
     linearSolverSetup = getJsonStructField(jsonstruct, {'NonLinearSolver', 'LinearSolver', 'linearSolverSetup'});
+
+    if ~strcmp(linearSolverSetup.library, 'matlab') || ~strcmp(linearSolverSetup.method, 'direct')
+        assert(BatteryLinearSolver.checkAMGCL(), 'AMGCL not installed correctly');
+    end
     
     nls.maxIterations   = jsonstruct.NonLinearSolver.maxIterations;
     nls.maxTimestepCuts = jsonstruct.NonLinearSolver.maxTimestepCuts;
     nls.verbose         = jsonstruct.NonLinearSolver.verbose;
     
     % Change default behavior of nonlinear solver, in case of error
-    nls.errorOnFailure = false;
+    nls.errorOnFailure    = false;
     nls.continueOnFailure = false;
-    nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
+    switch getJsonStructField(jsonstruct, {'NonLinearSolver', 'timeStepSelector'})
+      case 'stateChangeTimeStepSelector'
+        nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+      case 'simpleTimeStepSelector'
+        nls.timeStepSelector = SimpleTimeStepSelector();
+      otherwise
+       error('Unknown timeStepSelector');
+    end
+    
     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
     
     % Change default tolerance for nonlinear solver

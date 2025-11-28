@@ -9,8 +9,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Function to update diffusion coefficient value, given as a struct with fields
         % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
-        % - functionname : matlab function name (should be available in path)
-        % - argumentlist : should be  ["c", "cmin", "cmax"]
+        % - functionName : matlab function name (should be available in path)
+        % - argumentList : should be  ["c", "cmin", "cmax"]
         diffusionCoefficient
 
         saturationConcentration % the saturation concentration of the guest molecule in the host material (symbol: cmax)
@@ -57,7 +57,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                     model.useDFunc = false;
                   case 'function'
                     model.useDFunc = true;
-                    model.computeDFunc = str2func(D.functionname);
+                    model.computeDFunc = str2func(D.functionName);
                   otherwise
                     errror('type of D not recognized.')
                 end
@@ -145,6 +145,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
             G.cells.centroids = (r(2 : end) + r(1 : (end - 1)))./2;
+
+            radii = G.cells.centroids;
 
             G.faces.centroids = r;
             G.faces.areas     = 4*pi*r.^2;
@@ -270,7 +272,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                                'mapToParticle', mapToParticle, ...
                                'mapToBc'      , mapToBc      , ...
                                'Tbc'          , Tbc          , ...
-                               'vols'         , vols);
+                               'vols'         , vols         , ...
+                               'radii'        , radii);
 
         end
 
@@ -417,6 +420,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         end
 
+        function c = getParticleConcentrations(model, state)
+        % Reshape the particle concentration distribution as an array
+            np = model.np;
+            N  = model.N;
+
+            c = reshape(state.c, np, N)';
+            
+        end
+        
     end
 
 end

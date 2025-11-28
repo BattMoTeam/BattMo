@@ -115,57 +115,52 @@ Source code for runElectrolyser
   % We consider the three domains and plot the pH in each of those. We setup the helper structures to iterate over each
   % domain for the plot.
   
-  doplot = false;
+  models = {model.(oer).(ptl), ...
+            model.(her).(ptl), ...
+            model.(inm)};
   
-  if doplot
+  fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
+            {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
+            {'IonomerMembrane', 'cOH'}};
   
-      models = {model.(oer).(ptl), ...
-                model.(her).(ptl), ...
-                model.(inm)};
+  h = figure();
+  set(h, 'position', [10, 10, 800, 450]);
+  hold on
   
-      fields = {{'OxygenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}  , ...
-                {'HydrogenEvolutionElectrode', 'PorousTransportLayer', 'concentrations', 2}, ...
-                {'IonomerMembrane', 'cOH'}};
+  ntime = numel(time);
+  times = linspace(1, ntime, 10);
+  cmap  = cmocean('deep', 10);
   
-      h = figure();
-      set(h, 'position', [10, 10, 800, 450]);
-      hold on
+  for ifield = 1 : numel(fields)
   
-      ntime = numel(time);
-      times = linspace(1, ntime, 10);
-      cmap  = cmocean('deep', 10);
+      fd       = fields{ifield};
+      submodel = models{ifield};
   
-      for ifield = 1 : numel(fields)
+      x    = submodel.grid.cells.centroids;
   
-          fd       = fields{ifield};
-          submodel = models{ifield};
+      for itimes = 1 : numel(times);
   
-          x    = submodel.G.cells.centroids;
+          itime = floor(times(itimes));
+          % The method :code:`getProp` is used to recover the value from the state structure
+          val   = model.getProp(states{itime}, fd);
+          pH    = 14 + log10(val/(mol/litre));
   
-          for itimes = 1 : numel(times);
-  
-              itime = floor(times(itimes));
-              % The method :code:`getProp` is used to recover the value from the state structure
-              val   = model.getProp(states{itime}, fd);
-              pH    = 14 + log10(val/(mol/litre));
-  
-              % plot of pH for the current submodel.
-              plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
-  
-          end
+          % plot of pH for the current submodel.
+          plot(x/(milli*meter), pH, 'color', cmap(itimes, :));
   
       end
   
-      xlabel('x  /  mm');
-      ylabel('pH');
-      title('pH distribition in electrolyser')
-  
-      colormap(cmap)
-      hColorbar = colorbar;
-      caxis([0 3]);
-      hTitle = get(hColorbar, 'Title');
-      set(hTitle, 'string', 'J (A/cm^2)');
   end
+  
+  xlabel('x  /  mm');
+  ylabel('pH');
+  title('pH distribution in electrolyser')
+  
+  colormap(cmap)
+  hColorbar = colorbar;
+  caxis([0 3]);
+  hTitle = get(hColorbar, 'Title');
+  set(hTitle, 'string', 'J (A/cm^2)');
   
   %{
   Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

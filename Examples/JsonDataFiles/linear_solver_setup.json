@@ -5,64 +5,63 @@
   "LinearSolver" : {
     "linearSolverSetup" : {
       "library" : "matlab",
- "method" : "separate-variable-gmres",
- "verbose" : 2,
- "options" : {
-   "type" : "jacobi"},
- "gmres_options" : {
-   "restart" : "default",
-   "tol" : "default",
-   "maxit" : 40},
- "reduction" : {
-   "doReduction" : true,
-   "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
-                  {"name" : ["Control", "E"], "order" : 2, "special" : true}]
- },
- 
- "preconditioners" : [{"name" : "concentration in negative electrode particles",
-                            "variables" : [["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
-                                           ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl",
-                                   "verbose" : 2,
-                                   "solver" : {"tol" : 1e-6,
-                                               "verbose" : true}}
-                      },
-                      
-                      {"name" : "concentration in positive electrode particles",
-                            "variables" : [["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
-                                           ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
-                       "solver" : {"library" : "amgcl",
-                                   "verbose" : 2,
-                                   "solver" : {"tol" : 1e-6,
-                                               "verbose" : true}}
-                      },
-                      {"name" : "concentration in electrolyte",
-                       "variables" : [["Electrolyte", "c"]],
-                       "solver" : {"library" : "amgcl",
-                                   "verbose" : 2,
-                                   "solver" : {"tol" : 1e-6,
-                                               "verbose" : true}}
-                      },
-                      {"name" : "potential",
-                       "variables" : [["Electrolyte", "phi"],
-                                      ["NegativeElectrode", "Coating", "phi"],
-                                      ["PositiveElectrode", "Coating", "phi"],
-                                      ["NegativeElectrode", "CurrentCollector", "phi"],
-                                      ["PositiveElectrode", "CurrentCollector", "phi"],
-                                      ["Control", "E"]
-                                     ],
-                       "solver" : {"library" : "amgcl",
-                                   "verbose" : 2,
-                                   "solver" : {"tol" : 1e-6,
-                                               "verbose" : true}}
-                      },
+      "method" : "separate-variable-gmres",
+      "verbose" : 2,
+      "options" : {
+        "type" : "jacobi"},
+      "gmres_options" : {
+        "restart" : "default",
+        "tol" : "default",
+        "maxit" : 40},
+      "reduction" : {
+        "doReduction" : true,
+        "variables" : [{"name" : ["Control", "I"], "order" : 1, "special" : true},
+                       {"name" : ["Control", "E"], "order" : 2, "special" : true}]
+      },
+      
+      "preconditioners" : [
+        {"name" : "concentration in negative electrode particles",
+         "variables" : [["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
+                        ["NegativeElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}
+        },
+        
+        {"name" : "concentration in positive electrode particles",
+         "variables" : [["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "c"],
+                        ["PositiveElectrode", "Coating", "ActiveMaterial", "SolidDiffusion", "cSurface"]],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}
+        },
+        {"name" : "concentration in electrolyte",
+         "variables" : [["Electrolyte", "c"]],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}
+        },
+        {"name" : "potential",
+         "variables" : [["Electrolyte", "phi"],
+                        ["NegativeElectrode", "Coating", "phi"],
+                        ["PositiveElectrode", "Coating", "phi"],
+                        ["NegativeElectrode", "CurrentCollector", "phi"],
+                        ["PositiveElectrode", "CurrentCollector", "phi"],
+                        ["Control", "E"]
+                       ],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}
+        },
 
-                      {"name" : "temperature",
-                       "variables" : [["ThermalModel", "T"]],
-                       "solver" : {"library" : "amgcl",
-                                   "verbose" : 2,
-                                   "solver" : {"tol" : 1e-6,
-                                               "verbose" : true}}}
-                     ]
-
-    }}}}
+        {"name" : "temperature",
+         "variables" : [["ThermalModel", "T"]],
+         "solver" : {"library" : "amgcl",
+                     "verbose" : 2,
+                     "solver" : {"tol" : 1e-6,
+                                 "verbose" : true}}}
+      ]}}}}

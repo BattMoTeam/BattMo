@@ -1,12 +1,13 @@
-function fig = plotBatteryGrid(model, varargin)
+function handlers = plotBatteryGrid(model, varargin)
 %% Plot battery components
 
-    opt = struct('setstyle', true, ...
-                 'fig', [], ...
+    opt = struct('setstyle'       , true , ...
+                 'handlers'       , []   , ...
+                 'figure'         , []   , ...
                  'shortLegendText', false, ...
-                 'legendLocation', 'sw', ...
-                 'axisLabels', false, ...
-                 'legend', true);
+                 'legendLocation' , 'sw' , ...
+                 'axisLabels'     , false, ...
+                 'legend'         , true);
     opt = merge_options(opt, varargin{:});
 
     ne    = 'NegativeElectrode';
@@ -16,12 +17,22 @@ function fig = plotBatteryGrid(model, varargin)
     co    = 'Coating';
 
     colors = crameri('vik', 5);
-    if isempty(opt.fig)
-        fig = figure;
+
+    if isempty(opt.figure)
+        if isAssigned(opt, {'handlers', 'figure'})
+            opt.figure = opt.handlers.figure;
+            fig = figure(opt.figure);
+        else
+            fig = figure();
+        end
     else
-        fig = figure(opt.fig);
+        fig = figure(opt.figure);
     end
+
+    handlers.figure = fig;
+    
     hold on
+
     legtext = {};
 
     G = model.grid;

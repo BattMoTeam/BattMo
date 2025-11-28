@@ -8,11 +8,12 @@
 
    Installation <installation>
    basicusage
+   tutorials
    intermediate
+   modeling
    architecture
    json
    geometryinput
-   advancedtopics
    juliabridge
    Electrolyser simulation <publishedExamples/runElectrolyser>
    protonicmembrane
@@ -46,9 +47,10 @@ For the latest information including video tutorials and project gallery, please
 Acknowledgements
 ================
 
-BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
+BattMo has received funding from the European Union’s Horizon 2020 and Horizon Europe innovation programs under grant agreement numbers:
 
 - 875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
 - 957189 - Battery interface genome and materials acceleration platform (BIG-MAP)
 - 101069765 - Innovative and Sustainable High Voltage Li-ion Cells for Next Generation (EV) Batteries (IntelLiGent)
 - 101104031 - Battery management by multi-X (X=scale/physics/use/domain) digital twins (BATMAX)
+- 101103997 - Digital Solutions for Accelerated Battery Testing (DigiBatt)

@@ -578,9 +578,9 @@ classdef SeaWaterBattery < BaseModel
                 model = model.setupComputationalGraph();
             end
 
-            cgt = model.computationalGraph;
-            model.primaryVarNames = cgt.getPrimaryVariableNames();
-            model.funcCallList = cgt.getOrderedFunctionCallList();
+            cg = model.computationalGraph;
+            model.primaryVarNames = cg.getPrimaryVariableNames();
+            model.funcCallList = cg.getOrderedFunctionCallList();
 
             primaryvarnames = model.getPrimaryVariableNames();
 

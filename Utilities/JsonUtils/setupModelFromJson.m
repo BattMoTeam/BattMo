@@ -14,6 +14,11 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
         jsonstruct = setJsonStructField(jsonstruct, {'PositiveElectrode', 'use_normed_current_collector'}, false);
         jsonstruct = setJsonStructField(jsonstruct, {'NegativeElectrode', 'use_normed_current_collector'}, false);
     end        
+
+    if isUnAssigned(jsonstruct, {'Geometry'})
+        jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometry1d.json')
+        jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_geometry});
+    end
     
     inputparams = BatteryInputParams(jsonstruct);
 

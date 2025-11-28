@@ -129,48 +129,42 @@
       ]},
     "timeControl" : {
       "properties" : {
-        "usetable"  : {
-          "type" : "boolean",
-          "description" :  "true if tabulated data is used. See below for the description of this type of input"},
-        "times"  : {
+        "inputype" : {
+          "type" : "string",
+          "enum" : ["table", "function"]
+          "description" : "If inputtype is table, The time dependent control will be given using tables, using the values key and either the times or the durations key. If inputtype is function, the time dependent control will be given using a function given by the function key. To define the function, we use the function interface"
+        },        
+        "times" : {
+          "type" : "array",
+          "items" : {"type" : "number"}
+          "description" : "Array of increasing time value (wall clock). We do not include the initial time (assumed to be zero). For each time interval, the value given by the value key and the control type key is applied"
+        },
+        "times" : {
+          "type" : "array",
+          "items" : {"type" : "number"}
+          "description" : "Array of durations corresponding to successive time intervals. For each interval, the value given by the value key and the control type key is applied"
+        },
+        "values" : {
           "type" : "array",
           "items" : {"type" : "number"},
-          "description" : "Array with time value.  If this array is set, then  no durations array shoud be given. The array should include the end time at the end"},
-        "durations"  : {
-          "type" : "array",
-          "items" : {"type" : "number"},          
-          "description" : "Array with duration value. If this array is set, then no times array should be given"},
-        "values"  : {
-          "type" : "array",
-          "items" : {"type" : "number"},          
-          "description" : " Array with the control values, either current or voltage, see controltypes array below"},
-        "controltypes"  : {
+          "description" : "Value for the control at each interval. The value is either an applied current or voltage, depending on"
+        },
+        "controltypes" : {
           "type" : "array",
           "items" : {"type" : "number"},
-          "description" : "Array with control type. The convention is 1 for current and 2 for voltage"},
-        "usefunction"  : {
-          "type" : "boolean",
-          "description" : "true if we use a matlab function instead of a table"},
-        "functionname"  : {
-          "type" : "string",
-          "description" : "function name, should be in matlab path"},
-        "controltype"  : {
-          "type" : "string",
-          "enum" : ["voltage", "current"],
-          "description" : "control type when a function is given"}
-      },
-      "oneOf" : [
-        {"allOf" :
-         [{"properties" : {
-           "usetable" : {"const": true}}},
-          {"required" : ["values", "controltypes"]},
-          {"oneOf" : [
-            {"required" : ["times"]},
-            {"required" : ["durations"]}            
-          ]}]},
-        {"allOf" :
-         [{"properties" : {
-           "usefunction" : {"const": true}}},
-          {"required" : ["functionname", "controltype"]}
-         ]}]}}
+          "description" : "Control type for each interval. It can be either current, then we set the control type value to 1, or voltage, then we set the control type value to 2."
+ 
+        },        
+        "controlValueFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the control"
+        },
+        "controlTypeFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the type control, where 1 corresponds to current control and 2 corresponds to voltage control"
+        }
+      }
+
+    }
+  }
 }

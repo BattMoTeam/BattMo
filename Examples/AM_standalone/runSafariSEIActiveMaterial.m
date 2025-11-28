@@ -63,13 +63,13 @@ OCP = initState.(itf).OCP;
 phiElectrolyte = phiElectrodeInit - OCP;
 
 % From the values computed above we set the values of the initial state
-initState.E                = phiElectrodeInit;
-initState.I                = 0;
-initState.(sd).c           = cElectrodeInit*ones(Nsd, 1);
-initState.(sei).c          = cECexternal*ones(Nsei, 1);
-initState.(sei).cInterface = cECexternal;
-initState.(sei).delta      = 5*nano*meter;
-initState.R                = 0;
+initState.E                 = phiElectrodeInit;
+initState.I                 = 0;
+initState.(sd).c            = cElectrodeInit*ones(Nsd, 1);
+initState.(sei).c           = cECexternal*ones(Nsei, 1);
+initState.(sei).cInterface  = cECexternal;
+initState.(sei).delta       = 5*nano*meter;
+initState.totalReactionRate = 0;
 
 % we set also static variable fields
 initState.T = T;

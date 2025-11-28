@@ -12,6 +12,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         % Input parameter for the solid diffusion model  :class:`SolidDiffusionModelInputParams <Electrochemistry.SolidDiffusionModelInputParams>`
         %
         SolidDiffusion
+
+        LithiumPlating
         
         %% Standard parameters
 
@@ -22,7 +24,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % diffusion model type, either 'full' or 'simple'
+        diffusionModelType     % diffusion model type, either 'full', 'simple' or 'swelling'
 
         %% SEI layer model choice
         SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
@@ -38,6 +40,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        useLithiumPlating
+        
     end
 
     methods
@@ -46,8 +50,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            lp  = 'LithiumPlating';
             
             jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct,  'useLithiumPlating', false);
 
             jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
             diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
@@ -58,7 +65,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
                 jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
                 
-              case 'full'
+              case {'full', 'swelling'}
                 
                 jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
 
@@ -76,6 +83,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                     
                 end
 
+                if strcmp(diffusionModelType, 'swelling')
+                    jsonstruct = equalizeJsonStructField(jsonstruct, {sd, 'saturationConcentration'}, {itf, 'saturationConcentration'});
+                end
+
               otherwise
                 
                 error('Unknown diffusionModelType %s', diffusionModelType);
@@ -91,9 +102,19 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
 
+            if jsonstruct.useLithiumPlating
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumeFraction'}, {sd, 'volumeFraction'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
+            end
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             inputparams = inputparams.setupInterface(jsonstruct);
             inputparams = inputparams.setupSolidDiffusion(jsonstruct);
+
+            if jsonstruct.useLithiumPlating
+                inputparams.LithiumPlating = LithiumPlatingLatzInputParams(pickField(jsonstruct, lp));
+            end
 
         end
 
@@ -126,10 +147,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
                 inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
                 
-              case 'full'
-
+              case {'full', 'swelling'}
+                % same parameter set for the swelling case
                 inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
-                
+
               otherwise
                 
                 error('Unknown diffusionModelType %s', diffusionModelType);

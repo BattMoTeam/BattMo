@@ -16,8 +16,8 @@ classdef InterfaceInputParams < InputParams
         % Tf empty, the default expression using the reaction rate constant is used, see method
         % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
         %   - type = {"function", "constant"} % if "constant" is selected, we use the reactionRateConstant value
-        %   - functionname :  matlab function name (should be available in path)
-        %   - argumentlist = ["cElectrodeSurface", "cmax"]
+        %   - functionName :  matlab function name (should be available in path)
+        %   - argumentList = ["cElectrodeSurface", "cmax"]
         exchangeCurrentDensity
         
         guestStoichiometry100 % the ratio of the concentration of the guest molecule to the saturation concentration
@@ -27,10 +27,16 @@ classdef InterfaceInputParams < InputParams
         density               % the mass density of the active material
 
         % A function to determine the open-circuit potential of the electrode under given conditions
-        %   - type : "function";
-        %   - functionname :  matlab function name (should be available in path)
-        %   - argumentlist : ["cElectrode", "T", "cmax"]
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
+
+        includeEntropyChange     % flag which determines if entropy change should be computed and included
+
+        % A function to determine the entropy change
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
+        entropyChange
+
+        referenceTemperature % Used to compute effective OCP from reference OCP and entropy change
         
         chargeTransferCoefficient % the charge transfer coefficient that enters in the Butler-Volmer equation (symbol: alpha)
 
@@ -49,6 +55,12 @@ classdef InterfaceInputParams < InputParams
         
         function inputparams = InterfaceInputParams(jsonstruct)
 
+            if isUnAssigned(jsonstruct, 'entropyChange')
+                jsonstruct = setJsonStructField(jsonstruct, 'includeEntropyChange', false);
+            else
+                jsonstruct = setDefaultJsonStructField(jsonstruct, 'includeEntropyChange', true);
+            end
+            
             inputparams = inputparams@InputParams(jsonstruct);
             
         end

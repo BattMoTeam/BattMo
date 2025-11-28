@@ -9,8 +9,13 @@
   "reactionRateConstant": 2.33e-11,
   "guestStoichiometry100": 1.4001e-04,
   "guestStoichiometry0": 0.9811,
-  "openCircuitPotential" : {"type" : "function",
-           "functionname" : "computeOCP_LNMO_Mao",
-           "argumentlist" : ["concentration", "temperature", "maximum concentration"]
-                           },
-  "chargeTransferCoefficient" : 0.5} 
+  "openCircuitPotential" : {
+    "functionFormat" : "tabulated",
+    "argumentList" : ["stoichiometry"],
+    "dataX" : [0, 0.1000, 0.2000, 0.3000, 0.4000, 0.5000, 0.6000, 0.7000, 0.8000, 0.8500, 0.9000, 1.0000],
+    "dataY" : [4.7336, 4.7309, 4.7251, 4.7248, 4.7184, 4.6806, 4.6742, 4.6681, 4.6589, 4.4763, 4.1264, 3.7273]},
+  "entropyChange" : {"functionFormat": "tabulated",
+                     "argumentList" : ["stoichiometry"],
+                     "dataX" : [0, 0.1000, 0.2000, 0.3000, 0.4000, 0.5000, 0.6000, 0.7000, 0.8000, 0.8500, 0.9000, 1.0000],
+                     "dataY" : [-0.0001, -0.0001, -0.0001, -0.0001, -0.0003, -0.0002, -0.0002, -0.0002, -0.0002, -0.0028, -0.0013, -0.0010]},  
+  "chargeTransferCoefficient" : 0.5}

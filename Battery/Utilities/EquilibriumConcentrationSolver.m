@@ -189,7 +189,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                         thetaMins(iam)   = comodel.(am).(itf).(gsmin);
                         vfs(iam)         = comodel.volumeFractions(indam)*comodel.volumeFraction;
                         vs(iam)          = sum(comodel.G.getVolumes()*vfs(iam));
-                        computeOCPs{iam} = @(c) comodel.(am).(itf).computeOCPFunc(c, model.T, satConcs(iam));
+                        computeOCPs{iam} = @(c) comodel.(am).(itf).computeOCP(c/satConcs(iam));
 
                     end
 
@@ -215,7 +215,7 @@ classdef EquilibriumConcentrationSolver < BaseModel
                     vs        = sum(comodel.G.getVolumes()*vfs);
 
                     computeOCPs = cell(1, 1);
-                    computeOCPs{1} = @(c) comodel.(am).(itf).computeOCPFunc(c, model.T, satConcs);
+                    computeOCPs{1} = @(c) comodel.(am).(itf).computeOCP(c./satConcs);
 
                     model.(elde).numberOfActiveMaterial   = 1;
                     model.(elde).saturationConcentrations = satConcs;
@@ -585,19 +585,19 @@ classdef EquilibriumConcentrationSolver < BaseModel
 
             % Define the call list to update the constraint equations
             
-            cgt = model.cgt;
+            cg = model.computationalGraph;
             
             funcCallList = {};
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if model.(elde).numberOfActiveMaterial > 1
                     funcCallList = horzcat(funcCallList, ...
-                                           cgt.getPropFunctionCallList({elde, 'potentialEquations'}));
+                                           cg.getPropFunctionCallList({elde, 'potentialEquations'}));
                 end
             end
             
             funcCallList = horzcat(funcCallList, ...
-                                   cgt.getPropFunctionCallList({'massConsEq'}));
+                                   cg.getPropFunctionCallList({'massConsEq'}));
 
             funcCallList = unique(funcCallList, 'stable');
 
