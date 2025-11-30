@@ -700,13 +700,18 @@ classdef BaseModel < PhysicalModel
                 jsonstruct = [];
             end
         end
-        
-        function cgit = cgit(model)
-        % Shortcut to retrieve the computational graph
+
+        function cgit = getComputationalGrapInteractiveTool(model)
+        % setup and retrieve the computational graph interactive tool
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-            cgit =  ComputationalGraphInteractiveTool(model.computationalGraph);
+            cgit = ComputationalGraphInteractiveTool(model.computationalGraph);
+
+        end
+
+        function cgit = cgit(model)
+            cgit = model.getComputationalGrapInteractiveTool(model)
         end
 
         function G = grid(model)
