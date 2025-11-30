@@ -102,8 +102,8 @@ classdef Interface < BaseModel
             
             if isAssigned(j0, 'functionFormat')
                 model.useJ0Func = true;
-                [model.computeJ0, ...
-                 model.computeJ0Func] = setupFunction(inputparams.exchangeCurrentDensity);
+                [model.computeJ0Func, ...
+                 model.computeJ0] = setupFunction(inputparams.exchangeCurrentDensity);
             else
                 model.useJ0Func = false;
             end
@@ -163,7 +163,7 @@ classdef Interface < BaseModel
             fn = @Interface.updateReactionRateCoefficient;
             
             if model.useJ0Func
-                switch computeJ0.numberOfArguments
+                switch model.computeJ0.numberOfArguments
                   case 1                
                     inputnames = {'cElectrodeSurface'};
                   case 3
@@ -316,9 +316,7 @@ classdef Interface < BaseModel
 
             if model.useJ0Func
 
-                computeJ0 = model.computeJ0Func;
-
-                switch computeJ0.numberOfArguments
+                switch model.computeJ0.numberOfArguments
 
                     case 1
 
@@ -333,9 +331,9 @@ classdef Interface < BaseModel
                     
                     soc = (c - cmin)./(cmax - cmin);
                     
-                    j0 = computeJ0(soc);
+                    j0 = model.computeJ0Func(soc);
                     
-                  case 4
+                  case 3
 
                     cmax = model.saturationConcentration;
                     
@@ -343,7 +341,7 @@ classdef Interface < BaseModel
                     celde  = state.cElectrodeSurface;
                     T      = state.T;
 
-                    j0 = computeJ0(celyte, celde, cmax, T);
+                    j0 = model.computeJ0Func(celyte, celde, T);
 
                   otherwise
 
@@ -352,12 +350,7 @@ classdef Interface < BaseModel
                 end
 
             else
-                j0mode = 'Arrhenius'; % Valeur par défaut, sera surchargée par le script
-
-                if isprop(model, 'j0_case') && ~isempty(model.j0_case)
-                    j0mode = model.j0_case;
-                end
-
+                
                 Tref = 298.15;
                 cmax = model.saturationConcentration;
                 k0   = model.reactionRateConstant;
@@ -372,18 +365,11 @@ classdef Interface < BaseModel
 
                 th = 1e-3 * cmax;
 
-                if strcmp(j0mode, 'Arrhenius')
-                    k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-                    coef = cElyte.*(cmax - c).*c;
-                    coef(coef < 0) = 0;
-                    j0 = k.*regularizedSqrt(coef, th)*n*F;
-                elseif strcmp(j0mode, 'Simplified')
-                    coef = cElyte.*c;
-                    coef(coef < 0) = 0;
-                    j0 = 6.342e-8*0.5*regularizedSqrt(coef, th)*n*F;
-                else
-                    error('Unknown j0_case');
-                end
+                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+                coef = cElyte.*(cmax - c).*c;
+                coef(coef < 0) = 0;
+                j0 = k.*regularizedSqrt(coef, th)*n*F;
+                
             end
 
             state.j0 = j0;

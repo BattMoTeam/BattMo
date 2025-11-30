@@ -1,15 +1,16 @@
 clear
 close all
 
-j0_modes = {'Arrhenius', 'Simplified'};
-styles = {'-', '--'};
-labels = {'Arrhenius', 'Simplified'};
+j0_cases = {'Arrhenius', 'Lin'};
+styles   = {'-', '--'};
+labels   = {'Arrhenius', 'Simplified'};
 
 results = cell(2, 1);
 
-for idx = 1:2
-    j0_case = j0_modes{idx};
+for idx = 1 : numel(j0_cases)
 
+    j0_case = j0_cases{idx};
+    
     jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples','Advanced','Plating','lithium_plating.json'));
 
@@ -28,7 +29,23 @@ for idx = 1:2
     jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
     jsonstruct.Control.controlPolicy = 'CCCharge';
-
+    
+    switch j0_case
+      case 'Arrhenius'
+        % default case, do nothing
+      case 'Lin'
+        
+        ecd_func = struct('functionFormat', 'named function', ...
+                  'functionName'  , 'exchangeCurrentDensityLin');
+        ecd_func.argumentList = {'celyte', 'celde', 'T'};
+        
+        jsonstruct.(ne).(co).(am).(itf).exchangeCurrentDensity = ecd_func;
+      otherwise
+        
+        error('j0_case not recognized');
+        
+    end
+    
     inputparams = BatteryInputParams(jsonstruct);
     inputparams = inputparams.(ne).(co).(am);
     inputparams.Interface.openCircuitPotential.functionname = 'computeOCP_Graphite_Latz';
