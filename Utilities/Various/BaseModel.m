@@ -701,12 +701,12 @@ classdef BaseModel < PhysicalModel
             end
         end
         
-        function cgti = cgti(model)
+        function cgit = cgit(model)
         % Shortcut to retrieve the computational graph
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-            cgti =  ComputationalGraphInteractiveTool(model.computationalGraph);
+            cgit =  ComputationalGraphInteractiveTool(model.computationalGraph);
         end
 
         function G = grid(model)
