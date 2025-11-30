@@ -27,7 +27,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         useDFunc
         computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method
                      % updateDiffusionCoefficient
-
+        computeD
 
     end
 
@@ -50,7 +50,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             
             if ~isempty(model.diffusionCoefficient)
                 model.useDFunc = true;
-                model.computeDFunc = setupFunction(model.diffusionCoefficient);
+                [model.computeDFunc, model.computeD] = setupFunction(model.diffusionCoefficient);
             else
                 model.useDFunc = false;
             end
@@ -78,7 +78,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
             if model.useDFunc
-                inputnames = {'c'};
+                switch model.computeD.numberOfArguments
+                  case 1
+                    inputnames = {'c'};
+                    model = model.removeVarName('T');
+                  case 2
+                    inputnames = {'c', 'T'};
+                  otherwise
+                    error('case non implementefd')
+                end
             else
                 inputnames = {'T'};
             end

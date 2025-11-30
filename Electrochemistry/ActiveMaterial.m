@@ -109,7 +109,11 @@ classdef ActiveMaterial < BaseModel
 
             
             fn = @ActiveMaterial.dispatchTemperature;
-            model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            if model.(sd).useDFunc && model.(sd).computeD.numberOfArguments == 1
+                % do not add the thermal dependence
+            else
+                model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
+            end
             model = model.registerPropFunction({{itf, 'T'}, fn, {'T'}});
             if model.useLithiumPlating
                 lp  = 'LithiumPlating';
@@ -444,7 +448,11 @@ classdef ActiveMaterial < BaseModel
         function state = dispatchTemperature(model, state)
 
             state.Interface.T      = state.T;
-            state.SolidDiffusion.T = state.T;
+            if model.SolidDiffusion.useDFunc && model.SolidDiffusion.computeD.numberOfArguments == 1
+                % do nothing
+            else
+                state.SolidDiffusion.T = state.T;
+            end
             if model.useLithiumPlating
                 state.LithiumPlating.T = state.T;
                 model.LithiumPlating.G = model.G;
