@@ -107,9 +107,8 @@ classdef ActiveMaterial < BaseModel
                 model = model.removeVarName({sd, 'Rvol'});
             end
 
-            
             fn = @ActiveMaterial.dispatchTemperature;
-            if model.(sd).useDFunc && model.(sd).computeD.numberOfArguments == 1
+            if isprop(model.(sd), 'useDFunc') && model.(sd).useDFunc && model.(sd).computeD.numberOfArguments == 1
                 % do not add the thermal dependence
             else
                 model = model.registerPropFunction({{sd, 'T'}, fn, {'T'}});
@@ -448,7 +447,7 @@ classdef ActiveMaterial < BaseModel
         function state = dispatchTemperature(model, state)
 
             state.Interface.T      = state.T;
-            if model.SolidDiffusion.useDFunc && model.SolidDiffusion.computeD.numberOfArguments == 1
+            if isprop(model.SolidDiffusion, 'useDFunc') && model.SolidDiffusion.useDFunc && model.SolidDiffusion.computeD.numberOfArguments == 1
                 % do nothing
             else
                 state.SolidDiffusion.T = state.T;
