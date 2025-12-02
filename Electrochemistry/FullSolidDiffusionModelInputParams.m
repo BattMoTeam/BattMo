@@ -41,10 +41,6 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
             
             assert(isAssigned(D0) || isAssigned(D), 'Either D0 or D should be provided');
 
-            if isAssigned(D) & strcmp(D.type, 'constant')
-                jsonstruct.referenceDiffusionCoefficient = D.value;
-            end
-            
             inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
             
         end
