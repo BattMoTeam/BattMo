@@ -36,9 +36,9 @@ str = 'P phi$';
 % str = 'Cat Rate';
 % str = 'Ox P B cOH';
 
-% cgti.printVarNames(str);
+% cgit.printVarNames(str);
 
-% varinds = cgti.regexpVarNameSelect(str);
+% varinds = cgit.regexpVarNameSelect(str);
 
 % fds = {'OxygenEvolutionElectrode.PorousTransportLayer.phasePressure 1', ...
 %        'OxygenEvolutionElectrode.PorousTransportLayer.phasePressure 2', ...
@@ -82,10 +82,10 @@ nt = numel(time);
 for ivar = 1 : numel(fds)
     fd = fds{ivar};
 
-    varind = cgti.regexpVarNameSelect(fd);
+    varind = cgit.regexpVarNameSelect(fd);
     assert(numel(varind) == 1, ['too many field selected for ' fd]);
-    varname = cgti.varNameList{varind};
-    nodenames = cgti.getNodeName(varname);
+    varname = cgit.varNameList{varind};
+    nodenames = cgit.getNodeName(varname);
     % should be unique here
     nodename = nodenames{1};
     [ymin, ymax, y] = getvals(nodename, states);

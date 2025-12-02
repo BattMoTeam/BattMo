@@ -11,8 +11,8 @@ set(0, 'defaultaxesfontsize', 15);
 % model = ConcentrationReactionThermalModel();
 model = GenericExampleModel();
 
-cgti = model.cgti;
-h = cgti.plot();
+cgit = model.cgit;
+h = cgit.plot();
 % h = cgp.plotModelGraph();
 set(h, 'nodefontsize', 20);
 % set(h, 'nodefontsize', 9);
