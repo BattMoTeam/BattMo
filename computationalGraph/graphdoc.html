@@ -860,18 +860,18 @@ syntaxic sugar and internally the variable name <code class="code docutils liter
 that acts on the graph.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ThermalModel</span><span class="p">();</span>
 <span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupComputationalGraph</span><span class="p">();</span>
-<span class="n">cgt</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">computationalGraph</span><span class="p">;</span>
+<span class="n">cgit</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">computationalGraph</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>We have written a shortcut for the two last lines</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">cgt</span><span class="w"> </span><span class="p">=</span><span class="w">  </span><span class="n">model</span><span class="p">.</span><span class="n">cgt</span><span class="p">;</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">cgit</span><span class="w"> </span><span class="p">=</span><span class="w">  </span><span class="n">model</span><span class="p">.</span><span class="n">cgit</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>When the computational graph is setup, the property <code class="code docutils literal notranslate"><span class="pre">varNameList</span></code> of <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/BaseModel.m">BaseModel</a> is populated
 with <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/VarName.m">VarName</a> variables. We will rarely look at this list directly. Instead, we use the method
 <code class="code docutils literal notranslate"><span class="pre">printVarNames</span></code> in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/ComputationalGraph/ComputationalGraphInteractiveTool.m">ComputationalGraphInteractiveTool</a> which, as its name indicates, print the variables
 that have been registered.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgit</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">()</span>
 
 <span class="n">T</span>
 <span class="n">source</span>
@@ -917,8 +917,8 @@ that have been registered.</p>
 <p>(For the impatient, the full implementation which includes the properties is available
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionModel.m">here</a>). As expected, we obtain the following output</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ReactionModel</span><span class="p">();</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span><span class="p">;</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgit</span><span class="p">;</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span><span class="o">.</span><span class="n">printVarNames</span>
 
 <span class="n">phi_s</span>
 <span class="n">c_s</span>
@@ -958,8 +958,8 @@ namespace. We write</p>
 </div>
 <p>We can already instantiate this model (for the impatient, the full model setup is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ReactionThermalModel.m">here</a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ReactionThermalModel</span><span class="p">();</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span><span class="p">;</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">();</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgit</span><span class="p">;</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span><span class="o">.</span><span class="n">printVarNames</span><span class="p">();</span>
 
 <span class="n">Reaction</span><span class="o">.</span><span class="n">phi_s</span>
 <span class="n">Reaction</span><span class="o">.</span><span class="n">c_s</span>
@@ -1085,8 +1085,8 @@ graph.</p>
 print the sequence of function calls that is used to update all the variables in the model
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Documentation/computationalGraph/scripts/ThermalModel.m">ThermalModel</a>, which examplify how we can automatize the assembly. The order of the function
 evaluation is computed from the graph structure.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printOrderedFunctionCallList</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">cgit</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgit</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span><span class="o">.</span><span class="n">printOrderedFunctionCallList</span>
 
 <span class="n">Function</span> <span class="n">call</span> <span class="nb">list</span>
 <span class="n">state</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">updateAccumTerm</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
@@ -1171,8 +1171,8 @@ term of the energy equation to the reaction rate.</p>
 </div>
 <p>In this case, we obtain the following list of function calls</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ReactionThermalModel</span><span class="p">();</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgt</span><span class="p">;</span>
-<span class="o">&gt;&gt;</span> <span class="n">cgt</span><span class="o">.</span><span class="n">printOrderedFunctionCallList</span><span class="p">;</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cgit</span><span class="p">;</span>
+<span class="o">&gt;&gt;</span> <span class="n">cgit</span><span class="o">.</span><span class="n">printOrderedFunctionCallList</span><span class="p">;</span>
 
 <span class="n">Function</span> <span class="n">call</span> <span class="nb">list</span>
 <span class="n">state</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">updateOCP</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
