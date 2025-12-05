@@ -711,7 +711,7 @@ classdef BaseModel < PhysicalModel
         end
 
         function cgit = cgit(model)
-            cgit = model.getComputationalGrapInteractiveTool(model)
+            cgit = model.getComputationalGrapInteractiveTool();
         end
 
         function G = grid(model)
