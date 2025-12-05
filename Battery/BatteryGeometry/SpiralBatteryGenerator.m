@@ -26,6 +26,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         refLcoef     % coefficient use in refinement at top/bottom
         angleuniform
 
+        exteriorNegativeElectrodeLayer % boolean, true if we want to have negative electrode on all outer layers.
+        
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
 
@@ -75,7 +77,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.refLcoef     = params.refLcoef;
             gen.tabparams    = params.tabparams;
             gen.angleuniform = params.angleuniform;
-
+            
+            gen.exteriorNegativeElectrodeLayer = params.exteriorNegativeElectrodeLayer;
+            
             gen.use_thermal = inputparams.use_thermal;
 
             [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);

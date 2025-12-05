@@ -202,7 +202,10 @@
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
             "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
-              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"}}},
+              "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
+            "exteriorNegativeElectrodeLayer" : {
+              "type" : "boolean",
+              "description" : "if true, both outer layers are made of negative electrode material, otherwise it is only the outer one"}},
         "NegativeElectrode" : {
           "properties" : {
             "CurrentCollector" : {
