@@ -608,9 +608,15 @@ function output = spiralGrid(params)
 
         positiveExtCurrentFaces = mapToNewFaces(positiveExtCurrentFaces, newoldfacetbl);
         negativeExtCurrentFaces = mapToNewFaces(negativeExtCurrentFaces, newoldfacetbl);
-        thermalExchangeFaces    = mapToNewFaces(thermalExchangeFaces   , newoldfacetbl);
-        thermalExchangeFacesTag = mapToNewFaces(thermalExchangeFacesTag, newoldfacetbl);
+        
+        thexch_face_tbl.oldfaces = thermalExchangeFaces;
+        thexch_face_tbl = IndexArray(thexch_face_tbl);
 
+        [thexch_face_tbl, indstruct] = crossIndexArray(thexch_face_tbl, newoldfacetbl, {'oldfaces'});
+        
+        thermalExchangeFaces = thexch_face_tbl.get('newfaces');
+        thermalExchangeFacesTag = thermalExchangeFacesTag(indstruct{1}.inds);
+        
     end
     
     %% setup output structure
