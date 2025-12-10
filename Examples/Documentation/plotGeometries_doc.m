@@ -8,7 +8,7 @@ doplot.illustration3D  = true;
 doplot.jellyroll       = true;
 doplot.coincell        = true;
 doplot.multilayerpouch = true;
-dosave = true;
+dosave = false;
 savedir = fullfile(battmoDir, 'Documentation', 'JOSS', 'figs');
 
 %%
@@ -78,15 +78,15 @@ if doplot.jellyroll
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
 
-    jsonstruct_geometry.Geometry.nas = 30;
-    jsonstruct_geometry.Geometry.nL = 10;
+    jsonstruct_geometry.Geometry.nas = 10 % 30;
+    jsonstruct_geometry.Geometry.nL = 3 % 10;
 
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
     model = setupModelFromJson(jsonstruct);
 
     fig1 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig1);
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig1);
 
     axis equal tight off
     camlight left
@@ -98,15 +98,15 @@ if doplot.jellyroll
     %% Zoom inner
 
     fig2 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig2);
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig2);
     axis equal tight off
 
     cam = SetupCamera(model.grid);
     rInner = jsonstruct_geometry.Geometry.rInner;
-    cam.target = [rInner; 0; cam.z];
-    cam.viewangle = 1.5;
-    cam.phi       = 50;
-    cam.theta     = 130;
+    cam.cameraTarget   = [rInner; 0; cam.z];
+    cam.viewAngle      = 1.5;
+    cam.azimuthalAngle = 50;
+    cam.polarAngle     = 130;
     cam.do();
     camlight left
 
@@ -117,15 +117,15 @@ if doplot.jellyroll
     % Zoom outer
 
     fig3 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'fig', fig3);
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig3);
     axis equal tight off
 
     cam = SetupCamera(model.grid);
     rOuter = jsonstruct_geometry.Geometry.rOuter;
-    cam.target = [rOuter; 0; cam.z];
-    cam.viewangle = 1.5;
-    cam.phi       = 50;
-    cam.theta     = 130;
+    cam.cameraTarget   = [rOuter; 0; cam.z];
+    cam.viewAngle      = 1.5;
+    cam.azimuthalAngle = 50;
+    cam.polarAngle     = 130;
     cam.do();
     camlight left
 

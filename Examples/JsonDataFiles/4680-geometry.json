@@ -1,12 +1,12 @@
-{"include_current_collectors" : true,
- "Geometry" : {
-   "case" : "jellyRoll",
-   "innerRadius" : 2e-3,
-   "outerRadius" : 23e-3,
-   "height" : 70e-3,
-   "numberOfDiscretizationCellsVertical" : 3,
-   "numberOfDiscretizationCellsAngular"  : 10
- },
+{"Geometry" : {
+  "case" : "jellyRoll",
+  "rInner" : 2e-3,
+  "rOuter" : 23e-3,
+  "L" : 70e-3,
+  "refLcoef" : 3,
+  "nas" : 10,
+  "nL" : 10,
+  "exteriorNegativeElectrodeLayer" : false},
  "NegativeElectrode": {
    "Coating": {
      "thickness" : 94e-6,

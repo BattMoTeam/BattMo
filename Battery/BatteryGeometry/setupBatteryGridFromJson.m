@@ -164,16 +164,23 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                    widthDict('Separator')];
         dr = sum(nwidths);
 
-        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsVertical'}, 4);
-        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsAngular'}, 6);
-        jsonstruct = setDefaultJsonStructField(jsonstruct, {'Geometry', 'verticalRefinementParameter'}, []);
+        rOuter = jsonstruct.Geometry.rOuter;
+        rInner = jsonstruct.Geometry.rInner;
+        L      = jsonstruct.Geometry.L;
+        nL     = jsonstruct.Geometry.nL;
+        nas    = jsonstruct.Geometry.nas;
 
-        rOuter   = jsonstruct.Geometry.outerRadius;
-        rInner   = jsonstruct.Geometry.innerRadius;
-        L        = jsonstruct.Geometry.height;
-        nL       = jsonstruct.Geometry.numberOfDiscretizationCellsVertical;
-        nas      = jsonstruct.Geometry.numberOfDiscretizationCellsAngular;
-        refLcoef = jsonstruct.Geometry.verticalRefinementParameter;
+        if isfield(jsonstruct.Geometry, 'refLcoef')
+            refLcoef = jsonstruct.Geometry.refLcoef;
+        else
+            refLcoef = [];
+        end
+
+        if isfield(jsonstruct.Geometry, 'exteriorNegativeElectrodeLayer')
+            exteriorNegativeElectrodeLayer = jsonstruct.Geometry.exteriorNegativeElectrodeLayer;
+        else
+            exteriorNegativeElectrodeLayer = false;
+        end
         
         nrDict = containers.Map();
         nrDict('Separator')                = jsonstruct.Separator.N;
@@ -196,14 +203,15 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         % Computed number of windings
         nwindings = ceil(dR/dr);
 
-        params = struct('nwindings', nwindings, ...
-                        'rInner'   , rInner   , ...
-                        'widthDict', widthDict, ...
-                        'nrDict'   , nrDict   , ...
-                        'nas'      , nas      , ...
-                        'L'        , L        , ...
-                        'nL'       , nL       , ...
-                        'refLcoef' , refLcoef);
+        params = struct('nwindings' , nwindings, ...
+                        'rInner'    , rInner   , ...
+                        'widthDict' , widthDict, ...
+                        'nrDict'    , nrDict   , ...
+                        'nas'       , nas      , ...
+                        'L'         , L        , ...
+                        'nL'        , nL       , ...
+                        'refLcoef'  , refLcoef , ...
+                        'exteriorNegativeElectrodeLayer', exteriorNegativeElectrodeLayer );
 
         switch jsonstruct.Geometry.case
 

@@ -197,16 +197,15 @@
             "height" : {
               "type" : "number",
               "description" : "height of the battery"},
-            "numberOfDiscretizationCellsVertical" : {
+            "numberOfDiscreteCellsVertical" : {
               "type" : "integer",
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
-            "numberOfDiscretizationCellsAngular" : {
+            "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
-            "verticalRefinementParameter" :{
-              "type" : "integer",
-              "description" : "parameter that is used to refine the grid in the vertical direction at the top and bottom. The higher the value, the more refinement is done. If this value is not set, no refinement is done, that is we use a uniform mesh in the vertical direction"}
-          }},
+            "exteriorNegativeElectrodeLayer" : {
+              "type" : "boolean",
+              "description" : "if true, both outer layers are made of negative electrode material, otherwise it is only the outer one"}},
         "NegativeElectrode" : {
           "properties" : {
             "CurrentCollector" : {
@@ -258,8 +257,7 @@
                 "const" : true},
               "fractions" : {
                 "type" : "array",
-                "items" : {"type" : "number"},
-                "description" : "Gives the location of the tabs in the current collector. We parameterize the spiral (horizontal planar view) in the curviline coordinate, along the spiral (the other coordinate is in the transversal direction). The locations of the tabs are given in the curviline coordinate, as fractions of the total lenghts. The size of this array also determines the number of tabs"},
+                "items" : {"type" : "number"}},
               "width" : {
                 "type" : "number"}}},
             {"properties" : {
