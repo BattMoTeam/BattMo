@@ -8,8 +8,10 @@ doplot.illustration3D  = true;
 doplot.jellyroll       = true;
 doplot.coincell        = true;
 doplot.multilayerpouch = true;
-dosave = false;
+
+dosave = true;
 savedir = fullfile(battmoDir, 'Documentation', 'JOSS', 'figs');
+fsz = 24;
 
 %%
 if doplot.illustration1D
@@ -48,7 +50,7 @@ if doplot.illustration3D
 
     model = Battery(inputparams);
 
-    plotBatteryGrid(model, 'setstyle', false, 'legendlocation', 'east');
+    h = plotBatteryGrid(model, 'setstyle', false, 'legendlocation', 'east');
 
     axis equal tight
     view(3)
@@ -61,8 +63,15 @@ if doplot.illustration3D
 
     axis off
 
+    % Set font size of legend and axes
+    ax = gca;
+    hl = get(ax, 'Legend');
+    set(hl, 'FontSize', fsz);
+
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'illustration3Dgeometry.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'illustration3Dgeometry.pdf'), 'Resolution', 300);
     end
 
 end
@@ -78,8 +87,9 @@ if doplot.jellyroll
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
 
-    jsonstruct_geometry.Geometry.nas = 10 % 30;
-    jsonstruct_geometry.Geometry.nL = 3 % 10;
+    jsonstruct_geometry.Geometry.exteriorNegativeElectrodeLayer = true;
+    jsonstruct_geometry.Geometry.nas = 30;
+    jsonstruct_geometry.Geometry.nL = 10;
 
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
 
@@ -91,8 +101,10 @@ if doplot.jellyroll
     axis equal tight off
     camlight left
 
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_overview.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_overview.pdf'), 'Resolution', 300);
     end
 
     %% Zoom inner
@@ -110,11 +122,13 @@ if doplot.jellyroll
     cam.do();
     camlight left
 
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoominner.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoominner.pdf'), 'Resolution', 300);
     end
 
-    % Zoom outer
+    %% Zoom outer
 
     fig3 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig3);
@@ -123,15 +137,19 @@ if doplot.jellyroll
     cam = SetupCamera(model.grid);
     rOuter = jsonstruct_geometry.Geometry.rOuter;
     cam.cameraTarget   = [rOuter; 0; cam.z];
-    cam.viewAngle      = 1.5;
+    cam.viewAngle      = 3;
     cam.azimuthalAngle = 50;
     cam.polarAngle     = 130;
     cam.do();
     camlight left
 
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoomouter.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoomouter.pdf'), 'Resolution', 300);
     end
+
+    %%
 
 end
 
@@ -161,8 +179,14 @@ if doplot.multilayerpouch
     ylabel('y / mm')
     zlabel('z / mm')
 
+    % Set font size of axes
+    ax = gca;
+    set(ax, 'FontSize', fsz);
+
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'multilayerpouch_geometry.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'multilayerpouch_geometry.pdf'), 'Resolution', 300);
     end
 
 end
@@ -257,8 +281,14 @@ if doplot.coincell
 
     scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
 
+    % Set font size of axes
+    ax = gca;
+    set(ax, 'FontSize', fsz);
+
+    drawnow
+
     if dosave
-        exportgraphics(gcf, fullfile(savedir, 'coincell_geometry.png'), 'Resolution', 300);
+        exportgraphics(gcf, fullfile(savedir, 'coincell_geometry.pdf'), 'Resolution', 300);
     end
 
 end

@@ -1,19 +1,38 @@
-\documentclass{standalone}
-\usepackage{amsmath}
+\documentclass{article}
+\usepackage[a4paper, margin=1cm]{geometry}
+\usepackage{pdfpages}
 \usepackage{tikz}
-\usetikzlibrary{arrows, positioning, calc, patterns, backgrounds, arrows.meta, matrix}
-\usetikzlibrary{graphs, graphdrawing, graphdrawing.layered}
+
 
 \graphicspath{{./},{../../img/}}
 
-\def\insertpic #1{\node{\includegraphics[width=0.99\textwidth]{#1}};}
+\def\figg #1#2{\includegraphics[width=#1\textwidth]{#2.pdf}}
 
 \begin{document}
-\begin{tikzpicture}
-  \matrix {\insertpic{illustration3Dgeometry} & \insertpic{coincell_geometry}\\
-    \insertpic{jellyroll_combined} &\insertpic{multilayerpouch_geometry} \\
+
+\thispagestyle{empty}
+
+
+\begin{tikzpicture}[remember picture, overlay]
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at (current page.north west) {
+    \figg{0.5}{illustration3Dgeometry}
   };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([xshift=0.44\paperwidth] current page.north west) {
+    \figg{0.5}{coincell_geometry}
+  };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([yshift=-0.25\paperheight] current page.north west) {
+    \figg{0.5}{jellyrollcombine}
+  };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([xshift=0.47\paperwidth, yshift=-0.24\paperheight] current page.north west) {
+    \figg{0.6}{multilayerpouch_geometry}
+  };
+
 \end{tikzpicture}
+
 \end{document}
 
 % Local Variables:

@@ -103,9 +103,9 @@ The main features of BattMo is summarized in the following list:
 
 # Software dependencies
 
-BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i][@MRST:2025] which provides the foundation for meshing
+BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i] which provides the foundation for meshing
 intricate geometries, solving large nonlinear systems of equations, visualizing the results, etc. It is implemented in
-MATLAB$^®$ and seeks to provide Octave compatibility. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
+MATLAB$^®$ and we seek to provide Octave [@octave] compatibility. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We do recommend using AMG preconditioners from the open-source
 AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems.
 
 # Battery format library
@@ -113,7 +113,7 @@ AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems
 We support coin cells, jelly roll cells and multi-pouch cells with different tab layouts. The geometries are parameterized and can be modified
 using a simple set of parameters. 1D and 2D grids for P2D and P3D models can also be generated.
 
-![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries.png){width=100%}
+![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries.pdf){width=100%}
 
 # Graph based model development
 
