@@ -88,7 +88,7 @@ The main features of BattMo is summarized in the following list:
 
 - JSON based input with schema
 - Library of parameterized battery formats
-- Flexible model design
+- Flexible graph-based model design
 - Fully coupled electro-chemical--thermal models
 - 3D visualization
 - Parameter calibration
