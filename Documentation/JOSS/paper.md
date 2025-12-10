@@ -43,7 +43,7 @@ bibliography: paper.bib
 <!-- To compile this file, after installing docker, from this directory, run : docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara  -->
 # Summary
 
-This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework in MATLAB^® [@MATLAB] for
+This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework in MATLAB$^®$ [@MATLAB] for
 simulating the performance of electro-chemical cells. BattMo can quickly setup and solve models for a variety of battery
 chemistries, even considering 3D designs such as cylindrical and prismatic cells.
 
@@ -105,7 +105,7 @@ The main features of BattMo is summarized in the following list:
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i][@MRST:2025] which provides the foundation for meshing
 intricate geometries, solving large nonlinear systems of equations, visualizing the results, etc. It is implemented in
-MATLAB^® and seeks to provide Octave compatability. Neither BattMo nor MRST rely on extra MATLAB^® packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
+MATLAB$^®$ and seeks to provide Octave compatability. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
 AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems.
 
 # Battery format library
@@ -133,7 +133,7 @@ The following software include the BattMo family:
 
 | Software                                             | Description                                                         |
 |------------------------------------------------------|---------------------------------------------------------------------|
-| [BattMo](https://github.com/BattMoTeam/BattMo)       | MATLAB version presented in this publication |
+| [BattMo](https://github.com/BattMoTeam/BattMo)       | MATLAB$^®$ version presented in this publication |
 | [BattMo.jl](https://github.com/BattMoTeam/BattMo.jl) | Julia version                                                       |
 | [PyBattMo](https://github.com/BattMoTeam/PyBattMo)   | Python wrapper around BattMo.jl                                     |
 | [BattMoApp](https://app.battmo.org/)                 | Web-application built on top of BattMo.jl                           |
