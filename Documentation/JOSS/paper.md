@@ -52,7 +52,7 @@ JSON schemas. In this respect, we follow the guidelines of the Battery Interface
 interoperability in accordance with the FAIR principles [@fair].
 
 The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
-thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth) and the use of composite
+thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth, and the use of composite
 material, such as a mixture of Silicon and graphite.
 
 The models are setup in a hierarchical way, for clarity and modularity. Each model corresponds to a computational graph,
@@ -105,7 +105,7 @@ The main features of BattMo is summarized in the following list:
 
 BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i][@MRST:2025] which provides the foundation for meshing
 intricate geometries, solving large nonlinear systems of equations, visualizing the results, etc. It is implemented in
-MATLAB$^®$ and seeks to provide Octave compatability. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
+MATLAB$^®$ and seeks to provide Octave compatibility. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We recommend using AMG preconditioners from the open-source
 AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems.
 
 # Battery format library
