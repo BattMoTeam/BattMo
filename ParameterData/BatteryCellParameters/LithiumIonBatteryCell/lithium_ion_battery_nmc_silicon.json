@@ -81,7 +81,7 @@
         "isSwellingMaterial": 0,
         "Interface": {
           "isFile": true,
-          "filename": "ParameterData/MaterialProperties/NMC/nmc111.json"
+          "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json"
         },
         "diffusionModelType" : "full",
         "SolidDiffusion": {
