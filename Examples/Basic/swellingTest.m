@@ -396,13 +396,16 @@ ne_sd  = model.(ne).(co).(am).SolidDiffusion;
 Y = [];
 X = [];
 
-for t = 1:totalTime
+
+N = model.(ne).(co).(am).(sd).N;
+
+for t = 1:numel(states)
 
     sumTheta = 0;
     for x = 1:N_elements_ne       
         sumConcentrations = 0;
         for i = 1:N
-            c = states{t}.(ne).(am).(sd).c((x-1)*N +i);
+            c = states{t}.(ne).(co).(am).(sd).c((x-1)*N +i);
             sumConcentrations = sumConcentrations + c;
         end
         cAverage = sumConcentrations/N;
@@ -424,32 +427,32 @@ xlabel('Time (in hours)')
 figure
 subplot(2,1,1)
 
-ne_itf   = model.(ne).(am).(itf);
-ne_sd = model.(ne).(am).SolidDiffusion;
+ne_itf = model.(ne).(co).(am).(itf);
+ne_sd  = model.(ne).(co).(am).SolidDiffusion;
 
 totalTime = length(T);
 realTotalTime = states{totalTime}.time;
 
-theta100 = ne_itf.theta100;
-theta0   = ne_itf.theta0;
-cmax     = ne_itf.cmax;
-r0       = ne_sd.rp;
-F        = model.con.F;
-N        = ne_sd.N;
-N_elements_ne = gen.nenx;
+guestStoichiometry100 = ne_itf.guestStoichiometry100;
+guestStoichiometry0   = ne_itf.guestStoichiometry0;
+cmax                  = ne_itf.saturationConcentration;
+r0                    = ne_sd.particleRadius;
+F                     = model.con.F;
+N                     = ne_sd.N;
+N_elements_ne         = gen.nenx;
 
 
 Y = [];
 X = [];
 
-for t = 1:totalTime
+for t = 1:numel(states)
 
 
     state = states{t};
-    state.(ne).(am).SolidDiffusion = model.(ne).(am).(sd).updateAverageConcentration(state.(ne).(am).SolidDiffusion);
-    cAverage = state.(ne).(am).(sd).cAverage;
+    state.(ne).(am).SolidDiffusion = model.(ne).(co).(am).(sd).updateAverageConcentration(state.(ne).(co).(am).SolidDiffusion);
+    cAverage = state.(ne).(co).(am).(sd).cAverage;
 
-    vols = model.(ne).(am).G.cells.volumes;
+    vols = model.(ne).(co).grid.cells.volumes;
 
     theta = (sum(vols .* cAverage))./(sum(vols).* cmax);
 
@@ -457,7 +460,7 @@ for t = 1:totalTime
     %    for x = 1:N_elements_ne       
     %    sumConcentrations = 0;
     %    for i = 1:N
-    %        c = states{t}.(ne).(am).(sd).c((x-1)*N +i);
+    %        c = states{t}.(ne).(co).(am).(sd).c((x-1)*N +i);
     %        sumConcentrations = sumConcentrations + c;
     %    end
     %    cAverage = sumConcentrations/N;
@@ -468,7 +471,7 @@ for t = 1:totalTime
     %    end
     %    theta = sumTheta/N_elements_ne;
     %
-    soc = (theta - theta0)/(theta100-theta0);
+    soc = (theta - guestStoichiometry0)/(guestStoichiometry100 - guestStoichiometry0);
 
 
     Y(end+1) = soc;
@@ -483,19 +486,19 @@ xlabel('Time (in hours)')
 
 subplot(2,1,2)
 
-po_itf   = model.PositiveElectrode.(am).(itf);
-po_sd = model.PositiveElectrode.(am).SolidDiffusion;
+po_itf = model.(pe).(co).(am).(itf);
+po_sd  = model.(pe).(co).(am).SolidDiffusion;
 
 totalTime = length(T);
 realTotalTime = states{totalTime}.time;
 
-theta100 = po_itf.theta100;
-theta0   = po_itf.theta0;
-cmax     = po_itf.cmax;
-r0       = po_sd.rp;
-F        = model.con.F;
-N        = po_sd.N;
-N_elements_pe = gen.penx;
+guestStoichiometry100 = po_itf.guestStoichiometry100;
+guestStoichiometry0   = po_itf.guestStoichiometry0;
+cmax                  = po_itf.saturationConcentration;
+r0                    = po_sd.particleRadius;
+F                     = model.con.F;
+N                     = po_sd.N;
+N_elements_pe         = gen.penx;
 
 
 Y = [];
@@ -507,7 +510,7 @@ for t = 1:totalTime
     for x = 1:N_elements_pe
         sumConcentrations = 0;
         for i = 1:N
-            c = states{t}.PositiveElectrode.(am).(sd).c((x-1)*N + i);
+            c = states{t}.(pe).(co).(am).(sd).c((x-1)*N + i);
             sumConcentrations = sumConcentrations + c;
         end
         cAverage = sumConcentrations/N;    
@@ -517,7 +520,7 @@ for t = 1:totalTime
     end
     theta = sumTheta/N_elements_pe;
 
-    soc = (theta-theta100)/(theta0-theta100);
+    soc = (theta-guestStoichiometry100)/(guestStoichiometry0-guestStoichiometry100);
 
     Y(end+1) = soc;
     X(end+1) = T(t)/hour;
@@ -528,19 +531,20 @@ plot(X, Y);
 ylabel('State of charge in the POSITIVE ELECTRODE')
 xlabel('Time (in hours)')
 
+return
 
 %%
 
 figure
 
-ne_itf = model.(ne).(am).(itf);
-ne_sd  = model.(ne).(am).SolidDiffusion;
+ne_itf = model.(ne).(co).(am).(itf);
+ne_sd  = model.(ne).(co).(am).SolidDiffusion;
 
 totalTime = length(T);
 realTotalTime = states{totalTime}.time;
 
-theta100 = ne_itf.theta100;
-theta0   = ne_itf.theta0;
+guestStoichiometry100 = ne_itf.guestStoichiometry100;
+guestStoichiometry0   = ne_itf.guestStoichiometry0;
 cmax     = ne_itf.cmax;
 r0       = ne_sd.rp;
 F        = model.con.F;
@@ -553,26 +557,26 @@ X = [];
 
 for t = 1:totalTime
 
-    vf_ne = model.(ne).(am).Interface.volumeFraction;
-    vf_pe = model.PositiveElectrode.(am).Interface.volumeFraction;
+    vf_ne = model.(ne).(co).(am).Interface.volumeFraction;
+    vf_pe = model.(pe).(co).(am).Interface.volumeFraction;
     porosElyte = model.(elyte).volumeFraction;
-    rp0_ne = model.(ne).(am).(sd).rp;
-    rp0_pe = model.(pe).(am).(sd).rp;
+    rp0_ne = model.(ne).(co).(am).(sd).rp;
+    rp0_pe = model.(pe).(co).(am).(sd).rp;
 
     state = states{t};
 
-    state.(ne).(am).SolidDiffusion = model.(ne).(am).(sd).updateAverageConcentration(state.(ne).(am).SolidDiffusion);
-    state.(pe).(am).SolidDiffusion = model.(pe).(am).(sd).updateAverageConcentration(state.(pe).(am).SolidDiffusion);
+    state.(ne).(co).(am).SolidDiffusion = model.(ne).(co).(am).(sd).updateAverageConcentration(state.(ne).(co).(am).SolidDiffusion);
+    state.(pe).(co).(am).SolidDiffusion = model.(pe).(co).(am).(sd).updateAverageConcentration(state.(pe).(co).(am).SolidDiffusion);
     
-    cAverageNE = state.(ne).(am).(sd).cAverage;
-    cAveragePE = state.(pe).(am).(sd).cAverage;
+    cAverageNE = state.(ne).(co).(am).(sd).cAverage;
+    cAveragePE = state.(pe).(co).(am).(sd).cAverage;
     cAverageElyte  = state.(elyte).c;
     
     vol_part_ne = (4/3).* pi .* rp0_ne .^3;
     vol_part_pe = (4/3).* pi .* rp0_pe .^3;
-    vols_ne = model.(ne).(am).G.cells.volumes;
-    vols_pe = model.(pe).(am).G.cells.volumes;
-    volsElyte = model.(elyte).G.cells.volumes;
+    vols_ne = model.(ne).(co).grid.cells.volumes;
+    vols_pe = model.(pe).(co).grid.cells.volumes;
+    volsElyte = model.(elyte).grid.cells.volumes;
 
     Npart_ne = vf_ne / ((4/3) .* pi.* rp0_ne.^3);
     Npart_pe = vf_pe / ((4/3) .* pi.* rp0_pe .^3);
@@ -582,11 +586,11 @@ for t = 1:totalTime
     NLi_pe = sum(Npart_pe .* vols_pe .* cAveragePE .* vol_part_pe);
     NLi_elyte = sum(volsElyte .* porosElyte .* cAverageElyte);
 
-    state.(ne).(am) = model.(ne).(am).updateRvol(state.(ne).(am));
-    state.(pe).(am) = model.(pe).(am).updateRvol(state.(pe).(am));
+    state.(ne).(co).(am) = model.(ne).(co).(am).updateRvol(state.(ne).(co).(am));
+    state.(pe).(co).(am) = model.(pe).(co).(am).updateRvol(state.(pe).(co).(am));
 
-    Rvol_ne = state.(ne).(am).Rvol;
-    Rvol_pe = state.(ne).(am).Rvol;
+    Rvol_ne = state.(ne).(co).(am).Rvol;
+    Rvol_pe = state.(ne).(co).(am).Rvol;
 
     Term 
     
