@@ -3,9 +3,7 @@ function model = convertModelGrids(model)
     
     if isprop(model, 'G') && ~isempty(model.G)
         G = model.G.mrstFormat;
-        rock.perm = ones(G.cells.num, 1);
-        rock.poro = ones(G.cells.num, 1);
-        op = setupOperatorsTPFA(G, rock);
+        op.haltTrans = 
         G.operators = op;
         model.G = G;
     end

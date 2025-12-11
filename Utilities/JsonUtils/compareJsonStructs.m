@@ -81,7 +81,7 @@ function isequal = compareValue(val1, val2)
             % val1 and val2 have the same fields
             for ifd = 1 : numel(fds)
                 % We compare the values of each field
-                fd = fds{ids}
+                fd = fds{ifd};
                 subisequal = compareValue(val1.(fd), val2.(fd));
                 if ~subisequal
                     isequal = false;

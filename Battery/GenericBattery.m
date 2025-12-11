@@ -798,11 +798,11 @@ classdef GenericBattery < BaseModel
 
                         cExternal = jsonstruct.Electrolyte.initialEthyleneCarbonateConcentration;
 
-                        initstate.(elde).(co).(amc).(sei).cExternal  = cExternal;
-                        initstate.(elde).(co).(amc).(sei).c          = cExternal*ones(N*np, 1);
-                        initstate.(elde).(co).(amc).(sei).cInterface = cExternal*ones(np, 1);
-                        initstate.(elde).(co).(amc).(sei).delta      = 5*nano*meter*ones(np, 1);
-                        initstate.(elde).(co).(amc).R                = zeros(np, 1);
+                        initstate.(elde).(co).(amc).(sei).cExternal   = cExternal;
+                        initstate.(elde).(co).(amc).(sei).c           = cExternal*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sei).cInterface  = cExternal*ones(np, 1);
+                        initstate.(elde).(co).(amc).(sei).delta       = 5*nano*meter*ones(np, 1);
+                        initstate.(elde).(co).(amc).totalReactionRate = zeros(np, 1);
 
                       case 'Bolay'
 

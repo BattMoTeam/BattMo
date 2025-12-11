@@ -15,7 +15,7 @@ classdef Interface < BaseModel
         volumetricSurfaceArea        % surface area of the active material - electrolyte interface per volume of electrode
         activationEnergyOfReaction   % the activation energy of the electrochemical reaction
         reactionRateConstant         % the reaction rate constant of the electrochemical reaction
-
+        j0_case
         % The exchange current at the electrode-electrolyte interface under equilibrium conditions.
         % Tf empty, the default expression using the reaction rate constant is used, see method
         % Interface.updateReactionRateCoefficient. The function is given as a struct with the fields:
@@ -102,8 +102,8 @@ classdef Interface < BaseModel
             
             if isAssigned(j0, 'functionFormat')
                 model.useJ0Func = true;
-                [model.computeJ0, ...
-                 model.computeJ0Func] = setupFunction(inputparams.exchangeCurrentDensity);
+                [model.computeJ0Func, ...
+                 model.computeJ0] = setupFunction(inputparams.exchangeCurrentDensity);
             else
                 model.useJ0Func = false;
             end
@@ -134,8 +134,8 @@ classdef Interface < BaseModel
             varnames{end + 1} = 'cElectrolyte';
             % Electrode over potential
             varnames{end + 1} = 'eta';
-            % Reaction rate [mol s^-1 m^-2]
-            varnames{end + 1} = 'R';
+            % Intercalation flux [mol s^-1 m^-2]
+            varnames{end + 1} = 'intercalationFlux';
             % OCP0 [V] at reference temperature
             varnames{end + 1} = 'OCP0';
             % OCP [V]
@@ -153,7 +153,7 @@ classdef Interface < BaseModel
                 varnames = {};
                 % Double layer capacity rate [mol s^-1 m^-2]
                 varnames{end + 1} = 'capacityR';
-                % Reaction rate [mol s^-1 m^-2] (same as R without the double layer capacity, now R will contain the sum)
+                % Intercalation flux [mol s^-1 m^-2] (same as R without the double layer capacity, now R will contain the sum)
                 varnames{end + 1} = 'reactionR';
                 % Double layer capacity rate equation
                 varnames{end + 1} = 'capacityRequation';
@@ -163,7 +163,7 @@ classdef Interface < BaseModel
             fn = @Interface.updateReactionRateCoefficient;
             
             if model.useJ0Func
-                switch computeJ0.numberOfArguments
+                switch model.computeJ0.numberOfArguments
                   case 1                
                     inputnames = {'cElectrodeSurface'};
                   case 3
@@ -208,7 +208,7 @@ classdef Interface < BaseModel
 
                 fn = @Interface.updateReactionRate;
                 inputnames = {'T', 'eta', 'j0'};
-                model = model.registerPropFunction({'R', fn, inputnames});
+                model = model.registerPropFunction({'intercalationFlux', fn, inputnames});
                 
             else
                 
@@ -223,7 +223,7 @@ classdef Interface < BaseModel
                 
                 fn = @Interface.updateTotalRateWithCapacity;
                 inputnames = {'reactionR', 'capacityR'};
-                model = model.registerPropFunction({'R', fn, inputnames});
+                model = model.registerPropFunction({'intercalationFlux', fn, inputnames});
                 
             end
 
@@ -316,9 +316,7 @@ classdef Interface < BaseModel
 
             if model.useJ0Func
 
-                computeJ0 = model.computeJ0Func;
-
-                switch computeJ0.numberOfArguments
+                switch model.computeJ0.numberOfArguments
 
                     case 1
 
@@ -333,9 +331,9 @@ classdef Interface < BaseModel
                     
                     soc = (c - cmin)./(cmax - cmin);
                     
-                    j0 = computeJ0(soc);
+                    j0 = model.computeJ0Func(soc);
                     
-                  case 4
+                  case 3
 
                     cmax = model.saturationConcentration;
                     
@@ -343,7 +341,7 @@ classdef Interface < BaseModel
                     celde  = state.cElectrodeSurface;
                     T      = state.T;
 
-                    j0 = computeJ0(celyte, celde, cmax, T);
+                    j0 = model.computeJ0Func(celyte, celde, T);
 
                   otherwise
 
@@ -352,9 +350,8 @@ classdef Interface < BaseModel
                 end
 
             else
-
-                Tref = 298.15;  % [K]
-
+                
+                Tref = 298.15;
                 cmax = model.saturationConcentration;
                 k0   = model.reactionRateConstant;
                 Eak  = model.activationEnergyOfReaction;
@@ -366,15 +363,13 @@ classdef Interface < BaseModel
                 cElyte = state.cElectrolyte;
                 c      = state.cElectrodeSurface;
 
-                % Calculate reaction rate constant
-                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
+                th = 1e-3 * cmax;
 
-                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3*cmax;
+                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
                 coef = cElyte.*(cmax - c).*c;
                 coef(coef < 0) = 0;
                 j0 = k.*regularizedSqrt(coef, th)*n*F;
-
+                
             end
 
             state.j0 = j0;
@@ -422,7 +417,7 @@ classdef Interface < BaseModel
 
         function state = updateReactionRate(model, state)
 
-            state.R = model.computeRate(state);
+            state.intercalationFlux = model.computeRate(state);
             
         end
         
@@ -451,7 +446,7 @@ classdef Interface < BaseModel
         
         function state = updateTotalRateWithCapacity(model, state)
 
-            state.R = state.reactionR + state.capacityR;
+            state.intercalationFlux = state.reactionR + state.capacityR;
         end
 
         function newstate = addVariablesAfterConvergence(model, newstate, state)

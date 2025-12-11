@@ -17,16 +17,16 @@ model = OxideMembraneCell(paramobj);
 
 % Setup computational graph
 model = model.setupComputationalGraph();
-cgti = model.computationalGraph;
+cgit = model.computationalGraph;
 
 % Print root variables
-cgti.printRootVariables();
+cgit.printRootVariables();
 
 % Print tail variables
-cgti.printTailVariables();
+cgit.printTailVariables();
 
 % plot computational graph
-[g, edgelabels] = cgti.getComputationalGraph();
+[g, edgelabels] = cgit.getComputationalGraph();
 
 figure
 h = plot(g, 'nodefontsize', 14);

@@ -1,6 +1,5 @@
 {
   "activationEnergyOfDiffusion": 5000,
-  "referenceDiffusionCoefficient": 3.9E-14,
-  "particleRadius": 1E-6,
-  "volumetricSurfaceArea": 723600
-}
+  "referenceDiffusionCoefficient": 3.9e-14,
+  "particleRadius": 1e-6,
+  "volumetricSurfaceArea": 723600}

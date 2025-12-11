@@ -48,9 +48,10 @@ classdef FlatJsonViewer
 
         function T = print(fjv, varargin)
 
-            opt = struct('filter', [], ...
-                         'filename', [], ...
-                         'print', true);
+            opt = struct('filter'         , []   , ...
+                         'filename'       , []   , ...
+                         'trimLongEntries', false, ...
+                         'print'          , true);
 
             opt = merge_options(opt, varargin{:});
 
@@ -58,6 +59,18 @@ classdef FlatJsonViewer
                 fjv = fjv.filter(opt.filter);
             end
 
+            if opt.trimLongEntries
+                maxlen = 50;
+                for icol = 1 : size(fjv.flatjson, 2)
+                    for irow = 1 : size(fjv.flatjson, 1)
+                        entry = fjv.flatjson{irow, icol};
+                        if ischar(entry) && (numel(entry) > maxlen)
+                            fjv.flatjson{irow, icol} = [entry(1 : floor(maxlen/2)) ' ...' entry(end - floor(maxlen/2) : end)];
+                        end
+                    end
+                end
+            end
+            
             T = cell2table(fjv.flatjson, 'VariableNames', fjv.columnnames);
 
             if opt.print
@@ -152,19 +165,26 @@ classdef FlatJsonViewer
             columnnames = fjv.columnnames;
 
             if iscell(frontColumNames)
-                [isok, find] = ismember(frontColumNames, columnnames);
-                assert(all(isok), 'some column names are not recognized.');
+                found = [];
+                for icolname = 1 : numel(frontColumNames)
+                    frontColumName = frontColumNames{icolname};
+                    r = regexprep(frontColumName, ' +', '.*');
+                    ind = regexp(columnnames, r);
+                    ind = cellfun(@(res) ~isempty(res), ind);
+                    found = [found, find(ind)]; 
+                end
             else
-                find = frontColumNames;
+                fjv = fjv.reorderColumns({frontColumNames});
+                return
             end
 
             nind = true(numel(columnnames), 1);
-            nind(find) = false;
+            nind(found) = false;
 
-            fjv.columnnames = horzcat(columnnames(find), ...
+            fjv.columnnames = horzcat(columnnames(found), ...
                                       columnnames(nind));
 
-            fjv.flatjson = horzcat(fjv.flatjson(:, find), ...
+            fjv.flatjson = horzcat(fjv.flatjson(:, found), ...
                                    fjv.flatjson(:, nind));
 
         end

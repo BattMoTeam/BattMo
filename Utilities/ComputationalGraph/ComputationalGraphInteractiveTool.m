@@ -6,11 +6,11 @@ classdef ComputationalGraphInteractiveTool < handle
 %
 % From a model, you can get the computatonial graph by writing in the terminal
 %
-% cgti = model.cgti
+% cgit = model.cgit
 %
 % Then write
 %
-% cgti.help
+% cgit.help
 
 % to get an overview of the different commands that are available.
 % 
@@ -38,7 +38,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
     methods
 
-        function cgti = ComputationalGraphInteractiveTool(cg, varargin)
+        function cgit = ComputationalGraphInteractiveTool(cg, varargin)
             
             opt = struct('markStatic', true, ...
                          'interactiveOptions', []);
@@ -62,9 +62,9 @@ classdef ComputationalGraphInteractiveTool < handle
                 end
             end
             
-            cgti.plotnodenames = plotnodenames;
+            cgit.plotnodenames = plotnodenames;
             
-            cgti.plotOptions = {};
+            cgit.plotOptions = {};
             
         end
 
@@ -73,20 +73,20 @@ classdef ComputationalGraphInteractiveTool < handle
         %% REPL tools
         %%%%%%%%%%%%%%%%
         
-        function printChildDependencyList(cgti, varname)
+        function printChildDependencyList(cgit, varname)
             
-            cgti.printDependencyList(varname, 'downwards');
+            cgit.printDependencyList(varname, 'downwards');
             
         end
         
-        function printParentDependencyList(cgti, varname)
+        function printParentDependencyList(cgit, varname)
             
-            cgti.printDependencyList(varname, 'upwards');
+            cgit.printDependencyList(varname, 'upwards');
 
         end
 
         
-        function printDependencyList(cgti, varname, direction)
+        function printDependencyList(cgit, varname, direction)
         % input varname is either
         %  - a VarName instance
         %  - a cell which then uses shortcuts for VarName (see implementation below)
@@ -99,7 +99,7 @@ classdef ComputationalGraphInteractiveTool < handle
         % Prints the dependency list of the variable given by varname
             
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
             varnameind = cg.findVarName(varname);
             varname = cg.varNameList{varnameind};
@@ -114,7 +114,7 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function printPropFunctionCallList(cgti, propfunc, varargin)
+        function printPropFunctionCallList(cgit, propfunc, varargin)
         % input propfunc is either
         % - an instance of PropFunction
         % - a valid input for findPropFunction, that is, either
@@ -124,7 +124,7 @@ classdef ComputationalGraphInteractiveTool < handle
         %   In this case, findPropFunction is first run to obtain the property function. It should return a unique element, otherwise we get a warning with a list of returned elements
         % Print the list of function call (as string) that will update the property function propfunc.
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
             opt = struct('fullSignature', false);
             opt = merge_options(opt, varargin{:});
@@ -142,7 +142,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
                 if numel(propfunc) > 1
                     fprintf('Several property functions are matching\n\n');
-                    cgti.printPropFunction(varname);
+                    cgit.printPropFunction(varname);
                     return
                 end
 
@@ -184,11 +184,11 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function openPropFunction(cgti, nodename)
+        function openPropFunction(cgit, nodename)
         % Open in editor the place where the variable that matches the regexp nodename is updated. The regexp nodename
         % should return a unique match
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             [propfunc, propfuncinds] = cg.findPropFunction(nodename);
 
@@ -242,10 +242,10 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function printVarNames(cgti, nodename)
+        function printVarNames(cgit, nodename)
         % Print the variable(s) that match the regexp nodename
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             nodenames = cg.nodenames;
 
@@ -261,11 +261,11 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function printPropFunction(cgti, nodename)
+        function printPropFunction(cgit, nodename)
         % Print property function including output variable name, function name and input variable names for the variable(s)
         % that match the regexp nodename
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             propfuncs = cg.findPropFunction(nodename);
 
@@ -309,9 +309,9 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function printModelNames(cgti, modelname)
+        function printModelNames(cgit, modelname)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             if isempty(cg.modelnames)
                 cg = cg.setupModelGraph();
@@ -332,10 +332,10 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function printRootVariables(cgti, nodename)
+        function printRootVariables(cgit, nodename)
         % Print the root variables in computational graph
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             A = cg.adjencyMatrix;
             nodenames = cg.nodenames;
@@ -353,7 +353,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 rootinds = intersect(inds, rootinds);
             end
             
-            cgti.printHeader('Root Variables', numel(rootinds));
+            cgit.printHeader('Root Variables', numel(rootinds));
 
             for irind = 1 : numel(rootinds)
                 fprintf('%s\n', rootnames{rootinds(irind)});
@@ -365,7 +365,7 @@ classdef ComputationalGraphInteractiveTool < handle
                     inds = regexpSelect(cg.nodenames, nodename);
                     staticinds = intersect(inds, staticinds);
                 end
-                cgti.printHeader('Static Variables', numel(staticinds));
+                cgit.printHeader('Static Variables', numel(staticinds));
                 for isind = 1 : numel(staticinds)
                     fprintf('%s\n', rootnames{staticinds(isind)});
                 end
@@ -373,10 +373,10 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function printTailVariables(cgti, nodename)
+        function printTailVariables(cgit, nodename)
         % Print the tail variables of the computational graph
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             A                = cg.adjencyMatrix;
             nodenames        = cg.nodenames;
@@ -391,14 +391,14 @@ classdef ComputationalGraphInteractiveTool < handle
                 tailinds = intersect(inds, tailinds);
             end
 
-            cgti.printHeader('Tail Variables', numel(tailinds));
+            cgit.printHeader('Tail Variables', numel(tailinds));
             
             for itail = 1 : numel(tailinds)
                 fprintf('%s\n', nodenames{tailinds(itail)});
             end
 
             if nargin == 1
-                cgti.printHeader('Extra Variables (do not enter in residual evaluation)', numel(extravarnameinds));
+                cgit.printHeader('Extra Variables (do not enter in residual evaluation)', numel(extravarnameinds));
                 for ievar = 1 : numel(extravarnameinds)
                     fprintf('%s\n', nodenames{extravarnameinds(ievar)});
                 end
@@ -406,11 +406,11 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function printDetachedVariables(cgti)
+        function printDetachedVariables(cgit)
         % Print the "detached" variables, which are the variables that are not connected to the graph. This is specially useful
         % in debugging because such variables should be eliminated from the final graph.
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             A = cg.adjencyMatrix;
             nodenames = cg.nodenames;
@@ -426,10 +426,10 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
 
-        function printOrderedFunctionCallList(cgti)
+        function printOrderedFunctionCallList(cgit)
         % Print the function calls ordered in the right order.
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             funcCallList = cg.getOrderedFunctionCallList();
 
@@ -440,9 +440,9 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function printSubModelNames(cgti, model, parents)
+        function printSubModelNames(cgit, model, parents)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             if nargin < 2
                 model = cg.model;
@@ -457,20 +457,20 @@ classdef ComputationalGraphInteractiveTool < handle
                 fprintf('%s\n', strjoin(subparents, '.'))
                 submodel = model.(modelname);
 
-                cgti.printSubModelNames(submodel, subparents);
+                cgit.printSubModelNames(submodel, subparents);
 
             end
 
         end
         
-        function help_repl(cgti, varargin)
+        function help_repl(cgit, varargin)
         % print help to terminal to get an overview of all the interactive functions
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
-            cgti = cgti.setupFuncDocs();
+            cgit = cgit.setupFuncDocs();
             
-            functionDocs = cgti.functionDocs;
+            functionDocs = cgit.functionDocs;
             
             names = cellfun(@(functionDoc) functionDoc.name, functionDocs, 'un', false);
             
@@ -588,9 +588,9 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
 
-        function cgti = setupFuncDocs(cgti)
+        function cgit = setupFuncDocs(cgit)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
             functionDocs = {};
 
@@ -599,17 +599,17 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'This function lists the name of all the variables declared in the model. They corresponds to the name of the nodes in the computational graph. When the function is called with an argument, it select the variables whose name is matched by the argument, in the sense that the argument is a substring of the variable name';
 
             functionDoc.name      = 'printVarNames';
-            functionDoc.callstr   = 'cgti.printVarNames';
+            functionDoc.callstr   = 'cgit.printVarNames';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
 
-            % openPropFunction(cgti, nodename)
+            % openPropFunction(cgit, nodename)
 
             docstring = 'This function sends you in the matlab editor to the place in the code where the variable is updated. If the namedoes not match a unique variable name, a list of matching ones is given and the user should enter the number given in the list for the variable he/she is interested in';
 
             functionDoc.name      = 'openPropFunction';
-            functionDoc.callstr   = 'cgti.openPropFunction(name)';
+            functionDoc.callstr   = 'cgit.openPropFunction(name)';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -619,7 +619,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'This function prints the name of the variables that are detected as roots in the graph. Those variables will correspond to the primary variables, except those that have been declared as static. The static variables are not updated by the Newton solver as they are not considered as unknown. The developper should take care of updating those explicitly';
 
             functionDoc.name      = 'printRootVariables';
-            functionDoc.callstr   = 'cgti.printRootVariables';
+            functionDoc.callstr   = 'cgit.printRootVariables';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -629,7 +629,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'This function prints the name of the variables that are detected as the tails in the graph. Those variables will correspond to the equations, except those that have been declared as extra variables. An equation variable, also called residual, is a variable that the solver will seek for its value to equal zero. We use Newton algorithm for that. The extra variables are variables that do not enter into the evaluation of the residuals but are usefull in a postprocessing of the solution.';
 
             functionDoc.name      = 'printTailVariables';
-            functionDoc.callstr   = 'cgti.printTailVariables';
+            functionDoc.callstr   = 'cgit.printTailVariables';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -639,7 +639,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'This functions prints the list of the function calls that will be used to update all the variables up to the residuals. The list is ordered to obey the dependency relationships that are declared in the graph';
 
             functionDoc.name      = 'printOrderedFunctionCallList';
-            functionDoc.callstr   = 'cgti.printOrderedFunctionCallList';
+            functionDoc.callstr   = 'cgit.printOrderedFunctionCallList';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -649,7 +649,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'Given a variable, prints the list of the variables that depends on it (children in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
 
             functionDoc.name      = 'printChildDependencyList';
-            functionDoc.callstr   = 'cgti.printChildDependencyList(name)';
+            functionDoc.callstr   = 'cgit.printChildDependencyList(name)';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -659,7 +659,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'Given a variable, prints the list of the variables that the variables depends on (parents in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
 
             functionDoc.name      = 'printParentDependencyList';
-            functionDoc.callstr   = 'cgti.printParentDependencyList(name)';
+            functionDoc.callstr   = 'cgit.printParentDependencyList(name)';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -669,7 +669,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'Given a variable name, this function prints the list of the function calls that will be used to update this variables. The list is ordered to obey the dependency relationships that are declared in the graph';
 
             functionDoc.name      = 'printPropFunctionCallList';
-            functionDoc.callstr   = 'cgti.printPropFunctionCallList(name)';
+            functionDoc.callstr   = 'cgit.printPropFunctionCallList(name)';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -679,7 +679,7 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'Given a variable name, this function prints the correponding PropFunction object attached to this variable. It includes the function call and the list of the arguments the function depends on';
 
             functionDoc.name      = 'printPropFunction';
-            functionDoc.callstr   = 'cgti.printPropFunction(name)';
+            functionDoc.callstr   = 'cgit.printPropFunction(name)';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
@@ -689,23 +689,23 @@ classdef ComputationalGraphInteractiveTool < handle
             docstring = 'This function prints the list of the sub-models that constitutes the main model';
 
             functionDoc.name      = 'printSubModelNames';
-            functionDoc.callstr   = 'cgti.printSubModelNames';
+            functionDoc.callstr   = 'cgit.printSubModelNames';
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
 
-            cgti.functionDocs = functionDocs;
+            cgit.functionDocs = functionDocs;
         end
 
         %%%%%%%%%%%%%%%
         %% Plot tools
         %%%%%%%%%%%%%%%
 
-        function booleanOperator(cgti, op, n)
+        function booleanOperator(cgit, op, n)
 
             assert(ismember(op, {'and', 'or'}), 'boolean operator not recognized');
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             if nargin < 3
                 n = 2;
@@ -715,33 +715,33 @@ classdef ComputationalGraphInteractiveTool < handle
                 error(sprintf('%s operation require %d elements in this call'), op, n);
             end
 
-            cgti.stack = { {op, stack(1 : n)}, stack{n + 1 : end}};
+            cgit.stack = { {op, stack(1 : n)}, stack{n + 1 : end}};
 
-            cgti.printStack();
+            cgit.printStack();
             
         end
 
-        function and(cgti, n)
+        function and(cgit, n)
             
             if nargin < 2
                 n = 2;
             end
 
-            cgti.booleanOperator('and', n);
+            cgit.booleanOperator('and', n);
             
         end
 
-        function or(cgti, n)
+        function or(cgit, n)
             
             if nargin < 2
                 n = 2;
             end
 
-            cgti.booleanOperator('or', n);
+            cgit.booleanOperator('or', n);
             
         end
 
-        function addFamily(cgti, branch, level)
+        function addFamily(cgit, branch, level)
 
             assert(ismember(branch, {'parents', 'children'}), 'branch should be either parents or children');
 
@@ -749,69 +749,69 @@ classdef ComputationalGraphInteractiveTool < handle
                 level = inf;
             end
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             assert(numel(stack) > 0, 'stack is empty');
 
-            cgti.stack = {{branch, level, stack{1}}, stack{2 : end}};
+            cgit.stack = {{branch, level, stack{1}}, stack{2 : end}};
 
-            cgti.printStack();
+            cgit.printStack();
             
         end
 
 
-        function parents(cgti, level)
+        function parents(cgit, level)
             
             if nargin < 2
                 level = inf;
             end
 
-            cgti.addFamily('parents', level);
+            cgit.addFamily('parents', level);
             
         end
 
-        function children(cgti, level)
+        function children(cgit, level)
             
             if nargin < 2
                 level = inf;
             end
 
-            cgti.addFamily('children', level);
+            cgit.addFamily('children', level);
             
         end
         
-        function select(cgti, expr)
+        function select(cgit, expr)
 
-            cgti.stack = {{'select', expr}, cgti.stack{:}};
-            cgti.printStack();
+            cgit.stack = {{'select', expr}, cgit.stack{:}};
+            cgit.printStack();
             
         end
 
-        function reset(cgti)
+        function reset(cgit)
 
-            cgti.stack = {};
+            cgit.stack = {};
             
         end
 
-        function del(cgti, n)
+        function del(cgit, n)
 
             if nargin < 2
                 n = 1;
             end
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             assert(numel(stack) >= n, sprintf('I cannot remove %d elements in the stack. Stack contains %d elements', n, numel(stack)));
 
-            cgti.stack = stack(n + 1 : end);
+            cgit.stack = stack(n + 1 : end);
             
-            cgti.printStack();
+            cgit.printStack();
 
         end
 
-        function delop(cgti)
+        function delop(cgit)
 
-            stack = cgti.stack;
+            stack = cgit.stack;
             
             assert(numel(stack) >= 1, 'stack is empty');
 
@@ -829,34 +829,34 @@ classdef ComputationalGraphInteractiveTool < handle
 
               case {'and', 'or', 'diff'}
 
-                cgti.stack = {selector{2}{:}, stack{:}};
+                cgit.stack = {selector{2}{:}, stack{:}};
 
               case {'parents', 'children'}
 
-                cgti.stack = {selector{3}, stack{:}};
+                cgit.stack = {selector{3}, stack{:}};
 
             end
 
-            cgti.printStack();
+            cgit.printStack();
 
         end
 
-        function dup(cgti)
+        function dup(cgit)
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             assert(numel(stack) > 0, 'stack is empty');
 
-            cgti.stack = {stack{1}, stack{1}, stack{2 : end}};
+            cgit.stack = {stack{1}, stack{1}, stack{2 : end}};
             
-            cgti.printStack();
+            cgit.printStack();
 
         end
         
         
-        function swap(cgti, n)
+        function swap(cgit, n)
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             if nargin < 2
                 n = 2;
@@ -868,28 +868,28 @@ classdef ComputationalGraphInteractiveTool < handle
             inds(n) = [];
             inds = [n, inds];
             
-            cgti.stack = stack(inds);
+            cgit.stack = stack(inds);
 
-            cgti.printStack();
+            cgit.printStack();
             
         end
 
-        function diff(cgti)
+        function diff(cgit)
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
             assert(numel(stack) >= 2, 'There should be at least 2 elements in the stack to take a diff');
 
-            cgti.stack = {{'diff', {stack{1}, stack{2}}}, stack{3 : end}};
+            cgit.stack = {{'diff', {stack{1}, stack{2}}}, stack{3 : end}};
 
-            cgti.printStack();
+            cgit.printStack();
             
         end
         
         
-        function selection = parseSelector(cgti, selector)
+        function selection = parseSelector(cgit, selector)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
             selectiontype = selector{1};
 
@@ -913,10 +913,10 @@ classdef ComputationalGraphInteractiveTool < handle
                 
                 varnamesets = selector{2};
 
-                varnameset = cgti.parseSelector(varnamesets{1});
+                varnameset = cgit.parseSelector(varnamesets{1});
                 varnames = varnameset{2};
                 for iselect = 1 : numel(varnamesets)
-                    varnameset = cgti.parseSelector(varnamesets{iselect});
+                    varnameset = cgit.parseSelector(varnamesets{iselect});
                     switch selectiontype
                       case 'and'
                         varnames = intersect(varnames, varnameset{2});
@@ -939,7 +939,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 end
                 
                 level      = selector{2};
-                varnameset = cgti.parseSelector(selector{3});
+                varnameset = cgit.parseSelector(selector{3});
 
                 varnames   = varnameset{2};
 
@@ -955,12 +955,12 @@ classdef ComputationalGraphInteractiveTool < handle
 
                     varnameinds = varnameinds(levels <= level);
                     
-                    familyvarnames = union(familyvarnames, cg.nodenames(varnameinds));
+                    familyVarnames = union(familyVarnames, cg.nodenames(varnameinds));
 
                     
                 end
 
-                selection = {'set', familyvarnames};
+                selection = {'set', familyVarnames};
                 return
 
               case 'diff'
@@ -970,7 +970,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 assert(numel(args) == 2, 'we expect 2 arguments for a diff');
 
                 for iarg = 1 : numel(args)
-                    varnameset = cgti.parseSelector(args{iarg});
+                    varnameset = cgit.parseSelector(args{iarg});
                     varnames{iarg} = varnameset{2};
                 end
 
@@ -983,7 +983,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function printStack(cgti)
+        function printStack(cgit)
 
             stack = cgti.stack;
 
@@ -1005,7 +1005,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
             cgti.printHeader('Selector stack');
             for iselector = numel(stack) : -1  : 1
-                lines = cgti.setupSelectorPrint(stack{iselector});
+                lines = cgit.setupSelectorPrint(stack{iselector});
                 nlines = numel(lines);
                 for iline = nlines : -1 : 1
                     if iline == 1
@@ -1027,18 +1027,18 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
 
-        function printStackSelection(cgti)
+        function printStackSelection(cgit)
 
-            assert(numel(cgti.stack) > 0, 'stack is empty');
+            assert(numel(cgit.stack) > 0, 'stack is empty');
             
-            cgti.printSelection(cgti.stack{1});
+            cgit.printSelection(cgit.stack{1});
             
         end
         
-        function printSelection(cgti, selection)
+        function printSelection(cgit, selection)
 
             if ~strcmp(selection{1}, 'set')
-                selection = cgti.parseSelector(selection);
+                selection = cgit.parseSelector(selection);
             end
             
             varnames = selection{2};
@@ -1050,7 +1050,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
 
-        function lines = setupSelectorPrint(cgti, selector)
+        function lines = setupSelectorPrint(cgit, selector)
             
             indent0 = '  ';
             
@@ -1090,9 +1090,9 @@ classdef ComputationalGraphInteractiveTool < handle
 
         end
         
-        function printSelector(cgti, selector)
+        function printSelector(cgit, selector)
 
-            lines = cgti.setupSelectorPrint(selector);
+            lines = cgit.setupSelectorPrint(selector);
             
             for iline = numel(lines) : -1 : 1  
                 fprintf('%s\n', lines{iline});
@@ -1100,14 +1100,14 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
         
-        function h = plot(cgti)
+        function h = plot(cgit)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
-            if isempty(cgti.stack)
+            if isempty(cgit.stack)
                 selection = {'set', cg.nodenames};
             else
-                selection = cgti.parseSelector(cgti.stack{1});
+                selection = cgit.parseSelector(cgit.stack{1});
             end
             
             varnames = selection{2};
@@ -1118,7 +1118,7 @@ classdef ComputationalGraphInteractiveTool < handle
             nodenames = cg.nodenames(nodeinds);
             
             g = digraph(A, nodenames);
-            h = plot(g, cgti.plotOptions{:});
+            h = plot(g, cgit.plotOptions{:});
 
             if nargout < 1
                 clear h
@@ -1126,9 +1126,9 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
         
-        function h = plotModelGraph(cgti, modelname)
+        function h = plotModelGraph(cgit, modelname)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             cg = cg.setupModelGraph();
             
             A          = cg.modelAdjencyMatrix;
@@ -1154,9 +1154,9 @@ classdef ComputationalGraphInteractiveTool < handle
         %% Export tools
         %%%%%%%%%%%%%%%
 
-        function exportDOT(cgti, filename)
+        function exportDOT(cgit, filename)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
 
             function str = getnodelabel(nodename)
                 strs = split(nodename, '.');
@@ -1186,9 +1186,9 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
         
-        function exportCytoscape(cgti, filename)
+        function exportCytoscape(cgit, filename)
 
-            cg = cgti.computationalGraph;
+            cg = cgit.computationalGraph;
             
             function str = getnodelabel(nodename)
                 strs = split(nodename, '.');
