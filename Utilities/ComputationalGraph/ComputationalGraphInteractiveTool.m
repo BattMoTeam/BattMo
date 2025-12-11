@@ -47,9 +47,9 @@ classdef ComputationalGraphInteractiveTool < handle
             interactiveOptions = setDefaultJsonStructField(opt.interactiveOptions, {'printStackSelectionAfterUpdate', 'position'}, 'before'); 
             interactiveOptions = setDefaultJsonStructField(interactiveOptions, 'plotAfterUpdate', true);
 
-            cgti.interactiveOptions = interactiveOptions;
+            cgit.interactiveOptions = interactiveOptions;
             
-            cgti.computationalGraph = cg;
+            cgit.computationalGraph = cg;
 
             nodenames = cg.nodenames;
 
@@ -955,12 +955,12 @@ classdef ComputationalGraphInteractiveTool < handle
 
                     varnameinds = varnameinds(levels <= level);
                     
-                    familyVarnames = union(familyVarnames, cg.nodenames(varnameinds));
+                    familyvarnames = union(familyvarnames, cg.nodenames(varnameinds));
 
                     
                 end
 
-                selection = {'set', familyVarnames};
+                selection = {'set', familyvarnames};
                 return
 
               case 'diff'
@@ -985,25 +985,25 @@ classdef ComputationalGraphInteractiveTool < handle
 
         function printStack(cgit)
 
-            stack = cgti.stack;
+            stack = cgit.stack;
 
-            doplot = getJsonStructField(cgti.interactiveOptions, {'plotAfterUpdate'}, false);
+            doplot = getJsonStructField(cgit.interactiveOptions, {'plotAfterUpdate'}, false);
 
             if doplot
-                cgti.plot();
+                cgit.plot();
             end
 
-            position = getJsonStructField(cgti.interactiveOptions, {'printStackSelectionAfterUpdate', 'position'});
+            position = getJsonStructField(cgit.interactiveOptions, {'printStackSelectionAfterUpdate', 'position'});
 
             if isAssigned(position) && strcmp(position, 'before')
 
-                cgti.printHeader('Selection')
-                cgti.printStackSelection();
+                cgit.printHeader('Selection')
+                cgit.printStackSelection();
                 fprintf('\n');
                 
             end
 
-            cgti.printHeader('Selector stack');
+            cgit.printHeader('Selector stack');
             for iselector = numel(stack) : -1  : 1
                 lines = cgit.setupSelectorPrint(stack{iselector});
                 nlines = numel(lines);
@@ -1020,8 +1020,8 @@ classdef ComputationalGraphInteractiveTool < handle
             if isAssigned(position) && strcmp(position, 'after')
 
                 fprintf('\n');
-                cgti.printHeader('Stack selection result after parsing')
-                cgti.printStackSelection();
+                cgit.printHeader('Stack selection result after parsing')
+                cgit.printStackSelection();
                 
             end
             
