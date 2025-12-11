@@ -28,6 +28,22 @@ matlab_src_dir = os.path.abspath('..')
 autoclass_content = 'both'
 autodoc_member_order = 'bysource'
 
+nbsphinx_prolog = r"""
+{% set document_name = env.doc2path(env.docname, base=None)|string %}
+{% set document_name_no_ext = document_name.rsplit('.', 1)[0].rsplit('/')[-1] %}
+
+.. _{{ document_name_no_ext }}:
+
+.. note::
+
+   This notebook is already available in your BattMo installation. In Matlab, run
+
+   .. code-block:: matlab
+
+      open {{ document_name_no_ext }}
+
+"""
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -36,9 +52,12 @@ autodoc_member_order = 'bysource'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinxcontrib.globalsubs',
+extensions = ['nbsphinx',
+              'nbsphinx_link',
+              'sphinxcontrib.globalsubs',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
+              'nbsphinx',
               'sphinx.ext.autosectionlabel',
               'sphinx.ext.mathjax',
               'sphinxcontrib.youtube',
@@ -51,6 +70,13 @@ mathjax3_config = {
   'loader': {'load': ['[tex]/mhchem']},
   'tex': {'packages': {'[+]': ['mhchem']}}
 }
+
+nbsphinx_custom_formats = {
+    '.pct.py': ['jupytext.reads', {'fmt': 'py:percent'}],
+    '.md': ['jupytext.reads', {'fmt': 'Rmd'}],
+}
+
+import matplotlib.pyplot
 
 autosectionlabel_prefix_document = True
 
@@ -119,8 +145,9 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
-#keep_warnings = False
-
+suppress_warnings = [
+    'nbsphinx',
+]
 
 # -- Options for HTML output ----------------------------------------------
 

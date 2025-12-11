@@ -68,7 +68,7 @@ classdef BaseModel < PhysicalModel
 
         function model = setupComputationalGraph(model)
 
-            model.computationalGraph = ComputationalGraphTool(model);
+            model.computationalGraph = ComputationalGraph(model);
             
         end
         
@@ -475,8 +475,10 @@ classdef BaseModel < PhysicalModel
                     if ~isfield(newstate, submodelname)
                         newstate.(submodelname) = [];
                     end
-                    
-                    newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+
+                    if isa(model.(submodelname), 'BaseModel')
+                        newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
+                    end
                     
                 end
 
@@ -544,20 +546,20 @@ classdef BaseModel < PhysicalModel
         end
         
         function state = evalVarName(model, state, varname, extravars)
-        % varname is valid input to method ComputationalGraphTool.getPropFunctionCallList
+        % varname is valid input to method ComputationalGraph.getPropFunctionCallList
 
-            cgt = model.computationalGraph;
+            cg = model.computationalGraph;
 
-            if isempty(cgt)
+            if isempty(cg)
                 fprintf('The computational graph has not been set up in model so that we compute set it up now, but it is a time coslty operation\n')
-                cgt = ComputationalGraphTool(model);
+                cg = ComputationalGraph(model);
             end
 
             if iscell(varname)
                 varname = VarName(varname(1 : end - 1), varname{end});
             end
             
-            funcCallList = cgt.getPropFunctionCallList(varname);
+            funcCallList = cg.getPropFunctionCallList(varname);
 
             if (nargin > 3) && ~isempty(extravars)
                 for ivar = 1 : numel(extravars)
@@ -648,11 +650,11 @@ classdef BaseModel < PhysicalModel
 
             model = model.setupComputationalGraph();
 
-            cgt = model.computationalGraph();
+            cg = model.computationalGraph();
             
-            model.funcCallList     = cgt.getOrderedFunctionCallList();
-            model.primaryVarNames  = cgt.getPrimaryVariableNames();
-            model.equationVarNames = cgt.getEquationVariableNames();
+            model.funcCallList     = cg.getOrderedFunctionCallList();
+            model.primaryVarNames  = cg.getPrimaryVariableNames();
+            model.equationVarNames = cg.getEquationVariableNames();
 
             function str = shortenName(name)
                 [found, ind] = ismember(name, opt.shortNames(:, 1));
@@ -698,21 +700,19 @@ classdef BaseModel < PhysicalModel
                 jsonstruct = [];
             end
         end
-        
-        function cgt = cgt(model)
-        % Shortcut to retrieve the computational graph
+
+        function cgit = getComputationalGrapInteractiveTool(model)
+        % setup and retrieve the computational graph interactive tool
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-            cgt =  model.computationalGraph;
+            cgit = ComputationalGraphInteractiveTool(model.computationalGraph);
+
         end
 
-        function cgp = cgp(model)
-        % Shortcut to setup and retrieve the computational graph plot
-            cgt = model.cgt;
-            cgp = ComputationalGraphPlot(cgt);
+        function cgit = cgit(model)
+            cgit = model.getComputationalGrapInteractiveTool();
         end
-
 
         function G = grid(model)
         % Shorcut to retrieve grid in defaut MRST format, which can be used for plotting

@@ -22,7 +22,7 @@ listed in the directory :battmofile:`ParameterSets<ParameterData/ParameterSets>`
      - :battmofile:`Safari2009<ParameterData/ParameterSets/Safari2009>`
    * - Xu et al
      - 2015
-     - :cite:`LIN2015633`
+     - :cite:`XU2015303`
      - :battmofile:`Xu2015<ParameterData/ParameterSets/Xu2015>`
 
 

@@ -2,107 +2,156 @@
 Computation Graph Model Design ang Assembly
 ===========================================
 
-We essentially define a model as a computational graph. We have identified variables. Variables are dependent one from
-the other. The dependence can be explicit or implicit. In the explicit case, a variable can be directly computed from
-the other using a function evaluation. In the implicit case, such function does not exist in a simple form. The
-relationship between the variables is given through equations. The purpose of our simulations is to solve these
-equations. The equations are added to the system of non-linear equation we solve, at each time step in the case of an
-evolution problem.
+Introduction
+============
 
-In the computational graph, the nodes are given by the variables in the model. The directed edges represent the
-functional dependency between the variables.
+We consider a generic physical system for which a mathematical model has been proposed. The mathematical model
+introduces **variables** and **equations**. Some of the variables are *state* variables in the sense that they directly
+fully describe the state of system. We call those variables **primary variables**. Other variables are defined through
+**explicit** dependencies from the primary variables. We call those variables **secondary variables**. The equations are
+then formulated as functions of the primary and/or secondary variables whose values should be equal to zero. As such, an
+equation, or more precisely the left-hand side of it, is a secondary variable, the right-hand side of the equatio being
+zero. We call the left-hand side of an equation, its **residuals**.
 
-The :battmo:`ComputationalGraphTool` class has two functions
+In the setting we are interested in, that is numerical simulation, the primary variables are the unknown which we want
+to compute by solving the equations. For many system, some of the state variables are functions of time and/or
+space. The corresponding equations take then the form of ordinary and/or partial differential equations. A first task of
+the solver is then to discretize the variables and setup a system of equations in finite dimension. We assume here that
+this step is done and we will look at the variables as vector variables.
 
-1. Serve as an **interactive** tool to design, manipulate and explore the computational graph of a model. The interactive functions can be discovered by running the method :code:`help` (see below).
-2. From the computational graph, **automatically** identify
-   
-   1. The unknown of the problems, also called *primary variables*. They corresponds to the root in the graph (see below)
-   2. The *equations*, which are the variables located at the tail of the graph. The equations are solved when the value of the equation variables are equal to zero
-   3. The function calls and the order they should be called to update all the intermediate variables that directly or indirectly enter in the definition of the equation.
-      
-   
++---------------------+-------------------------------------------------+---------------------------------+
+| primary variables   | unknown                                         | :math:`x_1,...,x_n`             |
++---------------------+-------------------------------------------------+---------------------------------+
+| secondary variables | explicit expressions :math:`y_i(x_1, ..., x_n)` | :math:`y_1,...,y_p`             |
++---------------------+-------------------------------------------------+---------------------------------+
+| equations           | :math:`f_i(x_1, ..., x_n, y_1, ..., y_p)= 0`    | residuals :math:`f_1, ..., f_q` |
++---------------------+-------------------------------------------------+---------------------------------+
 
-A simple introduction example
-=============================
+A mathematical model introduces a set of variables and of **functional relationships** between the variables. Typically,
+the variables introduced in the model have a specific name which reflects their physical significance. We want to
+preserve the terminology introduced by the model as it is essential for its understanding. We recognize then the
+structure of a directed graph, where the nodes corresponds the variable names and the edges connect the variable through
+the functional dependencies introduced by the model.
 
-Let us consider the example of a reaction model. The reaction rate :math:`R` is given
-by
+In the example below, we have 3 primary variables, 2 secondary and 3 equations. A model gives us definitions of the
+secondary variables and the equations, for example,
 
 .. math::
-   :nowrap:
 
-   \begin{align*}
-   R &= j\left(e^{-\alpha\frac{\eta}{RT}} + e^{(1-\alpha)\frac{\eta}{RT}}\right)\\
-   j&= k c_s(1 - c_e)^{\frac12}c_e^\frac12\\
-   \eta &= \phi_s - \phi_e - \text{OCP}\\
-   \text{OCP} &= \hat{\text{OCP}}(c_s)
-   \end{align*}
+   y_1 &= y_1(x_1, x_2, y_2) \\
+   y_2 &= y_1(x_1, x_2, x_3)\\ 
 
-We have seven variables :math:`R,\ j, \eta, \text{OCP}, \phi_s, \phi_e, c_s, c_e`. The dependency graph we
-obtain from the equations above is
+with the equations
 
-.. figure:: img/reacmodelgraph.png
-   :target: _images/reacmodelgraph.png
-   :name: reacmodelgraph
+.. math::
+
+   f_1(y_1, y_2)      &= 0\\
+   f_2(y_1, y_2, x_2) &= 0\\
+   f_3(x_1, x_3)      &= 0
+
+This information is completly contained in the following graph
+   
+.. figure:: img/genericexample.png
+   :target: _images/genericexample.png
+   :name: genericexample
    :width: 100%
    :align: center
 
-   Reaction model graph
+Given a mathematical model, we can therefore create a **computational graph** by collecting the variable names and
+encoding the variable dependencies in edges, as the one presented above.
 
-This graph has been obtained in BattMo after we implemented the model. We will explain later how this can be
-done (for the impatient, see here)
+We observe that a computational graph offers a very usefull synthetic overview of a model. This observation will be
+hopefully confirmed by the example below.
 
-The graph is a `directed acyclic graph <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_, meaning that
-it has no loop. We can thus identify *root* and *tail* variables. In the case above, the root variables are
-:math:`\phi_s, \phi_e, c_s, c_e` and there only one tail variable, :math:`R`. Given values for the root
-variables, we can traverse the graph and evaluate all the intermediate variables to compute the tail
-variables. To evaluate variables, the functions we will implement will always need parameters (the opposite
-case where a function can be defined without any external parameters is expected to be rare in a physical
-context). Then, we can describe our model with
+Model assembly
+==============
 
-* A set of parameters (scalar variables, but maybe also functions)
-* A computational graph
-* A set of functions associated to each node (i.e. variable) which as an incoming edge in the computational
-  graph
+When solving a system of equation, an important task for the solver is the **assembly** of the equations: Given the
+values of the primary variables, :math:`x_i`, we want to compute the values of the **residuals**, :math:`f_i`.
 
-For each of the function in the set above, we know the input and output arguments. They are given by the nodes
-connected by the edge.
+To do so we have to evaluate the intermediate secondary variables. The evaluation of the secondary variables up to the
+residuals can only be done in an order that is compatible with the functional dependencies.
 
-The motivation for introducing suuch graph representation is **expressivity**. It provides a synthetic overview
-of the model. Of course, the precise expression of the functions, which is not visible in the graph, is an
-essential part. All the physics is encoded there. But, the graph gives us access to the dependency between the
-variables and the variables have been chosen by the user in the model because of their specific physical
-meaning. The user has chosen them from a physical insight, that we want to preserve. Especially when we expand
-the models. In our previous examples, the variables we have introduced have all a name meaningfull for the
-expert in the domains.
+A compatible order can be obtained from the computational graph by using a `topological sorting <https://en.wikipedia.org/wiki/Topological_sorting>`__.
 
- +--------------+--------------------------------------+
- | R            | Reaction Rate                        |
- +--------------+--------------------------------------+
- | j            | Exchange Current Density             |
- +--------------+--------------------------------------+
- | eta          | Over-potential                       |
- +--------------+--------------------------------------+
- | OCP          | Open Circuit Potential               |
- +--------------+--------------------------------------+
- | phi_s, phi_e | Solid and Electrolyte potentials     |
- +--------------+--------------------------------------+
- | c_s, c_e     | Solid and Electrolyte concentrations |
- +--------------+--------------------------------------+
+The order of the update sequence is not unique. For the example above, a possible sequence is to update
 
-A user can inspect a given model first by looking at the graph, recognized the variables that are named
-here. They should be meaningfull to him, as they should have been chosen to correspond to a given domain
-expertise terminology (here electrochemistry).
+.. math:: 
 
-Let us now see how we can compose computational graph
+   y_2, f_3, y_1, f_2 \text{, and finally } f_1
 
-Graph composition
-=================
+It is usefull to have a solver where the decleration of the computational graph can be done before implementing the
+update functions. In this way, we **break the complexity** in the implementation of a model. The first step is the
+design of the graphs, which can be done using interactive tools (see below), where we also declare all the update
+functions. Those are however implemented in a second step. Then, we can focus on them at the apriopriate scope level
+(see model hierarchy) not distracted by the overall architecture. The solver can then automatically generate from the
+sequence of function calls that will be used to update all the residuals.
+   
+By using computational graph we aim at improving:
 
-This model representation as a graph brings also **flexibility** in model building and in particular **code
-reusability**. A user who wants to modify an existing model will typically be interested in keeping most of the
-existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
+   1. model **explorability**
+   2. model **reusability** using model hierarchy and composition
+   
+Model explorability
+===================
+
+We consider a user that is given a simulation code which corresponds to a given physical system. The user may want to
+understand the mathematical model which is implemented in this simulator. All the variable definitions are of course
+implemented in the code but they are not easily accessible. We can use a computational graph interactively to get an
+overview of all the variables that are computed and, given a variable, be sent to the place in the code where the
+variable is computed. There, the user finds the precise definition.
+
+As we will see, models are implemented in a hierarchy. This structure contributes also to an easier model
+exploration. The variable dependency is declared at the lowest level in the model hierarchy so that, isolated from the
+rest, it is easier to understand.
+
+
+Model hierarchy and composition
+===============================
+
+As model developper, we want to reuse as much as possible existing models.
+
+Model explorability is important to inspect the already available models, understand their structure and figure out how
+they can be modified to our need.
+
+The computational graph provides a very synthetic representation on the model an in a first step, the model developper
+should only focus on getting the computational graph that corresponds to his/her model.
+
+In the code of a given, there is a method where the computational graph is defined, see the example below. The
+developper gets there the possibility to edit the computational graph. The actions available are
+
+  1. Add new variables to the model (meaning adding nodes to the computational graph).
+  2. Add functional dependencies (meaning adding directed edges from the *function input variables* nodes to the *function output variable* node).
+  3. Change the declared functional dependencies.
+  4. Change the status of the variables (see static variables below)
+
+A simple and concrete way to create a new model from a given one is to setup a derived model using class
+inheritance. The new model will inherit the computational graph, which is a property of the model. We will see an
+example below.
+
+Models are often obtained by coupling physical sub-systems. Each of the sub-systems are models in themselves. For us, it
+means that they have a computational graph. Coupling models will then consist of
+
+  1. Importing the graphs of the subsystems
+  2. Adding functional dependencies across the sub-models (adding edges that connect the nodes of the graphs)
+
+We can see this operation as *sewing* graphs. Concretely, we proceed by creating a new model and register the models we
+want to couple as sub-models. Each sub-model should be given a name. The graphs of all sub-models are imported and the
+names of the variables (the nodes) are extended with a kind of prefix which corresponds to the sub-model it originates
+from. This action is necessary to avoid name conflicts. Indeed, the sub-models have been developed independently and
+nothing guarantees that they do not share some of the same variable names.
+
+By repeatedly coupling models, we obtain a *hierarchy* of models. A model can get very complex but having a hierarchy
+significantly simplifies the navigation between the sub-models and the understanding of how they depend on each other.
+
+When a computational graph is setup or modified, we do not say anything about the function that will in practice update
+the variables - besides their name. We do not need a computational graph framework to develop models but we need precise
+definitions of the functions the defines the variables.
+
+Basic Example
+=============
+
+by existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
 can understand the dependency easily and identify the part that should be changed in the model. In some cases,
 the dependency graph may not changed, only a different function should be called to update a variable. For
 example, the exchange current density function :math:`j` rarely obeys the ideal case presented above but is a
@@ -412,30 +461,30 @@ the method :code:`registerVarNames` to add a list of nodes in our graph given by
    To lighten the graph setup, we have introduced at several places syntaxic sugar.
 
 We can now instantiate the model, setup the computational graph. The graph is given as a
-:battmo:`ComputationalGraphTool` class instance. This class provides some computational and inspection methods
+:battmo:`ComputationalGraphInteractiveTool` class instance. This class provides some computational and inspection methods
 that acts on the graph.
 
 .. code:: matlab
 
    model = ThermalModel();
    model = model.setupComputationalGraph();
-   cgt   = model.computationalGraph;
+   cgit  = model.computationalGraph;
 
 We have written a shortcut for the two last lines
 
 .. code:: matlab
 
-   cgt =  model.cgt;
+   cgit =  model.cgit;
 
 
 When the computational graph is setup, the property :code:`varNameList` of :battmo:`BaseModel` is populated
 with :battmo:`VarName` variables. We will rarely look at this list directly. Instead, we use the method
-:code:`printVarNames` in :battmo:`ComputationalGraphTool` which, as its name indicates, print the variables
+:code:`printVarNames` in :battmo:`ComputationalGraphInteractiveTool` which, as its name indicates, print the variables
 that have been registered.
 
 .. code:: 
 
-   >> cgt.printVarNames()
+   >> cgit.printVarNames()
    
    T
    source
@@ -466,7 +515,7 @@ Similary, we setup a :ref:`reaction model<reacmodelgraph>` as follows
                varnames{end + 1} = 'c_e';
                % Electrode over potential
                varnames{end + 1} = 'eta';
-               % Reaction rate [mol s^-1 m^-2]
+               % Intercalation flux [mol s^-1 m^-2]
                varnames{end + 1} = 'R';
                % OCP [V]
                varnames{end + 1} = 'OCP';
@@ -485,8 +534,8 @@ Similary, we setup a :ref:`reaction model<reacmodelgraph>` as follows
 .. code::
 
    >> model = ReactionModel();
-   >> cgt = model.cgt;
-   >> cgt.printVarNames
+   >> cgit = model.cgit;
+   >> cgit.printVarNames
    
    phi_s
    c_s
@@ -530,8 +579,8 @@ We can already instantiate this model (for the impatient, the full model setup i
 .. code:: 
 
    >> model = ReactionThermalModel();
-   >> cgt = model.cgt;
-   >> cgt.printVarNames();
+   >> cgit = model.cgit;
+   >> cgit.printVarNames();
 
    Reaction.phi_s
    Reaction.c_s
@@ -625,15 +674,15 @@ We obtain the plot we already presented :ref:`above<tempgraph>`
 
    Temperature model graph
 
-We can use the :code:`printOrderedFunctionCallList` method of the :battmo:`ComputationalGraphTool` class to
+We can use the :code:`printOrderedFunctionCallList` method of the :battmo:`ComputationalGraphInteractiveTool` class to
 print the sequence of function calls that is used to update all the variables in the model
 :battmo:`ThermalModel`, which examplify how we can automatize the assembly. The order of the function
 evaluation is computed from the graph structure.
 
 .. code::
 
-   >> cgt = model.cgt
-   >> cgt.printOrderedFunctionCallList
+   >> cgit = model.cgit
+   >> cgit.printOrderedFunctionCallList
 
    Function call list
    state = model.updateAccumTerm(state);
@@ -681,8 +730,8 @@ In this case, we obtain the following list of function calls
 .. code:: 
 
    >> model = ReactionThermalModel();
-   >> cgt = model.cgt;
-   >> cgt.printOrderedFunctionCallList;
+   >> cgit = model.cgit;
+   >> cgit.printOrderedFunctionCallList;
    
    Function call list
    state = model.updateOCP(state);

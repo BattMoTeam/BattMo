@@ -90,7 +90,7 @@ classdef ThermalComponent < BaseModel
                 fn = @ThermalComponent.updateSourceTerm;
                 fn = {fn, @(propfunc) PropFunction.drivingForceFuncCallSetupFn(propfunc)};
                 model = model.registerPropFunction({'jHeatSource', fn, {}});
-                
+
             end
 
 
@@ -130,9 +130,9 @@ classdef ThermalComponent < BaseModel
         % tPFVgeometry should be instance of TwoPointFiniteVolumeGeometry or MutableTwoPointFiniteVolumeGeometry
 
             model.G.parentGrid.tPFVgeometry = tPFVgeometry;
-            
+
         end
-        
+
         function state = updateAccumTerm(model, state, state0, dt)
         % Assemble the accumulation term for the energy equation
 
@@ -190,7 +190,7 @@ classdef ThermalComponent < BaseModel
             time = state.time;
 
             state.jHeatSource = drivingForces.src(time);
-            
+
         end
 
         function forces = getValidDrivingForces(model)
@@ -198,10 +198,10 @@ classdef ThermalComponent < BaseModel
             forces = getValidDrivingForces@PhysicalModel(model);
 
             forces.src = [];
-            
-        end            
-            
-        
+
+        end
+
+
         function state = updateThermalBoundarySourceTerms(model, state)
 
             G          = model.G;
@@ -221,7 +221,7 @@ classdef ThermalComponent < BaseModel
                 % 1D case (External faces are not available, we consider a volumetric cooling instead)
                 vols = G.getVolumes();
                 A = vols(coupcells);
-                t_eff = lambda_ext*A;
+                t_eff = lambda_ext.*A;
             else
                 % Face couling (multidimensional case)
                 areas = G.getFaceAreas();
@@ -258,7 +258,7 @@ classdef ThermalComponent < BaseModel
                 for i = 1 : ns
 
                     T    = states{i}.T;
-                    
+
                     Tmax = max(T);
                     Tmin = min(T);
 
@@ -268,7 +268,7 @@ classdef ThermalComponent < BaseModel
                 end
             end
         end
-        
+
 
     end
 

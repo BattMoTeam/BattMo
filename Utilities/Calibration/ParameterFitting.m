@@ -320,10 +320,10 @@ classdef ParameterFitting
                 s = smax.*linspace(0, 1, N + 1)';
 
                 c = (1 - s).*c0s{ielde} + s.*cTs{ielde};
-                f = model.(elde).(co).(am).(itf).computeOCPFunc(c(1 : end - 1), 298, icmaxs{ielde});
+                f = model.(elde).(co).(am).(itf).computeOCP(c(1 : end - 1)/icmaxs{ielde});
                 
                 % function handler
-                fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCPFunc((1 - s).*c0s{ielde} + s.*cTs{ielde}, 298, icmaxs{ielde});
+                fs{ielde} = @(s) model.(elde).(co).(am).(itf).computeOCP(((1 - s).*c0s{ielde} + s.*cTs{ielde})/icmaxs{ielde});
                 
                 energies{ielde} = caps{ielde}*smax/N*sum(f);
                 
@@ -343,7 +343,7 @@ classdef ParameterFitting
 
             NPratio = cap_neg./cap_pos;
 
-            U = model.(pe).(co).(am).(itf).computeOCPFunc(cs.p0, 298, cmaxs.p) - model.(ne).(co).(am).(itf).computeOCPFunc(cs.n0, 298, cmaxs.n);
+            U = model.(pe).(co).(am).(itf).computeOCP(cs.p0, 298, cmaxs.p) - model.(ne).(co).(am).(itf).computeOCP(cs.n0/cmaxs.n);
             
             output = struct('nLi'          , nLi          , ...
                             'resLi'        , resLi        , ...

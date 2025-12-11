@@ -18,7 +18,7 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %
 %   objFunc      - Objective function. The signature of the objective function is
 %
-%                  objval = objFunc(model, states, schedule, varargin)
+%                  objval = objFunc(simsetup, states, varargin)
 %
 %                  where optional keyword arguments are
 %
@@ -73,7 +73,6 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
     opt = struct('Verbose'            , mrstVerbose(), ...
                  'gradientMethod'     , 'AdjointAD'  , ...
-                 'NonLinearSolver'    , []           , ...
                  'AdjointLinearSolver', []           , ...
                  'PerturbationSize'   , []           , ...
                  'objScaling'         , 1            , ...
@@ -96,32 +95,16 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
 
-    if isempty(opt.NonLinearSolver)
-        nls = NonLinearSolver;
-        nls.errorOnFailure    = false;
-        nls.continueOnFailure = false;
-    else
-        nls = opt.NonLinearSolver;
-    end
-
-    [globVars, states] = simulateScheduleAD(setupNew.state0               , ...
-                                            setupNew.model                , ...
-                                            setupNew.schedule             , ...
-                                            'NonLinearSolver', nls        , ...
-                                            'OutputMinisteps', false      , ...
-                                            'Verbose'        , opt.Verbose, ...
-                                            extra{:});
-
+    states = setupNew.run();
+    
     failure = false;
     try
-        objValues = objFunc(setupNew.model, states, setupNew.schedule);
+        objValues = objFunc(setupNew, states);
         objValue  = sum(vertcat(objValues{:}))/opt.objScaling ;
     catch
         objValue = NaN;
         failure = true;
     end
-
-
 
     if nargout > 1
 
@@ -137,19 +120,20 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
               case 'None'
 
                 if nargout > 2
-                    [varargout{2:3}] = deal(globVars, states);
+                    varargout{3} = states;
                 end
+                
                 return
 
               case 'AdjointAD'
 
-                objh = @(tstep, model, state, computeStatePartial) objFunc(model, states, setupNew.schedule, ...
-                                                                           'ComputePartials', computeStatePartial , ...
-                                                                           'tStep'          , tstep, ...
-                                                                           'state'          , state);
                 nms = applyFunction(@(x) x.name, parameters);
 
-                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
+                % prepare objective function fo
+                getObj = @(tstep, model, state, computeStatePartial) getObjective(objFunc, setupNew, states, ...
+                                                                                  tstep, model, state, computeStatePartial);
+                
+                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, getObj, ...
                                                            'LinearSolver', opt.AdjointLinearSolver);
 
                 gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
@@ -185,7 +169,6 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 
                         val(i) = evalObjectiveBattmo(pert_pvec, objFunc, setupNew, parameters, ...
                                                      'gradientMethod' , 'None'             , ...
-                                                     'NonLinearSolver', opt.NonLinearSolver, ...
                                                      'objScaling'     , opt.objScaling     , ...
                                                      'enforceBounds'  , false);
                     end
@@ -227,6 +210,16 @@ function pert_pvec = perturb(pvec, iparam, i, eps_pert)
 
 end
 
+
+function obj = getObjective(objFunc, simsetup, states, tstep, model, state, computeStatePartial)
+
+    newsimsetup = simsetup;
+    newsimsetup.model = model;
+
+    obj = objFunc(newsimsetup, states, ...
+                  'ComputePartials', computeStatePartial , ...
+                  'tStep'          , tstep);
+end
 
 
 

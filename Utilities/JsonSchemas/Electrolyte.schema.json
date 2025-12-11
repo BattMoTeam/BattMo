@@ -8,7 +8,7 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentlist": {"type" : "array",
+          "argumentList": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},
                                            {"const": "temperature"}]
                           },
@@ -20,7 +20,7 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentlist": {"type" : "array",
+          "argumentList": {"type" : "array",
                            "prefixItems": [{"const": "concentration"},
                                            {"const": "temperature"}]
                           },
@@ -34,7 +34,7 @@
       "properties": {
         "chargeNumber": {
           "type": "number",
-          "description": "charge number"
+          "description": "charge number, default is 1"
         },
         "transferenceNumber": {
           "type": "number",

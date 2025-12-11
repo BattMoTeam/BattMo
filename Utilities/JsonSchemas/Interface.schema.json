@@ -32,7 +32,7 @@
       "allOf": [
         {"$ref": "Function.schema.json"},
         { "properties" : {
-          "argumentlist": {"type" : "array",
+          "argumentList": {"type" : "array",
                            "prefixItems": [{"const": "soc"}]
                           },
           "symbol": {"const" : "j0"}}}
@@ -57,15 +57,39 @@
     "openCircuitPotential": {
       "allOf": [
         {"$ref": "Function.schema.json"},
+        {"properties" : {
+          "symbol": {"const" : "OCP"}}},
+        {"oneOf" : [
+          {"properties" : {
+            "argumentList": {
+              "type" : "array",
+              "prefixItems": [{"const": "concentration"},
+                              {"const": "cmax"}]}}},
+          { "properties" : {
+            "argumentList": {
+              "type" : "array",
+              "prefixItems": [{"const": "stoichometry"}]}}}]}],
+      "description": "open-circuit potential function of the electrode under a reference temperature. Temperature dependence is added via the entropy change."},
+    "referenceTemperature" : {"type" : "number",
+                              "description" : "Reference temperature used to compute the OCP from the entropy change, OCP = OCP_ref + dUdT*(T - T_ref)"},
+    "includeEntropyChange" : {"type" : "boolean",
+                              "description" : "set to true if we include entropy change. The default is true if the entropyChange function is given, false otherwise."},
+    "entropyChange" : {
+      "allOf": [
+      { "$ref": "Function.schema.json"},
+      { "properties" : {
+        "symbol": {"const" : "dUdT"}}},
+      { "oneOf" : [
         { "properties" : {
-          "argumentlist": {"type" : "array",
-                           "prefixItems": [{"const": "concentration"},
-                                           {"const": "temperature"},
-                                           {"const": "cmax"}]
-                          },
-          "symbol": {"const" : "OCP"}}}
-        ],
-      "description": "a function to determine the open-circuit potential of the electrode under given conditions"
+          "argumentList": {
+            "type" : "array",
+            "prefixItems": [{"const": "concentration"},
+                            {"const": "cmax"}]}}},
+        { "properties" : {
+          "argumentList": {
+            "type" : "array",
+            "prefixItems": [{"const": "stoichiometry"}]}}}]}],
+      "description": "Entropy change function. If not set, it will be evaluated to zero."
     },
     "chargeTransferCoefficient": {
       "$ref": "PhysicalQuantity.schema.json",

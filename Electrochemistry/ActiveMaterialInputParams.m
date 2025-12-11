@@ -12,6 +12,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         % Input parameter for the solid diffusion model  :class:`SolidDiffusionModelInputParams <Electrochemistry.SolidDiffusionModelInputParams>`
         %
         SolidDiffusion
+
+        LithiumPlating
         
         %% Standard parameters
 
@@ -38,6 +40,8 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         
         externalCouplingTerm % structure to describe external coupling (used in absence of current collector)
 
+        useLithiumPlating
+        
     end
 
     methods
@@ -46,8 +50,11 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             sd  = 'SolidDiffusion';
             itf = 'Interface';
+            lp  = 'LithiumPlating';
             
             jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
+
+            jsonstruct = setDefaultJsonStructField(jsonstruct,  'useLithiumPlating', false);
 
             jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
             diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
@@ -95,9 +102,19 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
 
+            if jsonstruct.useLithiumPlating
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumeFraction'}, {sd, 'volumeFraction'});
+                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
+            end
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             inputparams = inputparams.setupInterface(jsonstruct);
             inputparams = inputparams.setupSolidDiffusion(jsonstruct);
+
+            if jsonstruct.useLithiumPlating
+                inputparams.LithiumPlating = LithiumPlatingLatzInputParams(pickField(jsonstruct, lp));
+            end
 
         end
 

@@ -56,6 +56,23 @@
 
   https://battmoteam.github.io/BattMo/
 
+* Workflow for notebooks written in mlx format
+  
+** Compilation
+   We use the ~export~ function from matlab to export the notebook to ~ipynb~ format. An help exporter class is provided
+   [[https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/MLXnotebookExporter.m][here]]. The following [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/utils/exportMLXnotebooks.m][script]] gives example on how it can be used. I have noticed problems with older Matlab
+   version. Please update to R24b.
+** Output
+*** direct
+    Write the output in the ~Documentation~ directory. At the moment, the notebooks are located in the directory
+    [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/pynbnotebooks/][pynbnotebooks]]
+*** link using nbsphinx-link
+    - We use [[https://github.com/vidartf/nbsphinx-link][nbsphinx-link]]
+    - Create a link file with extension ~nblink~, see example [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/runThermalExample.nblink][here]]
+    - insert link in index, see example ~runThermalExample.nblink~ in [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/intermediate.rst?plain=1#16][here]] (line 16)
+** Include in the index or in pages
+   See example to the tutorial pages [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/tutorials.rst][here]]
+   
 * Special workflow for example scripts
 ** Compilation
    - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
@@ -69,6 +86,7 @@
      comment in the matlab code formatting), start a cell with eventually no title. Include only *one* white-space
      betwen ~%~ sign and text (otherwise ~publish~ routine exports differently).
    - The directive ~.. automodule::~ makes sure a directory is parsed. 
+
 * Interesting Manuals
 ** sphinx manual
    https://www.sphinx-doc.org/en/master/contents.html

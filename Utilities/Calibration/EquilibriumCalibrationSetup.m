@@ -33,7 +33,9 @@ classdef EquilibriumCalibrationSetup
         exptime   % Time [s]
         expU      % Voltage [V]
         expI      % Current [A]
-        totalTime % total time (set as exptime(end))
+        totalTime % total time (set as exptime(end)). Note that this value is also used to determine when the cell is
+                  % fully discharged in the computation of the positive electrode guestStoichiometry0 (for
+                  % calibrationCase = 1, see below)
 
         packingMass % mass of packing
 
@@ -41,11 +43,11 @@ classdef EquilibriumCalibrationSetup
         % different calibration case depending on the parameters that are chosen. See method printVariableChoice below
         % At the moment, the following is implemented
         % case 1 (default) : The calibration parameters are guestStoichiometry100 and total amount Lithium for both electrodes
-        %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve
+        %                    guestStoichiometry0 for the positive electrode is computed from the end point of the discharge curve, which is assumed to be the fully discharge state.
         %                    guestStoichiometry0 for the negative electrode is computed to match a given NP ration (default value 1.1)
         %                    When using ipopt, we add a constraint that enforces that the theta value at the end (t = totalTime) is between 0 and 1.
-        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the total amount Lithium for both electrodes
-        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and total amount Lithium for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver)
+        % case 2           : The calibration parameters are guestStoichiometry100 for the negative electrode, the total amount Lithium for both electrodes (not much tested)
+        % case 3           : The calibration parameters are guestStoichiometry100, guestStoichiometry0 and total amount Lithium for both electrodes and we add a constraint on the np-ratio (thus we use IpOpt solver), (not much tested)
 
         lowerCutoffVoltage % value of the lower cutoff voltage that is used to compute guestStoichiometry0. if not given the value is
                            % computed from expdata
@@ -489,15 +491,13 @@ classdef EquilibriumCalibrationSetup
             totalAmount           = vals.(pe).totalAmount;
 
             theta = ecs.computeTheta(t, pe, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals0.(pe).saturationConcentration;
-            fpe = ecs.model.(pe).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fpe = ecs.model.(pe).(co).(am).(itf).computeOCP(theta);
 
             guestStoichiometry100 = vals.(ne).guestStoichiometry100;
             totalAmount           = vals.(ne).totalAmount;
 
             theta = ecs.computeTheta(t, ne, 0, guestStoichiometry100, totalAmount);
-            cmax  = vals0.(ne).saturationConcentration;
-            fne = ecs.model.(ne).(co).(am).(itf).computeOCPFunc(theta*cmax, T, cmax);
+            fne = ecs.model.(ne).(co).(am).(itf).computeOCP(theta);
 
             f = fpe - fne;
 
@@ -819,11 +819,11 @@ classdef EquilibriumCalibrationSetup
                 s = smax.*linspace(0, 1, N + 1)';
                 c = (1 - s).*c0 + s.*cT;
 
-                props.(elde).dischargeFunc = @(s) ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c, T, cmax);
+                props.(elde).dischargeFunc = @(s) ecs.model.(elde).(co).(am).(itf).computeOCP(c/cmax);
 
                 energies.(elde) = cap*smax/N*sum(props.(elde).dischargeFunc(s));
 
-                props.(elde).U = ecs.model.(elde).(co).(am).(itf).computeOCPFunc(c0, T, cmax);
+                props.(elde).U = ecs.model.(elde).(co).(am).(itf).computeOCP(c0/cmax);
 
             end
 
@@ -856,27 +856,56 @@ classdef EquilibriumCalibrationSetup
             opt = struct('X0', ecs.X0);
             [opt, extra] = merge_options(opt, varargin{:});
 
-            f = @(X) ecs.objective(X);
+            X0 = opt.X0;
 
-            n = size(ecs.bounds.lower, 1);
-            linIneq.A = [-eye(n); eye(n)];
-            linIneq.b = [-ecs.bounds.lower; ecs.bounds.upper];
+            scaledX0 = ecs.scaleVector(X0);
+            f = @(scaledX) ecs.scaledObjective(scaledX);
 
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
                       'maxit'           , 1000 , ...
                       'maxInitialUpdate', 1e-6 , ...
                       'enforceFeasible' , true , ...
-                      'lineSearchMaxIt' , 10   , ...
-                      'wolfe2'          , 0.99 , ...
-                      'linIneq'         , linIneq};
+                      'lineSearchMaxIt' , 10};
 
             % NB: will prefer options in extra over params
-            [~, Xopt, hist] = unitBoxBFGS(opt.X0, f, params{:}, extra{:});
+            [~, scaledXopt, hist] = unitBoxBFGS(scaledX0, f, params{:}, extra{:});
+
+            Xopt = ecs.unscaleVector(scaledXopt);
 
         end
 
+        function [z, scaleddz] = scaledObjective(ecs, scaledX)
 
+            X = ecs.unscaleVector(scaledX);
+            
+            [z, dz] = ecs.objective(X);
+            
+            scaleddz = ecs.scaleGradient(dz);
+           
+        end
+        
+        function scaledX = scaleVector(ecs, X)
+        %% scaling function used for unitBoxBFGS
+            scaledX = (X - ecs.bounds.lower)./(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        function X = unscaleVector(ecs, scaledX)
+        %% scaling function used for unitBoxBFGS
+            X = scaledX.*(ecs.bounds.upper - ecs.bounds.lower) + ecs.bounds.lower;
+        end
+
+        function scaledgrad = scaleGradient(ecs, grad)
+        %% scaling function used for unitBoxBFGS
+            scaledgrad = grad./(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        function grad = unscaleGradient(ecs, scaledgrad)
+        %% scaling function used for unitBoxBFGS
+            grad = scalegrad.*(ecs.bounds.upper - ecs.bounds.lower);
+        end
+        
+        
         function [Xopt, info] = runIpOpt(ecs, ipopt_options)
 
             X0 = ecs.X0;

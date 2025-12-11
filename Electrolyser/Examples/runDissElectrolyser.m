@@ -30,15 +30,14 @@ model = Electrolyser(inputparams);
 
 doplotgraph = false;
 if doplotgraph
-    cgt = ComputationalGraphTool(model);
-    g = cgt.getComputationalGraph();
+    cg = ComputationalGraph(model);
+    g = cg.getComputationalGraph();
     close all
     plot(g);
     return
 end
 
 model = model.validateModel();
-cgt = model.computationalGraph;
 
 [model, initstate] = model.setupBcAndInitialState();
 

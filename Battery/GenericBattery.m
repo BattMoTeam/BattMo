@@ -281,16 +281,18 @@ classdef GenericBattery < BaseModel
                 inputnames = {{thermal, 'T'}           , ...
                               {ne, co, am, sd, 'Rvol'} , ...
                               {ne, co, am, itf, 'eta'} , ...
-                              {ne, co, am, itf, 'dUdT'}, ...
                               {pe, co, am, sd, 'Rvol'} , ...
-                              {pe, co, am, itf, 'eta'} , ...
-                              {pe, co, am, itf, 'dUdT'}};
+                              {pe, co, am, itf, 'eta'}};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).(co).(am).(itf).includeEntropyChange
+                        inputnames{end + 1} = {elde, co, am, itf, 'dUdT'};
+                    end
+                end
                 model = model.registerPropFunction({{thermal, 'jHeatReactionSource'}, fn, inputnames});
 
             else
                 model = model.removeVarName({elyte, 'diffFlux'});
-                model = model.removeVarName({ne, co, am, itf, 'dUdT'});
-                model = model.removeVarName({pe, co, am, itf, 'dUdT'});
             end
 
             %% Functions that setup external  coupling for negative electrode
@@ -820,11 +822,11 @@ classdef GenericBattery < BaseModel
 
                         cExternal = jsonstruct.Electrolyte.initialEthyleneCarbonateConcentration;
 
-                        initstate.(elde).(co).(amc).(sei).cExternal  = cExternal;
-                        initstate.(elde).(co).(amc).(sei).c          = cExternal*ones(N*np, 1);
-                        initstate.(elde).(co).(amc).(sei).cInterface = cExternal*ones(np, 1);
-                        initstate.(elde).(co).(amc).(sei).delta      = 5*nano*meter*ones(np, 1);
-                        initstate.(elde).(co).(amc).R                = zeros(np, 1);
+                        initstate.(elde).(co).(amc).(sei).cExternal   = cExternal;
+                        initstate.(elde).(co).(amc).(sei).c           = cExternal*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sei).cInterface  = cExternal*ones(np, 1);
+                        initstate.(elde).(co).(amc).(sei).delta       = 5*nano*meter*ones(np, 1);
+                        initstate.(elde).(co).(amc).totalReactionRate = zeros(np, 1);
 
                       case 'Bolay'
 
@@ -1591,11 +1593,14 @@ classdef GenericBattery < BaseModel
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
                 eta  = state.(elde).(co).(am).(itf).eta;
 
-                itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
-                % itf_src = n*F*vols.*Rvol.*eta;
+                if model.(elde).(co).(am).(itf).includeEntropyChange
+                    dUdT = state.(elde).(co).(am).(itf).dUdT;
+                    itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
+                else
+                    itf_src = n*F*vols.*Rvol.*eta;
+                end
                 
                 src = subsetPlus(src, itf_src, co_map);
 
