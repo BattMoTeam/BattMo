@@ -277,9 +277,21 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                 celltbl = replacefield(celltbl, {{'curvindi', 'indi'}, {'curvindj', 'indj'}});
                 [cartcelltbl, indstruct] = crossIndexArray(celltbl, cartcelltbl, {'indi', 'indj', 'indk'});
 
-                cartInd = indstruct{1}.inds;
+                cartcelltbl = cartcelltbl.addInd('roll_cells', indstruct{1}.inds);
+                cartcelltbl = sortIndexArray(cartcelltbl, {'roll_cells', 'cells'});
                 
                 [cartG, cellmap, facemap, nodemap] = extractSubgrid(cartG, cartcelltbl.get('cells'));
+
+                converttbl.newcells = (1 : cartG.cells.num)';
+                converttbl.cells = cellmap;
+                converttbl = IndexArray(converttbl);
+
+                map = TensorMap();
+                map.fromTbl  = cartcelltbl;
+                map.toTbl    = converttbl;
+                map.mergefds = {'cells'};
+                
+                cartInd = map.getDispatchInd();
                 
             end
 
