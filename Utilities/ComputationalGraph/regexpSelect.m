@@ -9,6 +9,8 @@ function inds = regexpSelect(names, name)
         end
         inds = unique(inds);
     else
+        name = replace(name, '{', '\{');
+        name = replace(name, '}', '\}');
         name = regexprep(name, ' +', '.*');
         inds = regexp(names, name, 'once');
         inds = cellfun(@(x) ~isempty(x), inds);
