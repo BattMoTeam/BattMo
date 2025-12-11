@@ -575,6 +575,9 @@ function output = spiralGrid(params)
 
     if exteriorNegativeElectrodeLayer
 
+        full_G       = G;
+        full_celltbl = celltbl;
+
         sel_indj_tbl.indj = ((sum(nrs(1 : 4)) + 1) : sum(nrs)*nwindings)';
         sel_indj_tbl = IndexArray(sel_indj_tbl);
 
@@ -628,6 +631,11 @@ function output = spiralGrid(params)
     output.thermalExchangeFaces    = thermalExchangeFaces;
     output.thermalExchangeFacesTag = thermalExchangeFacesTag;
 
+    if exteriorNegativeElectrodeLayer
+        output.full_G       = full_G;
+        output.full_celltbl = full_celltbl;
+    end
+    
     w = widths./nrs;
     w = rldecode(w, nrs);
     h = L/nL;
@@ -639,6 +647,7 @@ function output = spiralGrid(params)
     output.nHeightLayer = nL;
     output.celltbl      = celltbl;
 
+    
 end
 
 function newfaces = mapToNewFaces(oldfaces, newoldfacetbl)

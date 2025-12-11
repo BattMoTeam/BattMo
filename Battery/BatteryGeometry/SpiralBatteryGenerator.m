@@ -52,7 +52,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
         windingnumbers
 
+        % added only if exteriorNegativeElectrodeLayer
+        full_G
+        full_celltbl
+
+        %
         use_thermal
+        
     end
 
 
@@ -111,7 +117,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.heightLayer             = output.heightLayer;
             gen.nHeightLayer            = output.nHeightLayer;
             gen.celltbl                 = output.celltbl;
-
+            if gen.exteriorNegativeElectrodeLayer
+                gen.full_G       = output.full_G;
+                gen.full_celltbl = output.full_celltbl;
+            end
+         
             inputparams.G = G;
 
         end
@@ -125,7 +135,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
                          'setZ', []);
             opt = merge_options(opt, varargin{:});
 
-            G            = inputparams.G;
+            if gen.exteriorNegativeElectrodeLayer
+                G = Grid(gen.full_G);
+            else
+                G = inputparams.G;
+            end
 
             widthLayer   = gen.widthLayer;
             nWidthLayer  = gen.nWidthLayer;
@@ -134,7 +148,6 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             nas          = gen.nas;
             nL           = gen.nL;
             nwindings    = gen.nwindings;
-            celltbl      = gen.celltbl;
 
             cartG = cartGrid([nas*nwindings, sum(nWidthLayer), nL]); % NB: will be Grid() later
 
@@ -172,8 +185,13 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             vol = G.getVolumes();
 
-            celltbl = celltbl.removeInd({'cells', 'indi', 'indj'});
-
+            if gen.exteriorNegativeElectrodeLayer
+                % the grid is created as if it was a full grid (without removing some positive electrode)
+                celltbl = gen.full_celltbl.removeInd({'cells', 'indi', 'indj'});
+            else
+                celltbl = gen.celltbl.removeInd({'cells', 'indi', 'indj'});
+            end
+            
             map = TensorMap();
             map.fromTbl = celltbl;
             map.toTbl = cartcelltbl;
@@ -249,6 +267,22 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             end
 
             cartG.nodes.coords = [xnode, ynode, znode];
+
+            % In the case of exteriorNegativeElectrodeLayer, we need to remove part of the grid
+
+            if gen.exteriorNegativeElectrodeLayer
+
+                celltbl = gen.celltbl.removeInd({'cells', 'indi', 'indj'});               
+
+                celltbl = replacefield(celltbl, {{'curvindi', 'indi'}, {'curvindj', 'indj'}});
+                [cartcelltbl, indstruct] = crossIndexArray(celltbl, cartcelltbl, {'indi', 'indj', 'indk'});
+
+                cartInd = indstruct{1}.inds;
+                
+                [cartG, cellmap, facemap, nodemap] = extractSubgrid(cartG, cartcelltbl.get('cells'));
+                
+            end
+
             cartG = computeGeometry(cartG);
 
             %% we setup the mappings between the different grids
