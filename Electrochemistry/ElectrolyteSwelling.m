@@ -2,6 +2,7 @@ classdef ElectrolyteSwelling < Electrolyte
 
     properties
 
+        
     end
 
     methods
@@ -45,7 +46,7 @@ classdef ElectrolyteSwelling < Electrolyte
         function state = updateDiffusionCoefficient(model, state)
 
             brcoef = model.bruggemanCoefficient; 
-            computeD = model.computeDiffusionCoefficientFunc;
+            computeD = model.computeDiffusionCoefficient;
 
             c  = state.c;
             T  = state.T;
