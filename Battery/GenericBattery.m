@@ -1178,17 +1178,13 @@ classdef GenericBattery < BaseModel
             j = state.(elyte).j;
             state.(elyte).convFlux = 0 .* j;
 
-            % For the moment we neglect the convection flux
-            return
-            
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
 
                 if model.(elde).coatingModelSetup.swelling
 
-                    G  = model.(elyte).G;
-                    Gp = G.parentGrid;
+                    G  = model.(elyte).grid;
 
                     cmax        = model.(elde).(co).(am).(itf).saturationConcentration;
                     theta0      = model.(elde).(co).(am).(itf).guestStoichiometry0;
@@ -1197,9 +1193,9 @@ classdef GenericBattery < BaseModel
 
                     F = model.(elde).(co).(am).(itf).constants.F;
                     s = -1;
-                    n = 1;
+                    n = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
 
-                    c = state.(elde).(am).SolidDiffusion.cAverage;
+                    c = state.(elde).(co).(am).SolidDiffusion.cAverage;
 
                     theta = c./cmax;
                     
@@ -1212,7 +1208,9 @@ classdef GenericBattery < BaseModel
                     c = state.(elyte).c;
                     c = c(model.(elde).(co).G.mappings.cellmap);
 
-                    elyte_cells = zeros(Gp.cells.num - 1, 1);
+                    nc = G.parentGrid.getNumberOfCells();
+                    
+                    elyte_cells = zeros(nc, 1);
                     elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
                     elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
 
