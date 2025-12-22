@@ -47,11 +47,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
             plotnodenames = nodenames;
             if opt.markStatic
-                staticprops = cg.staticprops;
-                for istat = 1 : numel(staticprops)
-                    ind = staticprops{istat}.varnameind;
-                    plotnodenames{ind} = sprintf('%s (static)', nodenames{ind});
-                end
+                cgit.markStaticVarNames();
             end
             
             cgit.plotnodenames = plotnodenames;
@@ -60,6 +56,24 @@ classdef ComputationalGraphInteractiveTool < handle
             
         end
 
+        function  markStaticVarNames(cgit)
+
+            cg = cgit.computationalGraph;
+            
+            nodenames = cg.nodenames;
+
+            plotnodenames = nodenames;
+
+            staticprops = cg.staticprops;
+            
+            for istat = 1 : numel(staticprops)
+                ind = staticprops{istat}.varnameind;
+                plotnodenames{ind} = sprintf('%s (static)', nodenames{ind});
+            end
+            
+            cgit.plotnodenames = plotnodenames;
+            
+        end
 
         %%%%%%%%%%%%%%%%
         %% REPL tools
@@ -1081,10 +1095,11 @@ classdef ComputationalGraphInteractiveTool < handle
 
             nodeinds = ismember(cg.nodenames, varnames);
             
-            A         = cg.adjencyMatrix(nodeinds, nodeinds);
-            nodenames = cg.nodenames(nodeinds);
+            A = cg.adjencyMatrix(nodeinds, nodeinds);
             
-            g = digraph(A, nodenames);
+            plotnodenames = cgit.plotnodenames(nodeinds);
+            
+            g = digraph(A, plotnodenames);
             h = plot(g, cgit.plotOptions{:});
 
             if nargout < 1
