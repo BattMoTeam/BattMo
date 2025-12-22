@@ -93,7 +93,7 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             
             vsa = state.(am).(itf).volumetricSurfaceArea;
-            R   = state.(am).(itf).R;
+            R   = state.(am).(itf).intercalationFlux;
             
             Rvol = vsa.*R;
 
@@ -201,7 +201,7 @@ classdef SwellingCoating < Coating
             r  = state.(am).(sd).radius;
             r0 = model.(am).(sd).particleRadius; %.* (r0./r).^2
 
-            state.(am).(itf).R = R/(n*F); % reaction rate in mol/(s*m^2)
+            state.(am).(itf).intercalationFlux = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
 
@@ -286,7 +286,7 @@ classdef SwellingCoating < Coating
             cmax   = model.(am).(itf).saturationConcentration;
             theta0 = model.(am).(itf).guestStoichiometry0;
             
-            R  = state.(am).(itf).R;
+            R  = state.(am).(itf).intercalationFlux;
             a  = state.(am).(itf).volumetricSurfaceArea;       
             c  = state.(am).(sd).cAverage;
 

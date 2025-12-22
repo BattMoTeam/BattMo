@@ -61,6 +61,7 @@ classdef ElectrolyteSwelling < Electrolyte
 
         function state  = updateCurrent(model, state)
         % Same implementation as Electrolyte base class, except that the volumeFraction is now fetched from state
+
             bg      = model.bruggemanCoefficient;
             con     = model.constants;
             sp      = model.species;
@@ -105,14 +106,19 @@ classdef ElectrolyteSwelling < Electrolyte
         %% updateConvFlux functions)
 
         function state = updateVolumeFraction(model, state)
+            
             state.volumeFraction = model.volumeFraction;
+            
         end
 
         function state = updateConvFlux(model, state)
+            
             state.convFlux = 0;
+            
         end
 
     end
+    
 end
 
 
