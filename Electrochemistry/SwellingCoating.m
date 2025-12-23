@@ -7,6 +7,7 @@ classdef SwellingCoating < Coating
     properties
         
         molarMass
+        includeHydrostaticStress = false;
         
     end
     
