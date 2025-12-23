@@ -27,7 +27,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             model = model.unsetAsExtraVarName('cAverage');
             
             fn = @FullSolidDiffusionSwellingModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'intercalationFlux'}});
+            model = model.registerPropFunction({'massSource', fn, {'intercalationFlux', 'radiusElongation'}});
 
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'radiusElongation'}});
