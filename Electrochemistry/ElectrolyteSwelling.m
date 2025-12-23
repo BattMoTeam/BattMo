@@ -25,9 +25,9 @@ classdef ElectrolyteSwelling < Electrolyte
             fn = @ElectrolyteSwelling.updateDiffusionCoefficient;
             model = model.registerPropFunction({'D', fn, {'c','T','volumeFraction'}});
 
-            fn = @ElectrolyteSwelling.updateCurrent;
-            inputnames = {VarName({}, 'dmudcs', 2),'phi', 'T', 'c', 'conductivity', 'volumeFraction'};
-            model = model.registerPropFunction({'j', fn, inputnames});
+            fn = @ElectrolyteSwelling.updateConductivity;
+            inputnames = {'c', 'volumeFraction'};
+            model = model.registerPropFunction({'conductivity', fn, inputnames});
 
             fn = @ElectrolyteSwelling.updateMassFlux;
             model = model.registerPropFunction({'massFlux', fn, {'c', 'j', 'D', 'convFlux'}});
@@ -40,7 +40,18 @@ classdef ElectrolyteSwelling < Electrolyte
             
         end
 
-        
+        function state = updateConductivity(model, state)
+            
+            brcoef = model.bruggemanCoefficient;
+            
+            c  = state.c;
+            T  = state.T;
+            vf = state.volumeFraction;
+            
+            kappa = model.computeConductivity(c, T);
+            state.conductivity = kappa.*vf.^brcoef;
+            
+        end
 
         %% Update the diffusion coefficient which vary at each step as the volumeFraction is no more constant
         function state = updateDiffusionCoefficient(model, state)
@@ -57,38 +68,6 @@ classdef ElectrolyteSwelling < Electrolyte
             % set effective coefficient
             state.D = D .* vf .^ brcoef;
 
-        end
-
-        function state  = updateCurrent(model, state)
-        % Same implementation as Electrolyte base class, except that the volumeFraction is now fetched from state
-
-            bg      = model.bruggemanCoefficient;
-            con     = model.constants;
-            sp      = model.species;
-
-            t = sp.transferenceNumber;
-
-            dmudcs       = state.dmudcs;
-            phi          = state.phi;
-            T            = state.T;
-            c            = state.c;
-            conductivity = state.conductivity;
-            volfrac      = state.volumeFraction;
-
-            % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*volfrac.^bg;
-
-            state.conductivityeff = conductivityeff;
-            j = assembleFlux(model, phi, conductivityeff);
-
-            sum_dmudc = dmudcs{1} + dmudcs{2};
-            coef = (1/con.F)*(1 - t)*conductivityeff.*sum_dmudc;
-            jchem = assembleFlux(model, c, coef);
-
-            j = j - jchem;
-
-            state.j = j;
-            
         end
 
         %% Update the mass flux which is the sum of the three fluxes defines above.
