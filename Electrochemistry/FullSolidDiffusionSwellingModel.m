@@ -28,6 +28,8 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             model = model.registerVarNames(varnames);
 
             model = model.unsetAsExtraVarName('cAverage');
+
+            model = model.setAsExtraVarName('radius'); % the radius is not needed directly. We use the radius elongation value instead.
             
             fn = @FullSolidDiffusionSwellingModel.updateMassSource;
             model = model.registerPropFunction({'massSource', fn, {'intercalationFlux', 'radiusElongation'}});
@@ -35,72 +37,63 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'radiusElongation'}});
 
-            fn = @FullSolidDiffusionSwellingModel.updateElongationRadius;
+            fn = @FullSolidDiffusionSwellingModel.updateRadiusElongation;
             model = model.registerPropFunction({'radiusElongation', fn, {'cAverage'}});
+
+            fn = @FullSolidDiffusionSwellingModel.updateMassAccum;
+            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};            
+            model = model.registerPropFunction({'massAccum', fn, {'c', 'radiusElongation'}});
+            
+        end
+
+        function state = updateMassAccum(model, state, state0, dt)
+
+            op = model.operators;
+
+            c      = state.c;
+            delta  = op.mapToParticle*state.radiusElongation;
+            c0     = state0.c;
+            delta0 = op.mapToParticle*state0.radiusElongation;
+
+            state.massAccum = 1./(delta.*dt)*op.vols.*(delta.^3.*c - delta0.^3.*c0);
             
         end
         
         function state = updateRadius(model, state)
+
+            state.radius = model.particleRadius*state.radiusElongation;
+            
+        end
+        
+        function state = updateRadiusElongation(model, state)
         % eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
         % Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
 
-            R_delith = model.particleRadius;
-            cmax     = model.saturationConcentration;
+            cmax = model.saturationConcentration;
 
             cAverage = state.cAverage;
 
-            R_lith   = computeRadius(cAverage, cmax, R_delith);
+            Q = (3.75.*model.molarVolumeLi)./(model.molarVolumeSi);
 
-            %vf = state.volumeFraction;
-            %vf0 = 0.07;
-            %R_lith = R_delith .* (vf./vf0).^(1/3);
-
-            state.radius = R_lith;
+            state.radiusElongation = (1 + Q.*cAverage./cmax).^(1/3);
             
         end
 
-        function state = updateFlux(model, state)
-            
-            useDFunc = model.useDFunc;
-            op = model.operators;
-            r0 = model.particleRadius;
-            
-            c = state.c;
-            D = state.D;
-            radius = state.radius;
-
-            beta = (radius/r0);
-
-            if useDFunc
-                state.flux = op.flux(((1./beta).^2).* D, c);
-            else
-                D = op.mapToParticle*D;
-                beta = op.mapToParticle*beta;
-                state.flux =  op.flux(((1./beta).^2).*D, c);
-            end
-            
-            
-        end
-
- 
         function state = updateMassSource(model, state)
         % Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
         % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
         % Thomas F. Fuller ([ref 3])
 
             op  = model.operators;
-            rp0 = model.particleRadius;
+            
+            rp0  = model.particleRadius;
+            vf0  = model.volumeFraction;
+            vsa0 = model.volumetricSurfaceArea;
+            
+            delta = state.radiusElongation;
+            R     = state.intercalationFlux;
 
-            vf = state.volumeFraction;
-
-            radius = state.radius;
-            Rvol   = state.Rvol;
-
-            % One can notice that Rvol.*((4*pi*rp0.^2 .* rp)./(3.*vf)) is strictly equal to the reaction 
-            % rate for a non swelling particle (using a = 3*vf/rp), which is the rate i used in the 
-            % equation 6. We then multiply it by the scalingCoeff defined in [ref3]
-
-            massSource = - Rvol.*((4*pi* radius.^2 .* rp0)./(3*vf));
+            massSource = - (R./(delta.^2)).*((4/3)*pi*rp0^3.*vsa0/vf0);
             massSource = op.mapFromBc*massSource;
 
             state.massSource = massSource;

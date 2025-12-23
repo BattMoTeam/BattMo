@@ -33,13 +33,13 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             
             varnames = {'volumeFraction'              , ...
-                        'hydrostaticStress'           , ...
                         {am, itf, 'volumetricSurfaceArea'}};
 
             model = model.registerVarNames(varnames);
-            
-            fn = @SwellingCoating.updateHydrostaticStress;
-            model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
+
+            if model.includeHydrostaticStress
+                model = model.registerVarName('hydrostaticStress');
+            end
             
             fn = @SwellingCoating.updateVolumetricSurfaceArea;
             model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radiusElongation'}}});
@@ -47,22 +47,40 @@ classdef SwellingCoating < Coating
             fn =  @SwellingCoating.updateRvol;
             model = model.registerPropFunction({{am, sd, 'Rvol'}, fn, {{am, itf, 'intercalationFlux'}, {am, itf, 'volumetricSurfaceArea'}}});
 
-            fn  = @SwellingCoating.updateReactionRate;
-            inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, {am, sd, 'radius'}, 'hydrostaticStress'};
-            model = model.registerPropFunction({{am, itf, 'intercalationFlux'}, fn, inputnames});
-            
-            fn  = @SwellingCoating.updateReactionRateCoefficient;
-            inputnames = {{am, itf, 'cElectrolyte'}, {am, itf, 'cElectrodeSurface'}, {am, sd, 'radius'}, {am, itf, 'T'}};
-            model = model.registerPropFunction({{am, itf, 'j0'}, fn, inputnames});
+            fn =  @SwellingCoating.updateSolidIntercalationFlux;
+            model = model.registerPropFunction({{am, sd, 'intercalationFlux'}, fn, {{am, itf, 'intercalationFlux'}}});
 
+            if model.includeHydrostaticStress
+                
+                fn = @SwellingCoating.updateHydrostaticStress;
+                model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
+
+                fn  = @SwellingCoating.updateReactionRate;
+                inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, {am, sd, 'radius'}, 'hydrostaticStress'};
+                model = model.registerPropFunction({{am, itf, 'intercalationFlux'}, fn, inputnames});
+                
+            end
+            
             fn  = @SwellingCoating.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});
 
             fn = @ActiveMaterial.updateVolumeFraction;
-            model = model.registerPropFunction({'volumeFraction', fn, {{am, sd, 'cAverage'}}});
+            model = model.registerPropFunction({'volumeFraction', fn, {{am, sd, 'radiusElongation'}}});
             
         end
-        
+
+        function state = updateVolumetricSurfaceArea(model, state)
+            
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+
+            delta = state.(am).(sd).radiusElongation;
+            
+            state.(am).(itf).volumetricSurfaceArea =  model.(am).(itf).volumetricSurfaceArea*delta;
+
+        end
 
         function state = updateRvol(model, state)
 
@@ -79,6 +97,17 @@ classdef SwellingCoating < Coating
             
         end
 
+
+        function state = updateSolidIntercalationFlux(model, state)
+            
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
+            sd  = 'SolidDiffusion';
+
+            state.(am).(sd).intercalationFlux = state.(am).(itf).intercalationFlux;
+            
+        end
+        
         function state = updateConductivity(model, state)
 
             brugg = model.bruggemanCoefficient;
@@ -87,73 +116,6 @@ classdef SwellingCoating < Coating
             
             % setup effective electrical conductivity using Bruggeman approximation
             state.conductivity = model.electronicConductivity.*vf.^brugg;
-
-        end
-
-        function state = updateCurrent(model, state)
-        % Assemble electrical current which is stored in :code:`state.j`
-
-            sigma = state.conductivity;
-            phi   = state.phi;
-
-            j = assembleFlux(model, phi, sigma);
-
-            state.j = j;
-
-        end
-
-        function state = updateReactionRateCoefficient(model, state)
-
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            if model.(am).(itf).useJ0Func
-
-                error('not checked');
-                
-                computeJ0 = model.(am).(itf).computeJ0Func;
-                cmax      = model.(am).(itf).cmax;
-                
-                c = state.(am).(itf).cElectrodeSurface;
-                R = state.(am).(sd).radius;
-
-                theta = c/cmax;
-                
-                j0 = computeJ0(theta);
-                
-            else
-                
-                Tref = 298.15;  % [K]
-
-                cmax          = model.(am).(itf).saturationConcentration;
-                k0            = model.(am).(itf).reactionRateConstant;
-                Eak           = model.(am).(itf).activationEnergyOfReaction;
-                n             = model.(am).(itf).numberOfElectronsTransferred;
-                F             = model.(am).(itf).constants.F;
-                R             = model.(am).(itf).constants.R;
-                R_delithiated = model.(am).(sd).particleRadius;
-
-                T      = state.(am).(itf).T;
-                cElyte = state.(am).(itf).cElectrolyte;
-                c      = state.(am).(itf).cElectrodeSurface;
-                radius = state.(am).(sd).radius;
-                
-                % Calculate reaction rate constant
-                k = k0.*exp(-Eak./R.*(1./T - 1/Tref));
-
-                %k = k.*(R_delithiated./radius).^2;
-
-                % We use regularizedSqrt to regularize the square root function and avoid the blow-up of derivative at zero.
-                th = 1e-3*cmax;
-                coef = cElyte.*(cmax - c).*c;
-                coef(coef < 0) = 0;
-                
-                j0 = k.*regularizedSqrt(coef, th).*n.*F;
-                
-            end
-            
-            state.(am).(itf).j0 = j0;
 
         end
 
@@ -176,9 +138,6 @@ classdef SwellingCoating < Coating
             
             R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
 
-            r  = state.(am).(sd).radius;
-            r0 = model.(am).(sd).particleRadius; %.* (r0./r).^2
-
             state.(am).(itf).intercalationFlux = R/(n*F); % reaction rate in mol/(s*m^2)
 
         end
@@ -190,36 +149,15 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            amf = model.volumeFractions(model.compInds.(am));
+            vf = model.volumeFraction;
             
-            porosity = state.porosity;
-
-            vf = 1 - porosity;
-
-            state.volumeFraction           = vf;
-            state.(am).(sd).volumeFraction = amf*vf;
+            delta = state.(am).(sd).radiusElongation
+            
+            state.volumeFraction = vf*delta.^3;
             
         end
 
-
-        function state = updateVolumetricSurfaceArea(model, state)
-        % Geometric result giving the volumetric surface area (cf bottom of
-        % page 3 in Modelling capacity fade in silicon-graphite composite electrodes for
-        % lithium-ion batteries Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson,
-        % Daniel Brandell ([ref1])
-
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-
-            vf     = state.(am).(sd).volumeFraction;
-            radius = state.(am).(sd).radius;
-
-            state.(am).(itf).volumetricSurfaceArea = (3.*vf)./radius;
-            
-        end
         
-
         function state = updateHydrostaticStress(model, state)
 
             am  = 'ActiveMaterial';
@@ -238,73 +176,6 @@ classdef SwellingCoating < Coating
             sigma = ( (2.* E.* Omega)/(9.*(1-nu)) ) .* (cAverage - cSurface);
 
             state.hydrostaticStress = sigma;
-            
-        end
-
-        %% Implementation of a new equation : the volume conservation Equation
-        % Reference : eq 2 in [ref1]
-        
-        function state = updatePorosityAccum(model, state, state0, dt)
-
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-
-            state.porosityAccum = (state.porosity - state0.porosity)./dt;
-            
-        end
-        
-        function state = updatePorositySource(model, state)
-        % cf eq 2 in [ref1]
-            
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-
-            cmax   = model.(am).(itf).saturationConcentration;
-            theta0 = model.(am).(itf).guestStoichiometry0;
-            
-            R  = state.(am).(itf).intercalationFlux;
-            a  = state.(am).(itf).volumetricSurfaceArea;       
-            c  = state.(am).(sd).cAverage;
-
-            theta = c/cmax;
-            
-            molarVolumeLithiated   = model.computeMolarVolumeLithiated(theta);
-            molarVolumeDelithiated = model.computeMolarVolumeLithiated(theta0);
-            
-            state.porositySource = 0 .* a.*R.*(molarVolumeLithiated - molarVolumeDelithiated);
-            
-        end
-
-        function state = updatePorosityFlux(model, state)
-        % No Flux term (hack to create one)
-
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-            
-            D = 0.*state.porosity;
-            c = 0.*state.porosity;
-            porosityFlux = assembleFlux(model, c, D);
-            
-            state.porosityFlux = porosityFlux;
-            
-        end
-
-        function state = updateVolumeConservation(model, state)
-            
-            am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
-            itf = 'Interface';
-
-            flux   = state.porosityFlux;
-            source = state.porositySource;
-            accum  = state.porosityAccum;
-
-            cons = assembleConservationEquation(model, flux, 0, source, accum);
-            
-            state.volumeCons = cons;
             
         end
 
