@@ -106,7 +106,9 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % constructor. see :class:`Battery <Battery.Battery>`.
 
 model = GenericBattery(inputparams);
-
+cgit = model.cgit;
+cgit.printRootVariables
+return
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
 % return
