@@ -1416,15 +1416,12 @@ classdef GenericBattery < BaseModel
             end
 
             % Electrolyte
-            elyte_model     = model.(elyte);
-            elyte_map       = elyte_model.G.mappings.cellmap;
-            elyte_vf        = elyte_model.volumeFraction;
-            elyte_j         = state.(elyte).jFace;
-            elyte_bruggeman = elyte_model.bruggemanCoefficient;
-            elyte_cond      = state.(elyte).conductivity;
-            elyte_econd     = elyte_cond.*elyte_vf.^elyte_bruggeman;
-            elyte_vols      = elyte_model.G.getVolumes();
-            elyte_jsq       = elyte_model.G.getCellFluxNorm(elyte_j);
+            elyte_model = model.(elyte);
+            elyte_map   = elyte_model.G.mappings.cellmap;
+            elyte_j     = state.(elyte).jFace;
+            elyte_econd = state.(elyte).conductivity; % effective conductivity
+            elyte_vols  = elyte_model.G.getVolumes();
+            elyte_jsq   = elyte_model.G.getCellFluxNorm(elyte_j);
 
             src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
 
