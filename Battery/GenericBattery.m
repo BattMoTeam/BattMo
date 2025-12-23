@@ -234,11 +234,11 @@ classdef GenericBattery < BaseModel
 
                 fn = @GenericBattery.updateSwellingElectrolyteAccumTerm;
                 fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}, {ne, co, 'porosity'}};
+                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}, {ne, co, 'volumeFraction'}};
                 model = model.registerPropFunction({{elyte, 'massAccum'}, fn, inputNames});
 
                 fn = @GenericBattery.updateSwellingElectrolyteVolumeFraction;
-                inputNames = {{ne, co, 'porosity'}};
+                inputNames = {{ne, co, 'volumeFraction'}};
                 model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
 
                 fn = @GenericBattery.updateSwellingElectrolyteConvFlux;

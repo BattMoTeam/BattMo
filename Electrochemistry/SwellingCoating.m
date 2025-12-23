@@ -31,40 +31,18 @@ classdef SwellingCoating < Coating
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             
-            varnames = {'porosity'                    , ...
-                        'volumeFraction'              , ...
-                        'porosityAccum'               , ...
-                        'porositySource'              , ...
-                        'porosityFlux'                , ...
-                        'volumeCons'                  , ...
+            varnames = {'volumeFraction'              , ...
                         'hydrostaticStress'           , ...
                         {am, itf, 'volumetricSurfaceArea'}};
 
             model = model.registerVarNames(varnames);
             
-            fn = @SwellingCoating.updatePorosityAccum;
-            fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-            model = model.registerPropFunction({'porosityAccum', fn, {'porosity','volumeFraction'}});
-
-            fn = @SwellingCoating.updatePorositySource;
-            inputparams = {{am, itf, 'intercalationFlux'}, {am, itf, 'volumetricSurfaceArea'}, {am, sd, 'cAverage'}, {am, sd,'radius'}};
-            model = model.registerPropFunction({'porositySource', fn, inputparams});
-
-            fn = @SwellingCoating.updatePorosityFlux;
-            model = model.registerPropFunction({'porosityFlux', fn, {}});
-            
-            fn = @SwellingCoating.updateVolumeConservation;
-            model = model.registerPropFunction({'volumeCons', fn, {'porosityAccum', 'porositySource', 'porosityFlux'}});
-            
             fn = @SwellingCoating.updateHydrostaticStress;
             model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
             
-            fn = @SwellingCoating.updateVolumeFraction;
-            model = model.registerPropFunction({{'volumeFraction'}, fn, {'porosity'}});
-            model = model.registerPropFunction({{am, sd, 'volumeFraction'}, fn, {'porosity'}});
-
             fn = @SwellingCoating.updateVolumetricSurfaceArea;
-            model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radius'}, {am, sd, 'volumeFraction'}}});
+            model = model.registerPropFunction({{am, itf, 'volumetricSurfaceArea'}, fn, {{am, sd, 'radiusElongation'}}});
+            
             fn =  @SwellingCoating.updateRvol;
             model = model.registerPropFunction({{am, sd, 'Rvol'}, fn, {{am, itf, 'intercalationFlux'}, {am, itf, 'volumetricSurfaceArea'}}});
 
@@ -75,10 +53,6 @@ classdef SwellingCoating < Coating
             fn  = @SwellingCoating.updateReactionRateCoefficient;
             inputnames = {{am, itf, 'cElectrolyte'}, {am, itf, 'cElectrodeSurface'}, {am, sd, 'radius'}, {am, itf, 'T'}};
             model = model.registerPropFunction({{am, itf, 'j0'}, fn, inputnames});
-
-            fn  = @SwellingCoating.updateVolumeFraction;
-            model = model.registerPropFunction({'volumeFraction', fn, {'porosity'}});
-            model = model.registerPropFunction({{am, sd, 'volumeFraction'}, fn, {'porosity'}});
 
             fn  = @SwellingCoating.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});

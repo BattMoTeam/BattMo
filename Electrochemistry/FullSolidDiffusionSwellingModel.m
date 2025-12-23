@@ -18,22 +18,22 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             model = registerVarAndPropfuncNames@FullSolidDiffusionModel(model);
 
-            varnames = {'volumeFraction',
-                        'radius'};
+            varnames = {'radiusElongation', ...
+                        'radius'          , ...
+                        'intercolationFlux'};
 
             model = model.registerVarNames(varnames);
-            
-            fn = @FullSolidDiffusionSwellingModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'radius', 'volumeFraction', 'Rvol'}});
-
-            fn = @FullSolidDiffusionSwellingModel.updateRadius;
-            model = model.registerPropFunction({'radius', fn, {'cAverage'}});
-
-            fn = @FullSolidDiffusionSwellingModel.updateFlux;
-            inputnames = {'c', 'D','radius'};
-            model = model.registerPropFunction({'flux', fn, inputnames});
 
             model = model.unsetAsExtraVarName('cAverage');
+            
+            fn = @FullSolidDiffusionSwellingModel.updateMassSource;
+            model = model.registerPropFunction({'massSource', fn, {'intercolationFlux'}});
+
+            fn = @FullSolidDiffusionSwellingModel.updateRadius;
+            model = model.registerPropFunction({'radius', fn, {'radiusElongation'}});
+
+            fn = @FullSolidDiffusionSwellingModel.updateElongationRadius;
+            model = model.registerPropFunction({'radiusElongation', fn, {'cAverage'}});
             
         end
         
