@@ -2,6 +2,9 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
     properties
 
+        molarVolumeSi = 1.2e-05;
+        molarVolumeLi = 8.8e-06;
+        
     end
 
     methods
