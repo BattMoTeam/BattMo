@@ -56,6 +56,9 @@ classdef SwellingCoating < Coating
 
             fn  = @SwellingCoating.updateConductivity;
             model = model.registerPropFunction({'conductivity', fn, {'volumeFraction'}});
+
+            fn = @ActiveMaterial.updateVolumeFraction;
+            model = model.registerPropFunction({'volumeFraction', fn, {{am, sd, 'cAverage'}}});
             
         end
         

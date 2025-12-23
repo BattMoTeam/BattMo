@@ -20,14 +20,14 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             varnames = {'radiusElongation', ...
                         'radius'          , ...
-                        'intercolationFlux'};
+                        'intercalationFlux'};
 
             model = model.registerVarNames(varnames);
 
             model = model.unsetAsExtraVarName('cAverage');
             
             fn = @FullSolidDiffusionSwellingModel.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'intercolationFlux'}});
+            model = model.registerPropFunction({'massSource', fn, {'intercalationFlux'}});
 
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'radiusElongation'}});

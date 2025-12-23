@@ -209,7 +209,22 @@ classdef ActiveMaterial < BaseModel
                     
                 end                
 
-            end            
+            end
+
+
+            switch model.diffusionModelType
+              case {'simple', 'full'}
+                % nothing
+              case 'swelling'
+                
+                    fn = @ActiveMaterial.updateSolidDiffusionIntercalationFlux;
+                    model = model.registerPropFunction({{sd, 'intercalationFlux'}, fn, {{itf, 'intercalationFlux'}}});
+
+              otherwise
+                error('Unknown diffusionModelType %s', diffusionModelType);
+            end
+
+            
         end
 
         function model = setupForSimulation(model)
