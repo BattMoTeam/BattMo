@@ -6,18 +6,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Standard Parameters
 
-
-        % Function to update diffusion coefficient value, given as a struct with fields
-        % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
-        % - functionName : matlab function name (should be available in path)
-        % - argumentList : should be  ["c", "cmin", "cmax"]
-        diffusionCoefficient
-
         saturationConcentration % the saturation concentration of the guest molecule in the host material (symbol: cmax)
         guestStoichiometry100   % the ratio of the concentration of the guest molecule to the saturation concentration
                                 % of the guest molecule in a phase at a cell voltage that is defined as 100% SOC(symbol: theta100)
         guestStoichiometry0     % the ratio of the concentration of the guest molecule to the saturation concentration
                                 % of the guest molecule in a phase at a cell voltage that is defined as 0% SOC (symbol: theta0)
+
+        % Function to update diffusion coefficient value
+        % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
+        diffusionCoefficient
 
         % Advanced parameters
 
@@ -28,8 +25,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
         %% Computed parameters at model setup
 
         useDFunc
-        computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method updateDiffusionCoefficient
-
+        computeDFunc % used when useDFunc is true. Function handler to compute D as function of cElectrode, see method
+                     % updateDiffusionCoefficient
+        computeD
 
     end
 
@@ -49,18 +47,10 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = dispatchParams(model, inputparams, fdnames);
             model.operators = model.setupOperators();
-
-            D = inputparams.diffusionCoefficient;
-            if ~isempty(D)
-                switch D.type
-                  case 'constant'
-                    model.useDFunc = false;
-                  case 'function'
-                    model.useDFunc = true;
-                    model.computeDFunc = str2func(D.functionName);
-                  otherwise
-                    errror('type of D not recognized.')
-                end
+            
+            if ~isempty(model.diffusionCoefficient)
+                model.useDFunc = true;
+                [model.computeDFunc, model.computeD] = setupFunction(model.diffusionCoefficient);
             else
                 model.useDFunc = false;
             end
@@ -88,7 +78,15 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             fn = @FullSolidDiffusionModel.updateDiffusionCoefficient;
             if model.useDFunc
-                inputnames = {'c'};
+                switch model.computeD.numberOfArguments
+                  case 1
+                    inputnames = {'c'};
+                    model = model.removeVarName('T');
+                  case 2
+                    inputnames = {'c', 'T'};
+                  otherwise
+                    error('case non implementefd')
+                end
             else
                 inputnames = {'T'};
             end
@@ -371,9 +369,13 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             if useDFunc
                 state.flux = op.flux(D, c);
+                % a = state.flux;
+                % a = combineEquations(a);
+                % keyboard
             else
                 D = op.mapToParticle*D;
                 state.flux = op.flux(D, c);
+                % keyboard
             end
 
 
