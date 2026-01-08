@@ -113,7 +113,7 @@ AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems
 We support coin cells, jelly roll cells and multi-pouch cells with different tab layouts. The geometries are parameterized and can be modified
 using a simple set of parameters. 1D and 2D grids for P2D and P3D models can also be generated.
 
-![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries.pdf){width=100%}
+![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries){width=100%}
 
 # Graph based model development
 
@@ -121,7 +121,7 @@ BattMo has the ambition to support a variety of electro-chemical systems. The co
 
 Model hierarchy is an essential part of the framework. Coupling two models is done by creating a new coupling model that contains both as sub-models. Their graphs become sub-graphs, and new edges are added to represent coupling mechanisms, allowing most sub-models to remain unchanged. For more details, see the [documentation](https://battmo.org/BattMo/computationalGraph/graphdoc.html).
 
-![The computational graph of an active material model. \label{fig:graph}](figs/graphexample.png){width=80%}
+![The computational graph of an active material model. \label{fig:graph}](figs/graphexample){width=80%}
 
 # Examples
 
