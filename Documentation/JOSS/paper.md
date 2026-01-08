@@ -138,6 +138,10 @@ The following software include the BattMo family:
 | [PyBattMo](https://github.com/BattMoTeam/PyBattMo)   | Python wrapper around BattMo.jl                                     |
 | [BattMoApp](https://app.battmo.org/)                 | Web-application built on top of BattMo.jl                           |
 
+# AI usage disclosure
+
+No generative AI tools were used in the development of this software, the writing
+of this manuscript, or the preparation of supporting materials.
 
 # Acknowledgements
 
