@@ -108,7 +108,7 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 model = GenericBattery(inputparams);
 cgit = model.cgit;
 cgit.printRootVariables
-return
+
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
 % return
@@ -215,7 +215,6 @@ schedule = struct('control', control, 'step', step);
 
 initstate = model.setupInitialState(jsonstruct);
 
-
 %%% Running the simulation
 % Once we have the initial state, the model and the schedule, we can call
 % the simulateScheduleAD function which will actually run the simulation:
@@ -224,7 +223,6 @@ initstate = model.setupInitialState(jsonstruct);
 
 nls = NonLinearSolver;
 nls.errorOnFailure = false;
-
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 

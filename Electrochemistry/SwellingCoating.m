@@ -142,6 +142,17 @@ classdef SwellingCoating < Coating
 
         end
 
+
+        function state = updateCurrent(model, state)
+            
+            sigma = state.conductivity;
+            phi   = state.phi;
+
+            j = assembleFlux(model, phi, sigma);
+
+            state.j = j;
+            
+        end
         
         function state = updateVolumeFraction(model, state)
 
@@ -151,7 +162,7 @@ classdef SwellingCoating < Coating
             
             vf = model.volumeFraction;
             
-            delta = state.(am).(sd).radiusElongation
+            delta = state.(am).(sd).radiusElongation;
             
             state.volumeFraction = vf*delta.^3;
             

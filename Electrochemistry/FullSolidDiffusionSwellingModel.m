@@ -55,7 +55,7 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             c0     = state0.c;
             delta0 = op.mapToParticle*state0.radiusElongation;
 
-            state.massAccum = 1./(delta.*dt)*op.vols.*(delta.^3.*c - delta0.^3.*c0);
+            state.massAccum = 1./(delta.*dt).*op.vols.*(delta.^3.*c - delta0.^3.*c0);
             
         end
         
@@ -99,6 +99,12 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             state.massSource = massSource;
             
         end
+
+        function cleanState = addStaticVariables(model, cleanState, state)
+
+            cleanState.radiusElongation = state.radiusElongation;
+            
+        end 
 
     end
     

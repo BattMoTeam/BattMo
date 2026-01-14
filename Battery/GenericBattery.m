@@ -802,6 +802,9 @@ classdef GenericBattery < BaseModel
                         N = model.(elde).(co).(amc).(sd).N;
                         np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
                         initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
+                        if strcmp(model.(elde).(co).(amc).diffusionModelType, 'swelling')
+                            initstate = model.evalVarName(initstate, {elde, co, amc, sd, 'radiusElongation'});
+                        end
                       otherwise
                         error('diffusionModelType not recognized')
                     end
@@ -1120,7 +1123,7 @@ classdef GenericBattery < BaseModel
             for ielde = 1 : numel(eldes)
                 elde = eldes{ielde};
                 if model.(elde).coatingModelSetup.swelling
-                    porosity = state.(elde).(co).porosity;
+                    porosity = 1 - state.(elde).(co).volumeFraction;
                 else
                     porosity = 1 - model.(elde).(co).volumeFraction;
                 end
@@ -1184,7 +1187,7 @@ classdef GenericBattery < BaseModel
 
                 if model.(elde).coatingModelSetup.swelling
 
-                    G  = model.(elyte).grid;
+                    G  = model.(elyte).G;
 
                     cmax        = model.(elde).(co).(am).(itf).saturationConcentration;
                     theta0      = model.(elde).(co).(am).(itf).guestStoichiometry0;
@@ -1211,7 +1214,7 @@ classdef GenericBattery < BaseModel
                     nc = G.parentGrid.getNumberOfCells();
                     
                     elyte_cells = zeros(nc, 1);
-                    elyte_cells(G.mappings.cellmap) = (1 : model.G.cells.num)';
+                    elyte_cells(G.mappings.cellmap) = (1 : model.G.getNumberOfCells())';
                     elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
 
                     averageVelocity = (s./(n.*F)).*(molarVolumeLithiated - molarVolumeDelithiated).*j;
