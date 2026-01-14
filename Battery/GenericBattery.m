@@ -1181,6 +1181,8 @@ classdef GenericBattery < BaseModel
             j = state.(elyte).j;
             state.(elyte).convFlux = 0 .* j;
 
+            return
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
