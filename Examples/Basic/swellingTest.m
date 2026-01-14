@@ -7,10 +7,13 @@
 % specific things. To use this functionality we must add these modules to 
 % the matlab path by running:
 
+
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 clear all
 close all
+
+mrstDebug(20);
 
 %%% Specifying the physical model
 % In this tutorial we will simulate a lithium-ion battery consisting of a 
@@ -19,8 +22,11 @@ close all
 % Here we will load the basic lithium-ion model JSON file which comes with
 % Battmo.
 
-fname = fullfile('ParameterData','BatteryCellParameters',...
-                 'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+fname = fullfile('ParameterData'        , ...
+                 'BatteryCellParameters', ...
+                 'LithiumIonBatteryCell', ...
+                 'lithium_ion_battery_nmc_silicon.json');
+
 jsonstruct = parseBattmoJson(fname);
 
 %%%
@@ -83,8 +89,8 @@ inputparams = BatteryInputParams(jsonstruct);
 % model can be found here:
 % :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
-inputparams.(ne).(co).(am).(sd).N = 5;
-inputparams.(pe).(co).(am).(sd).N = 5;
+inputparams.(ne).(co).(am).(sd).N = 2;
+inputparams.(pe).(co).(am).(sd).N = 2;
 
 %%% Setting up the geometry
 % Here, we setup the 1D computational mesh that will be used for the
@@ -93,6 +99,9 @@ inputparams.(pe).(co).(am).(sd).N = 5;
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
 gen = BatteryGeneratorP2D();
+gen.sepnx = 2; % discretization number for negative current collector (default = 10)
+gen.nenx  = 2; % discretization number for negative active material (default = 10)
+gen.penx  = 2; % discretization number for separator (default = 10)
 
 %%%
 % Now, we update the inputparams with the properties of the mesh. This function
@@ -224,6 +233,9 @@ nls = NonLinearSolver;
 nls.errorOnFailure = false;
 
 [wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+
+return
+
 
 %%%
 % The outputs from the simulation are:
