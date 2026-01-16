@@ -42,9 +42,20 @@ states = simsetup.run();
 % use the method :code:`addVariables` to add all the intermediate quantities that are computed to solve the equations
 % but not stored automatically in the result.
 
+model = simsetup.model;
+
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
+
+%%
+% We define shortcuts for the different submodels.
+inm = 'IonomerMembrane';
+her = 'HydrogenEvolutionElectrode';
+oer = 'OxygenEvolutionElectrode';
+ptl = 'PorousTransportLayer';
+exr = 'ExchangeReaction';
+ctl = 'CatalystLayer';
 
 %%
 % We extract the time, voltage and current values for each time step
