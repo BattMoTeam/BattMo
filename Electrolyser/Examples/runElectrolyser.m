@@ -3,45 +3,22 @@
 %% Setup input
 % Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
 
-jsonstruct= parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
-inputparams = ElectrolyserInputParams(jsonstruct);
+jsonstruct_material = parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
+jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
+
+jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+                               jsonstruct_geometry});
+
+simsetup = setupElectrolyserSimulation(jsonstruct);
 
 %%
-% Setup the grids. We consider a 1D model and the specifications can be read from a json input file, here :battmofile:`electrolysergeometry1d.json<Electrolyser/Parameters/electrolysergeometry1d.json>`, using
-% :battmo:`setupElectrolyserGridFromJson`.
-
-jsonstruct= parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
-inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
-
-%%
-% We define shortcuts for the different submodels.
-inm = 'IonomerMembrane';
-her = 'HydrogenEvolutionElectrode';
-oer = 'OxygenEvolutionElectrode';
-ptl = 'PorousTransportLayer';
-exr = 'ExchangeReaction';
-ctl = 'CatalystLayer';
-
-%% Setup model
-
-model = Electrolyser(inputparams);
-
-%% Setup the initial condition
-% We use the default initial setup implemented in the model
-
-[model, initstate] = model.setupBcAndInitialState();
-
-%% Setup the schedule with the time discretization
-% We run the simulation over 10 hours, increasing the input current linearly in time.
+% We use the function :battmo:`rampupControl` to increase the current linearly in time
 
 total = 10*hour;
 
 n   = 100;
 dt  = total/n;
 dts = rampupTimesteps(total, dt, 5);
-
-%%
-% We use the function :battmo:`rampupControl` to increase the current linearly in time
 
 controlI = -3*ampere/(centi*meter)^2; % if negative, O2 and H2 are produced
 tup      = total;
@@ -51,18 +28,13 @@ control  = struct('src', srcfunc);
 step = struct('val', dts, 'control', ones(numel(dts), 1));
 schedule = struct('control', control, 'step', step);
 
-%% Setup the non-linear solver
-% We do only minor modifications here from the standard solver
+simsetup.schedule = schedule;
 
-nls = NonLinearSolver();
-nls.verbose = false;
-nls.errorOnFailure = false;
-
-model.verbose = false;
+simsetup.model.verbose = true;
 
 %% Run the simulation
 
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'NonLinearSolver', nls, 'OutputMiniSteps', true);
+states = simsetup.run();
 
 %% Visualize the results
 %
