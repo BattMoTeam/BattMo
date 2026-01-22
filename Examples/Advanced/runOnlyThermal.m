@@ -1,30 +1,68 @@
+%% Decoupled electro-chemical and thermal simulation
 
-dosetup = false;
+%% setup material property input
+jsonfilename = fullfile('ParameterData'        , ...
+                        'BatteryCellParameters', ...
+                        'LithiumIonBatteryCell', ...
+                        'lithium_ion_battery_nmc_graphite.json');
+jsonstruct_material = parseBattmoJson(jsonfilename);
 
-if dosetup
-    states      = output.states;
-    model       = output.model;
-    inputparams = output.inputparams;
-    times       = output.time;
-    for istate = 1 : numel(states)
-        states{istate} = model.addVariables(states{istate});
-    end
-    initstate = model.setupInitialState();
+jsonstruct_material.include_current_collectors = true;
 
-    inputparams = inputparams.ThermalModel;
+%% Setup geometry input
+%
+% We use a simple 3d-geometry
+jsonfilename = fullfile('Examples'     , ...
+                        'JsonDataFiles', ...
+                        'geometry3d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
+%% Setup  Control input
+%
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
+jsonstruct_control = parseBattmoJson(jsonfilename);
+
+%% Setup full input
+%
+jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+                               jsonstruct_material , ...
+                               jsonstruct_control}, 'warn', false);
+
+%% Run non thermal simulation
+
+jsonstruct_nothermal = setJsonStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
+output = runBatteryJson(jsonstruct_nothermal);
+
+states = output.states;
+times  = output.time;
+
+%% Setup model with thermal support
+
+[model, inputparams] = setupModelFromJson(jsonstruct);
+
+% We recover the initial state from which we will extract the temperature (it is actually a constant value...)
+initstate = model.setupInitialState(jsonstruct);
+
+%% Add source terms to the state output using the thermal model
+
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {'ThermalModel', 'jHeatSource'});
 end
+
+%% Setup source term helper object
+% We use the thermal source values in states that we just computted
 
 sourceTerms = cellfun(@(state) state.ThermalModel.jHeatSource, states, 'uniformoutput', false);
 
 hss = HeatSourceSetup(sourceTerms, times);
 
-inputparams.effectiveThermalConductivity    = output.model.ThermalModel.effectiveThermalConductivity;
-inputparams.effectiveVolumetricHeatCapacity = output.model.ThermalModel.effectiveVolumetricHeatCapacity;
+%% Setup thermal model only
 
-model = ThermalComponent(inputparams);
+model = ThermalComponent(inputparams.ThermalModel);
 model.isRootSimulationModel = true;
 model = model.equipModelForComputation();
+
+%% Setup the schedule
 
 times = hss.times;
 
@@ -41,7 +79,12 @@ schedule = struct('control', control, ...
 clear state0;
 state0.T = initstate.ThermalModel.T;
 
-model.verbose = true;
-[~, states, report] = simulateScheduleAD(state0, model, schedule);
+simInput = struct('model'    , model, ...
+                  'initstate', state0, ...
+                  'schedule' , schedule);
+
+simsetup = SimulationSetup(simsetup);
+
+states = simsetup.run();
 
 
