@@ -47,7 +47,7 @@ function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
                 % ok. Both are given but same values
             elseif opt.warn
                 varname = horzcat(tree, fd2);
-                fprintf('mergeJsonStructs: Parameter %s is assigned twice with different values %g and %ge. Value from first jsonstruct is used.\n', strjoin(varname, '.'), jsonstruct.(fd2), jsonstruct2.(fd2));
+                fprintf('mergeJsonStructs: Parameter %s is assigned twice with different values %g and %g. Value from first jsonstruct is used.\n', strjoin(varname, '.'), jsonstruct.(fd2), jsonstruct2.(fd2));
             end
         end
     end
