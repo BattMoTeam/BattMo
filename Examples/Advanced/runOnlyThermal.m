@@ -28,17 +28,21 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control}, 'warn', false);
 
+
+jsonstruct.Electrolyte.ionicConductivity.functionName = 'modified_electrolyte_conductivity';
+
 %% Run non thermal simulation
 
-jsonstruct_nothermal = setJsonStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
-output = runBatteryJson(jsonstruct_nothermal);
+jsonstruct_isothermal = setJsonStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
+output_isothermal = runBatteryJson(jsonstruct_isothermal);
 
-states = output.states;
-times  = output.time;
+states = output_isothermal.states;
+times  = output_isothermal.time;
 
 %% Setup model with thermal support
 
-[model, inputparams] = setupModelFromJson(jsonstruct);
+output_fullycoupled = runBatteryJson(jsonstruct);
+model = output_fullycoupled.model;
 
 % We recover the initial state from which we will extract the temperature (it is actually a constant value...)
 initstate = model.setupInitialState(jsonstruct);
@@ -58,9 +62,14 @@ hss = HeatSourceSetup(sourceTerms, times);
 
 %% Setup thermal model only
 
-model = ThermalComponent(inputparams.ThermalModel);
-model.isRootSimulationModel = true;
-model = model.equipModelForComputation();
+inputparams_thermal = output_fullycoupled.inputparams.ThermalModel;
+
+inputparams_thermal.effectiveThermalConductivity    = output_fullycoupled.model.ThermalModel.effectiveThermalConductivity;
+inputparams_thermal.effectiveVolumetricHeatCapacity = output_fullycoupled.model.ThermalModel.effectiveVolumetricHeatCapacity;
+
+model_thermal = ThermalComponent(inputparams_thermal);
+model_thermal.isRootSimulationModel = true;
+model_thermal = model_thermal.equipModelForComputation();
 
 %% Setup the schedule
 
@@ -79,12 +88,13 @@ schedule = struct('control', control, ...
 clear state0;
 state0.T = initstate.ThermalModel.T;
 
-simInput = struct('model'    , model, ...
+simInput = struct('model'    , model_thermal, ...
                   'initstate', state0, ...
                   'schedule' , schedule);
 
-simsetup = SimulationSetup(simsetup);
+simsetup = SimulationSetup(simInput);
 
-states = simsetup.run();
+states_thermal = simsetup.run();
 
+temp_plot_thermal
 
