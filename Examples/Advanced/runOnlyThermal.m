@@ -87,7 +87,7 @@ output_fullycoupled = runBatteryJson(jsonstruct);
 % Now the model is setup, we can plot the grid
 %
 
-plotBatteryGrid(output_fullycoupled.model, 'shortLegendText', true)
+plotBatteryGrid(output_fullycoupled.model, 'shortLegendText', true, 'figure', 1);
 
 %% Run iso-thermal simulation
 %
@@ -196,14 +196,14 @@ states = output_fullycoupled.states;
 
 Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
 
-figure(1)
+figure(2)
 hold on
 plot(time / hour, Tmax, 'displayname', 'max T (fully coupled)');
 title('Temperature / C')
 xlabel('time / h');
 ylabel('Temperature / C');
 
-figure(2)
+figure(3)
 hold on
 plot(time/hour, E, 'displayname', 'fully coupled')
 title('Voltage / V');
@@ -217,7 +217,7 @@ E    = cellfun(@(state) state.Control.E, output_isothermal.states);
 Tmin = cellfun(@(state) min(state.T + T0), states);
 Tmax = cellfun(@(state) max(state.T + T0), states);
 
-figure(1)
+figure(2)
 plot(time / hour, Tmax, 'displayname', 'max T (decoupled)');
 title('Temperature / C')
 xlabel('time / h');
@@ -225,7 +225,7 @@ ylabel('Temperature / C');
 
 legend show
 
-figure(2)
+figure(3)
 plot(time/hour, E, 'displayname', 'isothermal')
 title('Voltage / V');
 xlabel('time / h');
