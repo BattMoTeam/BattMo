@@ -206,10 +206,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#Setup-Control-input">Setup Control input</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Modify-input-structure">Modify input structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Run-thermal-simulation">Run thermal simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Grid-mesh">Grid mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Plot-mesh">Plot mesh</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Run-iso-thermal-simulation">Run iso-thermal simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Setup-thermal-only-simulation">Setup thermal-only simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Setup-source-term">Setup source term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Setup-heat-source-term">Setup heat source term</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Setup-thermal-only-model">Setup thermal-only model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Setup-the-simulation-schedule">Setup the simulation schedule</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setup-initial-state">setup initial state</a></li>
@@ -551,7 +551,7 @@
 </pre></div>
 </div>
 </div>
-<p>We chane the lower cutoff voltage</p>
+<p>We change the lower cutoff voltage</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
@@ -572,9 +572,9 @@
 </div>
 </div>
 </section>
-<section id="Grid-mesh">
-<h2>Grid mesh<a class="headerlink" href="#Grid-mesh" title="Link to this heading"></a></h2>
-<p>Now the model is setup, we can plot the grid</p>
+<section id="Plot-mesh">
+<h2>Plot mesh<a class="headerlink" href="#Plot-mesh" title="Link to this heading"></a></h2>
+<p>Now the model is setup, we can plot the grid mesh</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -593,7 +593,7 @@
 </section>
 <section id="Run-iso-thermal-simulation">
 <h2>Run iso-thermal simulation<a class="headerlink" href="#Run-iso-thermal-simulation" title="Link to this heading"></a></h2>
-<p>We modify the input structure and switch to non-thermal</p>
+<p>We modify the input structure and switch to iso-thermal</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -628,9 +628,9 @@
 </div>
 </div>
 </section>
-<section id="Setup-source-term">
-<h2>Setup source term<a class="headerlink" href="#Setup-source-term" title="Link to this heading"></a></h2>
-<p>We use the values of thermal source that we just computed to setup an helper structure which is going to used to send the heat source to the thermal-only simulation</p>
+<section id="Setup-heat-source-term">
+<h2>Setup heat source term<a class="headerlink" href="#Setup-heat-source-term" title="Link to this heading"></a></h2>
+<p>We use the values of thermal source that we just computed to setup an helper structure which is going to be used to send the heat source to the thermal-only simulation</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -665,7 +665,7 @@
 </pre></div>
 </div>
 </div>
-<p>The thermal model is used as the main simulation model. We equip it for simulation (setup the necessary structures)</p>
+<p>The thermal model is used as the main simulation model. We equip it for simulation</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
@@ -679,7 +679,7 @@
 <section id="Setup-the-simulation-schedule">
 <h2>Setup the simulation schedule<a class="headerlink" href="#Setup-the-simulation-schedule" title="Link to this heading"></a></h2>
 <p>The simulation schedule contains also the heat source term, which is an external source seen from the thermal-only model.</p>
-<p>We use the same time steps as the iso-thermal simulation.</p>
+<p>We use the same time steps as for the iso-thermal simulation.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
@@ -733,7 +733,7 @@
 </section>
 <section id="Plotting">
 <h2>Plotting<a class="headerlink" href="#Plotting" title="Link to this heading"></a></h2>
-<p>We plot the evolution of the maximum temperature for the full-coupled and thermal-only simulations and the discharge voltage curves between the iso-thermal and fully-coupled simulations.</p>
+<p>We plot the evolution of the maximum temperature for the full-coupled and thermal-only simulations and the discharge voltage curves for the iso-thermal and fully-coupled simulations.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
