@@ -1,4 +1,5 @@
 function conductivity = modified_electrolyte_conductivity(c, T)
+%% modified version of electrolyte conductivity, used to enhance thermal coupling in an example
     
     conductivityFactor = 1;
     

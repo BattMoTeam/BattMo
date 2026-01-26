@@ -30,6 +30,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
 
 
 jsonstruct.Electrolyte.ionicConductivity.functionName = 'modified_electrolyte_conductivity';
+jsonstruct.Electrolyte.ionicConductivity.functionName = 'modified_electrolyte_conductivity';
 
 %% Run non thermal simulation
 
