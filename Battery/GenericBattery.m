@@ -226,7 +226,7 @@ classdef GenericBattery < BaseModel
             switch model.(ctrl).controlPolicy
               case {'CCDischarge', 'CCCharge', 'CC', 'timeControl', 'TCtest'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
-              case {'CCCV', 'Impedance'}
+              case {'CCCV', 'Impedance', 'CCCV2'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
@@ -530,7 +530,7 @@ classdef GenericBattery < BaseModel
 
               case "TCtest"
 
-                control = TCtest(inputparams);
+                control = TCtestControlModel(inputparams);
 
               case "Impedance"
 
@@ -558,6 +558,14 @@ classdef GenericBattery < BaseModel
                 control.ImaxCharge    = (C/hour)*CRate;
                 control.ImaxDischarge = (C/hour)*DRate;
 
+              case "CCCV2"
+
+                control = CcCvControlModel2(inputparams);
+                CRate = control.CRate;
+                DRate = control.DRate;
+                control.ImaxCharge    = (C/hour)*CRate;
+                control.ImaxDischarge = (C/hour)*DRate;
+
               case "powerControl"
 
                 control = PowerControlModel(inputparams);
@@ -568,7 +576,7 @@ classdef GenericBattery < BaseModel
 
               otherwise
 
-                error('Error controlPolicy not recognized', inputparams.controlPolicy);
+                error('Error controlPolicy %s not recognized', inputparams.controlPolicy);
             end
 
         end
@@ -921,7 +929,7 @@ classdef GenericBattery < BaseModel
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = 0;
 
-              case 'CCCV'
+              case {'CCCV', 'CCCV2'}
 
                 initstate.(ctrl).numberOfCycles = 0;
 
@@ -964,7 +972,7 @@ classdef GenericBattery < BaseModel
                 end
 
               otherwise
-                error('control policy not recognized');
+                error('control policy %s not recognized', model.(ctrl).controlPolicy);
             end
 
             initstate.time = 0;
@@ -973,13 +981,13 @@ classdef GenericBattery < BaseModel
 
         function state = addVariables(model, state)
 
-        % Given a state where only the primary variables are defined, this
-        % functions add all the additional variables that are computed in the assembly process and have some physical
-        % interpretation.
-        %
-        % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces
+            % Given a state where only the primary variables are defined, this
+            % functions add all the additional variables that are computed in the assembly process and have some physical
+            % interpretation.
+            %
+            % To do so, we use getEquations function and sends dummy variable for state0, dt and drivingForces
 
-        % Values that need to be set to get the function getEquations running
+            % Values that need to be set to get the function getEquations running
 
             dt = 1;
             state0 = state;
@@ -1166,11 +1174,11 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case {'CCCV', 'powerControl', 'TCtest'}
+              case {'CCCV', 'powerControl', 'CCCV2'}
 
                 % nothing to do here
 
-              case {'timeControl'}
+              case {'timeControl', 'TCtest'}
 
                 [ctrlVal, ctrlType] = model.(ctrl).computeInput(state.time);
 
@@ -1212,7 +1220,7 @@ classdef GenericBattery < BaseModel
 
               otherwise
 
-                error('control type not recognized');
+                error('control type %s not recognized', model.(ctrl).controlPolicy);
 
             end
 
@@ -1756,8 +1764,6 @@ classdef GenericBattery < BaseModel
 
             cleanState.time = state.time;
 
-            thermal = 'ThermalModel';
-
             if ~model.use_thermal
                 thermal = 'ThermalModel';
                 cleanState.(thermal).T = state.(thermal).T;
@@ -1830,10 +1836,10 @@ classdef GenericBattery < BaseModel
 
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
 
-             [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
+            [state, report] = updateAfterConvergence@BaseModel(model, state0, state, dt, drivingForces);
 
-             ctrl = 'Control';
-             state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
+            ctrl = 'Control';
+            state.(ctrl) = model.(ctrl).updateControlAfterConvergence(state.(ctrl), state0.(ctrl), dt);
         end
 
 
@@ -1843,12 +1849,13 @@ classdef GenericBattery < BaseModel
 
             if ~report.Failure
                 ctrl = 'Control';
-                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
+                time = state.time;
+                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt, time);
             end
 
             if report.Converged
 
-                if ismember(model.(ctrl).controlPolicy, {'CCCV'})
+                if ismember(model.(ctrl).controlPolicy, {'CCCV', 'TCtest'})
                     % we check for the constraints
 
                     [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);
@@ -1942,21 +1949,21 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
