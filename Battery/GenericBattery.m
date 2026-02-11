@@ -224,7 +224,7 @@ classdef GenericBattery < BaseModel
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
+              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl', 'TCtest'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
               case {'CCCV', 'Impedance'}
                 % do nothing
@@ -528,6 +528,10 @@ classdef GenericBattery < BaseModel
 
                 control = TimeControlModel(inputparams);
 
+              case "TCtest"
+
+                control = TCtest(inputparams);
+
               case "Impedance"
 
                 control = ImpedanceControlModel(inputparams);
@@ -564,7 +568,7 @@ classdef GenericBattery < BaseModel
 
               otherwise
 
-                error('Error controlPolicy not recognized');
+                error('Error controlPolicy not recognized', inputparams.controlPolicy);
             end
 
         end
@@ -896,11 +900,16 @@ classdef GenericBattery < BaseModel
 
                 initstate.(ctrl).I = 0;
 
-              case {'timeControl'}
+              case 'timeControl'
 
                 %  We initiate to some values, but they should be overriden as the simulation starts
                 initstate.(ctrl).I        = 0;
                 initstate.(ctrl).ctrlType = 'constantCurrent';
+
+              case 'TCtest'
+
+                initstate.(ctrl).I        = 0;
+                initstate.(ctrl).ctrlType = 'CC_discharge1';
 
               case {'CCDischarge', 'CCCharge'}
 
@@ -1157,7 +1166,7 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case {'CCCV', 'powerControl'}
+              case {'CCCV', 'powerControl', 'TCtest'}
 
                 % nothing to do here
 
