@@ -924,12 +924,12 @@ classdef GenericBattery < BaseModel
                 initstate.(ctrl).ctrlType = 'constantCurrent';
                 initstate.(ctrl).I = model.(ctrl).Imax;
 
-              case 'CC'
+              % case 'CC'
 
-                initstate.(ctrl).ctrlType = 'constantCurrent';
-                initstate.(ctrl).I = 0;
+              %   initstate.(ctrl).ctrlType = 'constantCurrent';
+              %   initstate.(ctrl).I = 0;
 
-              case {'CCCV', 'CCCV2'}
+              case 'CCCV'
 
                 initstate.(ctrl).numberOfCycles = 0;
 
@@ -942,6 +942,18 @@ classdef GenericBattery < BaseModel
                     initstate.(ctrl).I        = - model.(ctrl).ImaxCharge;
                   otherwise
                     error('initialControl not recognized');
+                end
+
+              case 'CCCV2'
+
+                initstate.(ctrl).numberOfCycles = 0;
+
+                initstate.(ctrl).I = model.(ctrl).computeInput(0.0);
+
+                if initstate.(ctrl).I >= 0
+                    initstate.(ctrl).ctrlType = 'CC_discharge1';
+                else
+                    initstate.(ctrl).ctrlType = 'CC_charge1';
                 end
 
               case 'powerControl'
@@ -1174,9 +1186,14 @@ classdef GenericBattery < BaseModel
 
             switch model.(ctrl).controlPolicy
 
-              case {'CCCV', 'powerControl', 'CCCV2'}
+              case {'CCCV', 'powerControl'}
 
                 % nothing to do here
+
+              case 'CCCV2'
+
+                ctrlVal = model.(ctrl).computeInput(state.time);
+                state.(ctrl).ctrlVal  = ctrlVal;
 
               case {'timeControl', 'TCtest'}
 

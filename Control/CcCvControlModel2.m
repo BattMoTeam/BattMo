@@ -119,22 +119,24 @@ classdef CcCvControlModel2 < ControlModel
         end
 
 
+        function ctrlVal = computeInput(model, t)
+
+            ctrlVal = interp1(model.times, model.values, t);
+
+            fprintf('Input %g s: %g A\n', t, ctrlVal);
+
+        end
+
 
         function state = updateControlState(model, state, state0, dt, t)
 
+
+            keyboard;
             state = updateControlState@ControlModel(model, state, state0, dt);
 
-            datapath = fullfile(getProjectDir(), 'data', 'JP3-ckan-data', 'JP3_cell_testing_32.5-67.5pc_SoC_window_25C_SINTEF_cell_01');
-            filename = 'batmax_jp3_c01_combined_QC_OCVRPT_cycling_from_SOC1.mat';
-            expdata = load(fullfile(datapath, filename));
-            N = 10000;
-            idx = 1:1:N;
-            expdata.time = expdata.time(idx);
-            expdata.current = expdata.current(idx);
-            state.I = interp1(expdata.time, expdata.current, t);
-            fprintf('%g s: %g A (%g V)\n', t, state.I, state.E);
-
             state = model.updateDerivatives(state, state0, dt);
+
+            fprintf('Received %g A (%g V)\n', state.I, state.E);
 
             if ~isfield(state, 'ctrlType')
                 return
@@ -142,6 +144,10 @@ classdef CcCvControlModel2 < ControlModel
 
             rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
             ctrlType0 = state0.ctrlType;
+
+            if state.E < model.lowerCutoffVoltage
+                keyboard;
+            end
 
             if rsw00.beforeSwitchRegion
 
@@ -197,6 +203,8 @@ classdef CcCvControlModel2 < ControlModel
         end
 
         function state = updateValueFromControl(model, state)
+
+            keyboard;
 
             ImaxD = model.ImaxDischarge;
             ImaxC = model.ImaxCharge;
