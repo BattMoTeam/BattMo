@@ -1872,7 +1872,7 @@ classdef GenericBattery < BaseModel
 
             if report.Converged
 
-                if ismember(model.(ctrl).controlPolicy, {'CCCV', 'TCtest'})
+                if ismember(model.(ctrl).controlPolicy, {'CCCV', 'TCtest', 'CCCV2'})
                     % we check for the constraints
 
                     [arefulfilled, state.(ctrl)] = model.(ctrl).checkConstraints(state.(ctrl), state0.(ctrl), dt);

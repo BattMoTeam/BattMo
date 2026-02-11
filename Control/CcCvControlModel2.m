@@ -130,8 +130,6 @@ classdef CcCvControlModel2 < ControlModel
 
         function state = updateControlState(model, state, state0, dt, t)
 
-
-            keyboard;
             state = updateControlState@ControlModel(model, state, state0, dt);
 
             state = model.updateDerivatives(state, state0, dt);
@@ -151,8 +149,9 @@ classdef CcCvControlModel2 < ControlModel
 
             if rsw00.beforeSwitchRegion
 
-                % We have not entered the switching region in the time step. We are not going to change control
-                % in this step.
+                % We have not entered the switching region in the time
+                % step. We are not going to change control in this
+                % step.
                 ctrlType = ctrlType0;
 
             else
@@ -168,12 +167,15 @@ classdef CcCvControlModel2 < ControlModel
 
                   case ctrlType0
 
-                    % The control has not changed from previous time step and we want to determine if we should change it.
+                    % The control has not changed from previous time
+                    % step and we want to determine if we should
+                    % change it.
 
                     if rsw0.afterSwitchRegion
 
-                        % We switch to a new control because we are no longer in the acceptable region for the current
-                        % control
+                        % We switch to a new control because we are no
+                        % longer in the acceptable region for the
+                        % current control
                         ctrlType = nextCtrlType0;
 
                     else
@@ -184,7 +186,8 @@ classdef CcCvControlModel2 < ControlModel
 
                   case nextCtrlType0
 
-                    % We do not switch back to avoid oscillation. We are anyway within the given tolerance for the
+                    % We do not switch back to avoid oscillation. We
+                    % are anyway within the given tolerance for the
                     % control so that we keep the control as it is.
 
                     ctrlType = nextCtrlType0;
@@ -204,10 +207,8 @@ classdef CcCvControlModel2 < ControlModel
 
         function state = updateValueFromControl(model, state)
 
-            keyboard;
-
-            ImaxD = model.ImaxDischarge;
-            ImaxC = model.ImaxCharge;
+            % ImaxD = model.ImaxDischarge;
+            % ImaxC = model.ImaxCharge;
             Emin  = model.lowerCutoffVoltage;
             Emax  = model.upperCutoffVoltage;
 
@@ -215,23 +216,27 @@ classdef CcCvControlModel2 < ControlModel
 
               case 'CC_discharge1'
 
-                state.I = ImaxD;
+                %state.I = ImaxD;
+                state.I = state.ctrlVal;
 
               case 'CC_discharge2'
 
-                state.I = 0;
+                state.I = 0; % ?
+                state.E = Emin;
 
               case 'CC_charge1'
 
-                state.I = - ImaxC;
+                %state.I = - ImaxC;
+                state.I = state.ctrlVal;
 
               case 'CV_charge2'
 
+                state.I = 0; % ?
                 state.E = Emax;
 
               otherwise
 
-                error('ctrlType not recognized.')
+                error('ctrlType %s not recognized.', state.ctrlType)
 
             end
 
@@ -250,11 +255,15 @@ classdef CcCvControlModel2 < ControlModel
 
             switch ctrlType
               case 'CC_discharge1'
-                ctrleq = I - ImaxD;
+                %ctrleq = I - ImaxD;
+                ctrleq = I - state.ctrlVal;
               case 'CC_discharge2'
-                ctrleq = I;
+                %ctrleq = I;
+                % TODO fix scaling
+                ctrleq = (E - Emin)*1e5;
               case 'CC_charge1'
-                ctrleq = I + ImaxC;
+                %ctrleq = I + ImaxC;
+                ctrleq = I - state.ctrlVal;
               case 'CV_charge2'
                 % TODO fix scaling
                 ctrleq = (E - Emax)*1e5;
