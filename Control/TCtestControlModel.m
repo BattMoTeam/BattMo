@@ -2,7 +2,8 @@ classdef TCtestControlModel < ControlModel
 
     properties
 
-        timecontrol % time series struct
+        times
+        values
 
         computeInput % function called to give update
 
@@ -27,7 +28,8 @@ classdef TCtestControlModel < ControlModel
 
             model = model@ControlModel(inputparams);
 
-            fdnames = {'timecontrol', ...
+            fdnames = {'times'             , ...
+                       'values'            , ...
                        'lowerCutoffVoltage', ...
                        'upperCutoffVoltage', ...
                        'dEdtLimit'         , ...
@@ -52,7 +54,8 @@ classdef TCtestControlModel < ControlModel
             % - CV_charge2
             varnames{end + 1} = 'ctrlType';
 
-            % control value that can be either a voltage, current or power (not implemented)
+            % control value that can be either a voltage, current or
+            % power (not implemented)
             varnames{end + 1} = 'ctrlVal';
 
             % Estimate of the time derivative for voltage and current
@@ -61,9 +64,9 @@ classdef TCtestControlModel < ControlModel
 
             model = model.registerVarNames(varnames);
 
-            % The following variables are not used in the residual assembly
-
-            varnames = {'dIdt'          , ...
+            % The following variables are not used in the residual
+            % assembly
+            varnames = {'dIdt', ...
                         'dEdt'};
 
             model = model.setAsStaticVarNames(varnames);
@@ -76,7 +79,7 @@ classdef TCtestControlModel < ControlModel
 
             fn = @TCtestControlModel.updateDerivatives;
             fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
-            inputvarnames = {'E', 'I'};
+
             model = model.registerPropFunction({'dIdt', fn, {'E', 'I'}});
             model = model.registerPropFunction({'dEdt', fn, {'E', 'I'}});
 
@@ -85,10 +88,9 @@ classdef TCtestControlModel < ControlModel
 
         function [ctrlVal, ctrlType] = computeInputFromTable(model, t)
 
-            keyboard;
-
-        % We could be more efficient here and keep track of previous index to avoid full search (the time spent for
-        % that is probabely negligeable compared to the rest.)
+            % We could be more efficient here and keep track of
+            % previous index to avoid full search (the time spent for
+            % that is probabely negligeable compared to the rest.)
             ind = find(t >= model.times, 1, 'last');
 
             if t > model.times(end)
@@ -98,14 +100,14 @@ classdef TCtestControlModel < ControlModel
             end
 
             ctrlVal  = model.values(ind);
-            ctrlType = model.controltypes(ind);
+            ctrlType = 1; %model.controltypes(ind);
 
             assert(ctrlType == 1, 'only constant current implemented');
 
             switch ctrlType
               case 1
                 %ctrlType = 'constantCurrent';
-                ctrlType = 'cc_discharge1';
+                ctrlType = 'CC_discharge1';
               case 2
                 ctrlType = 'constantVoltage';
               case 3
@@ -134,6 +136,7 @@ classdef TCtestControlModel < ControlModel
 
 
         function state = updateControlState(model, state, state0, dt)
+            keyboard;
 
             state = updateControlState@ControlModel(model, state, state0, dt);
 
@@ -188,7 +191,7 @@ classdef TCtestControlModel < ControlModel
 
                   otherwise
 
-                    error('control type not recognized');
+                    error('control type %s not recognized', currentCtrlType);
 
                 end
 
@@ -203,7 +206,7 @@ classdef TCtestControlModel < ControlModel
 
             ImaxD = model.ImaxDischarge;
             ImaxC = model.ImaxCharge;
-            Emin  = model.lowerCutoffVoltage;
+            % Emin  = model.lowerCutoffVoltage;
             Emax  = model.upperCutoffVoltage;
 
             switch state.ctrlType
@@ -388,7 +391,7 @@ classdef TCtestControlModel < ControlModel
         end
 
         function func = setupControlFunction(model)
-        % There is no control function in the sense that all the switches are automatically turned on and off.
+            % There is no control function in the sense that all the switches are automatically turned on and off.
 
             func = [];
 
@@ -396,7 +399,7 @@ classdef TCtestControlModel < ControlModel
 
         function step = setupScheduleStep(model, timeSteppingParams)
 
-            durations = diff(model.timecontrol.times);
+            durations = diff(model.times);
             step = struct('val', durations, 'control', ones(numel(durations), 1));
 
         end
@@ -450,21 +453,21 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

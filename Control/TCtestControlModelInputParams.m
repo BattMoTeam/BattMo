@@ -3,7 +3,8 @@ classdef TCtestControlModelInputParams < ControlModelInputParams
 
     properties
 
-        timecontrol
+        times
+        values
 
         % for clipping
         lowerCutoffVoltage
@@ -31,6 +32,9 @@ classdef TCtestControlModelInputParams < ControlModelInputParams
 
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
             inputparams.controlPolicy = 'TCtest';
+
+            inputparams.times = getJsonStructField(jsonstruct, 'times');
+            inputparams.values = getJsonStructField(jsonstruct, 'values');
 
         end
 
