@@ -561,10 +561,10 @@ classdef GenericBattery < BaseModel
               case "CCCV2"
 
                 control = CcCvControlModel2(inputparams);
-                CRate = control.CRate;
-                DRate = control.DRate;
-                control.ImaxCharge    = (C/hour)*CRate;
-                control.ImaxDischarge = (C/hour)*DRate;
+                % CRate = control.CRate;
+                % DRate = control.DRate;
+                % control.ImaxCharge    = (C/hour)*CRate;
+                % control.ImaxDischarge = (C/hour)*DRate;
 
               case "powerControl"
 
@@ -950,11 +950,13 @@ classdef GenericBattery < BaseModel
 
                 initstate.(ctrl).I = model.(ctrl).computeInput(0.0);
 
-                if initstate.(ctrl).I >= 0
-                    initstate.(ctrl).ctrlType = 'CC_discharge1';
-                else
-                    initstate.(ctrl).ctrlType = 'CC_charge1';
-                end
+                initstate.(ctrl).ctrlType = 'current';
+
+                % if initstate.(ctrl).I >= 0
+
+                % else
+                %     initstate.(ctrl).ctrlType = 'CC_charge1';
+                % end
 
               case 'powerControl'
 
@@ -1866,8 +1868,7 @@ classdef GenericBattery < BaseModel
 
             if ~report.Failure
                 ctrl = 'Control';
-                time = state.time;
-                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt, time);
+                state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
             end
 
             if report.Converged

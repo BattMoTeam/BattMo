@@ -123,124 +123,150 @@ classdef CcCvControlModel2 < ControlModel
 
             ctrlVal = interp1(model.times, model.values, t);
 
-            fprintf('Input %g s: %g A\n', t, ctrlVal);
+            % fprintf('Input %g s: %g A\n', t, ctrlVal);
 
         end
 
 
-        function state = updateControlState(model, state, state0, dt, t)
+        function state = updateControlState(model, state, state0, dt)
 
             state = updateControlState@ControlModel(model, state, state0, dt);
 
             state = model.updateDerivatives(state, state0, dt);
 
-            fprintf('Received %g A (%g V)\n', state.I, state.E);
+            Emin = model.lowerCutoffVoltage;
+            Emax = model.upperCutoffVoltage;
 
-            if ~isfield(state, 'ctrlType')
-                return
+            %ctrlType = 'current';
+            ctrlType = state.ctrlType;
+
+            if state.E <= Emin && strcmp(state.ctrlType, 'current')
+                ctrlType = 'Emin';
+                % state.E = Emin;
+                %keyboard;
             end
 
-            rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
-            ctrlType0 = state0.ctrlType;
-
-            if state.E < model.lowerCutoffVoltage
-                keyboard;
+            if state.E > Emax && strcmp(state.ctrlType, 'current')
+                ctrlType = 'Emax';
+                state.E = Emax;
             end
 
-            if rsw00.beforeSwitchRegion
+            if strcmp(state.ctrlType, 'Emin') && state.I > state.ctrlVal
+                ctrlType = 'current';
+                state.I = state.ctrlVal;
+            end
 
-                % We have not entered the switching region in the time
-                % step. We are not going to change control in this
-                % step.
-                ctrlType = ctrlType0;
-
-            else
-
-                % We entered the switch region in previous time step.
-
-                currentCtrlType = state.ctrlType; % current control in the the Newton iteration
-                nextCtrlType0   = model.getNextCtrlType(ctrlType0); % next control that can occur afte the previous time step control (if it changes)
-
-                rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
-
-                switch currentCtrlType
-
-                  case ctrlType0
-
-                    % The control has not changed from previous time
-                    % step and we want to determine if we should
-                    % change it.
-
-                    if rsw0.afterSwitchRegion
-
-                        % We switch to a new control because we are no
-                        % longer in the acceptable region for the
-                        % current control
-                        ctrlType = nextCtrlType0;
-
-                    else
-
-                        ctrlType = ctrlType0;
-
-                    end
-
-                  case nextCtrlType0
-
-                    % We do not switch back to avoid oscillation. We
-                    % are anyway within the given tolerance for the
-                    % control so that we keep the control as it is.
-
-                    ctrlType = nextCtrlType0;
-
-                  otherwise
-
-                    error('control type not recognized');
-
-                end
-
+            if strcmp(state.ctrlType, 'Emax') && state.I < state.ctrlVal
+                ctrlType = 'current';
+                state.I = state.ctrlVal;
             end
 
             state.ctrlType = ctrlType;
-            state = model.updateValueFromControl(state);
+            % state = model.updateValueFromControl(state);
+
+
+            % fprintf('Received %g A (%g V)\n', state.I, state.E);
+
+            % if ~isfield(state, 'ctrlType')
+            %     return
+            % end
+
+            % rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
+            % ctrlType0 = state0.ctrlType;
+
+            % if state.E < model.lowerCutoffVoltage
+            %     keyboard;
+            % end
+
+            % if rsw00.beforeSwitchRegion
+
+            %     % We have not entered the switching region in the time
+            %     % step. We are not going to change control in this
+            %     % step.
+            %     ctrlType = ctrlType0;
+
+            % else
+
+            %     % We entered the switch region in previous time step.
+
+            %     currentCtrlType = state.ctrlType; % current control in the the Newton iteration
+            %     nextCtrlType0   = model.getNextCtrlType(ctrlType0); % next control that can occur afte the previous time step control (if it changes)
+
+            %     rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
+
+            %     switch currentCtrlType
+
+            %       case ctrlType0
+
+            %         % The control has not changed from previous time
+            %         % step and we want to determine if we should
+            %         % change it.
+
+            %         if rsw0.afterSwitchRegion
+
+            %             % We switch to a new control because we are no
+            %             % longer in the acceptable region for the
+            %             % current control
+            %             ctrlType = nextCtrlType0;
+
+            %         else
+
+            %             ctrlType = ctrlType0;
+
+            %         end
+
+            %       case nextCtrlType0
+
+            %         % We do not switch back to avoid oscillation. We
+            %         % are anyway within the given tolerance for the
+            %         % control so that we keep the control as it is.
+
+            %         ctrlType = nextCtrlType0;
+
+            %       otherwise
+
+            %         error('control type not recognized');
+
+            %     end
+
+            % end
+
+            % state.ctrlType = ctrlType;
+            % state = model.updateValueFromControl(state);
 
         end
 
-        function state = updateValueFromControl(model, state)
+        % function state = updateValueFromControl(model, state)
 
-            % ImaxD = model.ImaxDischarge;
-            % ImaxC = model.ImaxCharge;
-            Emin  = model.lowerCutoffVoltage;
-            Emax  = model.upperCutoffVoltage;
+        %     % ImaxD = model.ImaxDischarge;
+        %     % ImaxC = model.ImaxCharge;
+        %     Emin  = model.lowerCutoffVoltage;
+        %     Emax  = model.upperCutoffVoltage;
 
-            switch state.ctrlType
+        %     switch state.ctrlType
 
-              case 'CC_discharge1'
+        %       case 'current'
 
-                %state.I = ImaxD;
-                state.I = state.ctrlVal;
+        %         %state.I = ImaxD;
+        %         state.I = state.ctrlVal;
 
-              case 'CC_discharge2'
+        %       case 'Emin'
 
-                state.I = 0; % ?
-                state.E = Emin;
+        %         % state.I = 0; % ?
+        %         state.E = Emin;
 
-              case 'CC_charge1'
+        %       case 'Emax'
 
-                %state.I = - ImaxC;
-                state.I = state.ctrlVal;
+        %         % state.I = 0; % ?
+        %         state.E = Emax;
 
-              case 'CV_charge2'
+        %       otherwise
 
-                state.I = 0; % ?
-                state.E = Emax;
+        %         error('ctrlType %s not recognized.', state.ctrlType)
 
-              otherwise
+        %     end
 
-                error('ctrlType %s not recognized.', state.ctrlType)
-
-            end
-
-        end
+        % end
 
         function state = updateControlEquation(model, state)
 
@@ -254,18 +280,14 @@ classdef CcCvControlModel2 < ControlModel
             ctrlType = state.ctrlType;
 
             switch ctrlType
-              case 'CC_discharge1'
+              case 'current'
                 %ctrleq = I - ImaxD;
                 ctrleq = I - state.ctrlVal;
-              case 'CC_discharge2'
+              case 'Emin'
                 %ctrleq = I;
                 % TODO fix scaling
                 ctrleq = (E - Emin)*1e5;
-              case 'CC_charge1'
-                %ctrleq = I + ImaxC;
-                ctrleq = I - state.ctrlVal;
-              case 'CV_charge2'
-                % TODO fix scaling
+              case 'Emax'
                 ctrleq = (E - Emax)*1e5;
               otherwise
                 error('ctrlType not recognized');
@@ -284,79 +306,84 @@ classdef CcCvControlModel2 < ControlModel
 
         function  [arefulfilled, state] = checkConstraints(model, state, state0, dt)
 
-            ctrlType  = state.ctrlType;
-            ctrlType0 = state0.ctrlType;
+            % ctrlType  = state.ctrlType;
+            % ctrlType0 = state0.ctrlType;
 
-            nextCtrlType = model.getNextCtrlType(ctrlType0);
+            % nextCtrlType = model.getNextCtrlType(ctrlType0);
+
+            % arefulfilled = true;
+
+            % rsw  = model.setupRegionSwitchFlags(state, state.ctrlType);
+            % rswN = model.setupRegionSwitchFlags(state, nextCtrlType);
+
+            % if (strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion) || (strcmp(ctrlType, nextCtrlType) && ~rswN.beforeSwitchRegion)
+
+            %     arefulfilled = false;
+
+            % end
 
             arefulfilled = true;
 
-            rsw  = model.setupRegionSwitchFlags(state, state.ctrlType);
-            rswN = model.setupRegionSwitchFlags(state, nextCtrlType);
-
-            if (strcmp(ctrlType, ctrlType0) && rsw.afterSwitchRegion) || (strcmp(ctrlType, nextCtrlType) && ~rswN.beforeSwitchRegion)
-
-                arefulfilled = false;
-
-            end
-
         end
 
-        function rsf = setupRegionSwitchFlags(model, state, ctrlType)
+        % function rsf = setupRegionSwitchFlags(model, state, ctrlType)
 
-            Emin    = model.lowerCutoffVoltage;
-            Emax    = model.upperCutoffVoltage;
-            dIdtMin = model.dIdtLimit;
-            dEdtMin = model.dEdtLimit;
-            tols    = model.switchTolerances;
+        %     Emin    = model.lowerCutoffVoltage;
+        %     Emax    = model.upperCutoffVoltage;
+        %     dIdtMin = model.dIdtLimit;
+        %     dEdtMin = model.dEdtLimit;
+        %     tols    = model.switchTolerances;
 
-            E    = state.E;
-            I    = state.I;
+        %     E    = state.E;
+        %     I    = state.I;
 
-            switch ctrlType
+        %     switch ctrlType
 
-              case 'CC_discharge1'
+        %       case 'CC_discharge1'
 
-                before = E > Emin*(1 + tols.(ctrlType));
-                after  = E < Emin*(1 - tols.(ctrlType));
+        %         before = E > Emin*(1 + tols.(ctrlType));
+        %         after  = E < Emin*(1 - tols.(ctrlType));
 
-              case 'CC_discharge2'
+        %       case 'CC_discharge2'
 
-                if isfield(state, 'dEdt')
-                    dEdt = state.dEdt;
-                    before = abs(dEdt) > dEdtMin*(1 + tols.(ctrlType));
-                    after  = abs(dEdt) < dEdtMin*(1 - tols.(ctrlType));
-                else
-                    before = false;
-                    after  = false;
-                end
+        %         if isfield(state, 'dEdt')
+        %             dEdt = state.dEdt;
+        %             before = abs(dEdt) > dEdtMin*(1 + tols.(ctrlType));
+        %             after  = abs(dEdt) < dEdtMin*(1 - tols.(ctrlType));
+        %         else
+        %             before = false;
+        %             after  = false;
+        %         end
 
-              case 'CC_charge1'
+        %         % before = I < state.ctrlVal;
+        %         % after =
 
-                before = E < Emax*(1 - tols.(ctrlType));
-                after  = E > Emax*(1 + tols.(ctrlType));
+        %       case 'CC_charge1'
 
-              case 'CV_charge2'
+        %         before = E < Emax*(1 - tols.(ctrlType));
+        %         after  = E > Emax*(1 + tols.(ctrlType));
 
-                if isfield(state, 'dIdt')
-                    dIdt = state.dIdt;
-                    before = abs(dIdt) > dIdtMin*(1 + tols.(ctrlType));
-                    after  = abs(dIdt) < dIdtMin*(1 - tols.(ctrlType));
-                else
-                    before = false;
-                    after  = false;
-                end
+        %       case 'CV_charge2'
 
-              otherwise
+        %         if isfield(state, 'dIdt')
+        %             dIdt = state.dIdt;
+        %             before = abs(dIdt) > dIdtMin*(1 + tols.(ctrlType));
+        %             after  = abs(dIdt) < dIdtMin*(1 - tols.(ctrlType));
+        %         else
+        %             before = false;
+        %             after  = false;
+        %         end
 
-                error('control type not recognized');
+        %       otherwise
 
-            end
+        %         error('control type not recognized');
 
-            rsf = struct('beforeSwitchRegion', before, ...
-                         'afterSwitchRegion' , after);
+        %     end
 
-        end
+        %     rsf = struct('beforeSwitchRegion', before, ...
+        %                  'afterSwitchRegion' , after);
+
+        % end
 
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
