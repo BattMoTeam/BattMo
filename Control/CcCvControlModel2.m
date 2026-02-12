@@ -33,6 +33,7 @@ classdef CcCvControlModel2 < ControlModel
 
         %
         switchTolerances
+
     end
 
 
@@ -106,17 +107,17 @@ classdef CcCvControlModel2 < ControlModel
         end
 
 
-        function state = updateDerivatives(model, state, state0, dt)
+        % function state = updateDerivatives(model, state, state0, dt)
 
-            E  = state.E;
-            I  = state.I;
-            E0 = state0.E;
-            I0 = state0.I;
+        %     E  = state.E;
+        %     I  = state.I;
+        %     E0 = state0.E;
+        %     I0 = state0.I;
 
-            state.dIdt = (I - I0)/dt;
-            state.dEdt = (E - E0)/dt;
+        %     state.dIdt = (I - I0)/dt;
+        %     state.dEdt = (E - E0)/dt;
 
-        end
+        % end
 
 
         function ctrlVal = computeInput(model, t)
@@ -130,7 +131,7 @@ classdef CcCvControlModel2 < ControlModel
 
             state = updateControlState@ControlModel(model, state, state0, dt);
 
-            state = model.updateDerivatives(state, state0, dt);
+            % state = model.updateDerivatives(state, state0, dt);
 
             Emin = model.lowerCutoffVoltage;
             Emax = model.upperCutoffVoltage;
@@ -226,29 +227,29 @@ classdef CcCvControlModel2 < ControlModel
 
             ncycles   = state0.numberOfCycles;
 
-            state = model.updateDerivatives(state, state0, dt);
+            %state = model.updateDerivatives(state, state0, dt);
 
             state.ctrlType0 = state.ctrlType;
 
-            switch initctrl
+            % switch initctrl
 
-              case 'charging'
+            %   case 'charging'
 
-                if ismember(ctrlType0, {'CC_discharge1', 'CC_discharge2'}) && ismember(ctrlType, {'CC_charge1', 'CV_charge2'})
-                    ncycles = ncycles + 1;
-                end
+            %     if ismember(ctrlType0, {'CC_discharge1', 'CC_discharge2'}) && ismember(ctrlType, {'CC_charge1', 'CV_charge2'})
+            %         ncycles = ncycles + 1;
+            %     end
 
-              case 'discharging'
+            %   case 'discharging'
 
-                if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'})
-                    ncycles = ncycles + 1;
-                end
+            %     if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'})
+            %         ncycles = ncycles + 1;
+            %     end
 
-              otherwise
+            %   otherwise
 
-                error('initctrl not recognized');
+            %     error('initctrl not recognized');
 
-            end
+            % end
 
             state.numberOfCycles = ncycles;
 
