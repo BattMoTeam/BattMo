@@ -123,8 +123,6 @@ classdef CcCvControlModel2 < ControlModel
 
             ctrlVal = interp1(model.times, model.values, t);
 
-            % fprintf('Input %g s: %g A\n', t, ctrlVal);
-
         end
 
 
@@ -162,116 +160,12 @@ classdef CcCvControlModel2 < ControlModel
             end
 
             state.ctrlType = ctrlType;
-            % state = model.updateValueFromControl(state);
 
-
-            % fprintf('Received %g A (%g V)\n', state.I, state.E);
-
-            % if ~isfield(state, 'ctrlType')
-            %     return
-            % end
-
-            % rsw00     = model.setupRegionSwitchFlags(state0, state0.ctrlType);
-            % ctrlType0 = state0.ctrlType;
-
-            % if state.E < model.lowerCutoffVoltage
-            %     keyboard;
-            % end
-
-            % if rsw00.beforeSwitchRegion
-
-            %     % We have not entered the switching region in the time
-            %     % step. We are not going to change control in this
-            %     % step.
-            %     ctrlType = ctrlType0;
-
-            % else
-
-            %     % We entered the switch region in previous time step.
-
-            %     currentCtrlType = state.ctrlType; % current control in the the Newton iteration
-            %     nextCtrlType0   = model.getNextCtrlType(ctrlType0); % next control that can occur afte the previous time step control (if it changes)
-
-            %     rsw0 = model.setupRegionSwitchFlags(state, ctrlType0);
-
-            %     switch currentCtrlType
-
-            %       case ctrlType0
-
-            %         % The control has not changed from previous time
-            %         % step and we want to determine if we should
-            %         % change it.
-
-            %         if rsw0.afterSwitchRegion
-
-            %             % We switch to a new control because we are no
-            %             % longer in the acceptable region for the
-            %             % current control
-            %             ctrlType = nextCtrlType0;
-
-            %         else
-
-            %             ctrlType = ctrlType0;
-
-            %         end
-
-            %       case nextCtrlType0
-
-            %         % We do not switch back to avoid oscillation. We
-            %         % are anyway within the given tolerance for the
-            %         % control so that we keep the control as it is.
-
-            %         ctrlType = nextCtrlType0;
-
-            %       otherwise
-
-            %         error('control type not recognized');
-
-            %     end
-
-            % end
-
-            % state.ctrlType = ctrlType;
-            % state = model.updateValueFromControl(state);
 
         end
 
-        % function state = updateValueFromControl(model, state)
-
-        %     % ImaxD = model.ImaxDischarge;
-        %     % ImaxC = model.ImaxCharge;
-        %     Emin  = model.lowerCutoffVoltage;
-        %     Emax  = model.upperCutoffVoltage;
-
-        %     switch state.ctrlType
-
-        %       case 'current'
-
-        %         %state.I = ImaxD;
-        %         state.I = state.ctrlVal;
-
-        %       case 'Emin'
-
-        %         % state.I = 0; % ?
-        %         state.E = Emin;
-
-        %       case 'Emax'
-
-        %         % state.I = 0; % ?
-        %         state.E = Emax;
-
-        %       otherwise
-
-        %         error('ctrlType %s not recognized.', state.ctrlType)
-
-        %     end
-
-        % end
-
         function state = updateControlEquation(model, state)
 
-            ImaxD = model.ImaxDischarge;
-            ImaxC = model.ImaxCharge;
             Emin  = model.lowerCutoffVoltage;
             Emax  = model.upperCutoffVoltage;
 
@@ -281,11 +175,8 @@ classdef CcCvControlModel2 < ControlModel
 
             switch ctrlType
               case 'current'
-                %ctrleq = I - ImaxD;
                 ctrleq = I - state.ctrlVal;
               case 'Emin'
-                %ctrleq = I;
-                % TODO fix scaling
                 ctrleq = (E - Emin)*1e5;
               case 'Emax'
                 ctrleq = (E - Emax)*1e5;
@@ -325,65 +216,6 @@ classdef CcCvControlModel2 < ControlModel
             arefulfilled = true;
 
         end
-
-        % function rsf = setupRegionSwitchFlags(model, state, ctrlType)
-
-        %     Emin    = model.lowerCutoffVoltage;
-        %     Emax    = model.upperCutoffVoltage;
-        %     dIdtMin = model.dIdtLimit;
-        %     dEdtMin = model.dEdtLimit;
-        %     tols    = model.switchTolerances;
-
-        %     E    = state.E;
-        %     I    = state.I;
-
-        %     switch ctrlType
-
-        %       case 'CC_discharge1'
-
-        %         before = E > Emin*(1 + tols.(ctrlType));
-        %         after  = E < Emin*(1 - tols.(ctrlType));
-
-        %       case 'CC_discharge2'
-
-        %         if isfield(state, 'dEdt')
-        %             dEdt = state.dEdt;
-        %             before = abs(dEdt) > dEdtMin*(1 + tols.(ctrlType));
-        %             after  = abs(dEdt) < dEdtMin*(1 - tols.(ctrlType));
-        %         else
-        %             before = false;
-        %             after  = false;
-        %         end
-
-        %         % before = I < state.ctrlVal;
-        %         % after =
-
-        %       case 'CC_charge1'
-
-        %         before = E < Emax*(1 - tols.(ctrlType));
-        %         after  = E > Emax*(1 + tols.(ctrlType));
-
-        %       case 'CV_charge2'
-
-        %         if isfield(state, 'dIdt')
-        %             dIdt = state.dIdt;
-        %             before = abs(dIdt) > dIdtMin*(1 + tols.(ctrlType));
-        %             after  = abs(dIdt) < dIdtMin*(1 - tols.(ctrlType));
-        %         else
-        %             before = false;
-        %             after  = false;
-        %         end
-
-        %       otherwise
-
-        %         error('control type not recognized');
-
-        %     end
-
-        %     rsf = struct('beforeSwitchRegion', before, ...
-        %                  'afterSwitchRegion' , after);
-
-        % end
 
         function state = updateControlAfterConvergence(model, state, state0, dt)
 
@@ -439,54 +271,7 @@ classdef CcCvControlModel2 < ControlModel
         function step = setupScheduleStep(model)
 
             dt = diff(model.times);
-            step = struct('val', dt, ...
-                          'control', ones(numel(dt), 1));
-
-            % % Setup and a return the step structure that is part of the schedule which is used as input for
-            % % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
-            % % why we include this method here, for convenience. It can be overloaded by derived classes. The
-            % % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
-
-            %     if (nargin > 1)
-            %         params = timeSteppingParams;
-            %     else
-            %         params = [];
-            %     end
-
-            %     params = model.parseTimeSteppingStruct(params);
-
-            %     CRate   = model.CRate;
-            %     DRate   = model.DRate;
-            %     ncycles = model.numberOfCycles;
-
-            %     if isempty(ncycles)
-            %         totalTime = params.totalTime;
-            %     else
-            %         if ~isempty(params.totalTime)
-            %             warning('Both the total time and the number of cycles are given. We do not use the given total time value but compute it instead from the number of cycles.');
-            %         end
-            %         totalTime = ncycles*1.2*(1*hour/CRate + 1*hour/DRate);
-            %     end
-
-            %     if ~isempty(params.timeStepDuration)
-            %         dt = params.timeStepDuration;
-            %     else
-            %         if isempty(params.numberOfTimeSteps)
-            %             error('No timeStepDuration and numberOfTimeSteps are given');
-            %         end
-            %         n  = params.numberOfTimeSteps;
-            %         dt = totalTime/n;
-            %     end
-
-            %     if params.useRampup
-            %         n = params.numberOfRampupSteps;
-            %     else
-            %         n = 0;
-            %     end
-
-            %     dts = rampupTimesteps(totalTime, dt, n);
-
-            %     step = struct('val', dts, 'control', ones(numel(dts), 1));
+            step = struct('val', dt, 'control', ones(numel(dt), 1));
 
         end
 
@@ -496,39 +281,6 @@ classdef CcCvControlModel2 < ControlModel
 
             control = setupScheduleControl@ControlModel(model);
             control.CCCV2 = true;
-
-        end
-
-    end
-
-
-    methods(Static)
-
-        function nextCtrlType = getNextCtrlType(ctrlType)
-
-            switch ctrlType
-
-              case 'CC_discharge1'
-
-                nextCtrlType = 'CC_discharge2';
-
-              case 'CC_discharge2'
-
-                nextCtrlType = 'CC_charge1';
-
-              case 'CC_charge1'
-
-                nextCtrlType = 'CV_charge2';
-
-              case 'CV_charge2'
-
-                nextCtrlType = 'CC_discharge1';
-
-              otherwise
-
-                error('ctrlType not recognized.')
-
-            end
 
         end
 
