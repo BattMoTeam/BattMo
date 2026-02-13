@@ -59,6 +59,10 @@ classdef CcCvControlModelInputParams2 < ControlModelInputParams
             inputparams.times = jsonstruct.times;
             inputparams.values = jsonstruct.values;
 
+            assert(all(isfinite(inputparams.times)), 'Times must be finite');
+            assert(all(diff(inputparams.times) > 0), 'Times must be strictly increasing');
+            assert(all(isfinite(inputparams.values)), 'Values must be finite');
+
         end
 
     end
