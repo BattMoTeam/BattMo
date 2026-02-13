@@ -106,20 +106,6 @@ classdef CcCvControlModel2 < ControlModel
 
         end
 
-
-        % function state = updateDerivatives(model, state, state0, dt)
-
-        %     E  = state.E;
-        %     I  = state.I;
-        %     E0 = state0.E;
-        %     I0 = state0.I;
-
-        %     state.dIdt = (I - I0)/dt;
-        %     state.dEdt = (E - E0)/dt;
-
-        % end
-
-
         function ctrlVal = computeInput(model, t)
 
             ctrlVal = interp1(model.times, model.values, t);
@@ -182,7 +168,7 @@ classdef CcCvControlModel2 < ControlModel
               case 'Emax'
                 ctrleq = (E - Emax)*1e5;
               otherwise
-                error('ctrlType not recognized');
+                error('ctrlType %s not recognized', ctrlType);
             end
 
             state.controlEquation = ctrleq;
@@ -191,7 +177,7 @@ classdef CcCvControlModel2 < ControlModel
 
         function cleanState = addStaticVariables(model, cleanState, state)
 
-            cleanState.numberOfCycles = state.numberOfCycles;
+            %cleanState.numberOfCycles = state.numberOfCycles;
             cleanState.ctrlType       = state.ctrlType;
 
         end
@@ -225,40 +211,12 @@ classdef CcCvControlModel2 < ControlModel
             ctrlType  = state.ctrlType;
             ctrlType0 = state0.ctrlType;
 
-            ncycles   = state0.numberOfCycles;
-
-            %state = model.updateDerivatives(state, state0, dt);
+            %ncycles   = state0.numberOfCycles;
 
             state.ctrlType0 = state.ctrlType;
 
-            % switch initctrl
+            %state.numberOfCycles = ncycles;
 
-            %   case 'charging'
-
-            %     if ismember(ctrlType0, {'CC_discharge1', 'CC_discharge2'}) && ismember(ctrlType, {'CC_charge1', 'CV_charge2'})
-            %         ncycles = ncycles + 1;
-            %     end
-
-            %   case 'discharging'
-
-            %     if ismember(ctrlType0, {'CC_charge1', 'CV_charge2'}) && ismember(ctrlType, {'CC_discharge1', 'CC_discharge2'})
-            %         ncycles = ncycles + 1;
-            %     end
-
-            %   otherwise
-
-            %     error('initctrl not recognized');
-
-            % end
-
-            state.numberOfCycles = ncycles;
-
-
-        end
-
-        function func = setupStopFunction(model)
-
-            func = @(mainModel, state, state_prev) (state.Control.numberOfCycles >= mainModel.Control.numberOfCycles);
 
         end
 
