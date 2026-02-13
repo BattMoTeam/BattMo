@@ -948,7 +948,9 @@ classdef GenericBattery < BaseModel
 
                 initstate.(ctrl).numberOfCycles = 0;
 
-                initstate.(ctrl).I = model.(ctrl).computeInput(0.0);
+                % Time might start > 0.0
+                %initstate.(ctrl).I = model.(ctrl).computeInput(0.0);
+                initstate.(ctrl).I = model.(ctrl).values(1);
 
                 initstate.(ctrl).ctrlType = 'current';
 
