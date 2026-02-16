@@ -1424,7 +1424,6 @@ classdef GenericBattery < BaseModel
                 F      = model.(elde).(co).(am).(itf).constants.F;
                 n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
                 co_map = model.(elde).(co).G.mappings.cellmap;
-                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
