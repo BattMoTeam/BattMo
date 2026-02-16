@@ -19,13 +19,13 @@ classdef Coating < ElectronicComponent
         effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
         
-        activeMaterialModelSetup % Structure which describes the chose model, see schema in Utilities/JsonSchemas/Coating.schema.json. Here, we summarize
+        activeMaterialModelSetup % Structure which describes the chosen model, see schema in Utilities/JsonSchemas/Coating.schema.json. Here, we summarize
                               % - 'composite' : boolean (default is false)
                               % - 'SEImodel' : string with one of
                               %                 "none" (default)
                               %                 "Safari"
                               %                 "Bolay"
-        
+                              % - 'swelling' : boolean (default is false)
         % Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
         volumeFraction

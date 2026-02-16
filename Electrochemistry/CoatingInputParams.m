@@ -51,7 +51,11 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
-            
+
+            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+                                                 {'activeMaterialModelSetup', 'swelling'}, ...
+                                                 {'diffusionModelType', 'swelling'});
+                        
             [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
                                                                    {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                    {'ActiveMaterial', 'SEImodel'});
@@ -87,8 +91,6 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
             else
-
-                isSwelling = getJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'});
 
                 am = 'ActiveMaterial';
 

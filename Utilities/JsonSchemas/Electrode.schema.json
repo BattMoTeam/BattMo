@@ -6,7 +6,14 @@
   
   "properties" : {
     "Coating" : {"$ref" : "Coating.schema.json"},
-    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"}
+    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"},
+    "coatingModelSetup" : {
+      "type" : "object",
+      "properties" : {
+        "swelling" : {
+          "type" : "boolean",
+          "description" : "true if swelling is considered in the model, false otherwise. default is false"}
+      }
+    }
   }
-
 }

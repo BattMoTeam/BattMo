@@ -15,7 +15,9 @@
             "composite" : {"type" : "boolean",
                            "description" : "default is false. It true, setup a composite material with two active materials, using fields ActiveMaterial1 and ActiveMaterial2"},
             "SEImodel" : {"type" : "string",
-                          "enum" : ["none", "Safari", "Bolay"]}}},
+                          "enum" : ["none", "Safari", "Bolay"]},
+            "swelling" : {"type" : "boolean",
+                          "description" : "true if swelling. Default is false"}}},
         "ActiveMaterial": {
           "$ref": "ActiveMaterial.schema.json"
         },
@@ -60,6 +62,11 @@
         "effectiveThermalConductivity" : {
           "$ref": "PhysicalQuantity.schema.json",
           "description": "the effective thermal conductivity, which take into account the volume fraction and the bruggeman coefficient. This value is in the default setup computed, but the value given here will overwrite the default computed value."
+        },
+        "referenceStoichiometry" : {
+          "type" : "number",
+          "description" : "This reference value for stoichiometry is used when swelling is considered. It gives then the stoichiometry which
+corresponds to the given volume fraction."
         }
       }
     },

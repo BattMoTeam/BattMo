@@ -1,5 +1,12 @@
 classdef SwellingCoatingInputParams < CoatingInputParams
 
+    properties
+
+        molarMass
+        referenceStoichiometry
+        
+    end
+    
     methods
 
         function inputparams = SwellingCoatingInputParams(jsonstruct)

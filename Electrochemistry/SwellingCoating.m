@@ -1,12 +1,11 @@
 classdef SwellingCoating < Coating
 
-    % Same class as ActiveMaterial but with a new primaryVariable
-    % (porosity). Some properties depending on porosity are thus no more constant
-
     
     properties
         
         molarMass
+        referenceStoichiometry % stoichiometry which corresponds to the given volumeFraction of the coating
+
         includeHydrostaticStress = false;
         
     end

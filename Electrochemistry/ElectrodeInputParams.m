@@ -16,7 +16,7 @@ classdef ElectrodeInputParams < ComponentInputParams
         %% coating model setup structure
 
         coatingModelSetup % structure that determines the type of coating with field
-                          % - swelling : boolean, true if swelling coating is used
+                          % - swelling : boolean, true if swelling coating is used. default is false
 
         %% Parameters assigned at setup
 
@@ -54,10 +54,6 @@ classdef ElectrodeInputParams < ComponentInputParams
             
             is_swelling = getJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
 
-            if is_swelling
-                jsonstruct = setJsonStructField(jsonstruct, {co, am, 'diffusionModelType'}, 'swelling');
-            end
-            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);

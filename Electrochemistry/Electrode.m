@@ -18,7 +18,7 @@ classdef Electrode < BaseModel
         %% coating model setup structure
 
         coatingModelSetup % structure that determines the type of coating with field
-                          % - swelling : boolean, true if swelling coating is used
+                          % - swelling : boolean, true if swelling coating is used. Default is false
         
         %% Computed parameters at setup
 
