@@ -13,7 +13,7 @@ mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 clear all
 close all
 
-mrstDebug(20);
+% mrstDebug(20);
 
 %%% Specifying the physical model
 % In this tutorial we will simulate a lithium-ion battery consisting of a 
@@ -89,8 +89,8 @@ inputparams = BatteryInputParams(jsonstruct);
 % model can be found here:
 % :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
 
-inputparams.(ne).(co).(am).(sd).N = 2;
-inputparams.(pe).(co).(am).(sd).N = 2;
+inputparams.(ne).(co).(am).(sd).N = 5;
+inputparams.(pe).(co).(am).(sd).N = 5;
 
 %%% Setting up the geometry
 % Here, we setup the 1D computational mesh that will be used for the
@@ -99,9 +99,9 @@ inputparams.(pe).(co).(am).(sd).N = 2;
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
 gen = BatteryGeneratorP2D();
-gen.sepnx = 2; % discretization number for negative current collector (default = 10)
-gen.nenx  = 2; % discretization number for negative active material (default = 10)
-gen.penx  = 2; % discretization number for separator (default = 10)
+gen.sepnx = 10; % discretization number for negative current collector (default = 10)
+gen.nenx  = 10; % discretization number for negative active material (default = 10)
+gen.penx  = 10; % discretization number for separator (default = 10)
 
 %%%
 % Now, we update the inputparams with the properties of the mesh. This function
@@ -166,7 +166,7 @@ cgit.printRootVariables
 % We set the total time scaled by the CRate in the model.
 % The CRate has been set by the json file. We can access it here:
 
-timestep.timeStepDuration = 100;
+timestep.numberOfTimeSteps = 100;
 
 step    = model.Control.setupScheduleStep(timestep);
 control = model.Control.setupScheduleControl();
@@ -233,20 +233,7 @@ initstate = model.setupInitialState(jsonstruct);
 nls = NonLinearSolver;
 nls.errorOnFailure = false;
 
-[wellSols, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
-
-return
-
-
-%%%
-% The outputs from the simulation are:
-% - wellSols: which provides the current and voltage of the battery at each 
-% timestep. (This naming convention is a hangover from MRST where we model
-% reservoir injection via injection wells).
-% - states: which contains the values of the primary variables in the model
-% at each timestep.
-% - reports: which contains technical information about the steps used in
-% the numerical solvers.
+[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
 
 
 %% Plotting the results
@@ -277,6 +264,7 @@ plot(T/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
 
+
 %% Plot the overpotential of the negative electrode as a function of time
 
 for istate = 1 : numel(states)
@@ -285,330 +273,70 @@ end
 
 %%
 
-subplot(2,2,3)
+figure
 hold on
+
 negativeElectrodeSize = model.(ne).grid.cells.num;
-L = "x = 1";
+L = {};
 
 for i = 1 : negativeElectrodeSize
 
     eta = cellfun(@(state) state.(ne).(co).(am).(itf).eta(i), states);
     plot(T/hour, eta);
-
-    if i > 1
-        
-        L(end+1) = "x = " + int2str(i);
-        
-    end
+    L{end + 1} = "x = " + int2str(i);
     
 end
+
 xlabel('time [hours]')
 ylabel('Eta of the Negative electrode')
 legend(L);
 
-%% Plot of the porosity as a function of the time for different position across the negative electrode
+
 
 % Plot the porosity as a function of the position for different times
-subplot(2,2,4)
-hold on
-negativeElectrodeSize = gen.xlength(2);
-N_elements_ne = gen.nenx;
-deltaX = (negativeElectrodeSize/(N_elements_ne-1)) * 10^6;
-totalTime = length(T);
-
-position = [];
-for x = 1:N_elements_ne
-    position(end+1) = (x - 1)*deltaX;
-end
-
-
-%% Plot of porosity as a function of time
-
-for t = 1:totalTime
-    hold on
-    %Only draw the curve for timestep multiples
-    if t < 80
-        timestep = 8;
-    else
-        timestep = 110;
-    end
-    if mod(t,timestep) == 0
-        porosity = [];
-        for i = 1 : N_elements_ne
-            porosity(end+1) = states{t}.(ne).(co).porosity(i);
-        end
-        
-        plot(position, porosity);
-
-        if t > 1
-            t = T(t)/hour;
-            legendTime(end+1) = "t = " + num2str(t,2) + " hour";
-        end
-    end 
-end
-xlabel('Position across the Negative Electrode (in µm)')
-ylabel('Porosity of the Negative Electrode')
-legend(legendTime);
-
-
-%% Plot the porosity near the current collector on the negative electrode as a function of the state of charge
 
 figure
- 
-ne_itf = model.(ne).(co).(am).(itf);
-ne_sd  = model.(ne).(co).(am).SolidDiffusion;
+hold on
 
-totalTime = states{numel(states)}.time;
+negativeElectrodeSize = model.(ne).grid.cells.num;
+L = {};
 
-theta100 = ne_itf.guestStoichiometry100;
-theta0   = ne_itf.guestStoichiometry0;
-cmax     = ne_itf.saturationConcentration;
-r0       = ne_sd.particleRadius;
-F        = model.con.F;
+for i = 1 : negativeElectrodeSize
 
-soc      = [];
-porosity = [];
-
-for ind = 1 : numel(T)
-    
-    cAverage = states{ind}.(ne).(co).(am).(sd).cAverage(1);
-    
-    theta = cAverage/cmax;
-    
-    poros = states{ind}.(ne).(co).porosity(1);
-    
-    stoc = (theta - theta0)./(theta100 - theta0);
-    
-    soc(end + 1)      = stoc;
-    porosity(end + 1) = poros;
+    poro = cellfun(@(state) 1 - state.(ne).(co).volumeFraction(i), states);
+    plot(T/hour, poro);
+    L{end + 1} = "x = " + int2str(i);
     
 end
 
-plot(soc, porosity,'LineWidth',1.2);
-axis([0 1 0 1]);
-axis square;
+xlabel('time [hours]')
+ylabel('porosity')
+legend(L);
 
-xlabel('State of Charge near the current collector')
-ylabel('Porosity near the current collector')
 
 %% Plot the radius evolution
 
-figure
-
-ne_itf = model.(ne).(co).(am).(itf);
-ne_sd  = model.(ne).(co).(am).SolidDiffusion;
-
-Y = [];
-X = [];
-
-
-N = model.(ne).(co).(am).(sd).N;
-
-for t = 1:numel(states)
-
-    sumTheta = 0;
-    for x = 1:N_elements_ne       
-        sumConcentrations = 0;
-        for i = 1:N
-            c = states{t}.(ne).(co).(am).(sd).c((x-1)*N +i);
-            sumConcentrations = sumConcentrations + c;
-        end
-        cAverage = sumConcentrations/N;
-        
-        radius = computeRadius(cAverage, cmax,r0);
-    end
+for istate = 1 : numel(states)
+    states{istate} = model.evalVarName(states{istate}, {ne, co, am, sd, 'radius'});
+end
     
-    Y(end+1) = radius;
-    X(end+1) = T(t)/hour;
+figure
+hold on
+
+negativeElectrodeSize = model.(ne).grid.cells.num;
+L = {};
+
+for i = 1 : negativeElectrodeSize
+
+    radius = cellfun(@(state) state.(ne).(co).(am).(sd).radius(i), states);
+    plot(T/hour, radius);
+    L{end + 1} = "x = " + int2str(i);
+    
 end
 
-plot(X, Y);
+xlabel('time [hours]')
 ylabel('Silicon particle radius')
-xlabel('Time (in hours)')
-
-
-%% Plot SOC for each electrode as a function of time
-
-figure
-subplot(2,1,1)
-
-ne_itf = model.(ne).(co).(am).(itf);
-ne_sd  = model.(ne).(co).(am).SolidDiffusion;
-
-totalTime = length(T);
-realTotalTime = states{totalTime}.time;
-
-guestStoichiometry100 = ne_itf.guestStoichiometry100;
-guestStoichiometry0   = ne_itf.guestStoichiometry0;
-cmax                  = ne_itf.saturationConcentration;
-r0                    = ne_sd.particleRadius;
-F                     = model.con.F;
-N                     = ne_sd.N;
-N_elements_ne         = gen.nenx;
-
-
-Y = [];
-X = [];
-
-for t = 1:numel(states)
-
-
-    state = states{t};
-    state.(ne).(am).SolidDiffusion = model.(ne).(co).(am).(sd).updateAverageConcentration(state.(ne).(co).(am).SolidDiffusion);
-    cAverage = state.(ne).(co).(am).(sd).cAverage;
-
-    vols = model.(ne).(co).grid.cells.volumes;
-
-    theta = (sum(vols .* cAverage))./(sum(vols).* cmax);
-
-    %sumTheta = 0;
-    %    for x = 1:N_elements_ne       
-    %    sumConcentrations = 0;
-    %    for i = 1:N
-    %        c = states{t}.(ne).(co).(am).(sd).c((x-1)*N +i);
-    %        sumConcentrations = sumConcentrations + c;
-    %    end
-    %    cAverage = sumConcentrations/N;
-    %
-    %    theta = cAverage/cmax;
-    %
-    %    sumTheta = sumTheta + theta;
-    %    end
-    %    theta = sumTheta/N_elements_ne;
-    %
-    soc = (theta - guestStoichiometry0)/(guestStoichiometry100 - guestStoichiometry0);
-
-
-    Y(end+1) = soc;
-    X(end+1) = T(t)/hour;
-end
-
-plot(X, Y);
-
-ylabel('State of Charge in the NEGATIVE ELECTRODE')
-xlabel('Time (in hours)')
-
-
-subplot(2,1,2)
-
-po_itf = model.(pe).(co).(am).(itf);
-po_sd  = model.(pe).(co).(am).SolidDiffusion;
-
-totalTime = length(T);
-realTotalTime = states{totalTime}.time;
-
-guestStoichiometry100 = po_itf.guestStoichiometry100;
-guestStoichiometry0   = po_itf.guestStoichiometry0;
-cmax                  = po_itf.saturationConcentration;
-r0                    = po_sd.particleRadius;
-F                     = model.con.F;
-N                     = po_sd.N;
-N_elements_pe         = gen.penx;
-
-
-Y = [];
-X = [];
-
-for t = 1:totalTime
-
-    sumTheta = 0;
-    for x = 1:N_elements_pe
-        sumConcentrations = 0;
-        for i = 1:N
-            c = states{t}.(pe).(co).(am).(sd).c((x-1)*N + i);
-            sumConcentrations = sumConcentrations + c;
-        end
-        cAverage = sumConcentrations/N;    
-        theta = cAverage/cmax;
-
-        sumTheta = sumTheta + theta;
-    end
-    theta = sumTheta/N_elements_pe;
-
-    soc = (theta-guestStoichiometry100)/(guestStoichiometry0-guestStoichiometry100);
-
-    Y(end+1) = soc;
-    X(end+1) = T(t)/hour;
-end
-
-plot(X, Y);
-
-ylabel('State of charge in the POSITIVE ELECTRODE')
-xlabel('Time (in hours)')
-
-return
-
-%%
-
-figure
-
-ne_itf = model.(ne).(co).(am).(itf);
-ne_sd  = model.(ne).(co).(am).SolidDiffusion;
-
-totalTime = length(T);
-realTotalTime = states{totalTime}.time;
-
-guestStoichiometry100 = ne_itf.guestStoichiometry100;
-guestStoichiometry0   = ne_itf.guestStoichiometry0;
-cmax     = ne_itf.cmax;
-r0       = ne_sd.rp;
-F        = model.con.F;
-N        = ne_sd.N;
-N_elements_ne = gen.nenx;
-
-
-Y = [];
-X = [];
-
-for t = 1:totalTime
-
-    vf_ne = model.(ne).(co).(am).Interface.volumeFraction;
-    vf_pe = model.(pe).(co).(am).Interface.volumeFraction;
-    porosElyte = model.(elyte).volumeFraction;
-    rp0_ne = model.(ne).(co).(am).(sd).rp;
-    rp0_pe = model.(pe).(co).(am).(sd).rp;
-
-    state = states{t};
-
-    state.(ne).(co).(am).SolidDiffusion = model.(ne).(co).(am).(sd).updateAverageConcentration(state.(ne).(co).(am).SolidDiffusion);
-    state.(pe).(co).(am).SolidDiffusion = model.(pe).(co).(am).(sd).updateAverageConcentration(state.(pe).(co).(am).SolidDiffusion);
-    
-    cAverageNE = state.(ne).(co).(am).(sd).cAverage;
-    cAveragePE = state.(pe).(co).(am).(sd).cAverage;
-    cAverageElyte  = state.(elyte).c;
-    
-    vol_part_ne = (4/3).* pi .* rp0_ne .^3;
-    vol_part_pe = (4/3).* pi .* rp0_pe .^3;
-    vols_ne = model.(ne).(co).grid.cells.volumes;
-    vols_pe = model.(pe).(co).grid.cells.volumes;
-    volsElyte = model.(elyte).grid.cells.volumes;
-
-    Npart_ne = vf_ne / ((4/3) .* pi.* rp0_ne.^3);
-    Npart_pe = vf_pe / ((4/3) .* pi.* rp0_pe .^3);
-
-
-    NLi_ne = sum(Npart_ne .* vols_ne .* cAverageNE .* vol_part_ne);
-    NLi_pe = sum(Npart_pe .* vols_pe .* cAveragePE .* vol_part_pe);
-    NLi_elyte = sum(volsElyte .* porosElyte .* cAverageElyte);
-
-    state.(ne).(co).(am) = model.(ne).(co).(am).updateRvol(state.(ne).(co).(am));
-    state.(pe).(co).(am) = model.(pe).(co).(am).updateRvol(state.(pe).(co).(am));
-
-    Rvol_ne = state.(ne).(co).(am).Rvol;
-    Rvol_pe = state.(ne).(co).(am).Rvol;
-
-    Term 
-    
-    Y(end+1) = NLi_ne;
-    X(end+1) = T(t)/hour;
-end
-
-
-plot(X, Y);
-
-ylabel('total lithium quantity')
-xlabel('Time (in hours)')
-
+legend(L);
 
 %{
   Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
