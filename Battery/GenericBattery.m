@@ -920,7 +920,7 @@ classdef GenericBattery < BaseModel
                 vf = model.(ne).(co).volumeFraction;
                 nc = model.(ne).(co).G.getNumberOfCells();
                 
-                initstate.(ne).(co).porosity = (1 - vf) .* ones(nc, 1);
+                initstate.(ne).(co).volumeFraction = vf .* ones(nc, 1);
                 
             end
 
@@ -1151,7 +1151,7 @@ classdef GenericBattery < BaseModel
             c         = state.(elyte).c;
             vf        = state.(elyte).volumeFraction;
             c0        = state0.(elyte).c;
-            porosity0 = state0.(ne).(co).porosity;
+            porosity0 = 1 - state0.(ne).(co).volumeFraction;
 
             elyte_cells = zeros(model.G.getNumberOfCells(), 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
@@ -1897,13 +1897,6 @@ classdef GenericBattery < BaseModel
                         error('diffusionModelType not recognized')
                     end
 
-                end
-
-                co = 'Coating';
-
-                if model.(elde).coatingModelSetup.swelling
-                    state.(elde).(co).porosity = min(1, state.(elde).(co).porosity);
-                    state.(elde).(co).porosity = max(0, state.(elde).(co).porosity);
                 end
                 
             end
