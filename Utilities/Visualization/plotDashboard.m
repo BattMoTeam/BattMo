@@ -6,8 +6,8 @@ function [fig] = plotDashboard(model, states, varargin)
 
     %% Parse inputs
     defaultStep         = length(states);
-    defaultTheme        = 'light';
-    expectedTheme       = {'dark', 'light', 'blue', 'offwhite'};
+    defaultTheme        = 'none';
+    expectedTheme       = {'dark', 'light', 'blue', 'offwhite', 'none'};
     defaultSize         = 'wide';
     expectedSize        = {'A4', 'square', 'wide'};
     defaultOrientation  = 'landscape';
@@ -44,10 +44,21 @@ function [fig] = plotDashboard(model, states, varargin)
     Enew = cellfun(@(state) state.(ctrl).E, states);
     Inew = cellfun(@(state) state.(ctrl).I, states);
 
-    if step ~= 0
+    if min(Inew) == max(Inew)
+        Imin = 0.8*min(Inew);
+        Imax = 1.2*max(Inew);
+    else
+        Imin = min(Inew);
+        Imax = max(Inew);
+    end
 
-        timeBar = [  time(step)/hour, 0; ...
-                     time(step)/hour, 1000];
+    if step ~= 0
+        % Show only this step (step == 0 means animation)
+
+        sgtitle(sprintf('step %g, time=%g h', step, time(step)/hour));
+
+        timeBar = [time(step)/hour, 0; ...
+                   time(step)/hour, 1000];
 
         if model.grid.griddim == 1
 
@@ -67,13 +78,15 @@ function [fig] = plotDashboard(model, states, varargin)
                 error('diffusionModelType not recognized');
             end
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m',  ...
+                    'xlabel', 'Position  /  µm',  ...
+                    'xscaling', 1/micro, ...
                     'title', 'Negative Electrode Concentration  /  mol \cdot L^{-1}');
 
             subplot(2,4,2);
             plotCellData(model.(elyte).grid, states{step}.(elyte).c ./ 1000, 'linewidth', 3);
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m', ...
+                    'xlabel', 'Position  /  µm', ...
+                    'xscaling', 1/micro, ...
                     'title', 'Electrolyte Concentration  /  mol \cdot L^{-1}');
 
             subplot(2,4,3)
@@ -86,18 +99,12 @@ function [fig] = plotDashboard(model, states, varargin)
                 error('diffusionModelType not recognized');
             end
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m', ...
+                    'xlabel', 'Position  /  µm', ...
+                    'xscaling', 1/micro, ...
                     'title', 'Positive Electrode Concentration  /  mol \cdot L^{-1}');
 
             subplot(2,4,4);
             plot((time/hour), Inew, '-', 'linewidth', 3)
-            if min(Inew) == max(Inew)
-                Imin = 0;
-                Imax = max(Inew);
-            else
-                Imin = min(Inew);
-                Imax = max(Inew);
-            end
             setPlot(gca, style, ...
                     'title', 'Cell Current  /  A', ...
                     'xlabel', 'Time  /  h', ...
@@ -108,19 +115,22 @@ function [fig] = plotDashboard(model, states, varargin)
             subplot(2,4,5);
             plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).phi, 'linewidth', 3);
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m',  ...
+                    'xlabel', 'Position  /  µm',  ...
+                    'xscaling', 1/micro, ...
                     'title', 'Negative Electrode Potential  /  V');
 
             subplot(2,4,6);
             plotCellData(model.(elyte).grid, states{step}.(elyte).phi, 'linewidth', 3);
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m', ...
+                    'xlabel', 'Position  /  µm', ...
+                    'xscaling', 1/micro, ...
                     'title', 'Electrolyte Potential  /  V');
 
             subplot(2,4,7);
             plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).phi, 'linewidth', 3);
             setPlot(gca, style, ...
-                    'xlabel', 'Position  /  m', ...
+                    'xlabel', 'Position  /  µm', ...
+                    'xscaling', 1/micro, ...
                     'title', 'Positive Electrode Potential  /  V');
 
             subplot(2,4,8);
@@ -132,7 +142,7 @@ function [fig] = plotDashboard(model, states, varargin)
                     'ylim', [min(Enew), max(Enew)], ...
                     'timeBar', timeBar);
 
-        else
+        else % 2D or 3D
 
             style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
             style.fontSize = 10;
@@ -146,19 +156,15 @@ function [fig] = plotDashboard(model, states, varargin)
                 error('diffusionModelType not recognized');
             end
 
-            xlabel(gca, 'Position  /  m')
-            ylabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
             colorbar
             axis tight
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
@@ -167,18 +173,15 @@ function [fig] = plotDashboard(model, states, varargin)
 
 
             subplot(2,4,2), plotCellData(model.(elyte).grid, states{step}.(elyte).c ./ 1000, 'edgealpha', 0.1);
-            xlabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
             colorbar
             axis tight
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
@@ -193,18 +196,15 @@ function [fig] = plotDashboard(model, states, varargin)
                 error('diffusionModelType not recognized');
             end
 
-            xlabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
             colormap(crameri('nuuk'));
             colorbar
             axis tight
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
@@ -217,65 +217,50 @@ function [fig] = plotDashboard(model, states, varargin)
             title('Cell Current  /  A')
             xlabel('Time  /  h')
             xlim([min(time/hour), max(time/hour)]);
-            ylim([min(Inew), max(Inew)]);
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            ylim([Imin, Imax]);
+            setGcaStyle(gca, style);
 
             subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{step}.(ne).(co).phi, 'edgealpha', 0.1);
-            xlabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Negative Electrode Potential  /  V')
             colormap(gca, crameri('lapaz'))
             colorbar
             axis tight
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
 
             subplot(2,4,6), plotCellData(model.(elyte).grid, states{step}.(elyte).phi, 'edgealpha', 0.1);
-            xlabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Electrolyte Potential  /  V')
             colormap(gca, crameri('lapaz'))
             colorbar
             axis tight
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
             end
 
             subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{step}.(pe).(co).phi, 'edgealpha', 0.1);
-            xlabel(gca, 'Position  /  m')
+            scaleAxis(gca, 'x', 1/micro);
+            scaleAxis(gca, 'y', 1/micro);
+            xlabel(gca, 'Position  /  µm')
+            ylabel(gca, 'Position  /  µm')
             title(gca, 'Positive Electrode Potential  /  V')
             colormap(gca, crameri('lapaz'))
             colorbar
             axis tight
 
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
             if model.grid.griddim == 3
                 view(45,45);
                 axis equal
@@ -289,19 +274,16 @@ function [fig] = plotDashboard(model, states, varargin)
             xlabel('Time  /  h')
             xlim([min(time/hour), max(time/hour)]);
             ylim([min(Enew), max(Enew)]);
-            set(gca, ...
-                'FontSize' , style.fontSize       , ...
-                'FontName' , style.fontName       , ...
-                'color'    , style.backgroundColor, ...
-                'XColor'   , style.fontColor      , ...
-                'YColor'   , style.fontColor      , ...
-                'GridColor', style.fontColor)
+            setGcaStyle(gca, style);
 
         end
         %     setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
-    else
+
+    else % step == 0, show ranges over all steps
 
         for i = 1 : length(states)
+
+            % Precompute things; don't plot yet
 
             if i == 1
 
@@ -351,7 +333,8 @@ function [fig] = plotDashboard(model, states, varargin)
                     zmin = min(model.(elyte).grid.nodes.coords(:,3));
                     zmax = max(model.(elyte).grid.nodes.coords(:,3));
                 end
-            else
+
+            else % i > 1
 
                 cmax_elyte = max(cmax_elyte, max(max(states{i}.(elyte).c ./ 1000)));
                 cmin_elyte = min(cmin_elyte, min(min(states{i}.(elyte).c ./ 1000)));
@@ -394,15 +377,20 @@ function [fig] = plotDashboard(model, states, varargin)
             end
         end
 
+        % Plot over all time steps like an animation
+
         for i = 1:length(states)
 
-            timeBar = [  time(i)/hour, 0; ...
-                         time(i)/hour, 1000];
+            sgtitle(sprintf('step %g, time=%g h', i, time(i)/hour));
+
+            timeBar = [time(i)/hour, 0; ...
+                       time(i)/hour, 1000];
 
             if i == 1
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
             end
+
             if model.grid.griddim == 1
 
                 switch model.(ne).(co).(am).diffusionModelType
@@ -413,33 +401,21 @@ function [fig] = plotDashboard(model, states, varargin)
                   otherwise
                     error('diffusionModelType not recognized');
                 end
-
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Negative Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([cmin_ne, cmax_ne])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
                 subplot(2,4,2), plotCellData(model.(elyte).grid, states{i}.(elyte).c ./ 1000, 'linewidth', 3);
 
-
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Electrolyte Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([cmin_elyte, cmax_elyte])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
 
                 switch model.(pe).(co).(am).diffusionModelType
@@ -451,17 +427,12 @@ function [fig] = plotDashboard(model, states, varargin)
                     error('diffusionModelType not recognized');
                 end
 
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([cmin_pe, cmax_pe])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
                 subplot(2,4,4), plot((time/hour), Inew, '-', 'linewidth', 3)
                 hold on
@@ -470,53 +441,32 @@ function [fig] = plotDashboard(model, states, varargin)
                 title('Cell Current  /  A', 'color', style.fontColor)
                 xlabel('Time  /  h')
                 xlim([min(time/hour), max(time/hour)]);
-                ylim([min(Inew), max(Inew)]);
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                ylim([Imin, Imax]);
+                setGcaStyle(gca, style);
 
                 subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).phi, 'linewidth', 3);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Negative Electrode Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([phimin_ne, phimax_ne])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
                 subplot(2,4,6), plotCellData(model.(elyte).grid, states{i}.(elyte).phi, 'linewidth', 3);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Electrolyte Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([phimin_elyte, phimax_elyte])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
                 subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).phi, 'linewidth', 3);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Positive Electrode Potential  /  V', 'color', style.fontColor)
                 xlim([xmin, xmax])
                 ylim([phimin_pe, phimax_pe])
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
                 subplot(2,4,8), plot((time/hour), Enew, '-', 'linewidth', 3)
                 hold on
@@ -526,15 +476,10 @@ function [fig] = plotDashboard(model, states, varargin)
                 xlabel('Time  /  h')
                 xlim([min(time/hour), max(time/hour)]);
                 ylim([min(Enew), max(Enew)]);
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
 
-            else
+            else % 2D or 3D
+
                 style = setFigureStyle('theme', p.Results.theme, 'size', p.Results.size, 'orientation', p.Results.orientation, 'quantity', 'single');
                 style.fontSize = 10;
 
@@ -547,13 +492,15 @@ function [fig] = plotDashboard(model, states, varargin)
                     error('diffusionModelType not recognized');
                 end
                 setPlot(gca, style, ...
-                        'xlabel', 'Position  /  m',  ...
+                        'xlabel', 'Position  /  µm',  ...
+                        'xscaling', 1/micro', ...
                         'title', 'Negative Electrode Concentration  /  mol \cdot L^{-1}', ...
                         'clim', [cmin_ne, cmax_ne]);
 
                 subplot(2,4,2), plotCellData(model.(elyte).grid, states{i}.(elyte).c ./ 1000, 'edgealpha', 0.1);
                 setPlot(gca, style, ...
-                        'xlabel', 'Position  /  m', ...
+                        'xlabel', 'Position  /  µm', ...
+                        'xscaling', 1/micro', ...
                         'title', 'Electrolyte Concentration  /  mol \cdot L^{-1}', ...
                         'clim', [cmin_elyte, cmax_elyte]);
 
@@ -565,20 +512,14 @@ function [fig] = plotDashboard(model, states, varargin)
                   otherwise
                     error('diffusionModelType not recognized');
                 end
-
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Positive Electrode Concentration  /  mol \cdot L^{-1}')
                 colormap(crameri('nuuk'));
                 clim([cmin_pe, cmax_pe])
                 colorbar
                 axis tight
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
                 if model.grid.griddim == 3
                     view(45,45);
                     axis equal
@@ -591,67 +532,46 @@ function [fig] = plotDashboard(model, states, varargin)
                 title('Cell Current  /  A')
                 xlabel('Time  /  h')
                 xlim([min(time/hour), max(time/hour)]);
-                ylim([min(Inew), max(Inew)]);
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                ylim([Imin, Imax]);
+                setGcaStyle(gca, style);
 
                 subplot(2,4,5), plotCellData(model.(ne).(co).grid, states{i}.(ne).(co).phi, 'edgealpha', 0.1);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Negative Electrode Potential  /  V')
                 colormap(gca, crameri('lapaz'))
                 clim([phimin_ne, phimax_ne])
                 colorbar
                 axis tight
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
                 if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
                 subplot(2,4,6), plotCellData(model.(elyte).grid, states{i}.(elyte).phi, 'edgealpha', 0.1);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Electrolyte Potential  /  V')
                 colormap(gca, crameri('lapaz'))
                 clim([phimin_elyte, phimax_elyte])
                 colorbar
                 axis tight
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
                 if model.grid.griddim == 3
                     view(45,45);
                     axis equal
                 end
 
                 subplot(2,4,7), plotCellData(model.(pe).(co).grid, states{i}.(pe).(co).phi, 'edgealpha', 0.1);
-                xlabel(gca, 'Position  /  m')
+                scaleAxis(gca, 'x', 1/micro);
+                xlabel(gca, 'Position  /  µm')
                 title(gca, 'Positive Electrode Potential  /  V')
                 colormap(gca, crameri('lapaz'))
                 clim([phimin_pe, phimax_pe])
                 colorbar
                 axis tight
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
                 if model.grid.griddim == 3
                     view(45,45);
                     axis equal
@@ -665,13 +585,7 @@ function [fig] = plotDashboard(model, states, varargin)
                 xlabel('Time  /  h')
                 xlim([min(time/hour), max(time/hour)]);
                 ylim([min(Enew), max(Enew)]);
-                set(gca, ...
-                    'FontSize' , style.fontSize       , ...
-                    'FontName' , style.fontName       , ...
-                    'color'    , style.backgroundColor, ...
-                    'XColor'   , style.fontColor      , ...
-                    'YColor'   , style.fontColor      , ...
-                    'GridColor', style.fontColor)
+                setGcaStyle(gca, style);
             end
 
             drawnow
@@ -685,14 +599,17 @@ end
 
 function setPlot(ax, style, varargin)
 
-    opt = struct('xlabel' , '', ...
-                 'ylabel' , '', ...
-                 'title'  , '', ...
-                 'xlim'   , [], ...
-                 'ylim'   , [], ...
-                 'clim'   , [], ...
-                 'griddim', 1 , ...
-                 'timeBar', []);
+    opt = struct('xlabel'  , '', ...
+                 'ylabel'  , '', ...
+                 'title'   , '', ...
+                 'xlim'    , [], ...
+                 'ylim'    , [], ...
+                 'clim'    , [], ...
+                 'griddim' , 1 , ...
+                 'timeBar' , [], ...
+                 'xscaling', [], ...
+                 'yscaling', [], ...
+                 'zscaling', []);
     opt = merge_options(opt, varargin{:});
     
     try
@@ -701,13 +618,7 @@ function setPlot(ax, style, varargin)
         % warning('crameri colormap not installed')
     end
 
-    set(ax, ...
-        'FontSize' , style.fontSize       , ...
-        'FontName' , style.fontName       , ...
-        'color'    , style.backgroundColor, ...
-        'XColor'   , style.fontColor      , ...
-        'YColor'   , style.fontColor      , ...
-        'GridColor', style.fontColor)
+    setGcaStyle(ax, style);
 
     xlabel(ax, opt.xlabel);
     ylabel(ax, opt.ylabel);
@@ -736,13 +647,42 @@ function setPlot(ax, style, varargin)
         hold off
     end
 
+    % Tighten before scaling
     axis tight;
+
+    if ~isempty(opt.xscaling)
+        scaleAxis(ax, 'x', opt.xscaling);
+    end
+
+    if ~isempty(opt.yscaling)
+        scaleAxis(ax, 'y', opt.yscaling);
+    end
+
+    if ~isempty(opt.zscaling)
+        scaleAxis(ax, 'z', opt.zscaling);
+    end
+
     grid on;
 
     if opt.griddim == 3
         view(45, 45);
         axis equal;
     end
+
+end
+
+
+function setGcaStyle(ax, style)
+
+    set(ax         , ...
+        'FontSize' , style.fontSize       , ...
+        'FontName' , style.fontName       , ...
+        'color'    , style.backgroundColor, ...
+        'XColor'   , style.fontColor      , ...
+        'YColor'   , style.fontColor      , ...
+        'GridColor', style.fontColor      , ...
+        'XGrid'    , 'on'                 , ...
+        'YGrid'    , 'on');
 
 end
 

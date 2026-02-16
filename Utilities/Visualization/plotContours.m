@@ -1,89 +1,209 @@
-% function [fig] = plotDashboard(model, states, varargin)
-% %UNTITLED8 Summary of this function goes here
-% %   Detailed explanation goes here
+function plotContours(model, states, varargin)
 
-time = output.time/hour;
+    assert(model.grid.griddim == 1, 'This function only works for 1D grids');
 
-x = output.model.grid.cells.centroids/(micro*meter);
-x_ne = output.model.NegativeElectrode.grid.cells.centroids/(micro*meter);
-x_sep = output.model.Separator.grid.cells.centroids/(micro*meter);
-x_pe = output.model.PositiveElectrode.grid.cells.centroids/(micro*meter);
+    opt = struct('subplot', true, ...
+                 'varname', {'lithiation'}, ... % Or {'concentration'}
+                 'sgtitle', '', ...
+                 'plot_separators', false, ...  % Not implemented
+                 'subset', []); % Index subset of states to plot, empty means all
+    opt = merge_options(opt, varargin{:});
 
-% get the centroid locations and the values for the electrolyte
-% concentration at the given timestep
-% Initialize an empty matrix to store 'c' values
-numStates = numel(output.states);  % Get the number of elements in the 'states' array
-maxSize = max(cellfun(@(x) numel(x.Electrolyte.c), output.states)); % Get the maximum size of 'c' arrays
-c_elyte = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
-c_ne = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
-c_pe = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
-phi_elyte = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
-phi_ne = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
-phi_pe = NaN(numStates, maxSize);  % Initialize the matrix with NaNs
+    assert(containsi(opt.varname, 'lith') || containsi(opt.varname, 'conc'), ...
+           'opt.varname must contain either ''lith'' or ''conc''');
 
-% Loop through each element in 'states' and extract 'c' values
-for i = 1:numStates
-    c_elyte(i, 1:numel(output.states{i}.Electrolyte.c)) = output.states{i}.Electrolyte.c;
-    c_ne(i, 1:numel(output.states{i}.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface)) = output.states{i}.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface;
-    c_pe(i, 1:numel(output.states{i}.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface)) = output.states{i}.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface;
-    phi_elyte(i, 1:numel(output.states{i}.Electrolyte.phi)) = output.states{i}.Electrolyte.phi;
-    phi_ne(i, 1:numel(output.states{i}.NegativeElectrode.Coating.phi)) = output.states{i}.NegativeElectrode.Coating.phi;
-    phi_pe(i, 1:numel(output.states{i}.PositiveElectrode.Coating.phi)) = output.states{i}.PositiveElectrode.Coating.phi;
+    fontsize = 18;
+
+    if opt.subplot
+        fig = figure;
+    end
+
+    time = cellfun(@(s) s.time, states) / hour;
+
+    % Subset states if requested
+    if ~isempty(opt.subset)
+        time = time(opt.subset);
+        states = states(opt.subset);
+    end
+
+    % It can happen when simulation has failed that the end time is
+    % duplicated
+    if time(end) == time(end-1)
+        warning('plotContours: Last time value is duplicated, removing last state');
+        time = time(1:end-1);
+        states = states(1:end-1);
+    end
+
+    cmax_ne = model.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;
+    cmax_pe = model.PositiveElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;
+
+    x_ne = model.NegativeElectrode.Coating.grid.cells.centroids/(micro*meter);
+    x_pe = model.PositiveElectrode.Coating.grid.cells.centroids/(micro*meter);
+    x_elyte = model.Electrolyte.grid.cells.centroids/(micro*meter);
+
+    % Get the centroid locations and the values for the electrolyte
+    % concentration at the given timestep
+    c_ne = zeros(numel(states), numel(x_ne));
+    c_pe = zeros(numel(states), numel(x_pe));
+    c_elyte = zeros(numel(states), numel(x_elyte));
+    phi_ne = zeros(numel(states), numel(x_ne));
+    phi_pe = zeros(numel(states), numel(x_pe));
+    phi_elyte = zeros(numel(states), numel(x_elyte));
+
+    for istate = 1:numel(states)
+        c_ne(istate, :) = states{istate}.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface;
+        c_pe(istate, :) = states{istate}.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface;
+        c_elyte(istate, :) = states{istate}.Electrolyte.c;
+        phi_ne(istate, :) = states{istate}.NegativeElectrode.Coating.phi;
+        phi_pe(istate, :) = states{istate}.PositiveElectrode.Coating.phi;
+        phi_elyte(istate, :) = states{istate}.Electrolyte.phi;
+    end
+
+    % Plot the concentration values at the given grid centroid
+    % locations
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 1);
+    else
+        figure;
+    end
+    if containsi(opt.varname, 'lith')
+        contourf(x_ne, time, c_ne / cmax_ne, 20, 'LineStyle', 'none')
+        titlestr = 'Lithiation  /  -';
+    elseif containsi(opt.varname, 'conc')
+        contourf(x_ne, time, c_ne, 20, 'LineStyle', 'none')
+        titlestr = 'Concentration  /  mol \cdot m^{-3}';
+    end
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title(sprintf('NE %s', titlestr));
+    colorbar()
+    cm = flipud(crameri('lajolla'));
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 2);
+    else
+        figure;
+    end
+    contourf(x_elyte, time, c_elyte, 20, 'LineStyle', 'none')
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title('Elyte Concentration  /  mol \cdot m^{-3}')
+    cm = cmocean('curl');
+    cmscaled = rescaleCmap(cm, min(c_elyte), max(c_elyte), model.Electrolyte.species.nominalConcentration);
+    colormap(gca, cmscaled)
+    colorbar()
+
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 3);
+    else
+        figure;
+    end
+    if containsi(opt.varname, 'lith')
+        contourf(x_pe, time, c_pe / cmax_pe, 20, 'LineStyle', 'none')
+        titlestr = 'Lithiation  /  -';
+    elseif containsi(opt.varname, 'conc')
+        contourf(x_pe, time, c_pe, 20, 'LineStyle', 'none')
+        titlestr = 'Concentration  /  mol \cdot m^{-3}';
+    end
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title(sprintf('PE %s', titlestr));
+    colorbar()
+    cm = crameri('nuuk');
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    % Plot the potential at the given grid centroid locations
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 4);
+    else
+        figure;
+    end
+    contourf(x_ne, time, phi_ne, 20, 'LineStyle', 'none')
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title('NE Potential  /  V')
+    colorbar()
+    cm = flipud(crameri('lajolla'));
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 5);
+    else
+        figure;
+    end
+    contourf(x_elyte, time, phi_elyte, 20, 'LineStyle', 'none')
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title('Elyte Potential  /  V')
+    colorbar()
+    cm = cmocean('curl'); %, 'pivot', 1);
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    if opt.subplot
+        figure(fig);
+        subplot(2, 3, 6);
+    else
+        figure;
+    end
+    contourf(x_pe, time, phi_pe, 20, 'LineStyle', 'none')
+    xlabel('Position  /  µm')
+    ylabel('Time  /  h')
+    title('PE Potentials  /  V')
+    colorbar()
+    cm = crameri('nuuk');
+    colormap(gca, cm)
+    set(gca, 'FontSize', fontsize);
+    drawnow
+
+    if opt.subplot
+        if ~isempty(opt.sgtitle)
+            sgtitle(opt.sgtitle, 'FontSize', fontsize+2);
+        end
+    end
+
 end
 
-% plot the concentration values at the given grid centroid locations
-figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
-contourf(x, time, c_ne ./ jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration, 20, 'LineStyle', 'none')
-xlim([min(x_ne), max(x_ne)])
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-title('Negative Electrode Lithiation  /  -')
-colorbar()
-cm = flipud(crameri('lajolla'));
-colormap(cm)
-set(gca, 'FontSize', 18);
 
-figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
-contourf(x, time, c_elyte, 20, 'LineStyle', 'none')
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-title('Electrolyte Concentration  /  mol \cdot m^{-3}')
-colorbar()
-cm = cmocean('curl', 'pivot', 1000);
-colormap(cm)
-set(gca, 'FontSize', 18);
-
-figure('Units', 'centimeters', 'Position', [0, 0, 29.7, 21]);
-contourf(x+max(x_sep), time, c_pe ./ jsonstruct.PositiveElectrode.Coating.ActiveMaterial.Interface.saturationConcentration, 20, 'LineStyle', 'none')
-xlim([min(x_pe), max(x_pe)])
-xlabel('Position  /  µm')
-ylabel('Time  /  h')
-title('Positive Electrode Lithiation  /  -')
-colorbar()
-cm = crameri('nuuk');
-colormap(cm)
-set(gca, 'FontSize', 18);
-
-% subplot(2,3,4), contourf(x, time, phi_ne, 20, 'LineWidth',0.1)
-% xlim([min(x_ne), max(x_ne)])
-% xlabel('Position  /  µm')
-% ylabel('Time  /  h')
-% title('Negative Electrode Potential')
-% colorbar()
-% 
-% subplot(2,3,5), contourf(x, time, phi_elyte, 20, 'LineWidth',0.1)
-% xlabel('Position  /  µm')
-% ylabel('Time  /  h')
-% title('Electrolyte Potential')
-% colorbar()
-% 
-% subplot(2,3,6), contourf(x+max(x_sep), time, phi_pe, 20, 'LineWidth',0.1)
-% xlim([min(x_pe), max(x_pe)])
-% xlabel('Position  /  µm')
-% ylabel('Time  /  h')
-% title('Positive Electrode Potential')
-% colorbar()
+function s = containsi(a, b)
+    s = contains(a, b, 'IgnoreCase', true);
+end
 
 
-%
-%end
+function cmap_scaled = rescaleCmap(cmap, vmin, vmax, center, Nout)
+
+    if nargin < 5
+        Nout = 256;
+    end
+
+    % Split colormap into two halves
+    N = size(cmap,1);
+    cmap_low  = cmap(1:floor(N/2),:);   % lower half (below center)
+    cmap_high = cmap(floor(N/2)+1:end,:); % upper half (above center)
+
+    % Number of colors for each side proportional to data range
+    n_low  = round(Nout * (center - vmin) / (vmax - vmin));
+    n_high = Nout - n_low;
+
+    % Interpolate each side independently
+    cmap_scaled = [ ...
+        interp1(linspace(0,1,size(cmap_low,1)), cmap_low,  linspace(0,1,n_low)); ...
+        interp1(linspace(0,1,size(cmap_high,1)), cmap_high, linspace(0,1,n_high)) ...
+                  ];
+end

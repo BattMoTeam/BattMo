@@ -64,3 +64,4 @@ Documentation/_build/
 
 # pyvenv
 *.venv/
+env/*

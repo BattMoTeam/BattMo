@@ -48,6 +48,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
 %   scaledGradient - Scaled gradient of objValue with respect p
 %   states         - State at each control step (or timestep if
 %                    'OutputMinisteps' is enabled.)
+%   setupNew       - New setup structure with updated parameter values
+%   lambdas        - Cell array of adjoint states at each time step
 %
 % SEE ALSO:
 % `evalObjective`, `computeSensitivitiesAdjointAD`, `unitBoxBFGS`
@@ -77,7 +79,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                  'AdjointLinearSolver', []           , ...
                  'PerturbationSize'   , []           , ...
                  'objScaling'         , 1            , ...
-                 'enforceBounds'      , true);
+                 'enforceBounds'      , true         , ...
+                 'transposeGradient'  , false);
 
     [opt, extra] = merge_options(opt, varargin{:});
 
@@ -150,8 +153,8 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
                 nms = applyFunction(@(x) x.name, parameters);
 
                 % function that computes the sensitivities (the gradients) with respect to the parameters
-                sens = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
-                                                           'LinearSolver', opt.AdjointLinearSolver);
+                [sens, lambdas] = computeSensitivitiesAdjointADBattmo(setupNew, states, parameters, objh, ...
+                                                                      'LinearSolver', opt.AdjointLinearSolver);
 
                 gradient = cellfun(@(nm) sens.(nm), nms, 'uniformoutput', false);
 
@@ -211,9 +214,17 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         end
 
         if nargout > 4
-            varargout{4} =  setupNew;
+            varargout{4} = setupNew;
         end
 
+        if nargout > 5
+            varargout{5} = lambdas;
+        end
+
+    end
+
+    if opt.transposeGradient
+        varargout{1} = varargout{1}';
     end
 
 end
