@@ -221,6 +221,7 @@ schedule = struct('control', control, 'step', step);
 % Here we take the state of charge (SOC) given in the input and calculate
 % equilibrium concentration based on theta0, theta100 and cmax.
 
+
 initstate = model.setupInitialState(jsonstruct);
 
 %%% Running the simulation
@@ -320,13 +321,6 @@ for x = 1:N_elements_ne
     position(end+1) = (x - 1)*deltaX;
 end
 
-legendTime = "t = 0 hour";
-porosity = [];
-for i = 1:N_elements_ne
-    porosity(end + 1) = initstate.(ne).(co).porosity(i);
-end
-
-plot(position, porosity);
 
 %% Plot of porosity as a function of time
 
