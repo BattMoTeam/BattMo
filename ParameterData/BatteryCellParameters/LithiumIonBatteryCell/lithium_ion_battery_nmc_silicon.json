@@ -17,7 +17,8 @@
     "Coating" : {
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
-      "molarMass": 28.0855e-3,        
+      "molarMass": 28.0855e-3,
+      "referenceStoichiometry" : 1, 
       "ActiveMaterial": {
         "massFraction": 0.94,
         "density": 2240,

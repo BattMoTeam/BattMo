@@ -7,7 +7,9 @@ classdef SwellingCoating < Coating
         referenceStoichiometry % stoichiometry which corresponds to the given volumeFraction of the coating
 
         includeHydrostaticStress = false;
-        
+
+        %% computed at initialization
+        referenceVolumeFraction
     end
     
     methods
@@ -15,9 +17,21 @@ classdef SwellingCoating < Coating
         function model = SwellingCoating(inputparams)
 
             model = model@Coating(inputparams)
-            fdnames = {'molarMass'};
+            fdnames = {'molarMass', ...
+                       'referenceStoichiometry'};
             
             model = dispatchParams(model, inputparams, fdnames);
+            
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            
+            % compute elongation radius for given reference stoichiometry
+            state.cAverage = model.(am).(sd).saturationConcentration*model.referenceStoichiometry;
+            state = model.(am).(sd).updateRadiusElongation(state);
+
+            re = state.radiusElongation;
+
+            model.referenceVolumeFraction = model.volumeFraction/(re^3);
 
         end
 
@@ -68,6 +82,13 @@ classdef SwellingCoating < Coating
             
         end
 
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+
+            newstate = addVariablesAfterConvergence@Coating(model, newstate, state);
+            newstate.volumeFraction = state.volumeFraction;
+
+        end
+        
         function state = updateVolumetricSurfaceArea(model, state)
             
             am  = 'ActiveMaterial';
@@ -159,7 +180,7 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            vf = model.volumeFraction;
+            vf = model.referenceVolumeFraction;
             
             delta = state.(am).(sd).radiusElongation;
             
