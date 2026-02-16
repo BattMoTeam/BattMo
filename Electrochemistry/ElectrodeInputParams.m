@@ -24,8 +24,6 @@ classdef ElectrodeInputParams < ComponentInputParams
         use_thermal
         use_normed_current_collector
         
-        use_swelling_material
-        
     end
 
     methods

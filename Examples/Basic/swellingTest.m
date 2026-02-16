@@ -108,7 +108,6 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 model = GenericBattery(inputparams);
 cgit = model.cgit;
 cgit.printRootVariables
-
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
 % return
