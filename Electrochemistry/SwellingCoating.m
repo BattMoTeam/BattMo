@@ -4,12 +4,15 @@ classdef SwellingCoating < Coating
     properties
         
         molarMass
-        referenceStoichiometry % stoichiometry which corresponds to the given volumeFraction of the coating
+        referenceFillInLevel % fill-in value which corresponds to the given volumeFraction of the coating
 
         includeHydrostaticStress = false;
 
-        %% computed at initialization
-        referenceVolumeFraction
+        %% Computed at initialization
+        
+        zeroFillInVolumeFraction
+        maximumLithiumConcentration % The concentration is taken over the total volume (maximumLithiumConcentration =
+                                    % ('volume fraction')*('concentration in active material'))
     end
     
     methods
@@ -18,20 +21,40 @@ classdef SwellingCoating < Coating
 
             model = model@Coating(inputparams)
             fdnames = {'molarMass', ...
-                       'referenceStoichiometry'};
+                       'referenceFillInLevel'};
             
             model = dispatchParams(model, inputparams, fdnames);
             
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             
-            % compute elongation radius for given reference stoichiometry
-            state.cAverage = model.(am).(sd).saturationConcentration*model.referenceStoichiometry;
-            state = model.(am).(sd).updateRadiusElongation(state);
+            %% Compute zero fill-in volume fraction from reference fill-in and given volume fraction
+            compmodel = model;
+            compmodel = compmodel.registerVarAndPropfuncNames();
+            compmodel = compmodel.removePropFunction({am, sd, 'x'});
+            compmodel = compmodel.setupComputationalGraph();
 
-            re = state.radiusElongation;
+            clear state
+            state.(am).(sd).x = model.referenceFillInLevel;
+            state = compmodel.evalVarName(state, {am, sd, 'radiusElongation'});
 
-            model.referenceVolumeFraction = model.volumeFraction/(re^3);
+            re = state.(am).(sd).radiusElongation;
+
+            model.zeroFillInVolumeFraction = model.volumeFraction/(re^3);
+
+            %% Dispatch value to submodel
+            model.(am).(sd).zeroFillInVolumeFraction = model.zeroFillInVolumeFraction;
+
+            %% Compute maximum Lithium concentration with respect to total volume
+            
+            compmodel.zeroFillInVolumeFraction = model.zeroFillInVolumeFraction;
+            
+            clear state
+            state.(am).(sd).x = 1;
+            state = compmodel.evalVarName(state, 'volumeFraction');
+            vfmax = state.volumeFraction;
+            
+            model.maximumLithiumConcentration = vfmax*model.(am).(sd).saturationConcentration;
 
         end
 
@@ -98,7 +121,7 @@ classdef SwellingCoating < Coating
 
             delta = state.(am).(sd).radiusElongation;
             
-            state.(am).(itf).volumetricSurfaceArea =  model.(am).(itf).volumetricSurfaceArea*delta;
+            state.(am).(itf).volumetricSurfaceArea =  model.(am).(itf).volumetricSurfaceArea./delta;
 
         end
 
@@ -180,7 +203,7 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             
-            vf = model.referenceVolumeFraction;
+            vf = model.zeroFillInVolumeFraction;
             
             delta = state.(am).(sd).radiusElongation;
             

@@ -3,7 +3,7 @@ classdef SwellingCoatingInputParams < CoatingInputParams
     properties
 
         molarMass
-        referenceStoichiometry
+        referenceFillInLevel
         
     end
     

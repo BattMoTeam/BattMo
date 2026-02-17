@@ -2,7 +2,7 @@ classdef FullSolidDiffusionSwellingModelInputParams < FullSolidDiffusionModelInp
     
     properties
 
-        referenceStoichiometry
+        referenceFillInLevel
         
     end
     

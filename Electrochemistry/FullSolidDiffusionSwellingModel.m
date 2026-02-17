@@ -1,9 +1,34 @@
 classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
+% @article{Chandrasekaran_2010,
+%   title =        {Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature},
+%   volume =       157,
+%   ISSN =         {0013-4651},
+%   url =          {http://dx.doi.org/10.1149/1.3474225},
+%   DOI =          {10.1149/1.3474225},
+%   number =       10,
+%   journal =      {Journal of The Electrochemical Society},
+%   publisher =    {The Electrochemical Society},
+%   author =       {Chandrasekaran, Rajeswari and Magasinski, Alexandre and Yushin, Gleb and Fuller, Thomas F.},
+%   year =         2010,
+%   pages =        {A1139}
+% }
 
     properties
 
         molarVolumeSi = 1.2e-05;
-        molarVolumeLi = 8.8e-06;
+        % molarVolumeSi = 5e-05;
+        molarVolumeLi = 9e-6
+
+        referenceFillInLevel % Fill-in value which corresponds to the given radius
+
+        %% Computed at initialization
+
+        zeroFillInParticleRadius
+        zeroFillInVolumetricSurfaceArea
+        
+        %% Advanced parameters
+        % typically setup by swelling coating model
+        zeroFillInVolumeFraction
         
     end
 
@@ -13,17 +38,43 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
 
             model = model@FullSolidDiffusionModel(inputparams);
             
+            fdnames = {'referenceFillInLevel', ...
+                       'zeroFillInVolumeFraction'};
+
+            model = dispatchParams(model, inputparams, fdnames);
+
+            %% compute zero fill in radius from reference fill-in and given particule radius
+
+            compmodel = model;
+            compmodel = compmodel.registerVarAndPropfuncNames();
+            compmodel = compmodel.removePropFunction('x');
+            compmodel = compmodel.setupComputationalGraph();
+
+            clear state
+            state.x = compmodel.referenceFillInLevel;
+            state = compmodel.evalVarName(state, 'radiusElongation');
+
+            re = state.radiusElongation;
+
+            model.zeroFillInParticleRadius        = model.particleRadius/re;
+            model.zeroFillInVolumetricSurfaceArea = model.volumetricSurfaceArea*re;
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
-
-            sd = 'SolidDiffusion';
 
             model = registerVarAndPropfuncNames@FullSolidDiffusionModel(model);
 
             varnames = {'radiusElongation', ...
                         'radius'          , ...
                         'intercalationFlux'};
+
+            % Particle fill-in level (between 0 and 1). Depends only on stoichiometry
+            % By definition, we have : x = (volumeFraction*concentration)/(volumeFraction_max*concentration_max)
+            % Due to the special expression for the volume fraction, it reduces to a function of the stoichiometry only,
+            % See paper in reference
+
+            varnames{end + 1} = 'x';
 
             model = model.registerVarNames(varnames);
 
@@ -37,8 +88,11 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
             fn = @FullSolidDiffusionSwellingModel.updateRadius;
             model = model.registerPropFunction({'radius', fn, {'radiusElongation'}});
 
+            fn = @FullSolidDiffusionSwellingModel.updateFillInLevel;
+            model = model.registerPropFunction({'x', fn, {'cAverage'}});
+            
             fn = @FullSolidDiffusionSwellingModel.updateRadiusElongation;
-            model = model.registerPropFunction({'radiusElongation', fn, {'cAverage'}});
+            model = model.registerPropFunction({'radiusElongation', fn, {'x'}});
 
             fn = @FullSolidDiffusionSwellingModel.updateMassAccum;
             fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};            
@@ -61,34 +115,41 @@ classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
         
         function state = updateRadius(model, state)
 
-            state.radius = model.particleRadius*state.radiusElongation;
+            state.radius = model.zeroFillInParticleRadius*state.radiusElongation;
+            
+        end
+        
+        function state = updateFillInLevel(model, state)
+
+            cmax = model.saturationConcentration;
+            Q    = (3.75.*model.molarVolumeLi)./(model.molarVolumeSi);
+
+            cAverage = state.cAverage;
+
+            theta = cAverage/cmax;
+
+            state.x = theta./(1 + Q*(1 -theta));
             
         end
         
         function state = updateRadiusElongation(model, state)
-        % eq 4 in Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries
-        % Shweta Dhillon, Guiomar Hernández, Nils P. Wagner, Ann Mari Svensson, Daniel Brandell ([ref 1])
+        % eq 11 in ref paper
 
-            cmax = model.saturationConcentration;
-
-            cAverage = state.cAverage;
+            x = state.x;
 
             Q = (3.75.*model.molarVolumeLi)./(model.molarVolumeSi);
 
-            state.radiusElongation = (1 + Q.*cAverage./cmax).^(1/3);
+            state.radiusElongation = (1 + Q.*x).^(1/3);
             
         end
 
         function state = updateMassSource(model, state)
-        % Modification of mass source according to eq 6 in  Analysis of Lithium Insertion/Deinsertion in a Silicon
-        % Electrode Particle at Room Temperature Rajeswari Chandrasekaran, Alexandre Magasinski, Gleb Yushin, and
-        % Thomas F. Fuller ([ref 3])
 
             op  = model.operators;
             
-            rp0  = model.particleRadius;
-            vf0  = model.volumeFraction;
-            vsa0 = model.volumetricSurfaceArea;
+            rp0  = model.zeroFillInParticleRadius;
+            vf0  = model.zeroFillInVolumeFraction;
+            vsa0 = model.zeroFillInVolumetricSurfaceArea;
             
             delta = state.radiusElongation;
             R     = state.intercalationFlux;
