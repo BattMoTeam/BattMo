@@ -253,17 +253,17 @@ classdef SwellingCoating < Coating
         end
 
         %% Useful Functions
-        function molarVolumeLithiated = computeMolarVolumeLithiated(model, theta)
+        function molarVolumeLithiated = computeMolarVolumeLithiated(model, x)
         % cf equation 2 in [ref1]
 
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            molarVolumeSi = 1.2e-05;
-            molarVolumeLi = 9e-06;
+            molarVolumeSi = model.(am).(sd).molarVolumeSi;
+            molarVolumeLi = model.(am).(sd).molarVolumeLi;
 
-            molarVolumeLithiated = (4/15)*(molarVolumeSi + 3.75*theta*molarVolumeLi);
+            molarVolumeLithiated = (4/15)*(molarVolumeSi + 3.75*x*molarVolumeLi);
             
         end
 
