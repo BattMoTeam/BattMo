@@ -11,7 +11,7 @@ classdef SwellingCoating < Coating
         %% Computed at initialization
         
         zeroFillInVolumeFraction
-        maximumLithiumConcentration % The concentration is taken over the total volume (maximumLithiumConcentration =
+        maximumTotalConcentration % The concentration is taken over the total volume (maximumTotalConcentration =
                                     % ('volume fraction')*('concentration in active material'))
     end
     
@@ -54,7 +54,7 @@ classdef SwellingCoating < Coating
             state = compmodel.evalVarName(state, 'volumeFraction');
             vfmax = state.volumeFraction;
             
-            model.maximumLithiumConcentration = vfmax*model.(am).(sd).saturationConcentration;
+            model.maximumTotalConcentration = vfmax*model.(am).(sd).saturationConcentration;
 
         end
 
