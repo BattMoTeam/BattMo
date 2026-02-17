@@ -26,7 +26,8 @@ classdef Coating < ElectronicComponent
                               %                 "Safari"
                               %                 "Bolay"
                               % - 'swelling' : boolean (default is false)
-        % Advanced parameters (used if given, otherwise computed)
+        
+        %% Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
         volumeFraction
         thermalConductivity             % (if not given computed from the subcomponents)

@@ -99,6 +99,9 @@ inputparams.(pe).(co).(am).(sd).N = 5;
 % be found in the BattMo/Battery/BatteryGeometry folder.
 
 gen = BatteryGeneratorP2D();
+
+gen.xlength(2) = 1e-6;
+gen.xlength(4) = 100e-6;
 gen.sepnx = 10; % discretization number for negative current collector (default = 10)
 gen.nenx  = 10; % discretization number for negative active material (default = 10)
 gen.penx  = 10; % discretization number for separator (default = 10)
@@ -167,6 +170,7 @@ cgit.printRootVariables
 % The CRate has been set by the json file. We can access it here:
 
 timestep.numberOfTimeSteps = 100;
+% timestep.totalTime = 100*hour;
 
 step    = model.Control.setupScheduleStep(timestep);
 control = model.Control.setupScheduleControl();
@@ -252,14 +256,14 @@ T = cellfun(@(x) x.time, states);
 %% Plot E as a function of the time
 
 figure()
-subplot(2,2,1)
+tiledlayout
+
+nexttile
 plot(T/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
-%% Plot I as a function of the time
-
-subplot(2,2,2)
+nexttile
 plot(T/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
@@ -287,13 +291,32 @@ for i = 1 : negativeElectrodeSize
     
 end
 
-xlabel('time [hours]')
-ylabel('Eta of the Negative electrode')
+xlabel('time / hours')
+ylabel('\eta / V')
+title('Overpotential in Negative Electrode')
 legend(L);
 
+%% plot of average concentration
 
+figure
+hold on
 
-% Plot the porosity as a function of the position for different times
+L = {};
+
+for i = 1 : negativeElectrodeSize
+
+    cAver = cellfun(@(state) state.(ne).(co).(am).(sd).cAverage(i), states);
+    plot(T/hour, cAver);
+    L{end + 1} = "x = " + int2str(i);
+    
+end
+
+xlabel('time / hours')
+ylabel('c / mol/m^3')
+title('Average particle concentration')
+legend(L);
+
+%% plot of Porosity
 
 figure
 hold on
@@ -335,8 +358,50 @@ for i = 1 : negativeElectrodeSize
 end
 
 xlabel('time [hours]')
-ylabel('Silicon particle radius')
+ylabel('radius / m')
+title('Silicon particle radius')
 legend(L);
+
+%% plot volume fraction
+    
+figure
+hold on
+
+negativeElectrodeSize = model.(ne).grid.cells.num;
+L = {};
+
+for i = 1 : negativeElectrodeSize
+
+    vf = cellfun(@(state) state.(ne).(co).volumeFraction(i), states);
+    plot(T/hour, vf);
+    L{end + 1} = "x = " + int2str(i);
+    
+end
+
+xlabel('time [hours]')
+ylabel('volume fraction')
+title('volume fraction')
+legend(L);
+
+%% Total Lithium content
+
+figure
+
+m = [];
+vols = model.(ne).(co).grid.cells.volumes;
+
+for istate = 1 : numel(states)
+    state = states{istate};
+    vf    = state.(ne).(co).volumeFraction;
+    caver = state.(ne).(co).(am).(sd).cAverage;
+    m(end + 1) = sum(vf.*caver.*vols);
+end
+
+F = PhysicalConstants.F;
+plot(T/hour, m*F/hour);
+xlabel('time [hours]')
+ylabel('amount / Ah');
+title('Lithium content in negative electrode')
 
 %{
   Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology

@@ -28,7 +28,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                                  %                 "none" (default)
                                  %                 "Safari"
                                  %                 "Bolay"
-
+                                 % - 'swelling' : boolean (default is false)
+        
         %% Advanced parameters
 
         volumeFractions

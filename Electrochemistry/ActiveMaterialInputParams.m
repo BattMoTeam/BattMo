@@ -24,7 +24,10 @@ classdef ActiveMaterialInputParams < ComponentInputParams
         thermalConductivity    % the intrinsic Thermal conductivity of the active component
         specificHeatCapacity   % Specific Heat capacity of the active component
 
-        diffusionModelType     % diffusion model type, either 'full', 'simple' or 'swelling'
+        diffusionModelType     % diffusion model type, string equal to either
+                               % - 'full'
+                               % - 'simple'
+                               % - 'swelling'
 
         %% SEI layer model choice
         SEImodel % string defining the sei model, see schema Utilities/JsonSchemas/ActiveMaterial.schema.json. Can take value
@@ -147,9 +150,13 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
                 inputparams.(sd) = SimplifiedSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
                 
-              case {'full', 'swelling'}
-                % same parameter set for the swelling case
+              case 'full'
+
                 inputparams.(sd) = FullSolidDiffusionModelInputParams(pickField(jsonstruct, sd));
+
+              case 'swelling'
+                
+                inputparams.(sd) = FullSolidDiffusionSwellingModelInputParams(pickField(jsonstruct, sd));
 
               otherwise
                 
