@@ -1,26 +1,24 @@
 classdef FullSolidDiffusionSwellingModel < FullSolidDiffusionModel
+% Implementation of model presented in :
 % @article{Chandrasekaran_2010,
-%   title =        {Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature},
-%   volume =       157,
-%   ISSN =         {0013-4651},
-%   url =          {http://dx.doi.org/10.1149/1.3474225},
-%   DOI =          {10.1149/1.3474225},
-%   number =       10,
-%   journal =      {Journal of The Electrochemical Society},
-%   publisher =    {The Electrochemical Society},
 %   author =       {Chandrasekaran, Rajeswari and Magasinski, Alexandre and Yushin, Gleb and Fuller, Thomas F.},
+%   title =        {Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature},
 %   year =         2010,
-%   pages =        {A1139}
+%   journal =      {Journal of The Electrochemical Society},
+%   url =          {http://dx.doi.org/10.1149/1.3474225},
+%   publisher =    {The Electrochemical Society},
 % }
 
     properties
 
-        molarVolumeSi = 1.2e-05;
-        % molarVolumeSi = 5e-05;
-        molarVolumeLi = 9e-6
-
         referenceFillInLevel % Fill-in value which corresponds to the given radius
 
+        %% Physical properties
+        % Molar volumes. Values taken from reference, table I.
+        
+        molarVolumeSi = 1.2e-05; % m^3/mol
+        molarVolumeLi = 9e-6; % m^3/mol
+        
         %% Computed at initialization
 
         zeroFillInParticleRadius
