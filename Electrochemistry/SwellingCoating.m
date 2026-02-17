@@ -1,6 +1,16 @@
 classdef SwellingCoating < Coating
-
-    
+% Implementation of model presented in :
+% @article{Chandrasekaran_2010,
+%   author =       {Chandrasekaran, Rajeswari and Magasinski, Alexandre and Yushin, Gleb and Fuller, Thomas F.},
+%   title =        {Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature},
+%   year =         2010,
+%   journal =      {Journal of The Electrochemical Society},
+%   url =          {http://dx.doi.org/10.1149/1.3474225},
+%   publisher =    {The Electrochemical Society},
+% }
+%
+% For this model, we assume for the moment no binder and conductive additive.
+%
     properties
         
         molarMass
@@ -11,8 +21,9 @@ classdef SwellingCoating < Coating
         %% Computed at initialization
         
         zeroFillInVolumeFraction
-        maximumTotalConcentration % The concentration is taken over the total volume (maximumTotalConcentration =
-                                    % ('volume fraction')*('concentration in active material'))
+        maximumTotalConcentration % The concentration is taken over the total volume (('total concentration') =
+                                  % ('volume fraction')*('concentration in active material'))
+        
     end
     
     methods
@@ -24,11 +35,19 @@ classdef SwellingCoating < Coating
                        'referenceFillInLevel'};
             
             model = dispatchParams(model, inputparams, fdnames);
+
+            %% we assume for the moment no binder and conductive additive.
+            % 
+            if ~(all(model.volumeFractions == [1; 0; 0]))
+                error('For the swelling model, the current implementation requires that there is no binder and conductive additive. To remove those, set their mass fractions equal to zero.');
+            end
             
             am  = 'ActiveMaterial';
             sd  = 'SolidDiffusion';
             
             %% Compute zero fill-in volume fraction from reference fill-in and given volume fraction
+            %
+            
             compmodel = model;
             compmodel = compmodel.registerVarAndPropfuncNames();
             compmodel = compmodel.removePropFunction({am, sd, 'x'});
