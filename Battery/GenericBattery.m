@@ -797,16 +797,41 @@ classdef GenericBattery < BaseModel
                       case 'simple'
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
-                      case {'full', 'swelling'}
+                      case {'full'}
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         N = model.(elde).(co).(amc).(sd).N;
                         np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
                         initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
-                        if strcmp(model.(elde).(co).(amc).diffusionModelType, 'swelling')
-                            initstate = model.evalVarName(initstate, {elde, co, amc, sd, 'radiusElongation'});
-                        end
+                      case  'swelling'
+                        % theta is interpretated as a fill-in level
+                        
+                        compmodel = model.(elde).(co);
+                        compmodel = compmodel.registerVarAndPropfuncNames();
+                        compmodel = compmodel.removePropFunction({amc, sd, 'x'});
+                        compmodel = compmodel.setupComputationalGraph();
+
+                        clear state
+                        state.(amc).(sd).x = theta;
+                        state = compmodel.evalVarName(state, {'volumeFraction'});
+                        state = compmodel.evalVarName(state, {'radiusElongation'});
+                        
+                        re = state.(am).(sd).radiusElongation;
+                        vf = state.volumeFraction;
+
+                        N  = model.(elde).(co).(amc).(sd).N;
+                        np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
+                        
+                        c = model.(elde).(co).maximumTotalConcentration/vf*theta;
+
+                        initstate.(elde).(co).volumeFraction              = vf .* ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).cSurface         = c*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).c                = c*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sd).radiusElongation = re*ones(nc, 1);
+                        
                       otherwise
+                        
                         error('diffusionModelType not recognized')
+                        
                     end
 
                     if elde_itf.useDoubleLayerCapacity
@@ -914,15 +939,6 @@ classdef GenericBattery < BaseModel
             end
 
             initstate.(ctrl).E = OCP(1) - ref;
-
-            if model.use_swelling
-                
-                vf = model.(ne).(co).volumeFraction;
-                nc = model.(ne).(co).G.getNumberOfCells();
-                
-                initstate.(ne).(co).volumeFraction = vf .* ones(nc, 1);
-                
-            end
 
             switch model.(ctrl).controlPolicy
 
