@@ -111,7 +111,7 @@ classdef SwellingCoating < Coating
                 model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
 
                 fn  = @SwellingCoating.updateReactionRate;
-                inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, {am, sd, 'radius'}, 'hydrostaticStress'};
+                inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, 'hydrostaticStress'};
                 model = model.registerPropFunction({{am, itf, 'intercalationFlux'}, fn, inputnames});
                 
             end
@@ -238,8 +238,8 @@ classdef SwellingCoating < Coating
             itf = 'Interface';
 
             E = 0;
-            %Uncomment the expression of E  above for taking into account the stress
-            %E         = 1e+11;
+            % Uncomment the expression of E above for taking into account the stress
+            % E = 1e+11;
             nu    = 0.27;
             Omega = 4.25e-06;
 
