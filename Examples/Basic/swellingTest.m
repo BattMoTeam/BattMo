@@ -332,10 +332,10 @@ for i = 1 : negativeElectrodeSize
     
 end
 
-xlabel('time [hours]')
-ylabel('porosity')
+xlabel('time / hour')
+ylabel('porosity / 1')
+title('Negative Electrode Porosity')
 legend(L);
-
 
 %% Plot the radius evolution
 
@@ -391,10 +391,13 @@ m = [];
 vols = model.(ne).(co).grid.cells.volumes;
 
 for istate = 1 : numel(states)
+    cMaxTot = model.(ne).(co).maximumTotalConcentration;
+
     state = states{istate};
-    vf    = state.(ne).(co).volumeFraction;
-    caver = state.(ne).(co).(am).(sd).cAverage;
-    m(end + 1) = sum(vf.*caver.*vols);
+    x     = state.(ne).(co).(am).(sd).x;
+    
+    m(end + 1) = sum(cMaxTot.*x.*vols);
+    
 end
 
 F = PhysicalConstants.F;
