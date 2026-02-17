@@ -20,7 +20,7 @@
       "molarMass": 28.0855e-3,
       "referenceStoichiometry" : 1, 
       "ActiveMaterial": {
-        "massFraction": 0.94,
+        "massFraction": 1.0,
         "density": 2240,
         "Comment on the sources" : "electronicConductivity is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
         "specificHeatCapacity": 710,
@@ -34,11 +34,12 @@
         },
         "diffusionModelType" : "full",
         "SolidDiffusion" : {
-          "Sources" : "D0 and rp are from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
+          "Sources" : "D0 and rp are from Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature, Rajeswari Chandrasekaran, Alexandre Magasinski,Gleb Yushin, Thomas F. Fuller",
           "activationEnergyOfDiffusion": 5000,
-          "referenceDiffusionCoefficient": 1e-16,
-          "particleRadius": 60e-9,
-          "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius",
+          "referenceDiffusionCoefficient": 1e-18,
+          "particleRadius": 30e-9,
+          "referenceStoichiometry": 0,
+          "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius, table 1 from source",
           "N": 10
         }
       },
@@ -47,7 +48,7 @@
           "value": 1.1,
           "unit": "gram/((centi*meter)^3)"
         },
-        "massFraction": 0.03,
+        "massFraction": 0.0,
         "electronicConductivity": 100,
         "specificHeatCapacity": 632.0,
         "thermalConductivity": 1.04
@@ -57,7 +58,7 @@
           "value": 1.95,
           "unit": "gram/((centi*meter)^3)"
         },
-        "massFraction": 0.03,
+        "massFraction": 0.0,
         "electronicConductivity": 100,
         "specificHeatCapacity": 632.0,
         "thermalConductivity": 1.04
