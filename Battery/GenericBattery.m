@@ -32,8 +32,8 @@ classdef GenericBattery < BaseModel
         % flag that decide the model setup
         use_thermal
         include_current_collectors
-        use_swelling
-
+        include_swelling % true if swelling is included
+        
         % We write here the jsonstruct that has been process when constructing inputparams
         jsonstruct
 
@@ -230,19 +230,31 @@ classdef GenericBattery < BaseModel
             end
             model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
 
-            if model.use_swelling
+            if model.include_swelling
 
                 fn = @GenericBattery.updateSwellingElectrolyteAccumTerm;
                 fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
-                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}, {ne, co, 'volumeFraction'}};
+                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}};
                 model = model.registerPropFunction({{elyte, 'massAccum'}, fn, inputNames});
 
                 fn = @GenericBattery.updateSwellingElectrolyteVolumeFraction;
-                inputNames = {{ne, co, 'volumeFraction'}};
+                inputNames = {};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).coatingModelSetup.swelling
+                        inputNames = horzcat(inputNames, {{elde, co, 'volumeFraction'}});                        
+                    end
+                end                
                 model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
 
                 fn = @GenericBattery.updateSwellingElectrolyteConvFlux;
-                inputNames = {{elyte, 'j'}, {elyte, 'c'}, {ne, co, am, sd, 'cAverage'}, {ne, co, am, itf, 'volumetricSurfaceArea'}};
+                inputNames = {{elyte, 'j'}, {elyte, 'c'}};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).coatingModelSetup.swelling
+                        inputNames = horzcat(inputNames, {{elde, co, am, sd, 'cAverage'}, {elde, co, am, itf, 'volumetricSurfaceArea'}});
+                    end
+                end                
                 model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
                 
             end
@@ -711,6 +723,8 @@ classdef GenericBattery < BaseModel
             co    = 'Coating';
             sep   = 'Separator';
 
+            eldes = {ne, pe};
+            
             elyte_cells = zeros(model.G.getNumberOfCells(), 1);
             elyte_cells(inputparams.(elyte).G.mappings.cellmap) = (1 : inputparams.(elyte).G.getNumberOfCells())';
 
@@ -720,10 +734,10 @@ classdef GenericBattery < BaseModel
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
 
             if inputparams.(ne).coatingModelSetup.swelling || inputparams.(pe).coatingModelSetup.swelling
-                model.use_swelling = true;
+                model.include_swelling = true;
                 model.(elyte) = ElectrolyteSwelling(inputparams.(elyte));
             else
-                model.use_swelling = false;
+                model.include_swelling = false;
                 model.(elyte) = Electrolyte(inputparams.(elyte));
             end
 
@@ -813,7 +827,7 @@ classdef GenericBattery < BaseModel
                         clear state
                         state.(amc).(sd).x = theta;
                         state = compmodel.evalVarName(state, {'volumeFraction'});
-                        state = compmodel.evalVarName(state, {'radiusElongation'});
+                        state = compmodel.evalVarName(state, {amc, sd, 'radiusElongation'});
                         
                         re = state.(am).(sd).radiusElongation;
                         vf = state.volumeFraction;
@@ -1161,24 +1175,37 @@ classdef GenericBattery < BaseModel
 
             elyte   = 'Electrolyte';
             ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
             co      = 'Coating';
             am      = 'ActiveMaterial';
 
+            eldes = {ne, pe};
+            
             c         = state.(elyte).c;
             vf        = state.(elyte).volumeFraction;
             c0        = state0.(elyte).c;
-            porosity0 = 1 - state0.(ne).(co).volumeFraction;
 
             elyte_cells = zeros(model.G.getNumberOfCells(), 1);
             elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
-            
-            ne_cells = elyte_cells(model.(ne).(co).G.mappings.cellmap);
-             
-            vf0 = model.(elyte).volumeFraction;
-            vf0(ne_cells) = porosity0;
 
+            vf0 = model.(elyte).volumeFraction;
             vols = model.(elyte).G.getVolumes();
 
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                if model.(elde).coatingModelSetup.swelling
+                    
+                    elde_cells = elyte_cells(model.(elde).(co).G.mappings.cellmap);
+                    
+                    porosity0 = 1 - state0.(elde).(co).volumeFraction;
+                    vf0(elde_cells) = porosity0;
+                    
+                end
+                
+            end
+            
             state.(elyte).massAccum  = vols.*(vf.*c - vf0.*c0)/dt;
             
         end
