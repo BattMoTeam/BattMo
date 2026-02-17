@@ -252,7 +252,7 @@ classdef GenericBattery < BaseModel
                 for ielde = 1 : numel(eldes)
                     elde = eldes{ielde};
                     if model.(elde).coatingModelSetup.swelling
-                        inputNames = horzcat(inputNames, {{elde, co, am, sd, 'cAverage'}, {elde, co, am, itf, 'volumetricSurfaceArea'}});
+                        inputNames = horzcat(inputNames, {{elde, co, am, sd, 'x'}});
                     end
                 end                
                 model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
@@ -1212,19 +1212,19 @@ classdef GenericBattery < BaseModel
 
         function state = updateSwellingElectrolyteConvFlux(model, state)
 
-            elyte   = 'Electrolyte';
-            ne      = 'NegativeElectrode';
-            pe      = 'PositiveElectrode';
-            co      = 'Coating';
-            am      = 'ActiveMaterial';
-            itf     = 'Interface';
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            co    = 'Coating';
+            am    = 'ActiveMaterial';
+            itf   = 'Interface';
+            sd    = 'SolidDiffusion';
+
             eldes = {ne, pe};
 
             % ad-hoc AD compatible initialization
             j = state.(elyte).j;
             state.(elyte).convFlux = 0 .* j;
-
-            return
 
             for ielde = 1 : numel(eldes)
 
@@ -1234,39 +1234,26 @@ classdef GenericBattery < BaseModel
 
                     G  = model.(elyte).G;
 
-                    cmax        = model.(elde).(co).(am).(itf).saturationConcentration;
-                    theta0      = model.(elde).(co).(am).(itf).guestStoichiometry0;
-                    densitySi   = model.(elde).(co).(am).(itf).density;
-                    molarMassSi = model.(elde).(co).molarMass;
-
                     F = model.(elde).(co).(am).(itf).constants.F;
                     s = -1;
                     n = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
 
-                    c = state.(elde).(co).(am).SolidDiffusion.cAverage;
-
-                    theta = c./cmax;
+                    x = state.(elde).(co).(am).(sd).x;
                     
-                    molarVolumeLithiated   = model.(elde).(co).computeMolarVolumeLithiated(theta);
-                    molarVolumeDelithiated = model.(elde).(co).computeMolarVolumeLithiated(theta0);
+                    molarVolumeLithiated   = model.(elde).(co).computeMolarVolumeLithiated(x);
+                    molarVolumeDelithiated = model.(elde).(co).computeMolarVolumeLithiated(0);
 
-                    a = state.(elde).(co).(am).(itf).volumetricSurfaceArea;
-                    j = state.(elyte).j;
-                    j = j(model.(elde).(co).G.mappings.cellmap);
-                    c = state.(elyte).c;
-                    c = c(model.(elde).(co).G.mappings.cellmap);
-
-                    nc = G.parentGrid.getNumberOfCells();
-                    
-                    elyte_cells = zeros(nc, 1);
-                    elyte_cells(G.mappings.cellmap) = (1 : model.G.getNumberOfCells())';
+                    elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+                    elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells)';
                     elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
-
-                    averageVelocity = (s./(n.*F)).*(molarVolumeLithiated - molarVolumeDelithiated).*j;
-                    Flux = c .* averageVelocity;
-
-                    state.(elyte).convFlux(elyte_cells_elde) = Flux;
                     
+                    j = state.(elyte).j;
+                    c = state.(elyte).c;
+
+                    flux = c(elyte_cells_elde).*(s./(n.*F)).*(molarVolumeLithiated - molarVolumeDelithiated).*j(elyte_cells_elde);
+
+                    state.(elyte).convFlux = subsasgnAD(state.(elyte).convFlux, elyte_cells_elde, flux);
+
                 end
                 
             end
