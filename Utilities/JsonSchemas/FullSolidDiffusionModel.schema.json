@@ -34,6 +34,10 @@
           "$ref": "PhysicalQuantity.schema.json",
           "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 0% SOC",
           "symbol": "theta0"
+        },
+        "referenceFillInLevel" : {
+          "type" : "number",
+          "description" : "Only used in case of swelling model, gives the fill-in level that corresponds to the given particle radius"
         }
       }
     }

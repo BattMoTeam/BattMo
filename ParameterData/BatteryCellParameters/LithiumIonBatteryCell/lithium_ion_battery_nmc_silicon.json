@@ -18,7 +18,7 @@
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "molarMass": 28.0855e-3,
-      "referenceStoichiometry" : 1, 
+      "referenceFillInLevel" : 1, 
       "ActiveMaterial": {
         "massFraction": 1.0,
         "density": 2240,
@@ -38,7 +38,7 @@
           "activationEnergyOfDiffusion": 5000,
           "referenceDiffusionCoefficient": 1e-18,
           "particleRadius": 30e-9,
-          "referenceStoichiometry": 0,
+          "referenceFillInLevel": 0,
           "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius, table 1 from source",
           "N": 10
         }
