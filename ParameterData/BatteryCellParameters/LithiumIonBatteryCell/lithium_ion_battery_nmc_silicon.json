@@ -4,14 +4,6 @@
   "initT": 298.15,
   "use_thermal": false,
   "include_current_collectors": false,
-  "Control" : {
-    "controlPolicy" : "CCDischarge",
-    "DRate" : 0.1,
-    "lowerCutoffVoltage" : 2.4,
-    "upperCutoffVoltage" : 4.2,
-    "dIdtLimit" : 1,
-    "dEdtLimit" : 0.1
-  },
   "NegativeElectrode": {
     "coatingModelSetup" : {
       "swelling": true},
@@ -38,7 +30,6 @@
           "isFile": true,
           "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
         },
-        "diffusionModelType" : "full",
         "SolidDiffusion" : {
           "Sources" : "D0 and rp are from Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature, Rajeswari Chandrasekaran, Alexandre Magasinski,Gleb Yushin, Thomas F. Fuller",
           "activationEnergyOfDiffusion": 5000,

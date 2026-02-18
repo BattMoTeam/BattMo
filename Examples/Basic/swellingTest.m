@@ -1,51 +1,31 @@
-% BattMo Tutorial
-% This tutorial explains how to setup and run a simulation in BattMo
+%% Silicon Swelling Example 
+%
 
-%%% Setting up the environment
-% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality 
-% is collected into modules where each module contains code for doing 
-% specific things. To use this functionality we must add these modules to 
-% the matlab path by running:
+%% Material properties
+% We load the json structure for the material properties
+jsonfilename = fullfile('ParameterData'        , ...
+                        'BatteryCellParameters', ...
+                        'LithiumIonBatteryCell', ...
+                        'lithium_ion_battery_nmc_silicon.json');
+jsonstruct_material = parseBattmoJson(jsonfilename);
 
+%% Geometry
+% We load the json structure for the geometrical properties
 
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
+jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
-clear all
-close all
+%% Control
+% We load the json structure for the geometrical properties
 
-% mrstDebug(20);
+jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
+jsonstruct_control = parseBattmoJson(jsonfilename);
 
-%%% Specifying the physical model
-% In this tutorial we will simulate a lithium-ion battery consisting of a 
-% negative electrode, a positive electrode and an electrolyte. *BattMo* 
-% comes with some pre-defined models which can be loaded from JSON files.
-% Here we will load the basic lithium-ion model JSON file which comes with
-% Battmo.
+jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+                               jsonstruct_geometry, ...
+                               jsonstruct_control});
 
-fname = fullfile('ParameterData'        , ...
-                 'BatteryCellParameters', ...
-                 'LithiumIonBatteryCell', ...
-                 'lithium_ion_battery_nmc_silicon.json');
-
-jsonstruct = parseBattmoJson(fname);
-
-%%%
-% The parseBattmoJson function parses the JSON input and creates a matlab
-% structure containing the same fields as the JSON input. This structure 
-% can be changed to setup the model in the way that we want. 
-
-%%%
-% In this instance we will exclude temperature effects by setting
-% use_thermal to false.
-
-jsonstruct.use_thermal = false;
-
-%%%
-% We will also not use current collectors in this example:
-
-jsonstruct.include_current_collectors = false;
-
-%%%
+%%
 % The structure created in the jsonstruct follows the same hierarchy as the
 % fields in the JSON input file. These can be referenced by name in the
 % jsonstruct. To make life easier for ourselves we define some shorthand
@@ -62,181 +42,10 @@ sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
 
-%%%
-% Now we can set the diffusion model type for the active material (am) in the
-% positive (pe) and negative (ne) electrodes to 'full'.
+output = runBatteryJson(jsonstruct, 'runSimulation', true);
 
-jsonstruct.(ne).(co).(am).diffusionModelType = 'swelling';
-jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
-
-%%%
-% To see which other types of diffusion model are available one can view 
-% :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>.
-
-%%%
-% When running a simulation, *BattMo* requires that all model parameters
-% are stored in an instance of :class:`BatteryInputParams <Battery.BatteryInputParams>`. 
-% This class is used to initialize the simulation and is accessed by
-% various parts of the simulator during the simulation. This class is
-% instantiated using the jsonstruct we just created:
-
-inputparams = BatteryInputParams(jsonstruct);
-
-%%%
-% It is also possible to update the properties of this inputparams in a
-% similar way to updating the jsonstruct. Here we set the discretisation
-% level for the diffusion model. Other input parameters for the full diffusion
-% model can be found here:
-% :class:`FullSolidDiffusionModelInputParams <Electrochemistry.FullSolidDiffusionModelInputParams>`.
-
-inputparams.(ne).(co).(am).(sd).N = 5;
-inputparams.(pe).(co).(am).(sd).N = 5;
-
-%%% Setting up the geometry
-% Here, we setup the 1D computational mesh that will be used for the
-% simulation. The required discretization parameters are already included
-% in the class BatteryGenerator1D. Classes for generating other geometries can
-% be found in the BattMo/Battery/BatteryGeometry folder.
-
-gen = BatteryGeneratorP2D();
-
-gen.xlength(2) = 10e-6;
-gen.xlength(4) = 100e-6;
-gen.sepnx = 10; % discretization number for negative current collector (default = 10)
-gen.nenx  = 10; % discretization number for negative active material (default = 10)
-gen.penx  = 10; % discretization number for separator (default = 10)
-
-%%%
-% Now, we update the inputparams with the properties of the mesh. This function
-% will update relevent parameters in the inputparams object and make sure we have
-% all the required parameters for the model geometry chosen.
-
-inputparams = gen.updateBatteryInputParams(inputparams);
-
-%%% Initialising the battery model object
-% The battery model is initialized by sending inputparams to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
-
-model = GenericBattery(inputparams);
-cgit = model.cgit;
-cgit.printRootVariables
-% model = model.setupComputationalGraph();
-% cgt = model.computationalGraph;
-
-%%%
-% In BattMo a battery model is actually a collection of submodels: 
-% Electrolyte, Negative Electrode, Positive Electrode, Thermal Model and Control
-% Model. The battery class contains all of these submodels and various other 
-% parameters necessary to run the simulation.
-
-%%% Plotting the OCP curves
-% We can inspect the model object to find out which parameters are being
-% used. For instance the information we need to plot the OCP curves for the
-% positive and negative electrodes can be found in the interface structure
-% of each electrode.
-
-%T = 298.15;
-%elde = {ne,pe};
-%
-%figure
-%hold on
-%for i = 1:numel(elde)
-%    po_itf = model.(elde{i}).(am).(itf);
-%
-%    theta100 = po_itf.theta100;
-%    theta0   = po_itf.theta0;
-%    cmax     = po_itf.cmax;
-%
-%    soc   = linspace(0, 1);
-%    theta = soc*theta100 + (1 - soc)*theta0;
-%    c     = theta.*cmax;
-%    OCP = po_itf.computeOCPFunc(c, T, cmax);
-%
-%    plot(soc, OCP)
-%end
-%xlabel('SOC [-]')
-%ylabel('OCV [V]')
-%title('OCV for both electrodes');
-%legend(elde)
-
-%%% Controlling the simulation
-% The control model specifies how the simulation is controlled. This can
-% also be thought of as the boundary conditions of the simulation.
-
-%%%
-% In the first instance we use IEswitch control policy.
-% We set the total time scaled by the CRate in the model.
-% The CRate has been set by the json file. We can access it here:
-
-timestep.numberOfTimeSteps = 100;
-% timestep.totalTime = 100*hour;
-
-step    = model.Control.setupScheduleStep(timestep);
-control = model.Control.setupScheduleControl();
-
-% This control is used to set up the schedule
-schedule = struct('control', control, 'step', step);
-
-
-% tup = 0.1;
-% switch model.Control.controlPolicy
-%   case 'IEswitch'
-%       switch model.Control.initialControl
-%       case 'discharging'
-%         inputI = model.Control.Imax;
-%         inputE = model.Control.lowerCutoffVoltage;
-%       case {'charging', 'first-charge'}
-%         inputI = -model.Control.Imax;
-%         inputE = model.Control.upperCutoffVoltage;
-%       otherwise
-%         error('initCase not recognized')
-%     end
-%     srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-%                                                 inputI, ...
-%                                                 inputE);
-%     control.IEswitch = true;
-%     control = struct('src', srcfunc, 'IEswitch', true);
-%   case 'CC'
-%     srcfunc = @(time) rampupControl(time, tup, model.Control.Imax);
-%     control.CC = true;
-%   otherwise
-%     error('control policity not recognized');
-% end
-
-%%%
-% We create a control structure containing the source function and
-% specifying that we want to use IESwitch control:
-
-% control.src = srcfunc;
-
-%%%
-% Finally we collect the control and step structures together in a schedule
-% struct which is the schedule which the simulation will follow:
-
-% schedule = struct('control', control, 'step', step); 
-
-
-%%% Setting the initial state of the battery
-% To run simulation we need to know the starting point which we will run it
-% from, in terms of the value of the primary variables being modelled at
-% the start of the simulation. 
-% The initial state of the model is setup using model.setupInitialState()
-% Here we take the state of charge (SOC) given in the input and calculate
-% equilibrium concentration based on theta0, theta100 and cmax.
-
-
-initstate = model.setupInitialState(jsonstruct);
-
-%%% Running the simulation
-% Once we have the initial state, the model and the schedule, we can call
-% the simulateScheduleAD function which will actually run the simulation:
-
-%model.verbose = true;
-
-nls = NonLinearSolver;
-nls.errorOnFailure = false;
-
-[~, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); 
+model  = output.model;
+states = output.states;
 
 
 %% Plotting the results
