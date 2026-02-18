@@ -68,7 +68,7 @@
           { "properties" : {
             "argumentList": {
               "type" : "array",
-              "prefixItems": [{"const": "stoichometry"}]}}}]}],
+              "prefixItems": [{"const": "stoichiometry"}]}}}]}],
       "description": "open-circuit potential function of the electrode under a reference temperature. Temperature dependence is added via the entropy change."},
     "referenceTemperature" : {"type" : "number",
                               "description" : "Reference temperature used to compute the OCP from the entropy change, OCP = OCP_ref + dUdT*(T - T_ref)"},

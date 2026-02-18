@@ -9,7 +9,7 @@
         "tabulated",
         "string expression",
         "named function",
-        "constant"
+        "constant",
         "csv"
       ],
       "description" : "Four input formats are supported for functions. The descriptions are provided in the schema below for each case."

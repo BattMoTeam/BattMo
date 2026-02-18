@@ -14,23 +14,17 @@
     },
     "PositiveElectrode" : {"$ref" : "#/$def/Electrode"},
     "NegativeElectrode" : {"$ref" : "#/$def/Electrode"}
-}}
-  }
+  },
   "$defs" : {
     "Electrode" : {
-      "type" : "object"
+      "type" : "object",
       "properties" : {
         "use_normed_current_collector" : {
           "type" : "boolean",
           "description": "To avoid floating point error at the current collector, we use a reference voltage and the primary variable is a voltage difference with respect to this reference voltage. Default value is true"  
         },
         "coatingModelSetup" : {
-          "type" : "object"
+          "type" : "object",
           "properties" : {
             "swelling" : {"type" : "boolean",
-                          "description": "if true, use a swelling model"}
-          }
-        }
-      }
-    }
-}
+                          "description": "if true, use a swelling model"}}}}}}}
