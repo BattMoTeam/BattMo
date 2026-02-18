@@ -19,7 +19,7 @@ classdef OxideMembraneElectrode < BaseModel
 
     methods
 
-        function model = OxideMembraneElectrode(paramobj)
+        function model = OxideMembraneElectrode(inputparams)
 
             model = model@BaseModel();
 
@@ -28,7 +28,7 @@ classdef OxideMembraneElectrode < BaseModel
                        'muEl0', ...
                        'Keh'   , ...
                        'Rct'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants();
 

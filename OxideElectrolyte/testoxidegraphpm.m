@@ -8,12 +8,12 @@ filename = '/home/xavier/Matlab/Projects/battmo/OxideElectrolyte/oxidemembrane.j
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-paramobj = OxideMembraneCellInputParams(jsonstruct);
+inputparams = OxideMembraneCellInputParams(jsonstruct);
 
-paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
+inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
-model = OxideMembraneCell(paramobj);
+model = OxideMembraneCell(inputparams);
 
 % Setup computational graph
 model = model.setupComputationalGraph();

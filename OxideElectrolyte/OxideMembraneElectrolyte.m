@@ -26,7 +26,7 @@ classdef OxideMembraneElectrolyte < BaseModel
 
     methods
 
-        function model = OxideMembraneElectrolyte(paramobj)
+        function model = OxideMembraneElectrolyte(inputparams)
 
             model = model@BaseModel();
 
@@ -38,7 +38,7 @@ classdef OxideMembraneElectrolyte < BaseModel
                        'Keh'    , ...
                        'muEl0'};
 
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
             model.operators = localSetupOperators(model.G);
 
