@@ -4,28 +4,25 @@ classdef SwellingCoatingInputParams < CoatingInputParams
 
         molarMass
         referenceFillInLevel
-        
+        include_hydrostatic_stress
+        youngModulus             
+        poissonRatio             
+        solutePartialMolarVolume 
     end
     
     methods
 
         function inputparams = SwellingCoatingInputParams(jsonstruct)
 
-            inputparams = inputparams@CoatingInputParams(jsonstruct);
-
-        end
-
-        function inputparams = validateInputParams(inputparams)
             
             itf = 'Interface';
             sd  = 'SolidDiffusion';
             am  = 'ActiveMaterial';
             
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {am, 'diffusionModelType'}, 'swelling');
-            diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
-            assert(strcmp(diffusionModelType, 'swelling'), 'swelling input parameters are expected.')
+            jsonstruct = setJsonStructField(jsonstruct, {am, 'diffusionModelType'}, 'swelling');
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_hydrostatic_stress', false);
             
-            inputparams = validateInputParams@CoatingInputParams(inputparams);
+            inputparams = inputparams@CoatingInputParams(jsonstruct);
 
         end
         

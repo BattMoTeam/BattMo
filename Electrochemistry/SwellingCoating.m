@@ -16,8 +16,14 @@ classdef SwellingCoating < Coating
         molarMass
         referenceFillInLevel % fill-in value which corresponds to the given volumeFraction of the coating
 
-        includeHydrostaticStress = false;
+        include_hydrostatic_stress
 
+        %% If include hydrostatic stress
+
+        youngModulus             % Young's modulus
+        poissonRatio             % Poisson's ratio
+        solutePartialMolarVolume % partial molar volume of the solute
+        
         %% Computed at initialization
         
         zeroFillInVolumeFraction
@@ -31,8 +37,12 @@ classdef SwellingCoating < Coating
         function model = SwellingCoating(inputparams)
 
             model = model@Coating(inputparams)
-            fdnames = {'molarMass', ...
-                       'referenceFillInLevel'};
+            fdnames = {'molarMass'                 , ...
+                       'referenceFillInLevel'      , ...
+                       'include_hydrostatic_stress', ...
+                       'youngModulus'              , ...
+                       'poissonRatio'              , ...
+                       'solutePartialMolarVolume'};
             
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -92,8 +102,8 @@ classdef SwellingCoating < Coating
 
             model = model.registerVarNames(varnames);
 
-            if model.includeHydrostaticStress
-                model = model.registerVarName('hydrostaticStress');
+            if model.include_hydrostatic_stress
+                model = model.registerVarName({am, 'hydrostaticStress'});
             end
             
             fn = @SwellingCoating.updateVolumetricSurfaceArea;
@@ -105,14 +115,14 @@ classdef SwellingCoating < Coating
             fn =  @SwellingCoating.updateSolidIntercalationFlux;
             model = model.registerPropFunction({{am, sd, 'intercalationFlux'}, fn, {{am, itf, 'intercalationFlux'}}});
 
-            if model.includeHydrostaticStress
+            if model.include_hydrostatic_stress
                 
                 fn = @SwellingCoating.updateHydrostaticStress;
-                model = model.registerPropFunction({'hydrostaticStress', fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
+                model = model.registerPropFunction({{am, 'hydrostaticStress'}, fn, {{am, sd, 'cAverage'}, {am, itf, 'cElectrodeSurface'}}});
 
-                fn  = @SwellingCoating.updateReactionRate;
-                inputnames = {{am, itf, 'T'}, {am, itf, 'j0'}, {am, itf, 'eta'}, 'hydrostaticStress'};
-                model = model.registerPropFunction({{am, itf, 'intercalationFlux'}, fn, inputnames});
+                fn  = @SwellingCoating.updateEta;
+                inputnames = {{am, itf, 'phiElectrode'}, {am, itf, 'phiElectrolyte'}, {am, itf, 'OCP'}, {am, 'hydrostaticStress'}};
+                model = model.registerPropFunction({{am, itf, 'eta'}, fn, inputnames});
                 
             end
             
@@ -181,26 +191,20 @@ classdef SwellingCoating < Coating
 
         end
 
-        function state = updateReactionRate(model, state)
+        function state = updateEta(model, state)
         % Same as in the interface class but uses the Butler Volmer
         % equation including stress
 
             am  = 'ActiveMaterial';
-            sd  = 'SolidDiffusion';
             itf = 'Interface';
-            
-            n     = model.(am).(itf).numberOfElectronsTransferred;
-            F     = model.(am).(itf).constants.F;
-            alpha = model.(am).(itf).chargeTransferCoefficient;
 
-            T     = state.(am).(itf).T;
-            j0    = state.(am).(itf).j0;
-            eta   = state.(am).(itf).eta;
-            sigma = state.hydrostaticStress;
+            F = PhysicalConstants.F;
             
-            R = ButlerVolmerEquation_withStress(j0, alpha, n, eta, sigma, T);
-
-            state.(am).(itf).intercalationFlux = R/(n*F); % reaction rate in mol/(s*m^2)
+            Omega = model.solutePartialMolarVolume;
+            
+            state.(am).(itf) = model.(am).(itf).updateEta(state.(am).(itf));
+            
+            state.(am).(itf).eta = state.(am).(itf).eta - Omega.*state.(am).hydrostaticStress/F;
 
         end
 
@@ -237,18 +241,17 @@ classdef SwellingCoating < Coating
             sd  = 'SolidDiffusion';
             itf = 'Interface';
 
-            E = 0;
-            % Uncomment the expression of E above for taking into account the stress
-            % E = 1e+11;
-            nu    = 0.27;
-            Omega = 4.25e-06;
+            E     = model.youngModulus;
+            nu    = model.poissonRatio;
+            Omega = model.solutePartialMolarVolume;
+
 
             cSurface  = state.(am).(itf).cElectrodeSurface;
             cAverage  = state.(am).(sd).cAverage;
 
             sigma = ( (2.* E.* Omega)/(9.*(1-nu)) ) .* (cAverage - cSurface);
 
-            state.hydrostaticStress = sigma;
+            state.(am).hydrostaticStress = sigma;
             
         end
 
