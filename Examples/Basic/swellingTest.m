@@ -100,7 +100,7 @@ inputparams.(pe).(co).(am).(sd).N = 5;
 
 gen = BatteryGeneratorP2D();
 
-gen.xlength(2) = 1e-6;
+gen.xlength(2) = 10e-6;
 gen.xlength(4) = 100e-6;
 gen.sepnx = 10; % discretization number for negative current collector (default = 10)
 gen.nenx  = 10; % discretization number for negative active material (default = 10)
@@ -122,7 +122,6 @@ cgit = model.cgit;
 cgit.printRootVariables
 % model = model.setupComputationalGraph();
 % cgt = model.computationalGraph;
-% return
 
 %%%
 % In BattMo a battery model is actually a collection of submodels: 
@@ -256,7 +255,7 @@ T = cellfun(@(x) x.time, states);
 %% Plot E as a function of the time
 
 figure()
-tiledlayout
+tiledlayout('flow');
 
 nexttile
 plot(T/hour, E)
