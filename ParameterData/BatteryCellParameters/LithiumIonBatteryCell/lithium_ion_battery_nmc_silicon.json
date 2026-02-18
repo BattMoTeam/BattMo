@@ -13,12 +13,18 @@
     "dEdtLimit" : 0.1
   },
   "NegativeElectrode": {
-    "coatingModelSetup" : {"swelling": true},            
+    "coatingModelSetup" : {
+      "swelling": true},
     "Coating" : {
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "molarMass": 28.0855e-3,
-      "referenceFillInLevel" : 1, 
+      "referenceFillInLevel" : 1,
+      "include_hydrostatic_stress" : true,
+      "youngModulus" : 1e11,
+      "poissonRatio" : 0.27,
+      "solutePartialMolarVolume" : 4.25e-6,
+      "description" : "The mechanical values are taken from paper Effects of stress dependent electrochemical reaction on voltage hysteresis of lithium ion batteries, from Li, Song, Lu, Zhang",
       "ActiveMaterial": {
         "massFraction": 1.0,
         "density": 2240,
