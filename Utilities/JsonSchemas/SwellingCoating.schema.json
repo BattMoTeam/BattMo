@@ -1,0 +1,34 @@
+{  "$id": "file://./SwellingCoating.schema.json",
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "description": "options for swelling model for coating",
+   "type" : "object",
+   "allOf" : [
+     {
+       "properties" : {
+         "referenceFillInLevel" : {
+           "type" : "number",
+           "description" : "This reference value for stoichiometry is used when swelling is considered. It gives then the stoichiometry which corresponds to the given volume fraction."},
+         "include_hydrostatic_stress" : {
+           "type" : "boolean",
+           "description" : "True if hydrostatic stress effects are included. Default if false"}},
+       "required" : ["referenceFillInLevel", "include_hydrostatic_stress"]},
+     {
+       "OneOf" : [
+         {"properties" : {
+           "include_hydrostatic_stress" : {
+             "const" : false}}},
+         {"properties" : {
+           "include_hydrostatic_stress" : {
+             "const" : true},
+           "youngModulus" : {
+             "type" : "number",
+             "description" : "Young's modulus"},
+           "poissonRatio" : {
+             "type" : "number",
+             "description" : "Poisson's ratio"},
+           "solutePartialMolarVolume" : {
+             "type" : "number",
+             "description" : "partial molar volume of the solute"}},
+          "required" : ["youngModulus", "poissonRatio", "solutePartialMolarVolume"]}]}]}
+
+
