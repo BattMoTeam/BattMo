@@ -62,11 +62,6 @@
         "effectiveThermalConductivity" : {
           "$ref": "PhysicalQuantity.schema.json",
           "description": "the effective thermal conductivity, which take into account the volume fraction and the bruggeman coefficient. This value is in the default setup computed, but the value given here will overwrite the default computed value."
-        },
-        "referenceFillInLevel" : {
-          "type" : "number",
-          "description" : "This reference value for stoichiometry is used when swelling is considered. It gives then the stoichiometry which
-corresponds to the given volume fraction."
         }
       }
     },

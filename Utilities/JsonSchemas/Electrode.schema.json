@@ -3,17 +3,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Electrode",
   "type": "object",
-  
-  "properties" : {
-    "Coating" : {"$ref" : "Coating.schema.json"},
-    "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"},
-    "coatingModelSetup" : {
-      "type" : "object",
+  "allOf" : [
+    {
       "properties" : {
-        "swelling" : {
-          "type" : "boolean",
-          "description" : "true if swelling is considered in the model, false otherwise. default is false"}
-      }
-    }
-  }
-}
+        "Coating" : {"$ref" : "Coating.schema.json"},
+        "CurrentCollector" : {"$ref" : "CurrentCollector.schema.json"},
+        "coatingModelSetup" : {
+          "type" : "object",
+          "properties" : {
+            "swelling" : {
+              "type" : "boolean",
+              "description" : "true if swelling is considered in the model, false otherwise. default is false"}}}}},
+    {"oneOf" : [
+      {"properties" : {
+        "coatingModelSetup" : {
+          "properties" : {
+            "swelling" : {"const" : false}}}}},
+      {"properties" : {
+        "coatingModelSetup" : {
+          "properties" : {
+            "swelling" : {"const" : true}}},
+        "Coating" : {"$ref": "SwellingCoating.schema.json"}}}]}]}
+
+
+
