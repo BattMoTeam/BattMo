@@ -14,7 +14,7 @@
         "concentration",
         "temperature"
       ],
-      "functionName": "computeDiffusionCoefficient_default",
+      "functionName": "computeDiffusionCoefficient_Ai2020",
       "functionFormat": "named function"
     },
     "initialConcentration": {
@@ -26,7 +26,7 @@
         "concentration",
         "temperature"
       ],
-      "functionName": "computeElectrolyteConductivity_default",
+      "functionName": "computeElectrolyteConductivity_Ai2020",
       "functionFormat": "named function"
     },
     "species": {

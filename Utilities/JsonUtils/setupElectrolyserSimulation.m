@@ -1,18 +1,29 @@
-function conductivity = computeElectrolyteConductivity_default(c, T)
-    
-    conductivityFactor = 1e-4;
-    
-    cnst = [-10.5   , 0.074    , -6.96e-5; ...
-            0.668e-3, -1.78e-5 , 2.80e-8; ...
-            0.494e-6, -8.86e-10, 0];            
-            
-    
-    % Ionic conductivity, [S m^-1]
-    conductivity = conductivityFactor.* c .*( polyval(cnst(end:-1:1,1),c) + polyval(cnst(end:-1:1,2),c) .* T + ...
-                                              polyval(cnst(end:-1:1,3),c) .* T.^2).^2;
-    
-end
+function simsetup = setupElectrolyserSimulation(jsonstruct, varargin)
 
+    mrstModule add ad-core mrst-gui mpfa
+
+    inputparams = ElectrolyserInputParams(jsonstruct);
+    inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
+
+    model = Electrolyser(inputparams);
+    
+    [model, initstate] = model.setupBcAndInitialState();
+
+    %% Setup the non-linear solver
+    % We do only minor modifications here from the standard solver
+
+    nls = NonLinearSolver();
+    
+    nls.verbose        = false;
+    nls.errorOnFailure = false;
+
+    simsetupInput = struct('model'          , model    , ...
+                           'initstate'      , initstate, ...
+                           'NonLinearSolver', nls);
+
+    simsetup = SimulationSetup(simsetupInput);
+
+end
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
