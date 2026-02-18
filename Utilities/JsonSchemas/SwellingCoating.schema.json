@@ -13,7 +13,7 @@
            "description" : "True if hydrostatic stress effects are included. Default if false"}},
        "required" : ["referenceFillInLevel", "include_hydrostatic_stress"]},
      {
-       "OneOf" : [
+       "oneOf" : [
          {"properties" : {
            "include_hydrostatic_stress" : {
              "const" : false}}},
