@@ -1,5 +1,25 @@
 %% Silicon Swelling Example 
 %
+% In this example, we illustrate the implementation of Silicon swelling in BattMo
+%
+% Silicon swelling model in BattMo includes
+%
+% * Modified solid diffusion equation due to changing particle radius
+% * Volume fraction change and impact of the effective values of transport parameters such as diffusion and conductivity in electrolyte and electrode
+% * Effective convective flux
+% * Modified Butler-Volmer equation due to hydrostatic stress
+%
+% We do not include the propagation of mechanical stress.
+%
+% The modeling equations are taken from the following references
+%
+% * Shweta Dhillon et al. “Modelling capacity fade in silicon-graphite composite electrodes for lithium-ion batteries”. In: Electrochimica Acta 377 (May 2021).
+% * Rajeswari Chandrasekaran and Thomas Fuller. “Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell”. In: ECS Meeting Abstracts MA2011-02.7 (Aug. 2011).
+% * Rajeswari Chandrasekaran et al. “Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature”. In: Journal of The Electrochemical Society 157.10 (2010).
+% * Yang-Tse Cheng and Mark W Verbrugge. “Evolution of stress within a spherical insertion electrode particle under potentiostatic and galvanostatic operation”. In: Journal of Power Sources 190.2 (2009).
+% * Haoliang Li et al. “Effects of stress dependent electrochemical reaction on voltage hysteresis of lithium ion batteries”. In: Applied Mathematics and Mechanics 39.10 (2018).
+%
+% 
 
 %% Material properties
 % We load the json structure for the material properties
@@ -10,13 +30,15 @@ jsonfilename = fullfile('ParameterData'        , ...
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
 %% Geometry
-% We load the json structure for the geometrical properties
+% We load the json structure for the geometrical properties. We consider a P2D model.
+% 
 
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %% Control
 % We load the json structure for the geometrical properties
+%
 
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
@@ -25,22 +47,6 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
 
-%%
-% The structure created in the jsonstruct follows the same hierarchy as the
-% fields in the JSON input file. These can be referenced by name in the
-% jsonstruct. To make life easier for ourselves we define some shorthand
-% names for various parts of the structure.
-
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-co      = 'Coating';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
-am      = 'ActiveMaterial';
-itf     = 'Interface';
-sd      = 'SolidDiffusion';
-ctrl    = 'Control';
-cc      = 'CurrentCollector';
 
 output = runBatteryJson(jsonstruct, 'runSimulation', true);
 
@@ -49,103 +55,51 @@ states = output.states;
 
 
 %% Plotting the results
-% To get the results we use the matlab cellfun function to extract the
-% values Control.E, Control.I and time from each timestep (cell in the cell
-% array) in states. We can then plot the vectors.
+%
+% We define some shortcuts
 
-ind = cellfun(@(x) ~isempty(x), states);
-states = states(ind);
+ne      = 'NegativeElectrode';
+pe      = 'PositiveElectrode';
+co      = 'Coating';
+elyte   = 'Electrolyte';
+am      = 'ActiveMaterial';
+itf     = 'Interface';
+sd      = 'SolidDiffusion';
+
+
+%%
+% We plot the discharge curve
 
 E = cellfun(@(x) x.Control.E, states); 
 I = cellfun(@(x) x.Control.I, states);
-
-T = cellfun(@(x) x.time, states); 
-
-%% Plot E as a function of the time
+t = cellfun(@(x) x.time, states); 
 
 figure()
 tiledlayout('flow');
 
 nexttile
-plot(T/hour, E)
+plot(t/hour, E)
 xlabel('time [hours]')
 ylabel('Cell Voltage [V]')
 
 nexttile
-plot(T/hour, I)
+plot(t/hour, I)
 xlabel('time [hours]')
 ylabel('Cell Current [A]')
 
 
-%% Plot the overpotential of the negative electrode as a function of time
+%%
+% When a simulation is run, the returned states contain by default only the /primary/ variables, which essentially
+% consist of the concentrations and the electrical potentials. We run the following command to populate the states with
+% all the variables that are known to the model (for example radius, volume fractions...).
 
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
 
 %%
-
-figure
-hold on
-
-negativeElectrodeSize = model.(ne).grid.cells.num;
-L = {};
-
-for i = 1 : negativeElectrodeSize
-
-    eta = cellfun(@(state) state.(ne).(co).(am).(itf).eta(i), states);
-    plot(T/hour, eta);
-    L{end + 1} = "x = " + int2str(i);
-    
-end
-
-xlabel('time / hours')
-ylabel('\eta / V')
-title('Overpotential in Negative Electrode')
-legend(L);
-
-%% plot of average concentration
-
-figure
-hold on
-
-L = {};
-
-for i = 1 : negativeElectrodeSize
-
-    cAver = cellfun(@(state) state.(ne).(co).(am).(sd).cAverage(i), states);
-    plot(T/hour, cAver);
-    L{end + 1} = "x = " + int2str(i);
-    
-end
-
-xlabel('time / hours')
-ylabel('c / mol/m^3')
-title('Average particle concentration')
-legend(L);
-
-%% plot of Porosity
-
-figure
-hold on
-
-negativeElectrodeSize = model.(ne).grid.cells.num;
-L = {};
-
-for i = 1 : negativeElectrodeSize
-
-    poro = cellfun(@(state) 1 - state.(ne).(co).volumeFraction(i), states);
-    plot(T/hour, poro);
-    L{end + 1} = "x = " + int2str(i);
-    
-end
-
-xlabel('time / hour')
-ylabel('porosity / 1')
-title('Negative Electrode Porosity')
-legend(L);
-
-%% Plot the radius evolution
+% We plot the evolution of the radius evolution as a function of time for the spatial locations that correspond to the
+% centers of our discretization mesh cells.
 
 for istate = 1 : numel(states)
     states{istate} = model.evalVarName(states{istate}, {ne, co, am, sd, 'radius'});
@@ -154,52 +108,118 @@ end
 figure
 hold on
 
-negativeElectrodeSize = model.(ne).grid.cells.num;
-L = {};
+nc = model.(ne).grid.cells.num;
 
-for i = 1 : negativeElectrodeSize
+for i = 1 : nc
 
     radius = cellfun(@(state) state.(ne).(co).(am).(sd).radius(i), states);
-    plot(T/hour, radius);
-    L{end + 1} = "x = " + int2str(i);
+    lgdtxt = sprintf("x = %g µm", model.(ne).grid.cells.centroids(i, 1)/(micro*meter));
+    plot(t/hour, radius, 'displayname', lgdtxt);
     
 end
 
 xlabel('time [hours]')
 ylabel('radius / m')
 title('Silicon particle radius')
-legend(L);
+legend show;
 
-%% plot volume fraction
-    
+
+%%
+% We plot the evolution of the porosity in the negative electrove as a function of time for the spatial locations that
+% correspond to the centers of our discretization mesh cells.
+
 figure
 hold on
 
-negativeElectrodeSize = model.(ne).grid.cells.num;
-L = {};
+for i = 1 : nc
 
-for i = 1 : negativeElectrodeSize
-
-    vf = cellfun(@(state) state.(ne).(co).volumeFraction(i), states);
-    plot(T/hour, vf);
-    L{end + 1} = "x = " + int2str(i);
+    poro = cellfun(@(state) 1 - state.(ne).(co).volumeFraction(i), states);
+    lgdtxt = sprintf("x = %g µm", model.(ne).grid.cells.centroids(i, 1)/(micro*meter));
+    plot(t/hour, poro, 'displayname', lgdtxt);
     
 end
 
-xlabel('time [hours]')
-ylabel('volume fraction')
-title('volume fraction')
-legend(L);
+xlabel('time / hour')
+ylabel('porosity / 1')
+title('Negative Electrode Porosity')
+legend show
 
-%% Total Lithium content
+
+%%
+% We plot the evolutino of the overpotential of the negative electrode as a function of time
+%
+
+figure
+hold on
+
+nc = model.(ne).grid.cells.num;
+
+for i = 1 : nc
+
+    eta = cellfun(@(state) state.(ne).(co).(am).(itf).eta(i), states);
+    lgdtxt = sprintf("x = %g µm", model.(ne).grid.cells.centroids(i, 1)/(micro*meter));
+    plot(t/hour, eta, 'displayname', lgdtxt);
+    
+end
+
+xlabel('time / hours')
+ylabel('\eta / V')
+title('Overpotential in Negative Electrode')
+
+%%
+% We plot of the Lithium *total* concentration and the particle average concentration, at each spatial location. By
+% total concentration, we mean the amount of Lithium for a given *total* volume, which includes also the pores. This
+% quantity is relevant because of the change of volume fraction and it is equal to the product of the concentration with
+% the volume fraction. It is also equal to the product of the fill-in level with the total maximum concentration.
+
+figure
+tiledlayout('flow');
+
+nexttile
+hold on
+
+% Maximum total concentration
+cMaxTot = model.(ne).(co).maximumTotalConcentration;
+for i = 1 : nc
+
+    fillInLevel = cellfun(@(state) state.(ne).(co).(am).(sd).x(i), states);
+    lgdtxt = sprintf("x = %g µm", model.(ne).grid.cells.centroids(i, 1)/(micro*meter));
+    plot(t/hour, fillInLevel.*cMaxTot/(mol/litre), 'displayname', lgdtxt);
+    
+end
+
+xlabel('time / hours')
+ylabel('c_{tot} / mol/litre')
+title('Lithium Total Concentration')
+
+nexttile
+hold on
+
+for i = 1 : nc
+
+    cAver = cellfun(@(state) state.(ne).(co).(am).(sd).cAverage(i), states);
+    lgdtxt = sprintf("x = %g µm", model.(ne).grid.cells.centroids(i, 1)/(micro*meter));
+    plot(t/hour, cAver/(mol/litre), 'displayname', lgdtxt);
+    
+end
+
+xlabel('time / hours')
+ylabel('c / mol/L')
+title('Lithium Average Concentration')
+
+
+%%
+% We plot the total Lithium content in the negative electrode and make sure it is linear with a constant slope that
+% depends on the given discharge rate.
+%
 
 figure
 
 m = [];
 vols = model.(ne).(co).grid.cells.volumes;
+cMaxTot = model.(ne).(co).maximumTotalConcentration;
 
 for istate = 1 : numel(states)
-    cMaxTot = model.(ne).(co).maximumTotalConcentration;
 
     state = states{istate};
     x     = state.(ne).(co).(am).(sd).x;
@@ -209,39 +229,9 @@ for istate = 1 : numel(states)
 end
 
 F = PhysicalConstants.F;
-plot(T/hour, m*F/hour);
+
+plot(t/hour, m*F/hour);
 xlabel('time [hours]')
 ylabel('amount / Ah');
 title('Lithium content in negative electrode')
-
-%{
-  Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
-  and SINTEF Digital, Mathematics & Cybernetics.
-
-  This file is part of The Battery Modeling Toolbox BattMo
-
-  BattMo is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  BattMo is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}
-
-
-
-
-
-
-
-
-
-
-
 
