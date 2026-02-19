@@ -98,7 +98,7 @@
             "description" : "language the function string is supposed to be evaluated"},
           "formula" : {"type": "string",
                        "description": "The string to be evaluated"},
-          "variablesNames" : {
+          "variableNames" : {
             "type" : "array",
             "items" : {"type" : "string"},
             "description" : "name of the variables used in the string expresssion. There must be there one value per argument in argument list."}}
