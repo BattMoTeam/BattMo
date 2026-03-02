@@ -1,11 +1,17 @@
 %% Run stand-alone active material model with lithium plating
-% This example shows how to simulate a single particle of a silicon graphite
-% electrode, taking into account the plating phenomenon
+%
+% In This example, we illustrate the implementation of Lithium plating.
+%
+% The modeling equations are taken from
+%
+% Hein, Danner and Latz "An Electrochemical Model of Lithium Plating and Stripping in Lithium Ion Batteries" In: ACS Applied Energy Materials (2022) http://dx.doi.org/10.1021/acsaem.0c01155
+%
 
-% clear all
-close all
 
-%% Setup the properties of Li-ion battery materials and cell design
+%% Parameter setup
+%
+% We load a set of NMC-graphite material parameters
+%
 
 filename = fullfile('ParameterData'        , ...
                     'BatteryCellParameters', ...
@@ -20,59 +26,87 @@ jsonstruct = parseBattmoJson(filename);
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 lp      = 'LithiumPlating';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
 co      = 'Coating';
 am      = 'ActiveMaterial';
 itf     = 'Interface';
 sd      = 'SolidDiffusion';
-ctrl    = 'Control';
-cc      = 'CurrentCollector';
 
+%%
+% We do not include the thermal effects
+%
 jsonstruct.use_thermal = false;
-jsonstruct.include_current_collectors = false;
 
-jsonstruct.(ne).(co).(am).diffusionModelType = 'full';
-jsonstruct.(pe).(co).(am).diffusionModelType = 'full';
-
+%%
+% We include the lithium plating effect
+% 
 jsonstruct.(ne).(co).(am).useLithiumPlating = true;
 
 %%
-% OCP is computed via a function described in the article (S-5)
-jsonstruct.(ne).(co).(am).(itf).openCircuitPotential.functionName = 'computeOCP_Graphite_Latz';
+% OCP is computed via a function described in the article (S-5), which has been written as a matlab function
+% |computeOCP_Graphite_Latz|. Let us plot this function
+
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'defaultaxesfontsize', 15);
+
+theta = linspace(0, 1, 100);
+OCP = computeOCP_Graphite_Latz(theta);
+
+plot(theta, OCP);
+xlabel('Stoichiometry / 1')
+ylabel('OCP / Voltage')
+title('OCP for Graphite-Silicon active material')
+
+%%
+%
+% We use this OCP function in our material. Note the use of the function interface. The function should be in the matlab
+% path (this is the case here by installation default).
+%
+
+func.functionFormat = 'named function';
+func.functionName   = 'computeOCP_Graphite_Latz';
+func.argumentList   = {'stoichiometry'};
+
+jsonstruct.(ne).(co).(am).(itf).openCircuitPotential = func;
+
+%%
+% We do not include the entropy change
+%
 jsonstruct.(ne).(co).(am).(itf).includeEntropyChange = false;
 
 %%
-% Flag for stand-alone model
+% We load the lithium plating specific data
 %
-
-jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
-
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
+viewJsonStruct(jsonstruct_lithium_plating);
 
+%%
+% We add this parameter set to our global parameter structure
+%
 jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
 %%
-% Setup InputParams
+% We generate the |InputParams| structure. We do not have to do such step for a whole battery simulation. We do it know
+% because we use a particle model and the interface for it is not yet as user friendly...
 
+jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 inputparams = BatteryInputParams(jsonstruct);
 inputparams = inputparams.(ne).(co).(am);
 
 
-%% Setup the model
+%%
+% We instantiate the active material model for the |inputparams| object
 
 model = ActiveMaterial(inputparams);
 
 %%
-% We equip the model for simulation
+% We equip the model for simulation. Again, this step is done automatically for more main stream models.
 %
 
 model = model.setupForSimulation();
-model.verbose = true;
 
-
-%% setup schedule
-% This part is essential to see the lithium plating effect. Increasing Iref strengthens the effect.
+%% Setup simulation schedule
+%
+% We define the simulation schedule. Increasing Iref strengthens the effect.
 
 Iref = 7e-13;
 Imax = Iref;
@@ -226,6 +260,7 @@ title(varnames{8});
 % chemical flux
 
 % Variable : platingFlux .* surfaceCoverage
+%
 figure
 plot(time, vars{5}, '-');
 xlabel('time [second]');
