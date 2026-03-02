@@ -28,19 +28,22 @@ classdef LithiumPlatingLatz < BaseModel
         limitAmount                         % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
         platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]
 
+        platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
+
         volumetricSurfaceArea               % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
         particleRadius                      % Radius of graphite particles, used in solid-state diffusion modeling
         volumeFraction                      % Porosity
-        
-        platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 
-        SEIFraction                         % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
-        SEImolarMass                        % Molar mass of SEI [kg/mol]
-        SEIdensity                          % Density of SEI [kg/m³]
-        SEIinitialThickness                 % Initial thickness of SEI layer [m]
-        SEIconductivity                     % Ionic conductivity of SEI [S/m]
 
-        useSEI                              % Boolean flag: whether SEI effects are included in overpotential calculations
+        % Following parameters are not supported
+        %
+        % SEIFraction                         % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
+        % SEImolarMass                        % Molar mass of SEI [kg/mol]
+        % SEIdensity                          % Density of SEI [kg/m³]
+        % SEIinitialThickness                 % Initial thickness of SEI layer [m]
+        % SEIconductivity                     % Ionic conductivity of SEI [S/m]
+
+        % useSEI                              % Boolean flag: whether SEI effects are included in overpotential calculations
 
         % numerical parameters
         logReg  = 1e-6 % Value used for regularization of the logarithm in the
@@ -65,20 +68,12 @@ classdef LithiumPlatingLatz < BaseModel
                        'volumetricSurfaceArea' , ...
                        'particleRadius',...
                        'volumeFraction', ...
-                       'platedLiMonolayerThickness', ...
-                       'SEIFraction', ... 
-                       'SEImolarMass'       , ...        
-                       'SEIdensity'     , ...      
-                       'SEIinitialThickness'  , ...   
-                       'SEIconductivity'   , ...    
-                       'useSEI'};
+                       'platedLiMonolayerThickness'};
             model = dispatchParams(model, inputparams, fdnames);
 
         end
 
         function model = registerVarAndPropfuncNames(model)
-
-            useSEI = model.useSEI;
 
             varnames = {};
 

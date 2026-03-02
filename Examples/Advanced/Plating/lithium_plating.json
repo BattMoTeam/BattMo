@@ -7,11 +7,4 @@
   "reactionRateDirectIntercalation" : 6.656e-9, 
   "thresholdParameter" : 1.173e-23, 
   "limitAmount" : 1.173e-17,
-  "platedLiMonolayerThickness" : 2.78e-10, 
-  "platedReferenceConcentration" : 0,
-  "SEIFraction" : 0.05, 
-  "SEImolarMass" : 0.162, 
-  "SEIdensity" : 1690, 
-  "SEIinitialThickness" : 1e-9, 
-  "SEIconductivity" : 5e-6, 
-  "useSEI" : false}}
+  "platedLiMonolayerThickness" : 2.78e-10}}
