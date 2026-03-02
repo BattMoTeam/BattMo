@@ -103,8 +103,13 @@ classdef ActiveMaterial < BaseModel
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
-            if model.useLithiumPlating
-                model = model.removeVarName({sd, 'Rvol'});
+
+            isRootSimulationModel = ~isempty(model.isRootSimulationModel) && model.isRootSimulationModel;
+            
+            if isRootSimulationModel
+                if model.useLithiumPlating 
+                    model = model.removeVarName({sd, 'Rvol'});
+                end
             end
 
             fn = @ActiveMaterial.dispatchTemperature;
@@ -119,7 +124,7 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
             end
             
-            if model.isRootSimulationModel
+            if isRootSimulationModel
 
                 varnames = {};
 
@@ -161,7 +166,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
-            if model.isRootSimulationModel
+            if isRootSimulationModel
                 
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};

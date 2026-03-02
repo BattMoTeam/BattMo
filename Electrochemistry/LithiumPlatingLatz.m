@@ -205,11 +205,13 @@ classdef LithiumPlatingLatz < BaseModel
             ce  = state.cElectrolyte;
             T   = state.T;
 
-            th = model.platedReferenceConcentration * 0.1;
-
-            i0 = model.reactionRatePlating * regularizedPow(ce, model.symmetryFactorPlating, th);
-            j = i0 .* (exp((model.symmetryFactorPlating * F * eta) / (R * T)) - ...
-                       exp((-model.symmetryFactorStripping * F * eta) / (R * T)));
+            th      = model.platedReferenceConcentration * 0.1;
+            alpha_p = model.symmetryFactorPlating;
+            alpha_s = model.symmetryFactorStripping;
+            
+            i0 = model.reactionRatePlating * regularizedPow(ce, alpha_p, th);
+            j = i0 .* (exp((alpha_p * F * eta) / (R * T)) - ...
+                       exp((-alpha_s * F * eta) / (R * T)));
             
             state.platingFlux = j; %mol/s/m2
             
@@ -217,16 +219,20 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updateChemicalFlux(model, state)
 
+            F = model.F;
+
             eta = state.etaChemical;
             T   = state.T;
-            F = model.F;
             cSo = state.cElectrodeSurface;
 
-            th = model.platedReferenceConcentration * 0.001;
-            jCh = model.reactionRateChemicalIntercalation * regularizedSqrt(cSo, th)  * (exp(model.symmetryFactorChemicalIntercalation * F * eta / (model.R * T)) - ...
-                                  exp(-model.symmetryFactorChemicalIntercalation * F * eta / (model.R * T)));
+            th     = model.platedReferenceConcentration * 0.001;
+            kChInt = model.reactionRateChemicalIntercalation;
+            alpha  = model.symmetryFactorChemicalIntercalation;
             
-            state.chemicalFlux = jCh; %mol/s/m2
+            jCh = kChInt * regularizedSqrt(cSo, th)  * (exp(alpha * F * eta / (model.R * T)) - ...
+                                  exp(-alpha * F * eta / (model.R * T)));
+            
+            state.chemicalFlux = jCh; % mol/s/m2
             
         end
 
