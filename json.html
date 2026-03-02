@@ -230,6 +230,17 @@
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="runPlating.html">Run stand-alone active material model with lithium plating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Sum-up">Sum up</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
@@ -849,9 +860,6 @@ initializaton. This design choice is in fact used consistently in BattMo.</p>
 <span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Active Material&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;SEImodel&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<span class="w">                  </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Safari&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Bolay&quot;</span><span class="p">],</span>
-<span class="w">                  </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The default is \&quot;standard\&quot; with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)&quot;</span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Interface.schema.json&quot;</span>
 <span class="w">    </span><span class="p">},</span>
@@ -862,6 +870,15 @@ initializaton. This design choice is in fact used consistently in BattMo.</p>
 <span class="w">        </span><span class="s2">&quot;simple&quot;</span>
 <span class="w">      </span><span class="p">]</span>
 <span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;SEImodel&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="nt">&quot;enum&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Safari&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Bolay&quot;</span><span class="p">],</span>
+<span class="w">                  </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The default is \&quot;standard\&quot; with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;useLithiumPlating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;if true, includes Lithium plating effects. Default is false&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">&quot;LithiumPlating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LithiumPlating.schema.json&quot;</span><span class="p">},</span>
 <span class="w">    </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PhysicalQuantity.schema.json&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
