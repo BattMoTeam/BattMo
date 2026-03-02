@@ -25,7 +25,7 @@ for idx = 1 : numel(j0_cases)
     jsonstruct.(ne).(co).(am).useLithiumPlating = false;
     jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
-    jsonstruct_lithium_plating.LithiumPlating.kInter = 6e3;
+    jsonstruct_lithium_plating.LithiumPlating.reactionRateDirectIntercalation = 6e3;
     jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
     jsonstruct.Control.controlPolicy = 'CCCharge';
@@ -76,14 +76,14 @@ for idx = 1 : numel(j0_cases)
     R = model.(itf).constants.R;
 
     if model.useLithiumPlating
-        nPl0 = model.(lp).nPl0;
+        thresholdParameter = model.(lp).thresholdParameter;
         r = model.(lp).particleRadius;
         vf = model.(lp).volumeFraction;
-        platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+        platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
         platedConcentrationInit = platedConcentration0 / (exp((F*OCP)/(R*T)) - 1)^(1/4);
-        model.(lp).platedConcentrationRef = platedConcentrationInit;
+        model.(lp).platedReferenceConcentration = platedConcentrationInit;
 
-        initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
+        initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedReferenceConcentration;
         initState.(lp).phiSolid = initState.E;
         initState.(lp).phiElectrolyte = phiElectrolyte;
         initState.(lp).cElectrolyte = cElectrolyte;

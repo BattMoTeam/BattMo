@@ -133,14 +133,14 @@ for iT = 1:length(I_list)
     R = model.(itf).constants.R;
 
     if model.useLithiumPlating
-        nPl0 = model.LithiumPlating.nPl0;
+        thresholdParameter = model.LithiumPlating.thresholdParameter;
         r = model.LithiumPlating.particleRadius;
         vf = model.LithiumPlating.volumeFraction;
-        platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+        platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
         platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
-        model.(lp).platedConcentrationRef = platedConcentrationInit;
-        initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
+        model.(lp).platedReferenceConcentration = platedConcentrationInit;
+        initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedReferenceConcentration;
         initState.(lp).phiSolid = initState.E;
         initState.(lp).phiElectrolyte = phiElectrolyte;
         initState.(lp).cElectrolyte = cElectrolyte;

@@ -1,23 +1,23 @@
-%% Multi-kPl and kChInt simulation with lithium plating
+%% Multi-reactionRatePlating and reactionRateChemicalIntercalation simulation with lithium plating
 
 clear
 close all
 
-%% Define kPl and kChInt values to test
-kPl_values = logspace(-11, -9, 10);
-kChInt_values = logspace(-15, -9, 40);
-n_kPl = length(kPl_values);
-n_kChInt = length(kChInt_values);
+%% Define reactionRatePlating and reactionRateChemicalIntercalation values to test
+reactionRatePlating_values = logspace(-11, -9, 10);
+reactionRateChemicalIntercalation_values = logspace(-15, -9, 40);
+n_reactionRatePlating = length(reactionRatePlating_values);
+n_reactionRateChemicalIntercalation = length(reactionRateChemicalIntercalation_values);
 
-results = cell(n_kPl, n_kChInt);
+results = cell(n_reactionRatePlating, n_reactionRateChemicalIntercalation);
 line_styles = {'-', '--', ':'};
 
-for i = 1:n_kPl
-    for j = 1:n_kChInt
-        kPl = kPl_values(i);
-        kChInt = kChInt_values(j);
-        fprintf('\nRunning simulation (%d/%d, %d/%d): kPl = %.1e, kChInt = %.1e\n', ...
-            i, n_kPl, j, n_kChInt, kPl, kChInt);
+for i = 1:n_reactionRatePlating
+    for j = 1:n_reactionRateChemicalIntercalation
+        reactionRatePlating = reactionRatePlating_values(i);
+        reactionRateChemicalIntercalation = reactionRateChemicalIntercalation_values(j);
+        fprintf('\nRunning simulation (%d/%d, %d/%d): reactionRatePlating = %.1e, reactionRateChemicalIntercalation = %.1e\n', ...
+            i, n_reactionRatePlating, j, n_reactionRateChemicalIntercalation, reactionRatePlating, reactionRateChemicalIntercalation);
 
         jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
         jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples','Advanced','Plating','lithium_plating.json'));
@@ -33,8 +33,8 @@ for i = 1:n_kPl
         jsonstruct.(ne).(co).(am).useLithiumPlating = true;
         jsonstruct.(ne).(co).(am).isRootSimulationModel = true;
 
-        jsonstruct_lithium_plating.LithiumPlating.kPl = kPl;
-        jsonstruct_lithium_plating.LithiumPlating.kChInt = kChInt;
+        jsonstruct_lithium_plating.LithiumPlating.reactionRatePlating = reactionRatePlating;
+        jsonstruct_lithium_plating.LithiumPlating.reactionRateChemicalIntercalation = reactionRateChemicalIntercalation;
         jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPlating;
 
         jsonstruct.Control.controlPolicy = 'CCCharge';
@@ -67,14 +67,14 @@ for i = 1:n_kPl
         R = model.(itf).constants.R;
 
         if model.useLithiumPlating
-            nPl0 = model.(lp).nPl0;
+            thresholdParameter = model.(lp).thresholdParameter;
             r = model.(lp).particleRadius;
             vf = model.(lp).volumeFraction;
-            platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+            platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
             platedConcentrationInit = platedConcentration0 / (exp((F*OCP)/(R*T)) - 1)^(1/4);
-            model.(lp).platedConcentrationRef = platedConcentrationInit;
+            model.(lp).platedReferenceConcentration = platedConcentrationInit;
 
-            initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
+            initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedReferenceConcentration;
             initState.(lp).phiSolid = initState.E;
             initState.(lp).phiElectrolyte = phiElectrolyte;
             initState.(lp).cElectrolyte = cElectrolyte;
@@ -128,8 +128,8 @@ for i = 1:n_kPl
             results{i,j}.(varname) = cellfun(@(s) getfield(s.(varsToEval{v}{1}), varname), states);
         end
         results{i,j}.time = time;
-        results{i,j}.kPl = kPl;
-        results{i,j}.kChInt = kChInt;
+        results{i,j}.reactionRatePlating = reactionRatePlating;
+        results{i,j}.reactionRateChemicalIntercalation = reactionRateChemicalIntercalation;
     end
 end
 
@@ -144,12 +144,12 @@ ylabels = {'Surface concentration [mol/m3]', 'Overpotential [V]', 'Plating η [V
 for i_label = 1:length(labels)
     figure;
     hold on;
-    for i = 1:n_kPl
-        for j = 1:n_kChInt
+    for i = 1:n_reactionRatePlating
+        for j = 1:n_reactionRateChemicalIntercalation
             plot(results{i,j}.time/hour, results{i,j}.(labels{i_label}), ...
                 'LineStyle', '-', ...
                 'LineWidth', 1.5, ...
-                'DisplayName', sprintf('kPl=%.1e, kChInt=%.1e', results{i,j}.kPl, results{i,j}.kChInt));
+                'DisplayName', sprintf('reactionRatePlating=%.1e, reactionRateChemicalIntercalation=%.1e', results{i,j}.reactionRatePlating, results{i,j}.reactionRateChemicalIntercalation));
         end
     end
     xlabel('Time [hour]');

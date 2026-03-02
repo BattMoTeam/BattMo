@@ -103,18 +103,18 @@ F = model.(itf).constants.F;
 R = model.(itf).constants.R;
 
 if model.useLithiumPlating
-    nPl0                 = model.LithiumPlating.nPl0;
+    thresholdParameter                 = model.LithiumPlating.thresholdParameter;
     r                    = model.LithiumPlating.particleRadius;
     vf                   = model.LithiumPlating.volumeFraction;
-    platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+    platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
     
     %initialisation so that overpotential are = 0 and reaction at equilibrium
     %at the beginning
     platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
-    model.(lp).platedConcentrationRef = platedConcentrationInit;
+    model.(lp).platedReferenceConcentration = platedConcentrationInit;
 
-    initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedConcentrationRef;
+    initState.(lp).platedConcentrationNorm = platedConcentrationInit / model.(lp).platedReferenceConcentration;
     initState.(lp).phiSolid            = initState.E;
     initState.(lp).phiElectrolyte      = phiElectrolyte;
     initState.(lp).cElectrolyte        = cElectrolyte;
@@ -262,7 +262,7 @@ legend show
 grid on
 
 
-%% Plot flux as percentage of Imax (  "kPl" : 4.635e-2, "kChInt" : 2.89e-8, "kInter" : 6.656e-4)
+%% Plot flux as percentage of Imax (  "reactionRatePlating" : 4.635e-2, "reactionRateChemicalIntercalation" : 2.89e-8, "reactionRateDirectIntercalation" : 6.656e-4)
 
 F = model.(itf).constants.F; % Faraday constant (C/mol)
 n = 1; % numner of exchanged electrons (1 for Li⁺)
@@ -310,7 +310,7 @@ exportgraphics(gcf, filename, 'ContentType', 'vector');
 fprintf('Figure saved to: %s\n', filename);
 
 % 
-% %% Plot flux as percentage of Imax (  "kPl" : 4.635e-6, "kChInt" : 2.89e-9, "kInter" : 6.656e-9)
+% %% Plot flux as percentage of Imax (  "reactionRatePlating" : 4.635e-6, "reactionRateChemicalIntercalation" : 2.89e-9, "reactionRateDirectIntercalation" : 6.656e-9)
 % 
 % F = model.(itf).constants.F; % Faraday constant (C/mol)
 % n = 1; % numner of exchanged electrons (1 for Li⁺)

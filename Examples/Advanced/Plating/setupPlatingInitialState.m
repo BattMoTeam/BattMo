@@ -32,19 +32,19 @@ function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, p
 
     if model.useLithiumPlating
         
-        nPl0                 = model.LithiumPlating.nPl0;
+        thresholdParameter                 = model.LithiumPlating.thresholdParameter;
         r                    = model.LithiumPlating.particleRadius;
         vf                   = model.LithiumPlating.volumeFraction;
-        platedConcentration0 = nPl0 * vf / ((4/3)*pi*r^3);
+        platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
         
         %%
         % initialisation so that the overpotential are zero at the beginning
         platedConcentrationInit = platedConcentration0/(exp((F*OCP)/(R*T)) - 1)^(1/4);
 
-        model.(lp).platedConcentrationRef = platedConcentrationInit;
+        model.(lp).platedReferenceConcentration = platedConcentrationInit;
 
         initstate.(lp).platedConcentration     = platedConcentrationInit ;
-        initstate.(lp).platedConcentrationNorm = platedConcentrationInit/model.(lp).platedConcentrationRef;
+        initstate.(lp).platedConcentrationNorm = platedConcentrationInit/model.(lp).platedReferenceConcentration;
         initstate.(lp).phiSolid                = initstate.E;
         initstate.(lp).phiElectrolyte          = phiElectrolyte;
         initstate.(lp).cElectrolyte            = cElectrolyte;
@@ -56,7 +56,7 @@ function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, p
                            'elyteConcentration' , initstate.(itf).cElectrolyte);
 
     if model.useLithiumPlating
-        scalingparams.platedConcentration = model.(lp).platedConcentrationRef;
+        scalingparams.platedConcentration = model.(lp).platedReferenceConcentration;
     end
 
     %%
