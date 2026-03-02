@@ -106,10 +106,8 @@ classdef ActiveMaterial < BaseModel
 
             isRootSimulationModel = ~isempty(model.isRootSimulationModel) && model.isRootSimulationModel;
             
-            if isRootSimulationModel
-                if model.useLithiumPlating 
-                    model = model.removeVarName({sd, 'Rvol'});
-                end
+            if model.useLithiumPlating 
+                model = model.removeVarName({sd, 'Rvol'});
             end
 
             fn = @ActiveMaterial.dispatchTemperature;
@@ -237,8 +235,6 @@ classdef ActiveMaterial < BaseModel
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             vf = model.(sd).volumeFraction;
-
-            
             
             scalings = {{{sd, 'massCons'}, I/(vf*n*F)}                  , ...
                         {{sd, 'solidDiffusionEq'}, I}, ...

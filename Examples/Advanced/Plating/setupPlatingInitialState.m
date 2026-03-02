@@ -32,7 +32,7 @@ function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, p
 
     if model.useLithiumPlating
         
-        thresholdParameter                 = model.LithiumPlating.thresholdParameter;
+        thresholdParameter   = model.LithiumPlating.thresholdParameter;
         r                    = model.LithiumPlating.particleRadius;
         vf                   = model.LithiumPlating.volumeFraction;
         platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);

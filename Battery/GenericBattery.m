@@ -530,6 +530,11 @@ classdef GenericBattery < BaseModel
                         error('SEI model not recognized');
                     end
 
+                    if model.(elde).(co).(amc).useLithiumPlating
+                        lp = 'LithiumPlating';
+                        scalings{end + 1} = {{elde, co, am, lp, 'platedConcentration'}, model.(elde).(co).(am).(lp).platedReferenceConcentration};
+                    end
+
                 end
 
             end
@@ -818,7 +823,6 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
                       case  'swelling'
                         % theta is interpretated as a fill-in level
-                        
                         compmodel = model.(elde).(co);
                         compmodel = compmodel.registerVarAndPropfuncNames();
                         compmodel = compmodel.removePropFunction({amc, sd, 'x'});
@@ -882,6 +886,28 @@ classdef GenericBattery < BaseModel
 
                         error('SEI model not recognized');
 
+                    end
+
+                    if model.(elde).(co).(amc).useLithiumPlating
+
+                        lp = 'LithiumPlating';
+                        thresholdParameter   = model.(elde).(co).(amc).(lp).thresholdParameter;
+                        r                    = model.(elde).(co).(amc).(lp).particleRadius;
+                        vf                   = model.(elde).(co).(amc).(lp).volumeFraction;
+                        platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
+                        
+                        %%
+                        % initialisation so that the overpotential are zero at the beginning
+                        initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'OCP'});
+                        OCP = initstate.(elde).(co).(amc).(itf).OCP(1);
+                        
+                        platedConcentrationInit = platedConcentration0/(exp((PhysicalConstants.F*OCP)./(PhysicalConstants.R*T)) - 1)^(1/4);
+
+                        model.(elde).(co).(amc).(lp).platedReferenceConcentration = platedConcentrationInit;
+
+                        initstate.(elde).(co).(amc).(lp).platedConcentration     = platedConcentrationInit*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(lp).platedConcentrationNorm = platedConcentrationInit*ones(nc, 1)/model.(elde).(co).(amc).(lp).platedReferenceConcentration;
+                        
                     end
 
                 end

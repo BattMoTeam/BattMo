@@ -218,6 +218,11 @@ classdef Coating < ElectronicComponent
 
                     inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
 
+                    if inputparams.(am).useLithiumPlating
+                        lp = 'LithiumPlating';
+                        inputparams.(am).(lp).volumeFraction = inputparams.(am).(sd).volumeFraction;
+                    end
+                    
                     switch inputparams.(am).diffusionModelType
                       case {'full', 'swelling'}
                         inputparams.(am).(sd).np = np;
@@ -313,6 +318,7 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
+            lp  = 'LithiumPlating';
             
             varnames = {'jCoupling', ...
                         'jExternal', ...
@@ -332,8 +338,16 @@ classdef Coating < ElectronicComponent
                     fn = @Coating.updateBolayEsource;
                     model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}, {am, itf, 'SEIflux'}}});
                 else
-                    fn = @Coating.updateEsource;
-                    model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
+                    if model.(am).useLithiumPlating
+                        fn = @Coating.updateLithiumPlatingEsource;
+                        inputnames = {{am, itf, 'intercalationFlux'}, ...
+                                      {am, lp, 'surfaceCoverage'}, ...
+                                      {am, lp, 'platingFlux'}};
+                        model = model.registerPropFunction({'eSource', fn, inputnames});
+                    else
+                        fn = @Coating.updateEsource;
+                        model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
+                    end
                 end
                 
                 fn = @Coating.updatePhi;
@@ -533,6 +547,29 @@ classdef Coating < ElectronicComponent
 
         end
 
+        function updateLithiumPlatingEsource(model, state)
+
+
+            am  = 'ActiveMaterial';
+            sd  = 'SolidDiffusion';
+            itf = 'Interface';
+            lp  = 'LithiumPlating';
+            
+            n   = model.(am).(itf).numberOfElectronsTransferred;
+            F   = model.(am).(itf).constants.F;
+            rp  = model.(am).(sd).particleRadius;
+            vsa = model.(am).(itf).volumetricSurfaceArea;
+            
+            vp = (4/3)*pi*rp^3;
+
+            interFlux   = state.(am).(itf).intercalationFlux;
+            theta       = state.(am).(lp).surfaceCoverage;
+            platingFlux = state.(am).(lp).platingFlux;
+            
+            state.eSource = vp*vsa*n*F*((1 - theta)*interFlux + theta*platingFlux); % flux are to the outside
+            
+        end
+        
         function state = updateBolayEsource(model, state)
 
             am  = 'ActiveMaterial';
