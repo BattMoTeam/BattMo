@@ -251,9 +251,9 @@ classdef ActiveMaterial < BaseModel
                 ce = getJsonStructField(scalingparams, {'elyteConcentration'});
                 
                 vsa     = model.(itf).volumetricSurfaceArea;
-                kPl     = model.(lp).kPl;
-                alphaPl = model.(lp).alphaPl;
-                nLimit  = model.(lp).nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+                kPl     = model.(lp).reactionRatePlating;
+                alphaPl = model.(lp).symmetryFactorPlating;
+                nLimit  = model.(lp).limitAmount; % n of plated lithium necessary to cover the whole surface of the particle
                 r       = model.(lp).particleRadius;
                 vf      = model.(lp).volumeFraction;
                 
@@ -318,7 +318,7 @@ classdef ActiveMaterial < BaseModel
             th = cmax * 1e-3;
 
             coef(coef < 0) = 0;
-            state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
+            state.(itf).j0 =  model.(lp).reactionRateDirectIntercalation*regularizedSqrt(coef, th)*n*F;
             %C/m2/s
             
         end

@@ -4,23 +4,23 @@ classdef LithiumPlatingLatzInputParams < InputParams
 % 
     properties
 
-        alphaPl   
-        alphaStr  
-        alphaChInt
+        symmetryFactorPlating   
+        symmetryFactorStripping  
+        symmetryFactorChemicalIntercalation
 
-        kPl   
-        kChInt
-        kInter
+        reactionRatePlating   
+        reactionRateChemicalIntercalation
+        reactionRateDirectIntercalation
 
-        nPl0
-        nPlLimit
-        platedConcentrationRef
+        thresholdParameter
+        limitAmount
+        platedReferenceConcentration
         
         SEIFraction
-        MSEI       
-        rhoSEI     
-        deltaSEI0  
-        sigmaSEI   
+        SEImolarMass       
+        SEIdensity     
+        SEIinitialThickness  
+        SEIconductivity   
 
         platedLiMonolayerThickness
 
