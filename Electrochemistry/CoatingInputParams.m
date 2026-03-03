@@ -28,7 +28,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                                  %                 "none" (default)
                                  %                 "Safari"
                                  %                 "Bolay"
-
+                                 % - 'swelling' : boolean (default is false)
+        
         %% Advanced parameters
 
         volumeFractions
@@ -50,7 +51,12 @@ classdef CoatingInputParams < ElectronicComponentInputParams
 
             
             jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
-            
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
+
+            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+                                                 {'activeMaterialModelSetup', 'swelling'}, ...
+                                                 {'diffusionModelType', 'swelling'});
+                        
             [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
                                                                    {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                    {'ActiveMaterial', 'SEImodel'});
@@ -78,7 +84,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            if jsonstruct.activeMaterialModelSetup.composite
+            if isComposite
                 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
@@ -86,7 +92,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
             else
-                
+
                 am = 'ActiveMaterial';
 
                 switch jsonstruct.activeMaterialModelSetup.SEImodel
@@ -104,6 +110,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                     error('active material modelSEI layer model not recognized');
                     
                 end
+
+                
             end
             
             inputparams.Binder             = BinderInputParams(pick('Binder'));

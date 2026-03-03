@@ -14,18 +14,18 @@ jsonstruct = jsondecode(jsonstruct);
 
 jsonstruct.(elyte).N = 100;
 
-paramobj = OxideMembraneCellInputParams(jsonstruct);
+inputparams = OxideMembraneCellInputParams(jsonstruct);
 
-paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
+inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
-model = OxideMembraneCell(paramobj);
+model = OxideMembraneCell(inputparams);
 
 model = model.setupComputationalGraph();
 
 % compute and get computationalGraph (just used for postprocessing)
 model = model.validateModel();
-cgt   = model.computationalGraph;
+cgit   = model.computationalGraph;
 
 model.verbose = true;
 

@@ -61,7 +61,7 @@ classdef SolidElectrodeInterface < BaseModel
             % SEI growth velocity
             varnames{end + 1} = 'v';
             % Reaction rate
-            varnames{end + 1} = 'R';
+            varnames{end + 1} = 'reactionRate';
             % Mass accumulation term
             varnames{end + 1} = 'massAccum';
             % flux term
@@ -82,7 +82,7 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'flux', fn, inputnames});
 
             fn = @SolidElectrodeInterface.updateSEIgrowthVelocity;
-            inputnames = {'R'};
+            inputnames = {'reactionRate'};
             model = model.registerPropFunction({'v', fn, inputnames});
 
             fn = @SolidElectrodeInterface.updateMassConservation;
@@ -90,7 +90,7 @@ classdef SolidElectrodeInterface < BaseModel
             model = model.registerPropFunction({'massCons', fn, inputnames});
 
             fn = @SolidElectrodeInterface.updateMassSource;
-            model = model.registerPropFunction({'massSource', fn, {'R', 'c', 'v', 'cExternal'}});
+            model = model.registerPropFunction({'massSource', fn, {'reactionRate', 'c', 'v', 'cExternal'}});
 
             fn = @SolidElectrodeInterface.assembleInterfaceBoundaryEquation;
             model = model.registerPropFunction({'interfaceBoundaryEq', fn, {'c', 'cInterface', 'massSource'}});
@@ -326,7 +326,7 @@ classdef SolidElectrodeInterface < BaseModel
 
             op = model.operators;
 
-            R     = state.R;
+            R     = state.reactionRate;
             c     = state.c;
             cext  = state.cExternal;
             delta = state.delta;
@@ -385,7 +385,7 @@ classdef SolidElectrodeInterface < BaseModel
             Mw = model.molecularWeight;
             rho = model.density;
 
-            R = state.R;
+            R = state.reactionRate;
 
             % Note that R is (for the moment) always negative so that we only have sei layer growth.
             state.v = -0.5*R*(Mw/rho);
@@ -416,7 +416,7 @@ classdef SolidElectrodeInterface < BaseModel
 
             c     = state.c;
             cInt  = state.cInterface;
-            R     = state.R;
+            R     = state.reactionRate;
             v     = state.v;
             delta = state.delta;
 

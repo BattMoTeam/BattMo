@@ -8,6 +8,7 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'maxTimestepCuts'},  6);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'nonlinearTolerance'},  []);
     jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'verbose'},  false);
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'NonLinearSolver', 'timeStepSelector'}, 'stateChangeTimeStepSelector');
 
     linearSolverSetup_default.library = 'matlab';
     linearSolverSetup_default.method  = 'direct';
@@ -23,10 +24,18 @@ function [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstru
     nls.verbose         = jsonstruct.NonLinearSolver.verbose;
     
     % Change default behavior of nonlinear solver, in case of error
-    nls.errorOnFailure = false;
+    nls.errorOnFailure    = false;
     nls.continueOnFailure = false;
-    nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
 
+    switch getJsonStructField(jsonstruct, {'NonLinearSolver', 'timeStepSelector'})
+      case 'stateChangeTimeStepSelector'
+        nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
+      case 'simpleTimeStepSelector'
+        nls.timeStepSelector = SimpleTimeStepSelector();
+      otherwise
+       error('Unknown timeStepSelector');
+    end
+    
     nls.LinearSolver = BatteryLinearSolver('linearSolverSetup', linearSolverSetup);
     
     % Change default tolerance for nonlinear solver

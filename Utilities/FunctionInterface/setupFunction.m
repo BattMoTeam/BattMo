@@ -1,4 +1,4 @@
-function [fn, fn_handler] = setupFunction(jsonstruct)
+function [fn_handler, fn] = setupFunction(jsonstruct)
 
     switch jsonstruct.functionFormat
         
@@ -42,7 +42,24 @@ function [fn, fn_handler] = setupFunction(jsonstruct)
       case 'constant'
 
         fn = ConstantFunction(jsonstruct);
+        fn_handler = @(varargin) fn.eval(varargin{:});
+        
+      case 'csv'
 
+        data = readmatrix(jsonstruct.filename);
+        
+        argumentList = jsonstruct.argumentList;
+
+        jsonstruct = struct('functionFormat', 'tabulated' , ...
+                            'dataX'         , data(: , 1) , ...
+                            'dataY'         , data(: , 2));
+
+        jsonstruct.argumentList = argumentList; 
+        
+        [fn_handler, fn] = setupFunction(jsonstruct);
+
+        return
+        
       otherwise
 
         error('function format not recognized');

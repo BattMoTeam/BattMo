@@ -42,6 +42,12 @@ nbsphinx_prolog = r"""
 
       open {{ document_name_no_ext }}
 
+{% set extra_rst = document_name_no_ext ~ '_prolog' %}
+{% if extra_rst in env.found_docs %}
+{% set extra_rst = extra_rst ~ '.rst' %}
+.. include:: {{ extra_rst }}
+{% endif %}
+
 """
 
 # -- General configuration ------------------------------------------------

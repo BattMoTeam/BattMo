@@ -3,7 +3,4 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A current collector",
   "type": "object",
-  
-  "$ref": "./ElectronicComponent.schema.json"
-  
-}
+  "$ref": "./ElectronicComponent.schema.json"}

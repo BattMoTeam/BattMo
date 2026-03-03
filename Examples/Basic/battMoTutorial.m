@@ -6,7 +6,6 @@
 clear;
 close all;
 
-
 %% Specifying the physical model
 % In this tutorial we will simulate a lithium-ion battery consisting of a
 % negative electrode, a positive electrode and an electrolyte. *BattMo*
@@ -179,9 +178,10 @@ for ielde = 1:numel(eldes)
     c     = theta.*cmax;
     
     %%%
-    % The function |computeOCP| returns the OCP function for the given stoichiometry
 
-    OCP = interface_model.computeOCP(c/cmax);
+    % The function |computeOCPFunc| returns the OCP function for the given stoichiometry
+    
+    OCP = interface_model.computeOCP(c./cmax);
 
     %%%
     % we plot the OCP curve for the given electrode as a function of the state of charge
@@ -192,7 +192,7 @@ xlabel('SOC  / -')
 ylabel('OCP  / V')
 title('OCP for both electrodes');
 ylim([0, 5.5])
-legend(eldes, 'location', 'nw')
+legend(eldes, 'location', 'nw');
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

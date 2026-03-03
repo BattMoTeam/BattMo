@@ -85,6 +85,7 @@ function [capacity, capacities] = computeCellCapacity(model)
             cMax = itfmodel.saturationConcentration;
 
             switch elde
+                
               case 'NegativeElectrode'
                 thetaMax = itfmodel.guestStoichiometry100;
                 thetaMin = itfmodel.guestStoichiometry0;
@@ -95,15 +96,27 @@ function [capacity, capacities] = computeCellCapacity(model)
                 error('Electrode not recognized');
             end
 
-            vol_fraction = model.(elde).(co).volumeFraction;
+            if getJsonStructField(model.(elde).(co).activeMaterialModelSetup, 'swelling', false)
+                % Special setup in case of swelling material
+                % the guest stochiometries are interpretated as fill-in levels
+                
+                cMaxTot = model.(elde).(co).maximumTotalConcentration;
+                vol = sum(model.(elde).(co).G.getVolumes());
+                
+                cap_usable{ielde} = (thetaMax - thetaMin)*cMaxTot*vol*n*F;
+                
+            else
+                
+                vol_fraction = model.(elde).(co).volumeFraction;
 
-            amind = model.(elde).(co).compInds.(am);
-            am_fraction  = model.(elde).(co).volumeFractions(amind);
+                amind = model.(elde).(co).compInds.(am);
+                am_fraction  = model.(elde).(co).volumeFractions(amind);
 
-            vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
+                vol = sum(am_fraction*vol_fraction.*model.(elde).(co).G.getVolumes());
 
-            cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
+                cap_usable{ielde} = (thetaMax - thetaMin)*cMax*vol*n*F;
 
+            end
         end
 
 

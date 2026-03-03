@@ -1,0 +1,7 @@
+{
+  "description" : "LNMO entropy change from @article{Pron_2019, title={Electrochemical Characterization and Solid Electrolyte Interface Modeling of LiNi0.5Mn1.5O4-Graphite Cells}, volume={166}, ISSN={1945-7111}, url={http://dx.doi.org/10.1149/2.0941910jes}, DOI={10.1149/2.0941910jes}, number={10}, journal={Journal of The Electrochemical Society}, publisher={The Electrochemical Society}, author={Pron, Vittorio Giai and Versaci, Daniele and Amici, Julia and Francia, Carlotta and Santarelli, Massimo and Bodoardo, Silvia}, year={2019}, pages={A2255–A2263} }",
+  "functionFormat": "tabulated",
+  "argumentList" : ["stoichiometry"],
+  "dataX" : [0, 0.1000, 0.2000, 0.3000, 0.4000, 0.5000, 0.6000, 0.7000, 0.8000, 0.8500, 0.9000, 1.0000],
+  "dataY" : [-0.0001, -0.0001, -0.0001, -0.0001, -0.0003, -0.0002, -0.0002, -0.0002, -0.0002, -0.0028, -0.0013, -0.0010]
+}

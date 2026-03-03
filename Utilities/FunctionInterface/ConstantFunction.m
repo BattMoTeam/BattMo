@@ -9,8 +9,10 @@ classdef ConstantFunction < Function
 
     methods
 
-        function fn = Function(jsonstruct)
+        function fn = ConstantFunction(jsonstruct)
 
+            fn = fn@Function(jsonstruct);
+            
             fdnames = {'value'};
 
             fn = dispatchParams(fn, jsonstruct, fdnames);

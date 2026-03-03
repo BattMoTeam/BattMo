@@ -30,6 +30,8 @@ classdef InterfaceInputParams < InputParams
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface
         openCircuitPotential
 
+        includeEntropyChange     % flag which determines if entropy change should be computed and included
+
         % A function to determine the entropy change
         % See schema `Utilities/JsonSchemas/Function.schema.json` for a complete description of the function interface        
         entropyChange
@@ -53,7 +55,11 @@ classdef InterfaceInputParams < InputParams
         
         function inputparams = InterfaceInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'entropyChange', []);
+            if isUnAssigned(jsonstruct, 'entropyChange')
+                jsonstruct = setJsonStructField(jsonstruct, 'includeEntropyChange', false);
+            else
+                jsonstruct = setDefaultJsonStructField(jsonstruct, 'includeEntropyChange', true);
+            end
             
             inputparams = inputparams@InputParams(jsonstruct);
             

@@ -47,8 +47,6 @@ inputparams = gen.updateBatteryInputParams(inputparams);
 % constructor. see :class:`Battery <Battery.Battery>`.
 model = GenericBattery(inputparams);
 
-cgt = model.cgt;
-
 %% The control is used to set up the schedule
 
 jsonstruct.TimeStepping.numberOfTimeSteps = 200;

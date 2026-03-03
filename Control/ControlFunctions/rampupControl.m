@@ -16,12 +16,18 @@ function I = rampupControl(t, tup, inputI, varargin)
 %   I - value returned for the current time (the other values being given)
 %
 
+    if tup == 0
 
+        I = inputI;
+        return
+        
+    end
+    
     opt = struct('rampupcase', 'sineup');
     opt = merge_options(opt, varargin{:});
    
     rampupcase = opt.rampupcase;
-    
+
     switch rampupcase
         
       case 'sineup'

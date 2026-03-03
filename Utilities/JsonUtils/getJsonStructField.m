@@ -1,9 +1,14 @@
-function value = getJsonStructField(jsonstruct, fieldnamelist)
+function value = getJsonStructField(jsonstruct, fieldnamelist, defaultValue)
 
     if ischar(fieldnamelist)
         % handle case where fieldnamelist is just a char
         fieldnamelist = {fieldnamelist};
-        value = getJsonStructField(jsonstruct, fieldnamelist);
+        if nargin > 2
+            value = getJsonStructField(jsonstruct, fieldnamelist, defaultValue);
+        else
+            value = getJsonStructField(jsonstruct, fieldnamelist);
+        end
+        
         return
     end
 
@@ -20,7 +25,7 @@ function value = getJsonStructField(jsonstruct, fieldnamelist)
         
     end
 
-    if ~isfield(jsonstruct, fieldname)
+    if isempty(jsonstruct) || (~isfield(jsonstruct, fieldname) && ~isprop(jsonstruct, fieldname))
 
         value = UnAssigned();
 
@@ -37,6 +42,11 @@ function value = getJsonStructField(jsonstruct, fieldnamelist)
         end
         
     end
+
+    if isUnAssigned(value) && nargin > 2
         
-    
+        value = defaultValue;
+        
+    end
+        
 end

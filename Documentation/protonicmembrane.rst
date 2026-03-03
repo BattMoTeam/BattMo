@@ -1,11 +1,11 @@
-=================
-Protonic Membrane
-=================
+=======================
+Proton Ceramic Membrane
+=======================
 
 .. toctree::
    :hidden:
       
-   Protonic Membrane <publishedExamples/runProtonicMembrane>
+   Proton Ceramic Membrane <publishedExamples/runProtonicMembrane>
    Gas Supply <publishedExamples/runGasSupply>
    Full Cell <publishedExamples/runProtonicCell>
    
@@ -16,7 +16,7 @@ We consider the model of a mixed proton and electron conducting membrane, as des
    .. grid-item-card::
       :padding: 2
       
-      :ref:`Protonic Membrane <runProtonicMembrane>`
+      :ref:`Proton Ceramic Membrane <runProtonicMembrane>`
            
    .. grid-item-card::
       :padding: 2

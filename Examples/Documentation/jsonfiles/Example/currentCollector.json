@@ -1,5 +1,13 @@
 {
-  "electronicConductivity": 59600000.0,
+  "thickness": 1E-5,
+  "N": 2,
+  "tab": {
+    "width": 0.004,
+    "height": 0.001,
+    "Nw": 3,
+    "Nh": 3
+  },
+  "electronicConductivity": 5.96E+7,
   "thermalConductivity": 398,
   "specificHeatCapacity": 385,
   "density": 8960

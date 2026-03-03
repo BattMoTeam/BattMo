@@ -39,6 +39,8 @@ function [cartinds, cartvalues] = cartesianProduct(varargin)
             names{iarg} = inputname(iarg);
         end
 
+        cartvalues = cell(size(cartinds, 1), 1);
+
         for icomb = 1 : size(cartinds, 1)
 
             for iarg = 1 : nargin

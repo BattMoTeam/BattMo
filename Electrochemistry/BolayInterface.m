@@ -80,7 +80,7 @@ classdef BolayInterface < Interface
             model = model.registerPropFunction({'SEImassCons', fn, inputnames});
 
             fn = @BolayInterface.updateSEIvoltageDropEquation;
-            inputnames = {'R', 'SEIvoltageDrop'};
+            inputnames = {'intercalationFlux', 'SEIvoltageDrop'};
             model = model.registerPropFunction({'SEIvoltageDropEquation', fn, inputnames});
 
             fn = @BolayInterface.updateEta;
@@ -167,7 +167,7 @@ classdef BolayInterface < Interface
 
             U = state.SEIvoltageDrop;
             L = state.SEIlength;
-            R = state.R;
+            R = state.intercalationFlux;
 
             state.SEIvoltageDropEquation = U - F*R.*L/k;
             

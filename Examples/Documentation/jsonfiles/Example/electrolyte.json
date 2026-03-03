@@ -1,7 +1,11 @@
 {
+  "specificHeatCapacity": 2055,
+  "thermalConductivity": 0.6,
+  "density": 1200,
+  "initialConcentration": 1000,
   "ionicConductivity": {
     "functionFormat": "named function",
-    "functionName": "computeElectrolyteConductivity_default",
+    "functionName": "computeElectrolyteConductivity_Ai2020",
     "argumentList": [
       "concentration",
       "temperature"
@@ -9,19 +13,15 @@
   },
   "diffusionCoefficient": {
     "functionFormat": "named function",
-    "functionName": "computeDiffusionCoefficient_default",
+    "functionName": "computeDiffusionCoefficient_Ai2020",
     "argumentList": [
       "concentration",
       "temperature"
     ]
   },
   "species": {
-    "chargeNumber": 1,
     "transferenceNumber": 0.2594,
     "nominalConcentration": 1000
   },
-  "bruggemanCoefficient": 1.5,
-  "specificHeatCapacity": 2055,
-  "thermalConductivity": 0.6,
-  "density": 1200
+  "bruggemanCoefficient": 1.5
 }

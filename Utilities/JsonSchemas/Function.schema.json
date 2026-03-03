@@ -9,7 +9,8 @@
         "tabulated",
         "string expression",
         "named function",
-        "constant"
+        "constant",
+        "csv"
       ],
       "description" : "Four input formats are supported for functions. The descriptions are provided in the schema below for each case."
     },
@@ -67,7 +68,7 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "string expression",
-        "description" : "The evaluation of the string should return the value of the function. In this case, the name of the argument matters. This feature is not yet supported in matlab"},
+        "description" : "The evaluation of the string should return the value of the function."},
       "expression": {"$ref": "#/$defs/expression"},
       "expressions" : {"type" : "array",
                        "items" : {"$ref": "#/$defs/expression"},
@@ -75,9 +76,18 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "constant",
-        "description" : "The evaluation of the string should return the value of the function. In this case, the name of the argument matters. This feature is not yet supported in matlab"},
+        "description" : "The evaluation of the string should return the value of the function."},
       "value" : {"type" : "number"}
-    }}],
+      
+    }},
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "csv",
+        "description" : "We setup a tabulated function using value in a csv file"},
+      "filename" : {
+        "type" : "string",
+        "description" : "path of the csv file"}}}
+    ],
   
   "$defs" : {
     "expression" : {
@@ -88,7 +98,7 @@
             "description" : "language the function string is supposed to be evaluated"},
           "formula" : {"type": "string",
                        "description": "The string to be evaluated"},
-          "variablesNames" : {
+          "variableNames" : {
             "type" : "array",
             "items" : {"type" : "string"},
             "description" : "name of the variables used in the string expresssion. There must be there one value per argument in argument list."}}

@@ -19,12 +19,15 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
 
         function inputparams = SeaWaterBatteryInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_precipitation', true);
+
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             inputparams.Cathode               = HydrogenElectrodeInputParams(jsonstruct.Cathode);
             inputparams.CathodeActiveMaterial = HydrogenActiveMaterialInputParams(jsonstruct.CathodeActiveMaterial);
             inputparams.Anode                 = SeaWaterElectrodeInputParams(jsonstruct.Anode);
             inputparams.AnodeActiveMaterial   = MagnesiumActiveMaterialInputParams(jsonstruct.AnodeActiveMaterial);
+            
             if inputparams.include_precipitation
                 inputparams.Electrolyte = SeaWaterElectrolyteInputParams(jsonstruct.Electrolyte);
             else

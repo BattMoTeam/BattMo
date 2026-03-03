@@ -34,7 +34,7 @@
       "properties": {
         "chargeNumber": {
           "type": "number",
-          "description": "charge number"
+          "description": "charge number, default is 1"
         },
         "transferenceNumber": {
           "type": "number",

@@ -1,5 +1,9 @@
-function [bp, simlist] = setupSimList(directory)
+function [bp, simlist] = setupSimList(directory, varargin)
 
+    opt = struct('addDirectoryName', false, ...
+                 'directoryField', 'directory');
+    opt = merge_options(opt, varargin{:});
+    
     mrstModule add mpfa
 
     if exist(directory, 'dir')
@@ -31,6 +35,9 @@ function [bp, simlist] = setupSimList(directory)
         try
             data = load(filename);
             input = data.input;
+            if opt.addDirectoryName
+                input.(opt.directoryField) = dataFolder;
+            end
             [bp, simlist] = bp.addElement(simlist, input);
         catch
             fprintf('no input file found for %s\n', filename);

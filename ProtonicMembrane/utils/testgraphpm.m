@@ -16,16 +16,15 @@ inputparams = setupProtonicMembraneGrid(inputparams, jsonstruct);
 model = ProtonicMembrane(inputparams);
 
 % Setup computational graph
-model = model.setupComputationalGraph();
-cgt = model.computationalGraph;
+cgit = model.cgit;
 
 % Print root variables
-cgt.printRootVariables();
+cgit.printRootVariables();
 
 % Print tail variables
-cgt.printTailVariables();
+cgit.printTailVariables();
 
 % plot computational graph
 figure
-cgt.plotComputationalGraph('nodefontsize', 14);
+cgit.plotComputationalGraph('nodefontsize', 14);
 

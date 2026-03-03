@@ -1,0 +1,5 @@
+{"functionFormat": "tabulated",
+ "argumentList" : ["stoichiometry"],
+ "dataX" : [0, 1, 2],
+ "dataY" : [4, 3, 2]
+}

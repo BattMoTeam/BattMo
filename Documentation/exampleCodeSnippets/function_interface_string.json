@@ -1,0 +1,7 @@
+{
+    "functionFormat": "string expression",
+    "argumentList": ["var1", "var2"],
+    "expression" : {"language" : "matlab",
+                    "variableNames" : ["x", "y"],
+                    "formula" : "x + y"}
+}

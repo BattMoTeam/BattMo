@@ -9,12 +9,12 @@ classdef OxideMembraneControl < BaseModel
     
     methods
         
-        function model = OxideMembraneControl(paramobj)
+        function model = OxideMembraneControl(inputparams)
 
             model = model@BaseModel();
 
             fdnames = {'controlType'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
             
         end
 

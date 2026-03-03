@@ -1,20 +1,22 @@
 {
-  "G" : null,
   "T" : 278,
   "include_precipitation" : true,
-  "Cathode" : { "G" : null,
-                "V" : 1},
-  "CathodeActiveMaterial" : {"Asurf" : 1,
-                             "chargeCarrierName": "H+",
-                             "stochElectron" : 2,
-                             "etaMax" : 1}, 
-  "Anode" : { "G" : null,
-              "V" : 1.39845e-5,
-              "EffectiveElectricalConductivity": 1e3},
-  "AnodeActiveMaterial" : {"Asurf" : 30000,
-                           "chargeCarrierName": "Mg+2",
-                           "stochElectron": 2,
-                           "etaMax" : 1}, 
-  "Electrolyte" : {"isFile": true,
-                   "filename" : "SeaWater/json_inputs/magnesium_electrolyte.json"}
+  "Cathode" : {
+    "V" : 1},
+  "CathodeActiveMaterial" : {
+    "Asurf" : 1,
+    "chargeCarrierName": "H+",
+    "stochElectron" : 2,
+    "etaMax" : 1}, 
+  "Anode" : {
+    "V" : 1.39845e-5,
+    "EffectiveElectricalConductivity": 1e3},
+  "AnodeActiveMaterial" : {
+    "Asurf" : 30000,
+    "chargeCarrierName": "Mg+2",
+    "stochElectron": 2,
+    "etaMax" : 1}, 
+  "Electrolyte" : {
+    "isFile": true,
+    "filename" : "SeaWater/json_inputs/magnesium_electrolyte.json"}
 }

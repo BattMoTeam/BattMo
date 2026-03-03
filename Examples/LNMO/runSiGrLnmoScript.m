@@ -27,19 +27,10 @@ jsonstruct.NegativeElectrode.Coating.ActiveMaterial2.massFraction = 0.04;
 jsonstruct.NegativeElectrode.Coating.ActiveMaterial1.massFraction = 0.96;
 jsonstruct.Control.numberOfCycles = 1;
 
-output = runBatteryJson(jsonstruct, 'runSimulation', false);
+output = runBatteryJson(jsonstruct);
 
-model     = output.model;
-schedule  = output.schedule;
-initstate = output.initstate;
-
-step         = schedule.step;
-step.val     = [1; step.val];
-step.control = [1; step.control];
-
-schedule.step = step;
-
-[~, states, ~] = simulateScheduleAD(initstate, model, schedule);
+states = output.states;
+model  = output.model;
 
 %% plot
 

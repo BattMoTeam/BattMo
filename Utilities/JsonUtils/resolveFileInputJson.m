@@ -1,24 +1,18 @@
 function jsonstruct = resolveFileInputJson(jsonstruct)
-% Parse the json struct, looking for key "isFile" and replace the object there with the content of "filename" that should be given together with "isFile".
-% We can give several filenames using the key "filenames" and they will be merged.
-% Note that (for the moment), we do not resolve file name if they are included in json arrays (only those included in objects)
+% Parse the json struct, looking for key "isFile" and replace the object there with the content of "filename" that
+% should be given together with "isFile".
 
 
-    if isstruct(jsonstruct) & numel(jsonstruct) == 1
+    if isstruct(jsonstruct)
 
-        if ismember('isFile', fieldnames(jsonstruct)) && jsonstruct.isFile
+        if numel(jsonstruct) == 1
 
-            if ismember('filename', fieldnames(jsonstruct))
+            isFile = getJsonStructField(jsonstruct, 'isFile');
+
+            if isAssigned(isFile)
                 
-                % When a single entry, we convert it to cell and call function again
-                jsonstruct.filenames = {jsonstruct.filename};
-                jsonstruct = rmfield(jsonstruct, 'filename');
-                jsonstruct = resolveFileInputJson(jsonstruct);
+                filename = getJsonStructField(jsonstruct, 'filename');
                 
-            elseif ismember('filenames', fieldnames(jsonstruct))
-                
-                % We resolve the first file in the list
-                filename = jsonstruct.filenames{1};
                 fullfilename = resolveFileName(filename);
                 jsonsrc = fileread(fullfilename);
                 fileJsonstruct = battMojsondecode(jsonsrc);
@@ -26,30 +20,30 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
                 for ind = 1 : numel(fds)
                     fileJsonstruct.(fds{ind}) = resolveFileInputJson(fileJsonstruct.(fds{ind}));
                 end
-                jsonstruct = mergeJsonStructs({fileJsonstruct, jsonstruct});
+                jsonstruct = fileJsonstruct;
 
-                if numel(jsonstruct.filenames) == 1
-                    % If there is not filename left, we are done for this entry
-                    % remove the "isFile" and "filenames" fields from the jsonstruct
-                    jsonstruct = rmfield(jsonstruct, 'isFile');
-                    jsonstruct = rmfield(jsonstruct, 'filenames');
-                else
-                    % otherwise we call the function again with the entries that are left
-                    jsonstruct.filenames = jsonstruct.filenames(2 : end);
-                    jsonstruct = resolveFileInputJson(jsonstruct);
-                end
-                
-            else
-                error('isFile flag is given and set to true but we are missing the filename or filenames properties so that we cannot recover the file(s)')
             end
 
+            fds = fieldnames(jsonstruct);
+            for ind = 1 : numel(fds)
+                jsonstruct.(fds{ind}) = resolveFileInputJson(jsonstruct.(fds{ind}));
+            end
+            
+        else
+            
+            % we have an array. We call resolveFileInputJson on each element
+            for i_jsonstruct = 1 : numel(jsonstruct)
+                jsonstruct(i_jsonstruct) = resolveFileInputJson(jsonstruct(i_jsonstruct));
+            end
+           
         end
 
-        fds = fieldnames(jsonstruct);
-        for ind = 1 : numel(fds)
-            jsonstruct.(fds{ind}) = resolveFileInputJson(jsonstruct.(fds{ind}));
-        end
+    elseif iscell(jsonstruct)
 
+        % we have cells. We call resolveFileInputJson on each element
+        for i_jsonstruct = 1 : numel(jsonstruct)
+            jsonstruct{i_jsonstruct} = resolveFileInputJson(jsonstruct{i_jsonstruct});
+        end
     end
 
 end

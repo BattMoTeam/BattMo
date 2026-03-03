@@ -68,7 +68,6 @@ classdef BatteryInputParams < InputParams
 
             end
 
-
             inputparams = inputparams@InputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);

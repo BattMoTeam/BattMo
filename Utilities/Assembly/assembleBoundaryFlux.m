@@ -5,6 +5,9 @@ function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary
 %
 % The sign of the flux is oriented in the exterior direction
 %
+% The potential is cell-valued in the whole domain model.G. The fluxCoefficient is either cell-valued, as the potential,
+% or a scalar (homogeneous case).
+%
 % The flux corresponds to the discretization of  $ - \int_{face} D\nabla(p)\cdot n ds$, where
 % - D                  : flux coefficient
 % - p                  : potential
@@ -21,6 +24,10 @@ function [boundaryFlux, extra] = assembleBoundaryFlux(model, potential, boundary
     [halftrans, boundaryCells, sgn] = model.G.getBcTrans(boundaryFaces);
 
     val = potential(boundaryCells);
+
+    if numelValue(fluxCoefficient) > 1
+        fluxCoefficient = fluxCoefficient(boundaryCells);
+    end
     
     % Compute boundary flux
     boundaryFlux = fluxCoefficient.*halftrans.*(bcval - val);

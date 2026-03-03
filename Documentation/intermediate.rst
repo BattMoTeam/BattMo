@@ -7,12 +7,17 @@ Intermediate Usage
    :hidden:
 
    mergejsonstruct
+   functioninterface
    modelinitialisation
    controlinput
    soliddiffusion
    parsets
    units
    runThermalExample.nblink
+   runOnlyThermal.nblink
+   runSiliconGraphiteBattery.ipynb
+   runSwellingExample.ipynb
+   plating
    optimisation
    Octave <octave>
 
@@ -21,8 +26,13 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
       
-      :ref:`Merging parameters<mergejsonstruct:Merging parameters>`
-                     
+      :ref:`Merging Parameters<mergejsonstruct:Merging parameters>`
+
+   .. grid-item-card::
+      :padding: 2
+      
+      :ref:`Functional Parameters<functioninterface:Functional parameters>`
+                                
    .. grid-item-card::
       :padding: 2
       
@@ -36,12 +46,12 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Solid diffusion models <soliddiffusion:Solid Diffusion Models>`
+      :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
            
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Parameter sets <parsets:Parameter sets>`
+      :ref:`Parameter Sets <parsets:Parameter sets>`
            
    .. grid-item-card::
       :padding: 2
@@ -51,8 +61,28 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Thermal simulation <runThermalExample>`
+      :ref:`Thermal Simulation <runThermalExample>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Iso-thermal and Fully-coupled Simulation <runOnlyThermal>`
            
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Composite Material <runSiliconGraphiteBattery>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Silicon Swelling <runSwellingExample>`
+           
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Lithium Plating <plating:Lithium Plating>`
+
    .. grid-item-card::
       :padding: 2
 

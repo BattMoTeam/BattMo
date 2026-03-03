@@ -1,8 +1,12 @@
 function jsonstruct = mergeJsonStructs(jsonstructs, varargin)
-% - We call a json structure (abbreviated jsonstruct) a MATLAB structure produced by the jsondecode command or :battmo:`parseBattmoJson`
-% - The input jsonstructs is list jsonstruct
-% - The command mergeJsonStructs merges recursively all the jsonstruct contained in the list jsonstructs
-% - If two jsonstruct assign the same field, then the first one is applied and a warning message is sent. use warn=false to switch off message
+%
+%  We call a json structure, abbreviated jsonstruct, a MATLAB structure produced by the jsondecode command or :battmo:`parseBattmoJson`
+%    
+%  The input jsonstructs is a list of jsonstruct
+%    
+%  The command mergeJsonStructs merges recursively all the jsonstruct contained in the list jsonstructs
+%    
+%  If two jsonstruct assign the same field, then the first one is applied and a warning message is sent. use warn=false to switch off this message
 
     opt = struct('warn', true);
     opt.tree = {};
