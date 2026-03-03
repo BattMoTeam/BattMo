@@ -1920,7 +1920,8 @@ classdef GenericBattery < BaseModel
             am2   = 'ActiveMaterial2';
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
-
+            lp    = 'LithiumPlating';
+            
             cmin = model.cmin;
 
             state.(elyte).c = max(cmin, state.(elyte).c);
@@ -1948,6 +1949,9 @@ classdef GenericBattery < BaseModel
                       case {'full', 'swelling'}
                         state.(elde).(co).(amc).(sd).c = max(cmin, state.(elde).(co).(amc).(sd).c);
                         state.(elde).(co).(amc).(sd).c = min(cmax, state.(elde).(co).(amc).(sd).c);
+                        if model.(elde).(co).(amc).useLithiumPlating
+                            state.(elde).(co).(amc).(lp).platedConcentrationNorm = max(0, state.(elde).(co).(amc).(lp).platedConcentrationNorm);
+                        end
                       otherwise
                         error('diffusionModelType not recognized')
                     end
