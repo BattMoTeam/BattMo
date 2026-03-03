@@ -26,7 +26,9 @@ classdef LithiumPlatingLatz < BaseModel
 
         thresholdParameter                  % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
         limitAmount                         % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
-        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]
+        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]. The value is used in
+                                            % the computation for normalization. If not given, a default one will be
+                                            % computed
 
         platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 
@@ -55,6 +57,7 @@ classdef LithiumPlatingLatz < BaseModel
     methods
 
         function model = LithiumPlatingLatz(inputparams)
+            
             model = model@BaseModel();
             fdnames = {'symmetryFactorPlating'    , ...    
                        'symmetryFactorStripping'   , ...   
@@ -71,6 +74,14 @@ classdef LithiumPlatingLatz < BaseModel
                        'platedLiMonolayerThickness'};
             model = dispatchParams(model, inputparams, fdnames);
 
+            if isempty(model.platedReferenceConcentration)
+                thresholdParameter   = model.thresholdParameter;
+                r                    = model.particleRadius;
+                vf                   = model.volumeFraction;
+
+                model.platedReferenceConcentration = thresholdParameter * vf / ((4/3)*pi*r^3);;
+            end
+            
         end
 
         function model = registerVarAndPropfuncNames(model)

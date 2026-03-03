@@ -24,7 +24,9 @@ classdef LithiumPlatingLatzInputParams < InputParams
 
         thresholdParameter                  % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
         limitAmount                         % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
-        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]
+        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]. The value is used in
+                                            % the computation for normalization. If not given, a default one will be
+                                            % computed
 
         platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 

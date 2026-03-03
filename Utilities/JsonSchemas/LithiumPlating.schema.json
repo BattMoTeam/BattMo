@@ -38,7 +38,7 @@
   },
   "platedReferenceConcentration": {
     "type": "number",
-    "description": "Reference concentration for plated lithium [mol/m^3]"
+    "description": "Reference concentration for plated lithium [mol/m^3]. The value is used in the computation for normalization. If not given, a default one will be computed"
   },
   "platedLiMonolayerThickness": {
     "type": "number",
