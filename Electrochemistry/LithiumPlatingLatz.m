@@ -176,13 +176,14 @@ classdef LithiumPlatingLatz < BaseModel
         function state = updateActivityPlated(model, state)
             platedConcentration = state.platedConcentration;
             
-            n0 = model.thresholdParameter;
-            r = model.particleRadius;
+            n0    = model.thresholdParameter;
+            r     = model.particleRadius;
             poros = model.volumeFraction;
             % switching the n of lithium plated for one particle to a concentration with this volume
             c0 = n0 * poros / ((4/3)*pi*r^3);
             
-            state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
+            state.activityPlated = platedConcentration.^4 ./ (platedConcentration.^4 + c0^4);
+            
         end
 
         function state = updateEtaPlating(model, state)
