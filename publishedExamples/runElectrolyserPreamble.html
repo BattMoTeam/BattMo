@@ -230,15 +230,23 @@
 <li class="toctree-l3"><a class="reference internal" href="../runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../runPlating.html">Run stand-alone active material model with lithium plating</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Parameter-setup">Parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Plotting">Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runPlating.html#Sum-up">Sum up</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../plating.html">Lithium Plating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../runSPMplating.html">Run stand-alone active material model with lithium plating</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Sum-up">Sum up</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../runCellPlating.html">Lithium plating example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../runCellPlating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../runCellPlating.html#Plotting">Plotting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../optimisation.html">Optimization</a><ul>
@@ -466,8 +474,8 @@
              
   <p>The implementation of a AEM simulation code was motivated by the need for better simulation capabilities for H2
 electrolysis and the possibility to validate the code using an implementation we had access to, which is also the one
-used in <span id="id1">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>. The mathematical model for AEM is complex and includes many coupled processes . We
-refer to the papers mentioned above for all the details. Here, we include a figure from <span id="id2">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span> which
+used in <span id="id1">[<a class="reference internal" href="../bibliography.html#id7" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>. The mathematical model for AEM is complex and includes many coupled processes . We
+refer to the papers mentioned above for all the details. Here, we include a figure from <span id="id2">[<a class="reference internal" href="../bibliography.html#id7" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span> which
 illustrates the following processes</p>
 <ul class="simple">
 <li><p>Two parallel ionic conduction path ways: ionomer and liquid electrolyte,</p></li>
@@ -479,7 +487,7 @@ illustrates the following processes</p>
 <a class="reference external image-reference" href="../_images/electolysermodeling.png"><img alt="../_images/electolysermodeling.png" src="../_images/electolysermodeling.png" />
 </a>
 <figcaption>
-<p><span class="caption-text">Illustration taken from <span id="id3">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span></span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+<p><span class="caption-text">Illustration taken from <span id="id3">[<a class="reference internal" href="../bibliography.html#id7" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span></span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>We use a model hierarchy which enables us to structure the code in a hopefully clearly readable way. The main model is
@@ -523,7 +531,7 @@ We increase the current linearly from 0 to 3 A/cm^2. The pressures at the bounda
 <a class="reference external image-reference" href="../_images/electrolyter_volume_fractions.png"><img alt="../_images/electrolyter_volume_fractions.png" src="../_images/electrolyter_volume_fractions.png" />
 </a>
 <figcaption>
-<p><span class="caption-text">Volume fractions used initially in the cell. Illustration picture taken from <span id="id4">[<a class="reference internal" href="../bibliography.html#id6" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
+<p><span class="caption-text">Volume fractions used initially in the cell. Illustration picture taken from <span id="id4">[<a class="reference internal" href="../bibliography.html#id7" title="Michael Robert Gerhardt, Alejandro O Barnett, Thulile Khoza, Patrick Fortin, Sara Andrenacci, Alaa Y Faid, Pål Emil England Karstensen, Svein Sunde, and Simon Clark. An open-source continuum model for anion-exchange membrane water electrolysis. In Electrochemical Society Meeting Abstracts 243, number 36, 2002–2002. The Electrochemical Society, Inc., 2023.">GBK+23</a>]</span>.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The input datas are given in a json format. A simple way to get acquainted to the format is to look at the examples used

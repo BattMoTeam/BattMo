@@ -230,15 +230,23 @@
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="runPlating.html">Run stand-alone active material model with lithium plating</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Parameter-setup">Parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Plotting">Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="runPlating.html#Sum-up">Sum up</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plating.html">Lithium Plating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSPMplating.html">Run stand-alone active material model with lithium plating</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Sum-up">Sum up</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runCellPlating.html">Lithium plating example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runCellPlating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runCellPlating.html#Plotting">Plotting</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
@@ -477,7 +485,7 @@ example for a case that is not covered by the json input interface.</p>
 <li><p>A <strong>schedule</strong>, which provides the time stepping and can also contain setup for control (covered in <a class="reference internal" href="controlinput.html#control-model-description"><span class="std std-ref">an other
 section</span></a>).</p></li>
 </ul>
-<p>We use the governing equations provided in the serie of papers <span id="id1">[<a class="reference internal" href="bibliography.html#id9" title="Arnulf Latz and Jochen Zausch. Thermodynamic derivation of a butler–volmer model for intercalation in li-ion batteries. Electrochimica Acta, 110:358–362, nov 2013. doi:10.1016/j.electacta.2013.06.043.">LZ13</a>, <a class="reference internal" href="bibliography.html#id10" title="Arnulf Latz and Jochen Zausch. Multiscale modeling of lithium ion batteries: thermal aspects. jul 2016. doi:10.1515/nano.bjneah.6.102.">LZ16</a>, <a class="reference internal" href="bibliography.html#id8" title="Arnulf Latz, Jochen Zausch, and Oleg Iliev. Modeling of species and charge transport in li–ion batteries based on non-equilibrium thermodynamics. In Numerical Methods and Applications, pages 329–337. Springer Berlin Heidelberg, 2011. doi:10.1007/978-3-642-18466-6_39.">LZI11</a>]</span>. They correspond to
+<p>We use the governing equations provided in the serie of papers <span id="id1">[<a class="reference internal" href="bibliography.html#id10" title="Arnulf Latz and Jochen Zausch. Thermodynamic derivation of a butler–volmer model for intercalation in li-ion batteries. Electrochimica Acta, 110:358–362, nov 2013. doi:10.1016/j.electacta.2013.06.043.">LZ13</a>, <a class="reference internal" href="bibliography.html#id11" title="Arnulf Latz and Jochen Zausch. Multiscale modeling of lithium ion batteries: thermal aspects. jul 2016. doi:10.1515/nano.bjneah.6.102.">LZ16</a>, <a class="reference internal" href="bibliography.html#id9" title="Arnulf Latz, Jochen Zausch, and Oleg Iliev. Modeling of species and charge transport in li–ion batteries based on non-equilibrium thermodynamics. In Numerical Methods and Applications, pages 329–337. Springer Berlin Heidelberg, 2011. doi:10.1007/978-3-642-18466-6_39.">LZI11</a>]</span>. They correspond to
 the standard PXD model. The equations are <strong>non-linear</strong>. The charge and mass conservation equations are partial
 differential equations. First, the equations are discretized. We use a finite volume method which ensures conservation
 at the discrete level. For stability, we use a fully implicit method, also called backward Euler. For each time step, we
