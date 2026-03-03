@@ -17,7 +17,7 @@ Intermediate Usage
    runOnlyThermal.nblink
    runSiliconGraphiteBattery.ipynb
    runSwellingExample.ipynb
-   runSPMplating.ipynb
+   plating
    optimisation
    Octave <octave>
 
@@ -81,7 +81,7 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Lithium Plating <runSPMplating>`
+      :ref:`Lithium Plating <plating:Lithium Plating>`
 
    .. grid-item-card::
       :padding: 2
