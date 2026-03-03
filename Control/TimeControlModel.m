@@ -3,38 +3,17 @@ classdef TimeControlModel < ControlModel
 
     properties
 
-        inputtype % type used to give the time control input. It can be
-                  % - table
-                  % - function
+        value % function setup (see Utilities/JsonSchemas/Function.schema.json) that returns the value for the control,
+              % either current or voltage, depending on the returned value of the type function
+        type % function setup (see Utilities/JsonSchemas/Function.schema.json) that returns the value for the control
+             % type,
+             % - 1 for current
+             % - 2 for voltage
 
-        %% property used in case of table input
+        %% helper properties
         
-        times        % Array with time value (should include at the end the end time, so that length(times) = length(durations) + 1)
-        durations    % Array with duration value
-        values       % Array with control value
-        controltypes % Array with control type. The convention is
-                     % - 1 for current
-                     % - 2 for voltage
-
-        
-        %% property used in case of function input
-
-        controlValueFunction % function of time for the control value
-        controlTypeFunction  % function of time for the type control value (1 : current, 2 : voltage)
-        
-        %% Helpers 
-
-        usetable    % true if table is used
-        usefunction % true if we use a matlab function
-
-        computeInput % function called to give update
-        
-        use_durations   % Setup when usetable is true
-        
-        % Function handlers instantiated from controlValueFunction controlTypeFunction  
-
-        controlValueFunc 
-        controlTypeFunc
+        getValue % function object (see Utilities/FunctionInterface/Function.m) which is setup from value property
+        getType % function object (see Utilities/FunctionInterface/Function.m) which is setup from type property
         
     end
 
@@ -44,39 +23,13 @@ classdef TimeControlModel < ControlModel
             
             model = model@ControlModel(inputparams);
 
-            fdnames = {'inputtype'           , ...
-                       'times'               , ...
-                       'durations'           , ...
-                       'values'              , ...
-                       'controltypes'        , ...
-                       'controlValueFunction', ...
-                       'controlTypeFunction'};
-
+            fdnames = {'value', ...
+                       'type'};
+            
             model = dispatchParams(model, inputparams, fdnames);
 
-            switch model.inputtype
-              case 'table'
-                model.usetable = true;
-              case 'function'
-                model.usefunction = true;
-              otherwise
-                error('input type not recognized');
-            end
-            
-            if model.usetable
-                
-                model.computeInput = @(t) model.computeInputFromTable(t);
-                
-            end
-
-            if model.usefunction
-
-                model.controlValueFunc = setupFunction(model.controlValueFunction);
-                model.controlTypeFunc  = setupFunction(model.controlTypeFunction);
-                
-                model.computeInput = @(t) model.computeInputFromFunction(t);
-
-            end
+            model.getValue = setupFunction(model.value);
+            model.getType  = setupFunction(model.type);
             
         end
         
@@ -100,119 +53,96 @@ classdef TimeControlModel < ControlModel
         end
 
         
-        <<<<<<< HEAD
         function [ctrlVal, ctrlType] = computeInput(model, t)
 
             ctrlVal  = model.getValue.eval(t);
             ctrlType = model.getType.eval(t);
-            =======
-            function [ctrlVal, ctrlType] = computeInputFromFunction(model, t)
+            
+        end
 
-                ctrlVal  = model.controlValueFunc(t);
-                ctrlType = model.controlTypeFunc(t);
+        function state = updateControlEquation(model, state)
+            
+            E        = state.E;
+            I        = state.I;            
+            ctrlVal  = state.ctrlVal;
+            ctrlType = state.ctrlType;
 
-                switch ctrlType
-                  case 1
-                    ctrlType = 'constantCurrent';
-                  case 2
-                    ctrlType = 'constantVoltage';
-                  otherwise
-                    error('ctrlType not recognized. It should be equal to 1 or 2')
-                end
+            switch ctrlType
                 
-            end
-
-            function state = updateControlEquation(model, state)
+              case 1
                 
-                E        = state.E;
-                I        = state.I;            
-                ctrlVal  = state.ctrlVal;
-                ctrlType = state.ctrlType;
-
-                switch ctrlType
-                    
-                  case 1
-                    
-                    ctrleq = I - ctrlVal;
-                    
-                  case 2
-                    
-                    %% TODO : fix hard-coded scaling
-                    ctrleq = (E - ctrlVal)*1e5;
-                    
-                  otherwise
-                    
-                    error('ctrlType not recognized');
-                    
-                end
+                ctrleq = I - ctrlVal;
                 
-                state.controlEquation = ctrleq;
+              case 2
+                
+                %% TODO : fix hard-coded scaling
+                ctrleq = (E - ctrlVal)*1e5;
+                
+              otherwise
+                
+                error('ctrlType not recognized');
                 
             end
             
-            function cleanState = addStaticVariables(model, cleanState, state)
-
-                cleanState.ctrlType = state.ctrlType;
-                
-            end
-
-            function func = setupControlFunction(model)
-
-                func = [];
-                
-            end
-            
-            function step = setupScheduleStep(model, timeSteppingParams)
-                
-                % Setup and a return the step structure that is part of the schedule which is used as input for
-                % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
-                % why we include this method here, for convenience. It can be overloaded by derived classes. The
-                % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
-
-                if (nargin > 1)
-                    params = timeSteppingParams;
-                else
-                    params = [];
-                end
-
-                params = model.parseTimeSteppingStruct(params);
-
-
-                if model.usetable
-                    totalTime = model.times(end);
-                else
-                    totalTime = params.totalTime;
-                end
-
-                if isa(totalTime, 'UnAssigned')
-                    if isa(model.getValue, 'TabulatedFunction1D')
-                        totalTime = model.getValue.dataX(end);
-                    else
-                        error('total time is not given and the input function is not a tabulated function');
-                    end
-                end
-                
-                if isAssigned(params, {'timeStepDuration'})
-                    dt = params.timeStepDuration;
-                    givendt = true;
-                elseif ~isempty(params.numberOfTimeSteps)
-                    n  = params.numberOfTimeSteps;
-                    dt = totalTime/n;
-                end
-
-                dts = rampupTimesteps(totalTime, dt, 0);
-                
-                step = struct('val', dts, 'control', ones(numel(dts), 1));
-
-            end
+            state.controlEquation = ctrleq;
             
         end
         
+        function cleanState = addStaticVariables(model, cleanState, state)
+
+            cleanState.ctrlType = state.ctrlType;
+            
+        end
+
+        function func = setupControlFunction(model)
+
+            func = [];
+            
+        end
+        
+        function step = setupScheduleStep(model, timeSteppingParams)
+            
+        % Setup and a return the step structure that is part of the schedule which is used as input for
+        % :mrst:`simulateScheduleAD`. For some control type, there is a natural construction for this structure. This is
+        % why we include this method here, for convenience. It can be overloaded by derived classes. The
+        % timeSteppingParams structure by default is given by the data described in :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`
+
+            if (nargin > 1)
+                params = timeSteppingParams;
+            else
+                params = [];
+            end
+
+            params = model.parseTimeSteppingStruct(params);
+
+            totalTime = getJsonStructField(params, 'totalTime');
+
+            if isa(totalTime, 'UnAssigned')
+                if isa(model.getValue, 'TabulatedFunction1D')
+                    totalTime = model.getValue.dataX(end);
+                else
+                    error('total time is not given and the input function is not a tabulated function');
+                end
+            end
+            
+            if isAssigned(params, {'timeStepDuration'})
+                dt = params.timeStepDuration;
+            else
+                assert(isAssigned(params, 'numberOfTimeSteps'), 'No timeStepDuration and numberOfTimeSteps are given');
+                n  = params.numberOfTimeSteps;
+                dt = totalTime/n;
+            end
+
+            dts = rampupTimesteps(totalTime, dt, 0);
+            
+            step = struct('val', dts, 'control', ones(numel(dts), 1));
+
+        end
         
     end
-
-
-
+    
     
 end
+
+
 
