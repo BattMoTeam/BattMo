@@ -547,7 +547,7 @@ classdef Coating < ElectronicComponent
 
         end
 
-        function updateLithiumPlatingEsource(model, state)
+        function state = updateLithiumPlatingEsource(model, state)
 
 
             am  = 'ActiveMaterial';
@@ -555,18 +555,16 @@ classdef Coating < ElectronicComponent
             itf = 'Interface';
             lp  = 'LithiumPlating';
             
-            n   = model.(am).(itf).numberOfElectronsTransferred;
-            F   = model.(am).(itf).constants.F;
-            rp  = model.(am).(sd).particleRadius;
-            vsa = model.(am).(itf).volumetricSurfaceArea;
+            F    = model.constants.F;
+            n    = model.(am).(itf).numberOfElectronsTransferred;
+            vsa  = model.(am).(itf).volumetricSurfaceArea;
+            vols = model.G.getVolumes();
             
-            vp = (4/3)*pi*rp^3;
-
             interFlux   = state.(am).(itf).intercalationFlux;
             theta       = state.(am).(lp).surfaceCoverage;
             platingFlux = state.(am).(lp).platingFlux;
             
-            state.eSource = vp*vsa*n*F*((1 - theta)*interFlux + theta*platingFlux); % flux are to the outside
+            state.eSource = -n*F*vsa*vols.*((1 - theta).*interFlux + theta.*platingFlux); % flux are to the outside
             
         end
         

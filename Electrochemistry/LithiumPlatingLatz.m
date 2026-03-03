@@ -221,8 +221,8 @@ classdef LithiumPlatingLatz < BaseModel
             alpha_s = model.symmetryFactorStripping;
             
             i0 = model.reactionRatePlating * regularizedPow(ce, alpha_p, th);
-            j = i0 .* (exp((alpha_p * F * eta) / (R * T)) - ...
-                       exp((-alpha_s * F * eta) / (R * T)));
+            j = i0 .* (exp((alpha_p * F * eta) ./ (R * T)) - ...
+                       exp((-alpha_s * F * eta) ./ (R * T)));
             
             state.platingFlux = j; %mol/s/m2
             
@@ -236,12 +236,12 @@ classdef LithiumPlatingLatz < BaseModel
             T   = state.T;
             cSo = state.cElectrodeSurface;
 
-            th     = model.platedReferenceConcentration * 0.001;
+            th     = model.platedReferenceConcentration*0.001;
             kChInt = model.reactionRateChemicalIntercalation;
             alpha  = model.symmetryFactorChemicalIntercalation;
             
-            jCh = kChInt * regularizedSqrt(cSo, th)  * (exp(alpha * F * eta / (model.R * T)) - ...
-                                  exp(-alpha * F * eta / (model.R * T)));
+            jCh = kChInt*regularizedSqrt(cSo, th).*(exp(alpha*F*eta ./ (model.R*T)) - ...
+                                  exp(-alpha*F*eta ./ (model.R*T)));
             
             state.chemicalFlux = jCh; % mol/s/m2
             
@@ -259,7 +259,7 @@ classdef LithiumPlatingLatz < BaseModel
             % coeff_plating = 1 - model.SEIFraction * model.useSEI;
             % flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
 
-            flux  = (state.platingFlux - state.chemicalFlux) * surfcov;
+            flux  = (state.platingFlux - state.chemicalFlux).*surfcov;
             
             accum = state.platedConcentrationAccum;
             

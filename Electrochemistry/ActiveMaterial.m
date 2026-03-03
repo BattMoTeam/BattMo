@@ -388,7 +388,7 @@ classdef ActiveMaterial < BaseModel
             chemFlux  = state.(lp).chemicalFlux;
             theta     = state.(lp).surfaceCoverage;
 
-            flux = (1 - theta)*interFlux + theta*chemFlux;
+            flux = (1 - theta).*interFlux + theta.*chemFlux;
             volflux = op.mapFromBc*(vsa*flux);
             
             state.(sd).massSource = - volflux.*((4*pi*rp^3)./(3*vf));
