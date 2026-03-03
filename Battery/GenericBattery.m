@@ -903,8 +903,6 @@ classdef GenericBattery < BaseModel
                         
                         platedConcentrationInit = platedConcentration0/(exp((PhysicalConstants.F*OCP)./(PhysicalConstants.R*T)) - 1)^(1/4);
 
-                        model.(elde).(co).(amc).(lp).platedReferenceConcentration = platedConcentrationInit;
-
                         initstate.(elde).(co).(amc).(lp).platedConcentration     = platedConcentrationInit*ones(nc, 1);
                         initstate.(elde).(co).(amc).(lp).platedConcentrationNorm = platedConcentrationInit*ones(nc, 1)/model.(elde).(co).(amc).(lp).platedReferenceConcentration;
                         
