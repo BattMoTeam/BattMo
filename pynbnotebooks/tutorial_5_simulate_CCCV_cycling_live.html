@@ -27,9 +27,7 @@
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tutorial 6 - Simulate Thermal Performance" href="tutorial_6_simulate_thermal_performance_live.html" />
-    <link rel="prev" title="Tutorial 4 - Modify Material Parameters" href="tutorial_4_modify_material_parameters_live.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,103 +50,36 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">   Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#update-existing-installation">Update existing installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#define-parameters">Define Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#run-simulation">Run Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#show-the-dashboard">Show the Dashboard</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-output">Explore the Output</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-grid">Explore the Grid</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-states">Explore the States</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#plot-a-result">Plot a Result</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../inputparameters.html">BattMo Input</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../json.html">JSON input specification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#simulation-schema">Simulation Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#material-parameters">Material Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrode">Electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#coating">Coating</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#active-material">Active Material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#interface">Interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#binder">Binder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#current-collector">Current Collector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#separator">Separator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#thermal-model">Thermal Model</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-control-parameters">Change Control Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-material-parameters">Change Material Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#notebooks">Notebooks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#next-steps">Next Steps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#geometry-setup">Geometry Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#simulation-control-parameters">Simulation Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#solver-parameters">Solver Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#output-parameters">Output Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html">Tutorial 1 - Your First BattMo Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Define-Parameters">Define Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Run-Simulation">Run Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Show-the-Dashboard">Show the Dashboard</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Explore-the-Output">Explore the Output</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Explore-the-Grid">Explore the Grid</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Explore-the-States">Explore the States</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_1_a_simple_p2d_model_live.html#Plot-a-Result">Plot a Result</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_2_changing_control_protocol_live.html">Tutorial 2 - Change the Control Protocol</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2_changing_control_protocol_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2_changing_control_protocol_live.html#Explore-the-Control-Protocol">Explore the Control Protocol</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2_changing_control_protocol_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_2_changing_control_protocol_live.html#Summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_3_modify_structural_parameters_live.html">Tutorial 3 - Modify Structural Parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3_modify_structural_parameters_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3_modify_structural_parameters_live.html#Explore-the-Structural-Parameters">Explore the Structural Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3_modify_structural_parameters_live.html#Setup-and-Run-a-Parameter-Sweep">Setup and Run a Parameter Sweep</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_3_modify_structural_parameters_live.html#Summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html">Tutorial 4 - Modify Material Parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html#Explore-the-Material-Parameters">Explore the Material Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html#Make-a-Simple-Change">Make a Simple Change</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html#Swap-Active-Materials">Swap Active Materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_4_modify_material_parameters_live.html#Summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 5 - Simulate CC-CV Cycling</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Explore-the-Control-Definition">Explore the Control Definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html">Tutorial 6 - Simulate Thermal Performance</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Setup-material-properties">Setup material properties</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Setup-the-geometry">Setup the geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Visualisation-of-the-results">Visualisation of the results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#Temperature-distribution-at-final-time">Temperature distribution at final time</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_6_simulate_thermal_performance_live.html#The-external-heat-transfer-coefficient">The external heat transfer coefficient</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_8_simulate_a_multilayer_pouch_cell_live.html">Tutorial 8 - Simulate a Multilayer Pouch Cell</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_8_simulate_a_multilayer_pouch_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial_9_simulate_a_cylindrical_cell_live.html">Tutorial 9 - Simulate a cylindrical cell</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_9_simulate_a_cylindrical_cell_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_9_simulate_a_cylindrical_cell_live.html#Setup-the-model-for-inspection">Setup the model for inspection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_9_simulate_a_cylindrical_cell_live.html#Run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial_9_simulate_a_cylindrical_cell_live.html#Visualize-the-Results">Visualize the Results</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate.html">Intermediate Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../mergejsonstruct.html">Merging parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../mergejsonstruct.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../mergejsonstruct.html#define-parameters">Define Parameters</a></li>
@@ -167,12 +98,6 @@
 <li class="toctree-l4"><a class="reference internal" href="../functionInterfaceExample.html">Example of the function interface</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../modelinitialisation.html">The Battery Simulation Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../controlinput.html">Control models</a><ul>
@@ -205,171 +130,10 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../soliddiffusion.html">Solid Diffusion Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../parsets.html">Parameter sets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../units.html">Units</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../units.html#units-and-json-input">Units and JSON input</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../runThermalExample.html">Thermal simulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Plot-of-the-minimum-and-maximum-values-of-the-temperature">Plot of the minimum and maximum values of the temperature</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#We-change-setup-for-cooling-coefficient">We change setup for cooling coefficient</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Plot-of-temperatures">Plot of temperatures</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runThermalExample.html#Plot-of-the-temperature-distribution">Plot of the temperature distribution</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../runOnlyThermal.html">Comparison between coupled and uncoupled thermal simulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#setup-material-property-input">setup material property input</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-geometry-input">Setup geometry input</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-Control-input">Setup Control input</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Modify-input-structure">Modify input structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Run-thermal-simulation">Run thermal simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Plot-mesh">Plot mesh</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Run-iso-thermal-simulation">Run iso-thermal simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-thermal-only-simulation">Setup thermal-only simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-heat-source-term">Setup heat source term</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-thermal-only-model">Setup thermal-only model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Setup-the-simulation-schedule">Setup the simulation schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#setup-initial-state">setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#run-thermal-only-simulation">run thermal-only simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runOnlyThermal.html#Plotting">Plotting</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../runSiliconGraphiteBattery.html">Simulation of a composite active material</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#Setup-the-properties-of-the-battery">Setup the properties of the battery</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#We-modify-some-parameters">We modify some parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#We-run-the-simulations">We run the simulations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#Plotting">Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#plot-of-the-particle-concentration-distribution-in-the-particle-at-the-end-time">plot of the particle concentration distribution in the particle at the end time</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#Charge-step">Charge step</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSiliconGraphiteBattery.html#Visualisation">Visualisation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../runSwellingExample.html">Silicon Swelling Example</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runSwellingExample.html#Geometry">Geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSwellingExample.html#Control">Control</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../plating.html">Lithium Plating</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../runSPMplating.html">Run stand-alone active material model with lithium plating</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Parameter-setup">Parameter setup</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Plotting">Plotting</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runSPMplating.html#Sum-up">Sum up</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../runCellPlating.html">Lithium plating example</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../runCellPlating.html#Parameter-setup">Parameter setup</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../runCellPlating.html#Plotting">Plotting</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../optimisation.html">Optimization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../optimisation.html#parameter-identification-example">Parameter identification example</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../optimisation.html#optimization-example">Optimization example</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../octave.html">Octave</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
-<li class="toctree-l3"><a class="reference internal" href="part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#1.3-Battery-Properties">1.3 Battery Properties</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#1.4-Operational-Protocols"><strong>1.4 Operational Protocols</strong></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="part_1_battery_modeling_guide.html#2.-Modelling-with-BattMo"><strong>2. Modelling with BattMo</strong></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#2.1-P2D/P3D/P4D-Models"><strong>2.1 P2D/P3D/P4D Models</strong></a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#2.2-Influence-of-structural-and-material-parameters-on-the-capacity"><strong>2.2 Influence of structural and material parameters on the capacity</strong></a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#3.-Summary">3. Summary</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_1_battery_modeling_guide.html#4.-References"><strong>4. References</strong></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
-<li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
-<li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-2.-Mass-fraction-of-active-material-and-binder-in-electrode"><strong>Example 2. Mass</strong> fraction of active material and binder in electrode</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-3.-Temperature">Example 3. Temperature</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-4.-Saturation-concentration-of-the-material">Example 4. Saturation concentration of the material</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-5.-Charge-transfer-coefficient,-anodic-and-cathodic-at-the-surface-of-the-active-particles:-Butler-Volmer-equation"><strong>Example 5.</strong> Charge transfer coefficient, anodic and cathodic at the surface of the active particles: Butler-Volmer equation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-6.-Reaction-rate-constant-at-the-surface-of-the-active-particles:-Butler-Volmer-equation-(exchange-current-density)"><strong>Example 6.</strong> Reaction rate constant at the surface of the active particles: Butler-Volmer equation (exchange current density)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-7.-Reference-diffusion-coefficient-(Solid-diffusion)">Example 7. Reference diffusion coefficient (Solid diffusion)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-8.-Active-particle-radius-(Solid-diffusion)"><strong>Example 8.</strong> Active particle radius (Solid diffusion)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-9.-Electronic-conductivity-of-the-active-material-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 9.</strong> Electronic conductivity of the active material in the electrodes (effective electronic conductivity)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-10.-Bruggeman-coefficient-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 10.</strong> Bruggeman coefficient in the electrodes (effective electronic conductivity)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-11.-Bruggeman-coefficient-in-the-electrolyte-(effective-ionic-conductivity)">Example 11. Bruggeman coefficient in the electrolyte (effective ionic conductivity)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-12.-Initial-electrolyte-concentration-(electrolyte-diffusion)"><strong>Example 12. Initial e</strong>lectrolyte concentration (electrolyte diffusion)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-13.-Transference-number-(electrolyte-diffusion)"><strong>Example 13.</strong> Transference number (electrolyte diffusion)</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../architecture.html">BattMo Model Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../json.html">JSON input specification</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#simulation-schema">Simulation Schema</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#material-parameters">Material Parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#electrolyte">Electrolyte</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#electrode">Electrode</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#coating">Coating</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#active-material">Active Material</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#interface">Interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#solid-diffusion">Solid Diffusion</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#binder">Binder</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#conducting-additive">Conducting Additive</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#current-collector">Current Collector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#separator">Separator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../json.html#thermal-model">Thermal Model</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#geometry-setup">Geometry Setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#simulation-control-parameters">Simulation Control Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#solver-parameters">Solver Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../json.html#output-parameters">Output Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../geometryinput.html">Battery Geometries</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp2d">BatteryGeneratorP2D</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp3d">BatteryGeneratorP3D</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../juliabridge.html">BattMo Julia bridge</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#start-server">Start Server</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#send-simulation-parameters">Send simulation parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html#post-process-the-output">Post process the output</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="../publishedExamples/runElectrolyser.html">   Electrolyser simulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
@@ -380,100 +144,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../protonicmembrane.html">Proton Ceramic Membrane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#governing-equations">Governing equations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#boundary-conditions">Boundary conditions</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runGasSupply.html">Gas Supply</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-overview">Model overview</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#governing-equations">Governing equations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runProtonicCell.html">Full Cell</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../app.html">BattMoApp</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../app_features.html">Features</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#download-input-data">Download Input Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#upload-input-data">Upload Input Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../app_features.html#upload-your-previous-results">Upload your previous results</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../app_troubleshooting.html">Troubleshooting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../app_unnatural_artifacts.html">Unnatural artifacts</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../app_unnatural_artifacts.html#discritization-issues">Discritization issues</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../app_unsuccessful_simulation.html">Unsuccessful simulation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../app_unsuccessful_simulation.html#using-lifepo4-datasets">Using LiFePO4 datasets</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../computationalGraph/graphdoc.html">Computational Graph</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-assembly">Model assembly</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-explorability">Model explorability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-hierarchy-and-composition">Model hierarchy and composition</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#basic-example">Basic Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../seealso.html">See Also</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../seealso.html#mrst">MRST</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../seealso.html#visualization">Visualization Tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../seealso.html#id2">Grid Factory Tutorial</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../seealso.html#fair-data">FAIR Data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">   References</a></li>
 </ul>
 
         </div>
@@ -490,7 +161,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
       <li class="breadcrumb-item active">Tutorial 5 - Simulate CC-CV Cycling</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.ipynb.txt" rel="nofollow"> View page source</a>
@@ -654,10 +324,7 @@ mergeJsonStructs: Parameter Control.dEdtLimit is assigned twice with different v
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorial_4_modify_material_parameters_live.html" class="btn btn-neutral float-left" title="Tutorial 4 - Modify Material Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="tutorial_6_simulate_thermal_performance_live.html" class="btn btn-neutral float-right" title="Tutorial 6 - Simulate Thermal Performance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
