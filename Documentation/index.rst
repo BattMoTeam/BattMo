@@ -9,12 +9,13 @@
    Installation <installation>
    basicusage
    tutorials
-   intermediate
    modeling
-   architecture
-   json
+   inputparameters
+   intermediate
+   battmointernals
    geometryinput
    juliabridge
+   optimisation
    Electrolyser simulation <publishedExamples/runElectrolyser>
    protonicmembrane
    app

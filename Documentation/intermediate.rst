@@ -6,57 +6,21 @@ Intermediate Usage
    :maxdepth: 2
    :hidden:
 
-   mergejsonstruct
-   functioninterface
-   modelinitialisation
-   controlinput
    soliddiffusion
-   parsets
-   units
    runThermalExample.nblink
    runOnlyThermal.nblink
    runSiliconGraphiteBattery.ipynb
    runSwellingExample.ipynb
    plating
-   optimisation
+   units
    Octave <octave>
 
 .. grid:: 2
 
    .. grid-item-card::
       :padding: 2
-      
-      :ref:`Merging Parameters<mergejsonstruct:Merging parameters>`
-
-   .. grid-item-card::
-      :padding: 2
-      
-      :ref:`Functional Parameters<functioninterface:Functional parameters>`
-                                
-   .. grid-item-card::
-      :padding: 2
-      
-      :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
-
-   .. grid-item-card::
-      :padding: 2
-
-      :ref:`Control models <controlinput:Control models>`
-           
-   .. grid-item-card::
-      :padding: 2
 
       :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
-           
-   .. grid-item-card::
-      :padding: 2
-
-      :ref:`Parameter Sets <parsets:Parameter sets>`
-           
-   .. grid-item-card::
-      :padding: 2
-
-      :ref:`Units <units:Units>`
            
    .. grid-item-card::
       :padding: 2
@@ -86,7 +50,7 @@ Intermediate Usage
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Optimisation <optimisation:Optimization>`
+      :ref:`Units <units:Units>`
            
    .. grid-item-card::
       :padding: 2
