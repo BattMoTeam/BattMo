@@ -1,19 +1,21 @@
 %% Example using generic control input
 %
+% We use a generic control input, as described in
+% <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/GenericControl.schema.json json schema
+% documentation>.
 
-%% input setup
+%% Input setup
 %
 
 %%
-% We load material parameter input
+% We load material parameter input parameters
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData', ...
                                                'BatteryCellParameters', ...
                                                'LithiumIonBatteryCell', ...
                                                'lithium_ion_battery_nmc_graphite.json'));
 
 %%
-% We load geometry parameter input
-
+% We load geometry parameter input parameters
 
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 
@@ -55,11 +57,11 @@ jsonstruct.include_current_collectors = false;
 
 output = runBatteryJson(jsonstruct);
 
-%% Process output and recover the output voltage and current from the output states.
+%% Plotting
+% 
 
 states = output.states;
 
-states = states(ind);
 E = cellfun(@(x) x.Control.E, states);
 I = cellfun(@(x) x.Control.I, states);
 time = cellfun(@(x) x.time, states);
