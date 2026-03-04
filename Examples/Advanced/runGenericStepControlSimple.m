@@ -55,6 +55,9 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = false;
 
+%%
+% We run the simulation
+%
 output = runBatteryJson(jsonstruct);
 
 %% Plotting
