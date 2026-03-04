@@ -6,23 +6,21 @@
 .. toctree::
    :hidden:
 
-   ..
-      Installation <installation>
-      basicusage
-      tutorials
+   Installation <installation>
+   basicusage
+   tutorials
    inputparameters
-   ..
-      geometryinput
-      batteryphysics
-      optimisation
-      modeling
-      battmointernals
-      app
-      various
-      Electrolyser simulation <publishedExamples/runElectrolyser>
-      protonicmembrane
-      seealso
-      References <bibliography>
+   geometryinput
+   batteryphysics
+   optimisation
+   modeling
+   battmointernals
+   app
+   various
+   Electrolyser simulation <publishedExamples/runElectrolyser>
+   protonicmembrane
+   seealso
+   References <bibliography>
 
 
 Welcome
