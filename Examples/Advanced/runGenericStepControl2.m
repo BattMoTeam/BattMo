@@ -1,10 +1,25 @@
-% Clear the workspace and close open figures
-clear all
-close all
+%% Example using generic control input with cycles
+%
+% We use a generic control input, as described in
+% <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/GenericControl.schema.json json schema
+% documentation>.
 
-jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+%% Input setup
+%
+
+%%
+% We load material parameter input parameters
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData'        , ...
+                                               'BatteryCellParameters', ...
+                                               'LithiumIonBatteryCell', ...
+                                               'lithium_ion_battery_nmc_graphite.json'));
+
+%%
+% We load geometry parameter input parameters
+
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'generic_step_control.json'));
+
+jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'generic_step_control_cycle_example.json'));
 
 jsonstruct_material = removeJsonStructFields(jsonstruct_material              , ...
                                              {'Control', 'DRate'}             , ...

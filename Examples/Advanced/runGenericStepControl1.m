@@ -22,7 +22,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 %%
 % We load the generic control parameter we want to use
 
-jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'generic_step_control_example_simple.json'));
+jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'generic_step_control_simple_example.json'));
 
 %%
 % We print it to command window
