@@ -1,6 +1,6 @@
-==================
-Intermediate Usage
-==================
+===============
+Battery Physics
+===============
 
 .. toctree::
    :maxdepth: 2
@@ -12,8 +12,6 @@ Intermediate Usage
    runSiliconGraphiteBattery.ipynb
    runSwellingExample.ipynb
    plating
-   units
-   Octave <octave>
 
 .. grid:: 2
 
