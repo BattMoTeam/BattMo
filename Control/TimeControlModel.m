@@ -55,8 +55,8 @@ classdef TimeControlModel < ControlModel
         
         function [ctrlVal, ctrlType] = computeInput(model, t)
 
-            ctrlVal  = model.getValue.eval(t);
-            ctrlType = model.getType.eval(t);
+            ctrlVal  = model.getValue(t);
+            ctrlType = model.getType(t);
             
         end
 
