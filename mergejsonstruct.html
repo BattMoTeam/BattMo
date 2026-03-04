@@ -173,8 +173,23 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="controlinput.html">Control models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#json-input-control-interface">Json input control interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runControlExamples.html">Examples of the different control policies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#id1">Plot Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Case-setup">Case setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Functional-time-control">Functional time control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Value-Control-setup">Value Control setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#We-finalize-the-setup-of-the-jsonstruct-input">We finalize the setup of the jsonstruct input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Tabulated-data-for-the-function-control">Tabulated data for the function control</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
@@ -594,7 +609,7 @@ inserted in place. Hence, when we write</p>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
 <div class="sphinx_collapse docutils">
-<input class="sphinx_collapse__input" id="87d0876c-9051-4c3d-98e9-1ed4f74a190c" name="87d0876c-9051-4c3d-98e9-1ed4f74a190c" type="checkbox"><label class="sphinx_collapse__label" for="87d0876c-9051-4c3d-98e9-1ed4f74a190c"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
+<input class="sphinx_collapse__input" id="e2a70db4-e7b9-4536-b592-5066b85dfa99" name="e2a70db4-e7b9-4536-b592-5066b85dfa99" type="checkbox"><label class="sphinx_collapse__label" for="e2a70db4-e7b9-4536-b592-5066b85dfa99"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>

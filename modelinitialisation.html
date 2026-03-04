@@ -173,8 +173,23 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="controlinput.html">Control models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#json-input-control-interface">Json input control interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="controlinput.html#control-model-description">Control model description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runControlExamples.html">Examples of the different control policies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#id1">Plot Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Case-setup">Case setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Functional-time-control">Functional time control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Value-Control-setup">Value Control setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#We-finalize-the-setup-of-the-jsonstruct-input">We finalize the setup of the jsonstruct input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Tabulated-data-for-the-function-control">Tabulated data for the function control</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
@@ -482,8 +497,8 @@ example for a case that is not covered by the json input interface.</p>
 <ul class="simple">
 <li><p>A <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a> <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
 <li><p>An <strong>initial state</strong> and</p></li>
-<li><p>A <strong>schedule</strong>, which provides the time stepping and can also contain setup for control (covered in <a class="reference internal" href="controlinput.html#control-model-description"><span class="std std-ref">an other
-section</span></a>).</p></li>
+<li><p>A <strong>schedule</strong>, which provides the time stepping and can also contain setup for control (covered in <span class="xref std std-ref">an other
+section</span>).</p></li>
 </ul>
 <p>We use the governing equations provided in the serie of papers <span id="id1">[<a class="reference internal" href="bibliography.html#id13" title="Arnulf Latz and Jochen Zausch. Thermodynamic derivation of a butler–volmer model for intercalation in li-ion batteries. Electrochimica Acta, 110:358–362, nov 2013. doi:10.1016/j.electacta.2013.06.043.">LZ13</a>, <a class="reference internal" href="bibliography.html#id14" title="Arnulf Latz and Jochen Zausch. Multiscale modeling of lithium ion batteries: thermal aspects. jul 2016. doi:10.1515/nano.bjneah.6.102.">LZ16</a>, <a class="reference internal" href="bibliography.html#id12" title="Arnulf Latz, Jochen Zausch, and Oleg Iliev. Modeling of species and charge transport in li–ion batteries based on non-equilibrium thermodynamics. In Numerical Methods and Applications, pages 329–337. Springer Berlin Heidelberg, 2011. doi:10.1007/978-3-642-18466-6_39.">LZI11</a>]</span>. They correspond to
 the standard PXD model. The equations are <strong>non-linear</strong>. The charge and mass conservation equations are partial

@@ -27,7 +27,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Solid Diffusion Models" href="soliddiffusion.html" />
+    <link rel="next" title="Examples of the different control policies" href="runControlExamples.html" />
     <link rel="prev" title="The Battery Simulation Model" href="modelinitialisation.html" /> 
 </head>
 
@@ -175,8 +175,23 @@
 </ul>
 </li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Control models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#json-input-control-interface">Json input control interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#control-model-description">Control model description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runControlExamples.html">Examples of the different control policies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#id1">Plot Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Case-setup">Case setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Functional-time-control">Functional time control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Value-Control-setup">Value Control setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#We-finalize-the-setup-of-the-jsonstruct-input">We finalize the setup of the jsonstruct input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Tabulated-data-for-the-function-control">Tabulated data for the function control</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
@@ -477,6 +492,8 @@
              
   <section id="control-models">
 <h1>Control models<a class="headerlink" href="#control-models" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
 <p>The battery <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m#L19">model</a> contains a <em>Control</em> sub-model, see the overall model structure
 <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">description</span></a>. The Control model determine the control <em>values</em> and <em>type</em>.</p>
 <p>At a <strong>given time</strong>, there are in general two control types:</p>
@@ -487,159 +504,46 @@
 <p>Given a control type, the control <em>value</em> can change in time. For the most standard control types, the json interface
 can be used. We plan to include there more control models. Below, we give some short explanations on how a control model
 can be implemented.</p>
-<section id="json-input-control-interface">
-<h2>Json input control interface<a class="headerlink" href="#json-input-control-interface" title="Link to this heading"></a></h2>
 <p>The most standard controls can be called from BattMo using the json interface:</p>
 <ul class="simple">
 <li><p>Constant Current Discharge (CCDischarge)</p></li>
 <li><p>Constant Current Charge (CCCharge)</p></li>
 <li><p>Constant Current Constant Voltage (CCCV)</p></li>
 </ul>
-<p>The parameters for each of the model are described in the json schema <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/ControlModel.schema.json">ControlModel.schema.json</a>. Let us review them by looking at examples. For all controls, we have
-a given <code class="code docutils literal notranslate"><span class="pre">CRate</span></code>. The property <code class="code docutils literal notranslate"><span class="pre">controlPolicy</span></code> is used to set the control model.</p>
-<p><strong>Constant Current Discharge</strong></p>
-<p>Before the simulation starts, the capacity of the battery is computed. The battery capacity value is used to compute the
-given input current from the CRate value. For a constant current discharge, we have a lower cutoff voltage where the
-simulation stops.  The parameter <code class="code docutils literal notranslate"><span class="pre">useCVswitch</span></code> can be used if we want to continue the simulation until a given
-fixed time, by switching to voltage control. At the start of the simulation, strong non-linearities in the equations may
-create difficulties to reach the activation potential. For this reason, there is the possibility to use a <em>rampup time</em>
-where the current is gradually increased from zero to the targeted given input current.</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">&quot;Control&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;controlPolicy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CCDischarge&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;rampupTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;CRate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span>
-<span class="p">}</span>
-</pre></div>
+<p>We also have a generic control setup, see example below.</p>
+<p>The parameters for each of the model are described in the json schema <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/ControlModel.schema.json">ControlModel.schema.json</a>.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="runControlExamples.html#runcontrolexamples"><span class="std std-ref">Control Examples</span></a></p>
 </div>
-<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
-following result.</p>
-<figure class="align-center" id="id1">
-<a class="reference external image-reference" href="_images/controlExampleCCDischarge.png"><img alt="_images/controlExampleCCDischarge.png" src="_images/controlExampleCCDischarge.png" style="width: 70%;" />
-</a>
-<figcaption>
-<p><span class="caption-text">Constant Current Discharge control</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
-</figcaption>
-</figure>
-<p><strong>Constant Current Charge</strong></p>
-<p>In the same way as the discharge case, the capacity of the battery is computed first to set the given input current from
-the CRate. When the upper cuttoff voltage limit is reached, the control type is switched to voltage control. Also in
-this case, we can include a rampup time. As an example,</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">&quot;Control&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;controlPolicy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CCCharge&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;rampupTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;CRate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;upperCutoffVoltage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.1</span><span class="p">,</span>
-<span class="p">}</span>
-</pre></div>
 </div>
-<p>For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
-following result.</p>
-<figure class="align-center" id="id2">
-<a class="reference external image-reference" href="_images/controlExampleCCCharge.png"><img alt="_images/controlExampleCCCharge.png" src="_images/controlExampleCCCharge.png" style="width: 70%;" />
-</a>
-<figcaption>
-<p><span class="caption-text">Constant Current Charge control</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
-</figcaption>
-</figure>
-<p><strong>Constant Current Constant Charge</strong></p>
-<p>An example of input is</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">&quot;Control&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;controlPolicy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CCCV&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;CRate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;initialControl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;discharging&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;numberOfCycles&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;upperCutoffVoltage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;dIdtLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-5</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;dEdtLimit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-5</span>
-<span class="p">},</span>
-</pre></div>
 </div>
-<p>The control type and value are set following the following procedure. In the case above, we start by discharging</p>
-<ol class="arabic simple">
-<li><p>We use a constant discharge current computed from the capacity and the given CRate. We keep this value until the
-lower cutoff voltage value is reached. Then, we switch to step 2.</p></li>
-<li><p>The control is set to zero. At each time step we compute the time derivative of the voltage
-<span class="math notranslate nohighlight">\(\frac{dE}{dt}\)</span>. When this value reach the limit given by <code class="code docutils literal notranslate"><span class="pre">dEdtLimit</span></code>. We start the charge step 3.</p></li>
-<li><p>We use a constant charge current. The value is the same as in step 1, with opposite sign. We keep this current until
-the lower cutoff voltage limit is reached. Then we switch to constant voltage control step 4.</p></li>
-<li><p>We use a constant voltage given by the cutoff value and monitor the current derivative <span class="math notranslate nohighlight">\(\frac{dI}{dt}\)</span>. When
-this value is lower than <code class="code docutils literal notranslate"><span class="pre">dIdtLimit</span></code>, we start again the discharge by going to step 1.</p></li>
-</ol>
-<p>We iterate this process for the given number of cycles. For the dataset given <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">here</a>, we obtain the
-following result.</p>
-<figure class="align-center" id="id3">
-<a class="reference external image-reference" href="_images/controlExampleCCCV.png"><img alt="_images/controlExampleCCCV.png" src="_images/controlExampleCCCV.png" style="width: 70%;" />
-</a>
-<figcaption>
-<p><span class="caption-text">CCCV control</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
-</figcaption>
-</figure>
-<p>The script used to generate the figures is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/plotControlExamples_doc.m">here</a>.</p>
-</section>
-<section id="control-model-description">
-<h2>Control model description<a class="headerlink" href="#control-model-description" title="Link to this heading"></a></h2>
-<p>Beside json input, the function <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-autodiff/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a> is used to run a simulation. It requires</p>
-<ul class="simple">
-<li><p>A <strong>model</strong>, which knows how to setup and solve the governing equations of our problem,</p></li>
-<li><p>An <strong>initial state</strong>,</p></li>
-<li><p>A <strong>schedule</strong>, which provides the time stepping and can also contain setup for control</p></li>
-</ul>
-<p>The <code class="code docutils literal notranslate"><span class="pre">schedule</span></code> contains two fields</p>
-<ul class="simple">
-<li><p><code class="code docutils literal notranslate"><span class="pre">control</span></code>: It is a struct array containing fields that the model knows how to process.  Typically, this
-will be the fields such as <cite>src</cite> for input current.</p></li>
-<li><p><code class="code docutils literal notranslate"><span class="pre">step</span></code>: It contains two arrays of equal size named <code class="code docutils literal notranslate"><span class="pre">val</span></code> and <code class="code docutils literal notranslate"><span class="pre">control</span></code>. Control is a index into the
-<code class="code docutils literal notranslate"><span class="pre">schedule.control</span></code> array, indicating which control is to be used for the timestep. <code class="code docutils literal notranslate"><span class="pre">schedule.step.val</span></code> is the
-timestep used for that control step.</p></li>
-</ul>
-<p>Let us set up a control with a given current control source function. In this case, we choose a sinusoidal current
-control.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">dt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="nb">second</span><span class="p">;</span>
-<span class="n">T</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="mi">3</span><span class="o">*</span><span class="nb">minute</span><span class="p">;</span>
-<span class="n">N</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">T</span><span class="o">/</span><span class="n">dt</span><span class="p">;</span>
-
-<span class="nb">step</span><span class="p">.</span><span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">dt</span><span class="o">*</span><span class="nb">ones</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-<span class="nb">step</span><span class="p">.</span><span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">ones</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-
-<span class="n">period</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="nb">minute</span><span class="p">;</span>
-<span class="n">control</span><span class="p">.</span><span class="n">src</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="nb">time</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="mf">1e-2</span><span class="o">*</span><span class="n">ampere</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="nb">time</span><span class="o">/</span><span class="n">period</span><span class="p">));</span>
-<span class="n">control</span><span class="p">.</span><span class="n">CC</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
-
-<span class="n">schedule</span><span class="p">.</span><span class="n">step</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">step</span><span class="p">;</span>
-<span class="n">schedule</span><span class="p">.</span><span class="n">control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">control</span><span class="p">;</span>
-</pre></div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="runTimeControlExample.html#runtimecontrolexample"><span class="std std-ref">Time Functional Control Examples</span></a></p>
 </div>
-<p>We have to setup a model and an initial state. We use the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m">setupModelFromJson</a> to setup the model from
-a given json input. We load the sample input function we have used before, see source
-<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/sample_input.json">here</a>. We replace the <code class="code docutils literal notranslate"><span class="pre">Control</span></code> field with a structure with
-a <code class="code docutils literal notranslate"><span class="pre">controlPolicy</span></code> given by a current control (<code class="code docutils literal notranslate"><span class="pre">CC</span></code>). We change the initial state of charge value (SOC) to
-0.5 so that we do not hit the upper current voltage value (the SOC given in the sample json is 0.99).</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>
-
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[];</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">controlPolicy</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;CC&#39;</span><span class="p">;</span>
-
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">SOC</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
-
-<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupModelFromJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-</pre></div>
 </div>
-<p>We use the default state initialisation method given by the method <code class="code docutils literal notranslate"><span class="pre">setupInitialState</span></code> in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/Battery.m">Battery</a> model.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">setupInitialState</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
-</pre></div>
 </div>
-<p>Now, we can run the simulation for the given schedule, model and initial state using <a class="reference external" href="https://github.com/SINTEF-AppliedCompSci/MRST/blob/battmo/mrst-autodiff/ad-core/simulators/simulateScheduleAD.m">simulateScheduleAD</a></p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
-</pre></div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><span class="xref std std-ref">Generic Control Simple Example</span></p>
 </div>
-<p>The complete source can be found here <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/exampleControl_doc.m">exampleControl_doc</a>.</p>
-<figure class="align-center">
-<a class="reference external image-reference" href="_images/exampleControl.png"><img alt="_images/exampleControl.png" src="_images/exampleControl.png" style="width: 70%;" />
-</a>
-</figure>
-</section>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><span class="xref std std-ref">Generic Control Cycle Example</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 
 
@@ -647,7 +551,7 @@ a <code class="code docutils literal notranslate"><span class="pre">controlPolic
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="modelinitialisation.html" class="btn btn-neutral float-left" title="The Battery Simulation Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="soliddiffusion.html" class="btn btn-neutral float-right" title="Solid Diffusion Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="runControlExamples.html" class="btn btn-neutral float-right" title="Examples of the different control policies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
