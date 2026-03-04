@@ -15,6 +15,7 @@
    battmointernals
    geometryinput
    juliabridge
+   various
    optimisation
    Electrolyser simulation <publishedExamples/runElectrolyser>
    protonicmembrane
