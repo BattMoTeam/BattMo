@@ -6,23 +6,23 @@
 .. toctree::
    :hidden:
 
-   Installation <installation>
-   basicusage
-   tutorials
-   modeling
+   ..
+      Installation <installation>
+      basicusage
+      tutorials
    inputparameters
-   intermediate
-   battmointernals
-   geometryinput
-   juliabridge
-   various
-   optimisation
-   Electrolyser simulation <publishedExamples/runElectrolyser>
-   protonicmembrane
-   app
-   Computational Graph <computationalGraph/graphdoc>
-   seealso
-   References <bibliography>
+   ..
+      geometryinput
+      batteryphysics
+      optimisation
+      modeling
+      battmointernals
+      app
+      various
+      Electrolyser simulation <publishedExamples/runElectrolyser>
+      protonicmembrane
+      seealso
+      References <bibliography>
 
 
 Welcome

@@ -8,15 +8,23 @@ Various Information
 
    units
    Octave <octave>
+   juliabridge
 
-.. grid-item-card::
-   :padding: 2
-
-   :ref:`Units <units:Units>`
-        
-.. grid-item-card::
-   :padding: 2
-
-   :ref:`Octave Support <octave:Note on Octave Support>`
+.. grid:: 2
+      
+   .. grid-item-card::
+      :padding: 2
+   
+      :ref:`Units <units:Units>`
            
+   .. grid-item-card::
+      :padding: 2
+   
+      :ref:`Octave Support <octave:Note on Octave Support>`
+   
+   .. grid-item-card::
+      :padding: 2
+   
+      :ref:`BattMo Julia Bridge <juliabridge:BattMo Julia bridge>`
+                   
 

@@ -1,9 +1,6 @@
-===========
-Basic Usage
-===========
-
-.. note::
-  This section is still under development.
+=================
+You First Example
+=================
 
 Here we introduce the basic usage of |battmo| by showing some simple workflows and highlighting important functions.
 

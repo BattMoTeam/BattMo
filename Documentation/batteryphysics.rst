@@ -6,20 +6,16 @@ Battery Physics
    :maxdepth: 2
    :hidden:
 
-   soliddiffusion
    runThermalExample.nblink
    runOnlyThermal.nblink
+   runBolaySEI.ipynb
    runSiliconGraphiteBattery.ipynb
-   runSwellingExample.ipynb
    plating
+   runSwellingExample.ipynb
+   soliddiffusion
 
 .. grid:: 2
 
-   .. grid-item-card::
-      :padding: 2
-
-      :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
-           
    .. grid-item-card::
       :padding: 2
 
@@ -33,7 +29,17 @@ Battery Physics
    .. grid-item-card::
       :padding: 2
 
+      :ref:`SEI formation <runBolaySEI>`
+
+   .. grid-item-card::
+      :padding: 2
+
       :ref:`Composite Material <runSiliconGraphiteBattery>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Lithium Plating <plating:Lithium Plating>`
 
    .. grid-item-card::
       :padding: 2
@@ -43,16 +49,7 @@ Battery Physics
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Lithium Plating <plating:Lithium Plating>`
-
-   .. grid-item-card::
-      :padding: 2
-
-      :ref:`Units <units:Units>`
+      :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
            
-   .. grid-item-card::
-      :padding: 2
 
-      :ref:`Octave Support <octave:Note on Octave Support>`
-           
 
