@@ -1,9 +1,9 @@
 {
   "isFile" : true,
-  "filenames": ["battery.json",
-                "geometry.json",
-                "modelSpecification.json",
-                "control.json",
-                "timeStepping.json",
-                "stateInitialization.json"]
+  "filenames": ["Examples/Documentation/jsonfiles/Example/battery.json",
+                "Examples/Documentation/jsonfiles/Example/geometry.json",
+                "Examples/Documentation/jsonfiles/Example/modelSpecification.json",
+                "Examples/Documentation/jsonfiles/Example/control.json",
+                "Examples/Documentation/jsonfiles/Example/timeStepping.json",
+                "Examples/Documentation/jsonfiles/Example/stateInitialization.json"]
 }

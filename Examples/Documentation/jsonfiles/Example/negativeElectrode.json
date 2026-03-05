@@ -1,10 +1,10 @@
 {
   "Coating" : {
     "isFile": true,
-    "filename" : "coating.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/coating.json"
   },
   "CurrentCollector" : {
     "isFile": true,
-    "filename" : "currentCollector.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/currentCollector.json"
   }
 }
