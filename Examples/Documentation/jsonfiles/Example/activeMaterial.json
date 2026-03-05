@@ -1,11 +1,11 @@
 {
   "Interface": {
     "isFile": true,
-    "filename" : "interface.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/interface.json"
   },
   "SolidDiffusion": {
     "isFile": true,
-    "filename" : "solidDiffusion.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/solidDiffusion.json"
   },
   "diffusionModelType": "full",
   "electronicConductivity": 100,

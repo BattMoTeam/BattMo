@@ -1,10 +1,8 @@
-:orphan:
-   
-==================
-Json input example
-==================
+===================
+My First Json Input
+===================
 
-In this page, we present an example of a json input
+In this page, we present example of json inputs. The parameter names are hopefully chosen in a way that will be easily understood by battery modelers.
 
 Simulation
 ==========
