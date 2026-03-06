@@ -140,6 +140,17 @@ function  output = runBatteryJson(jsonstruct, varargin)
                     'I'          , I); ... % Unit : A
 
     output.globvars = globvars;
+
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'}, false);
+
+    if getJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'})
+
+        for istate = 1 : numel(states)
+            states{istate} = model.addVariables(states{istate});
+        end
+
+    end
+
     output.states   = states;
 
     if isAssigned(jsonstruct, {'Output', 'variables'}) ...

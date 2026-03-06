@@ -1596,7 +1596,6 @@ classdef GenericBattery < BaseModel
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
                 eta  = state.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*eta;
@@ -1632,20 +1631,24 @@ classdef GenericBattery < BaseModel
 
                 elde = eldes{ind};
 
-                F      = model.(elde).(co).(am).(itf).constants.F;
-                n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
-                co_map = model.(elde).(co).G.mappings.cellmap;
-                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
-                vols   = model.(elde).(co).G.getVolumes();
+                if model.(elde).(co).(am).(itf).includeEntropyChange
+                    
+                    F      = model.(elde).(co).(am).(itf).constants.F;
+                    n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                    co_map = model.(elde).(co).G.mappings.cellmap;
+                    vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                    vols   = model.(elde).(co).G.getVolumes();
 
-                Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
-                eta  = state.(elde).(co).(am).(itf).eta;
+                    Rvol = state.(elde).(co).(am).(sd).Rvol;
+                    dUdT = state.(elde).(co).(am).(itf).dUdT;
+                    eta  = state.(elde).(co).(am).(itf).eta;
 
-                itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
+                    itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
 
-                src = subsetPlus(src, itf_src, co_map);
+                    src = subsetPlus(src, itf_src, co_map);
 
+                end
+                
             end
 
             state.(thermal).jHeatRevReactionSource = src;

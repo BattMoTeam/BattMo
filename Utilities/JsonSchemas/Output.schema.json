@@ -19,8 +19,12 @@
 
         "saveOutput" : {
           "type" : "boolean",
-          "description" : "True if simulation data will be saved to disk (default is false)"}},
-
+          "description" : "True if simulation data will be saved to disk (default is false)"},
+        "includeIntermediateVariables" : {
+          "type" : "boolean",
+          "description" : "If true, the output will include intermediate variables that are computed during the simulation. The default is false"
+        }
+      },
       "dependentSchemas" : {
         "saveOutput" : {
           "anyOf" : [

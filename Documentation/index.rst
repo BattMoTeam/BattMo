@@ -10,15 +10,14 @@
    basicusage
    tutorials
    inputparameters
+   output
    geometryinput
    batteryphysics
+   elchemsystems
    optimisation
    modeling
    battmointernals
-   app
-   various
-   Electrolyser simulation <publishedExamples/runElectrolyser>
-   protonicmembrane
+   programminginterfaces
    seealso
    References <bibliography>
 

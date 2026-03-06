@@ -10,10 +10,9 @@
           "type": "string",
           "enum": ["CCDischarge",
                    "CCCharge",
-                   "generic",
-                   "CC",
                    "CCCV",
                    "powerControl",
+                   "generic",
 		           "timeControl"]}}
     }},
     "allOf": [
@@ -21,10 +20,6 @@
         "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
         "then": {
           "$ref" : "#/$defs/CCDischarge"}}},
-      {"if": {
-        "properties": {"controlPolicy" : {"const" : "generic"}},
-        "then": {
-          "$ref" : "GenericControl.schema.json"}}},
       {"if": {
         "properties": {"controlPolicy" : {"const" : "CCCharge"}},
         "then": {
@@ -34,13 +29,17 @@
         "then":{
           "$ref" : "#/$defs/CCCV"}}},
       {"if": {
-        "properties": {"controlPolicy" : {"const" : "CCCV"}},
-        "then":{
-          "$ref" : "#/$defs/timeControl"}}},
-      {"if": {
         "properties": {"controlPolicy" : {"const" : "powerControl"}},
         "then": {
-          "$ref" : "#/$defs/powerControl"}}}
+          "$ref" : "#/$defs/powerControl"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "generic"}},
+        "then": {
+          "$ref" : "GenericControl.schema.json"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "timeControl"}},
+        "then":{
+          "$ref" : "#/$defs/timeControl"}}}
     ],
 
   "$defs" : {
