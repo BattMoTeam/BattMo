@@ -27,7 +27,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="JSON input specification" href="json.html" />
+    <link rel="next" title="My First Json Input" href="jsonexample.html" />
     <link rel="prev" title="Tutorial 9 - Simulate a cylindrical cell" href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html" /> 
 </head>
 
@@ -147,7 +147,30 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">BattMo Input</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BattMo Input</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonexample.html">My First Json Input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#negative-electrode">Negative Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#positive-electrode">Positive Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#thermal-model">Thermal Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#geometry">Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#model-specification">Model Specification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#time-stepping">Time Stepping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#state-initialization">State Initialization</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="json.html">JSON input specification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="json.html#simulation-schema">Simulation Schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#material-parameters">Material Parameters</a><ul>
@@ -182,6 +205,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="jsonfiles.html">List of Json File Examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="functioninterface.html">Functional parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-name">Function name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-formula">Function formula</a></li>
@@ -523,9 +547,8 @@
 <h1>BattMo Input<a class="headerlink" href="#battmo-input" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<p>BattMo uses a simple dictionary structure as input for a simulation. In matlab, it means that we use a simple <cite>struct</cite>.</p>
-<p>The <a class="reference external" href="https://en.wikipedia.org/wiki/JSON">json format</a> provides a basic but yet extremly flexible way to provide a
-dictionary like data</p>
+<p>BattMo uses a simple object dictionary structure as unique input for a whole simulation. The structure is easily
+editable programmatically in matlab. As a file, it is written using the <a class="reference external" href="https://en.wikipedia.org/wiki/JSON">json format</a> provides a basic but yet extremly flexible way to provide a dictionary-like data.</p>
 <p>As seen in <span class="xref std std-ref">Your First Example</span>, you can simply provide the path of your input data using the
 command <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/sample_input.json&#39;</span><span class="p">)</span>
@@ -538,55 +561,22 @@ command <code class="code docutils literal notranslate"><span class="pre">parseB
 <p>We use json schema to describe the expected keys or field names in the input, see <a class="reference internal" href="json.html#json-input-specification"><span class="std std-ref">JSON input
 specification</span></a>. All the schemas are collected under the directory
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas">JsonSchemas</a>. However, the easiest way to discover the available input parameters is
-probably to look at examples and we invite you to look at the list below. Most of the parameters in the list are
-components of a complete inputs, which can be aggregated using the function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/mergeJsonStructs.m">mergeJsonStructs</a> to setup a full
-input, see <a class="reference internal" href="mergejsonstruct.html#merging-parameters"><span class="std std-ref">Merging Parameters</span></a>.</p>
-<table class="docutils align-center" style="width: 90%">
-<thead>
-<tr class="row-odd"><th class="head"><p>Full Cell Parameters</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json">Graphite-NMC cell</a></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/ParameterSets/Xu2015/lfp.json">Xu 2015 cell</a></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json">Chen 2020 cell</a></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon.json">Graphite-Silicon cell</a></p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-center" style="width: 90%">
-<thead>
-<tr class="row-odd"><th class="head"><p>Geometry Parameters</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/geometry1d.json">1D model</a></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/geometry3d.json">3D model</a></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/geometryMultiLayerPouch.json">Multi-layer pouch cell</a></p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-center" style="width: 90%">
-<thead>
-<tr class="row-odd"><th class="head"><p>Material Parameters</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">Graphite</a></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/LFP/LFP_Xu2015.json">LFP (Xu 2015)</a></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryComponentParameters/celgard2500.json">Celgard2500 Electrolyte</a></p></td>
-</tr>
-</tbody>
-</table>
+probably to look at examples</p>
+<p>In <a class="reference internal" href="jsonexample.html#my-first-json-input"><span class="std std-ref">My first Json input file</span></a>, we guide you through some selected examples. In
+<a class="reference internal" href="jsonfiles.html#list-of-json-file-examples"><span class="std std-ref">List of Json File Examples</span></a>, we provide links to json datasets available in
+your BattMo installationa and corresponding to different components in the simulation (material properties, geometry,
+controls …).</p>
+<p>Combining different inputs is a standard way to create you own input, for the model you are targetting, and is is easily
+achieved using the function <cite>mergeJsonStructs</cite>, see <a class="reference internal" href="mergejsonstruct.html#merging-parameters"><span class="std std-ref">Merging Parameters</span></a>.</p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="jsonexample.html#my-first-json-input"><span class="std std-ref">My first Json input file</span></a></p>
+</div>
+</div>
+</div>
 <div class="sd-col sd-d-flex-row sd-p-2 docutils">
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
 <div class="sd-card-body docutils">
@@ -598,6 +588,13 @@ input, see <a class="reference internal" href="mergejsonstruct.html#merging-para
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
 <div class="sd-card-body docutils">
 <p class="sd-card-text"><a class="reference internal" href="mergejsonstruct.html#merging-parameters"><span class="std std-ref">Merging Parameters</span></a></p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-p-2 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><a class="reference internal" href="jsonfiles.html#list-of-json-file-examples"><span class="std std-ref">List of Json File Examples</span></a></p>
 </div>
 </div>
 </div>
@@ -631,7 +628,7 @@ input, see <a class="reference internal" href="mergejsonstruct.html#merging-para
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.html" class="btn btn-neutral float-left" title="Tutorial 9 - Simulate a cylindrical cell" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="json.html" class="btn btn-neutral float-right" title="JSON input specification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="jsonexample.html" class="btn btn-neutral float-right" title="My First Json Input" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

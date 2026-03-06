@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Json input example &mdash; BattMo  documentation</title>
+  <title>My First Json Input &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
@@ -24,7 +24,9 @@
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="JSON input specification" href="json.html" />
+    <link rel="prev" title="BattMo Input" href="inputparameters.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,7 +49,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#update-existing-installation">Update existing installation</a></li>
 </ul>
@@ -143,7 +145,30 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="inputparameters.html">BattMo Input</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="inputparameters.html">BattMo Input</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="inputparameters.html">Introduction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">My First Json Input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#negative-electrode">Negative Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#positive-electrode">Positive Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#thermal-model">Thermal Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#geometry">Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-specification">Model Specification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-stepping">Time Stepping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#state-initialization">State Initialization</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="json.html">JSON input specification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="json.html#simulation-schema">Simulation Schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#material-parameters">Material Parameters</a><ul>
@@ -178,6 +203,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="jsonfiles.html">List of Json File Examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="functioninterface.html">Functional parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-name">Function name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-formula">Function formula</a></li>
@@ -505,7 +531,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Json input example</li>
+          <li class="breadcrumb-item"><a href="inputparameters.html">BattMo Input</a></li>
+      <li class="breadcrumb-item active">My First Json Input</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/jsonexample.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -515,20 +542,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="json-input-example">
-<h1>Json input example<a class="headerlink" href="#json-input-example" title="Link to this heading"></a></h1>
-<p>In this page, we present an example of a json input</p>
+  <section id="my-first-json-input">
+<h1>My First Json Input<a class="headerlink" href="#my-first-json-input" title="Link to this heading"></a></h1>
+<p>In this page, we present example of json inputs. The parameter names haven hopefully chosen in a way that they will be
+easily understood by battery modelers. Their description is included in the json schemas, see some links include below,
+and this documentation <a class="reference internal" href="json.html#json-input-specification"><span class="std std-ref">this page</span></a>.</p>
+<p>The json input follows the battery model hierarchy as described in <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">BattMo Model Architecture</span></a>. The input contains also simulation specific parameters, such as solver parameters and time
+stepping.</p>
+<p>The keywords <code class="code docutils literal notranslate"><span class="pre">isFile</span></code>, <code class="code docutils literal notranslate"><span class="pre">filename</span></code> and <code class="code docutils literal notranslate"><span class="pre">filenames</span></code> are recognized by the parser
+(<code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code>) and used to include inputs from other files, as shown in the next example</p>
 <section id="simulation">
 <h2>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;isFile&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;filenames&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;battery.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;geometry.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;modelSpecification.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;control.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;timeStepping.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;stateInitialization.json&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">&quot;filenames&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/battery.json&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/geometry.json&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/modelSpecification.json&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/control.json&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/timeStepping.json&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/stateInitialization.json&quot;</span><span class="p">]</span>
 <span class="p">}</span>
+</pre></div>
+</div>
+<p>The keyword <code class="code docutils literal notranslate"><span class="pre">isFile</span></code> is recognized. The value of <code class="code docutils literal notranslate"><span class="pre">filenames</span></code> contain an array with a list of the files that
+we want to include. Those files are also the ones that are presented in this page (all the files are in
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Documentation/jsonfiles/Example/">this directory</a>, which comes with your battmo installation)</p>
+<p>The path of the file is first tested as such but if no file is found, the parser will check the path that is obtained
+relative to your battmo installation path.</p>
+<p>You can actually run this illustration example using</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/Documentation/jsonfiles/Example/simulation.json&#39;</span><span class="p">);</span>
+<span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
 </section>
@@ -537,23 +580,23 @@
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;negativeElectrode.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/negativeElectrode.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;PositiveElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;positiveElectrode.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/positiveElectrode.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;Electrolyte&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;electrolyte.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/electrolyte.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;Separator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;separator.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/separator.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;ThermalModel&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;thermalComponent.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/thermalComponent.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;SOC&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9900</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;initT&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">298.1500</span><span class="p">,</span>
@@ -561,17 +604,20 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>Here, we recognize the battery hierarchy where the sumodels are the negative and positive electrodes, the electrolyte,
+the separator and the thermal model, if thermal effects are included. The initial temperature and state of charge are
+also included here.</p>
 </section>
 <section id="negative-electrode">
 <h2>Negative Electrode<a class="headerlink" href="#negative-electrode" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;coating.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/coating.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;currentCollector.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/currentCollector.json&quot;</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -582,15 +628,15 @@
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;activeMaterial.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/activeMaterial.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;Binder&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;binder.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/binder.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;ConductingAdditive&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;conductingAdditive.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/conductingAdditive.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span>
 <span class="w">  </span><span class="nt">&quot;effectiveDensity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1900</span><span class="p">,</span>
@@ -607,11 +653,11 @@
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;interface.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/interface.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;solidDiffusion.json&quot;</span>
+<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/solidDiffusion.json&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;diffusionModelType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
@@ -973,7 +1019,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inputparameters.html" class="btn btn-neutral float-left" title="BattMo Input" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="json.html" class="btn btn-neutral float-right" title="JSON input specification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
