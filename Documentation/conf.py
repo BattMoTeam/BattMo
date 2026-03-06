@@ -127,8 +127,25 @@ author = 'Simon Clark'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-# exclude_patterns = ['_build', '*.nblink', 'publishedExamples', 'pynbnotebooks']
 exclude_patterns = ['_build']
+# exclude_patterns += ['*.nblink']
+# exclude_patterns += ["exploreOutput.nblink"]
+# exclude_patterns += ["functionInterfaceExample.nblink"]
+# exclude_patterns += ["runBolaySEI.nblink"]
+# exclude_patterns += ["runCellPlating.nblink"]
+# exclude_patterns += ["runControlExamples.nblink"]
+# exclude_patterns += ["runGenericStepControlCycle.nblink"]
+# exclude_patterns += ["runGenericStepControlSimple.nblink"]
+# exclude_patterns += ["runOnlyThermal.nblink"]
+# exclude_patterns += ["runSiliconGraphiteBattery.nblink"]
+# exclude_patterns += ["runSPMplating.nblink"]
+# exclude_patterns += ["runSwellingExample.nblink"]
+# exclude_patterns += ["runThermalExample.nblink"]
+# exclude_patterns += ["runTimeControlExample.nblink"]
+# exclude_patterns += ['publishedExamples']
+# exclude_patterns += ['pynbnotebooks']
+# exclude_patterns += ['pynbnotebooks/part_1_battery_modeling_guide.ipynb']
+# exclude_patterns += ['pynbnotebooks/part_2_battery_modeling_guide.ipynb']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
