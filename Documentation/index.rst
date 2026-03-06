@@ -10,7 +10,7 @@
    basicusage
    tutorials
    inputparameters
-   BattMo output <exploreOutput.nblink>
+   output
    geometryinput
    batteryphysics
    elchemsystems

@@ -6,16 +6,10 @@ BattMo Internals
    :maxdepth: 2
    :hidden:
 
-   modelinitialisation
    architecture
    Computational Graph <computationalGraph/graphdoc>
 
 .. grid:: 2
-
-   .. grid-item-card::
-      :padding: 2
-      
-      :ref:`The Battery Simulation Model<modelinitialisation:The Battery Simulation Model>`
 
    .. grid-item-card::
       :padding: 2
