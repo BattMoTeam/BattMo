@@ -1,0 +1,22 @@
+{
+  "saturationConcentration": 26390,
+  "volumetricSurfaceArea": 1878260,
+  "density": 3450,
+  "numberOfElectronsTransferred" : 1,
+  "activationEnergyOfReaction": 4000,
+  "reactionRateConstant": 3.626e-11,
+  "guestStoichiometry100": 0.14778,
+  "guestStoichiometry0": 0.999,
+  "chargeTransferCoefficient": 0.5,
+  "openCircuitPotential": {
+    "functionFormat": "csv",
+    "argumentList" : ["stoichiometry"],
+    "filename" : "Examples/Documentation/jsonfiles/LFP_Xu2015_OCP.csv"},
+  "entropyChange" : {
+    "functionFormat": "csv",
+    "argumentList" : ["stoichiometry"],
+    "filename" : "Examples/Documentation/jsonfiles/LFP_Xu2015_entropyChange.csv"},
+  "referenceTemperature" : 298.15
+}
+
+
