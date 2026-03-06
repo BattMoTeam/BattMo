@@ -1,12 +1,17 @@
 %% Simulation Output Structure
 % 
+%%
+%
+% We load some simulation input data and run the simulation. We obtain an |output| structure in return.
+%
 
-% jsonstruct = parseBattmoJson('Examples/Documentation/jsonfiles/explore_output_example.json');
-% output = runBatteryJson(jsonstruct);
+jsonstruct = parseBattmoJson('Examples/Documentation/jsonfiles/explore_output_example.json');
+output = runBatteryJson(jsonstruct);
 
 %% Output structure overview
 %
-% The output structure contains the results of the simulation, the simulation model and the simulation setup. We have in particular the folling
+% The output structure contains the results of the simulation, the simulation model and the simulation setup. We have in
+% particular the following
 % 
 % * |output.model| : The simulation model
 % * |output.simsetup| : The simulation setup
@@ -55,14 +60,14 @@ plotBatteryGrid(model);
 
 %% Battery States
 %
-% The |states| gives us insight into the internal state of the battery. 
+% The |states| give us insight into the internal state of the battery for each time step. 
 %
 
 states = output.states;
 
 %%
-% They are stored in a cell array with the same time structure as the current and voltage. They follow the same
-% architecture as the battery model, see <https://battmo.org/BattMo/architecture.html here>
+% The states are stored in a cell array. The index is the same as the time output. For a given state, the data is stored
+% following the same architecture as the overall battery model, see <https://battmo.org/BattMo/architecture.html here>
 %
 %
 % Let us consider the state computed at the last time step. 
@@ -71,8 +76,8 @@ state = states{end}
 
 %%
 %
-% We obtain the following variables. The variables (except time and control type) are the _state_ or _primary_
-% variables, which correspond to the unknown in the equations we solve. It is possible to recover also the intermediate
+% We obtain the following variable, which are (except time and control type) the _state_ or _primary_ variables. They
+% correspond to the unknowns in the modeling equations we solve. It is possible to recover also the intermediate
 % variables as illustrated below.
 % 
 % * |state.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.cSurface|
@@ -104,14 +109,42 @@ view([50, 40]);
 
 %% Simulation Setup
 %
-% The simulation setup contains all the information to re-run a simulation. It means the model, of course, but also the initial state, the schedule (time stepping choices) and the solver parameters.
+% The simulation setup contains all the information to re-run a simulation. It means the model, of course, but also the
+% initial state, the schedule (time stepping choices) and the solver parameters.
 %
 
 simsetup = output.simsetup();
-states = simsetup.run()
+states = simsetup.run();
 
 %% Json Input
 %
-% The |jsonstruct| that is returned in the output is the same as the one we sent as input but it is augmented with all the **default values**
+% The |jsonstruct| that is returned in the output is the same as the one we sent as input but it is augmented with all the *default values*
 %
 %
+
+%% full set of state variables
+%
+% In the simulation, intermediate variables are computed to assemble the equations. They can be relevant to explore your
+% solution. They are not included by default because they require extra time to be computed. If you are interested in
+% those, you can add the following entry in your json input structure
+%
+
+jsonstruct.Output.includeIntermediateVariables = true;
+output = runBatteryJson(jsonstruct);
+
+%%
+% It is also possible to do the same _manually_ after the simulation
+%
+
+for istate = 1 : numel(states)
+    states{istate} = model.addVariables(states{istate});
+end
+
+%%
+%
+% For example, for the negative electrode interface, we get the following variables, among which the OCP and the
+% intercalation flux, which is the reaction rate of Lithium intercalation (mol/m^2/s). 
+%
+
+state = states{end};
+disp(state.NegativeElectrode.Coating.ActiveMaterial.Interface)
