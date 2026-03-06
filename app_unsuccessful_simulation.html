@@ -25,7 +25,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Various Information" href="various.html" />
+    <link rel="next" title="Note on Octave Support" href="octave.html" />
     <link rel="prev" title="Unnatural artifacts in your results" href="app_unnatural_artifacts.html" /> 
 </head>
 
@@ -157,16 +157,15 @@
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#solid-diffusion">Solid Diffusion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#binder">Binder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#conducting-additive">Conducting Additive</a></li>
-<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#current-collector">Current Collector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#positive-electrode">Positive Electrode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#current-collector">Current Collector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#separator">Separator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#thermal-model">Thermal Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#geometry">Geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#model-specification">Model Specification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#control">Control</a></li>
-<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#time-stepping">Time Stepping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#model-specification">Model Specification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="jsonexample.html#state-initialization">State Initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jsonexample.html#time-stepping">Time Stepping</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="json.html">JSON input specification</a><ul>
@@ -187,7 +186,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#geometry-setup">Geometry Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="json.html#simulation-control-parameters">Simulation Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="json.html#control-parameters">Control Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#solver-parameters">Solver Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="json.html#output-parameters">Output Parameters</a></li>
@@ -208,6 +207,7 @@
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-name">Function name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#function-formula">Function formula</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#tabulated-function">Tabulated function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="functioninterface.html#csv-file">CSV file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="functioninterface.html#example">Example</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="functionInterfaceExample.html">Example of the function interface</a></li>
 </ul>
@@ -336,6 +336,63 @@
 <li class="toctree-l2"><a class="reference internal" href="soliddiffusion.html">Solid Diffusion Models</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="elchemsystems.html">Other Electro-Chemical Systems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Alkaline Membrane Electrolyser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="protonicmembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html">Full Cell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="optimisation.html">Optimization</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optimisation.html#parameter-identification-example">Parameter identification example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optimisation.html#optimization-example">Optimization example</a></li>
@@ -384,12 +441,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="battmointernals.html">BattMo Internals</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modelinitialisation.html">The Battery Simulation Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#initialisation-of-a-battery-simulation-model">Initialisation of a battery simulation model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#inspection-of-the-model">Inspection of the model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="modelinitialisation.html#computing-and-inspecting-some-standard-static-properties-of-the-model">Computing and inspecting some standard static properties of the model</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="architecture.html">BattMo Model Architecture</a></li>
 <li class="toctree-l2"><a class="reference internal" href="computationalGraph/graphdoc.html">Computational Graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="computationalGraph/graphdoc.html#introduction">Introduction</a></li>
@@ -402,37 +453,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="app.html">BattMoApp</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="app_features.html">Features</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#download-input-data">Download Input Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#upload-input-data">Upload Input Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="app_features.html#upload-your-previous-results">Upload your previous results</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current"><a class="reference internal" href="app_troubleshooting.html">Troubleshooting</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="app_unnatural_artifacts.html">Unnatural artifacts</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="app_unnatural_artifacts.html#discritization-issues">Discritization issues</a></li>
-</ul>
-</li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Unsuccessful simulation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#using-lifepo4-datasets">Using LiFePO4 datasets</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="various.html">Various Information</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
-<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="programminginterfaces.html">Programming Interfaces</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="juliabridge.html">BattMo Julia bridge</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="juliabridge.html#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juliabridge.html#start-server">Start Server</a></li>
@@ -441,68 +462,25 @@
 <li class="toctree-l3"><a class="reference internal" href="juliabridge.html#post-process-the-output">Post process the output</a></li>
 </ul>
 </li>
+<li class="toctree-l2 current"><a class="reference internal" href="app.html">BattMoApp</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="app_features.html">Features</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#download-input-data">Download Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#upload-input-data">Upload Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="app_features.html#upload-your-previous-results">Upload your previous results</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="publishedExamples/runElectrolyser.html">Electrolyser simulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="app_troubleshooting.html">Troubleshooting</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="app_unnatural_artifacts.html">Unnatural artifacts</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Unsuccessful simulation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="protonicmembrane.html">Proton Ceramic Membrane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#governing-equations">Governing equations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#boundary-conditions">Boundary conditions</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runGasSupply.html">Gas Supply</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-overview">Model overview</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#governing-equations">Governing equations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="publishedExamples/runGasSupply.html#boundary-conditions">Boundary conditions</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="publishedExamples/runProtonicCell.html">Full Cell</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
-<li class="toctree-l3"><a class="reference internal" href="publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="octave.html">Octave</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="seealso.html">See Also</a><ul>
@@ -531,6 +509,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="programminginterfaces.html">Programming Interfaces</a></li>
           <li class="breadcrumb-item"><a href="app.html">BattMoApp</a></li>
           <li class="breadcrumb-item"><a href="app_troubleshooting.html">Troubleshooting</a></li>
       <li class="breadcrumb-item active">Unsuccessful simulation</li>
@@ -560,7 +539,7 @@ to 3.6 and see if it results in a successful simulation this time.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="app_unnatural_artifacts.html" class="btn btn-neutral float-left" title="Unnatural artifacts in your results" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="various.html" class="btn btn-neutral float-right" title="Various Information" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="octave.html" class="btn btn-neutral float-right" title="Note on Octave Support" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

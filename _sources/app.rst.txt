@@ -1,6 +1,6 @@
-
+=========
 BattMoApp
-###########
+=========
 
 .. toctree::
    :maxdepth: 2

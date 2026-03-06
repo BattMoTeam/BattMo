@@ -248,8 +248,8 @@ For each design, the parameters are described in the schema.
 See json :ref:`input example<jsonexample:Geometry>`
 
                  
-Simulation Control Parameters
-=============================
+Control Parameters
+==================
 
 The control options are presented :ref:`here<controlinput:Control models>`. A description of each parameters for the
 various control models can be read from the schema.
