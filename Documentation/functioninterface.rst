@@ -7,9 +7,9 @@ ionic conductivity and diffusion in the electrolyte.
 
 The function definitions are given in the input json file, using one of the following formats:
 
-1. Function name
-2. Function formula
-3. Tabulated function
+1. :ref:`Function name <functioninterface:Function name>`
+2. :ref:`Function formula <functioninterface:Function formula>`
+3. :ref:`Tabulated function <functioninterface:Tabulated function>`
 
 The json schema that describes the interface is available :battmofile:`here <Utilities/JsonSchemas/Function.schema.json>`.
 
