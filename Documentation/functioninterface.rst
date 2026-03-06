@@ -10,7 +10,8 @@ The function definitions are given in the input json file, using one of the foll
 1. :ref:`Function name <functioninterface:Function name>`
 2. :ref:`Function formula <functioninterface:Function formula>`
 3. :ref:`Tabulated function <functioninterface:Tabulated function>`
-
+4. :ref:`CSV file <functioninterface:CSV file>`
+   
 The json schema that describes the interface is available :battmofile:`here <Utilities/JsonSchemas/Function.schema.json>`.
 
 The keyword to choose the format is given by :code:`functionFormat`.
@@ -18,6 +19,8 @@ The keyword to choose the format is given by :code:`functionFormat`.
 The keyword :code:`argumentList` is common to all the formats and is used to describe the list of arguments that will be
 sent to the function. The argument names given there are independent to the implementation in itself. They indicates the
 meaning of the arguments.
+
+.. note:: After parsing a function can be setup directly using :code:`setupFunction`, see :ref:`Example of the function interface <functionInterfaceExample:Example of the function interface>`
 
 Let us go through each different format separatly. For each format, we start by giving an example.
 
@@ -75,18 +78,23 @@ The keys :code:`dataX` and :code:`dataY` are used to provide the data points of 
 
 You can find an example in the json file :battmofile:`LFP_Xu2015.json <ParameterData/MaterialProperties/LFP/LFP_Xu2015.json#11>`
 
+CSV file
+========
+
+.. literalinclude:: exampleCodeSnippets/function_interface_csv.json
+   :language: json
+
+We can import CSV file. The file is read and a tabulated function is set up
+
 Example
 =======
 
-:ref:`Example script<functionInterfaceExample>`
+:ref:`Example script<functionInterfaceExample:Example of the function interface>`
 
 .. toctree::
    :hidden:
 
    functionInterfaceExample.nblink
-
-
-
 
 
 
