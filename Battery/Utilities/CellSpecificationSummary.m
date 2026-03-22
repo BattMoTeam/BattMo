@@ -61,9 +61,7 @@ classdef CellSpecificationSummary
 
     methods
 
-        function css = CellSpecificationSummary(S, varargin)
-
-            % S may be either a model or a jsonstruct
+        function css = CellSpecificationSummary(model, varargin)
 
             opt = struct('packing_mass'  , []   , ...
                          'packing_volume', []   , ...
@@ -74,19 +72,17 @@ classdef CellSpecificationSummary
                          'temperature'   , 298);
             opt = merge_options(opt, varargin{:});
 
-            if isstruct(S)
-                assert(isempty(opt.jsonstruct), 'If input is jsonstruct, the opt.jsonstruct should not be given');
-                opt.jsonstruct = S;
-                css.jsonstruct = S;
-                [css.model, ~, ~, opt.gridGenerator] = setupModelFromJson(S);
-            else
-                css.model = S;
+            if isstruct(model)
+                css.jsonstruct = model;
+                [model, ~, ~, gridGenerator] = setupModelFromJson(model);
+                opt.gridGenerator = gridGenerator;
             end
 
-            css.packing_mass         = opt.packing_mass;
+            css.packing_mass          = opt.packing_mass;
             css.temperature          = opt.temperature;
             css.gridGenerator        = opt.gridGenerator;
             css.dischargeSimulations = {};
+            css.model                = model;
 
             thicknesses = css.extractThicknessFromModel(); % can be done in 1D model or when gridGenerator is given (if possible)
 

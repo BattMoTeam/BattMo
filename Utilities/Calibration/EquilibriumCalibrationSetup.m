@@ -660,6 +660,11 @@ classdef EquilibriumCalibrationSetup
 
         function [vals, valsNotTrunc] = updateGuestStoichiometries(ecs, X, varargin)
 
+            % The returned value valsNotTrunc in updateGuestStoichiometries contains the same structure as vals, but
+            % with the unmodified (not truncated) values of guestStoichiometry0 for the electrodes. If
+            % guestStoichiometry0 is out of physical bounds (e.g., >1 or <0), vals is truncated to valid limits, but
+            % valsNotTrunc preserves the original computed values for reference or analysis.
+
             opt = struct('includeGuestStoichiometry0', false);
             opt = merge_options(opt, varargin{:});
 
