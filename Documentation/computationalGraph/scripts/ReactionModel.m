@@ -17,7 +17,7 @@ classdef ReactionModel < BaseModel
             varnames{end + 1} = 'c_e';
             % Electrode over potential
             varnames{end + 1} = 'eta';
-            % Reaction rate [mol s^-1 m^-2]
+            % Intercalation flux [mol s^-1 m^-2]
             varnames{end + 1} = 'R';
             % OCP [V]
             varnames{end + 1} = 'OCP';

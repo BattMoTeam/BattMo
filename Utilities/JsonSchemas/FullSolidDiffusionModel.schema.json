@@ -11,33 +11,12 @@
       "properties": {
         "diffusionCoefficient": {
           "allOf": [
-            {
-              "$ref": "Function.schema.json"
+            {"$ref": "Function.schema.json"},
+            { "properties" : {
+              "argumentList": {"type" : "array",
+                               "prefixItems": [{"const": "soc"}]
             },
-            {
-              "properties": {
-                "argumentlist": {
-                  "oneOf": [
-                    {
-                      "type": "array",
-                      "prefixItems": [
-                        {
-                          "const": "soc"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "string",
-                      "const": "soc"
-                    }
-                  ]
-                },
-                "description": "list of arguments ordered as in function call. Here we expect a single argument, the state of charge (soc) of the particle, defined as the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase.",
-                "symbol": {
-                  "const": "D"
-                }
-              }
-            }
+              "symbol": {"const" : "D"}}}
           ],
           "description": "Function that is used to compute the diffusion coefficient. If not given, we use a constant diffusion coefficient as computed in SolidDiffusionModel."
         },
@@ -55,6 +34,10 @@
           "$ref": "PhysicalQuantity.schema.json",
           "description": "the ratio of the concentration of the guest molecule to the saturation concentration of the guest molecule in a phase at a cell voltage that is defined as 0% SOC",
           "symbol": "theta0"
+        },
+        "referenceFillInLevel" : {
+          "type" : "number",
+          "description" : "Only used in case of swelling model, gives the fill-in level that corresponds to the given particle radius"
         }
       }
     }

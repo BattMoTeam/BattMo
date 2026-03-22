@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "Asurf": {
+      "type": "number",
+      "description": "Active surface area. Used as a pre-coefficient in Buttler-Volmer"
+    },
+    "chargeCarrierName": {
+      "type": "string",
+      "description": "Name of the charge carrier"
+    },
+    "stochElectron": {
+      "type": "integer",
+      "description": "Stoichiometric number of electrons in reaction"
+    },
+    "etaMax": {
+      "type": "number",
+      "description": "numerical parameter used to avoid blow-up in Butler-Volmer. It should be set above the maximum expected value of the over potential"
+    }}}

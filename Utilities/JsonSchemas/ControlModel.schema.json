@@ -8,26 +8,16 @@
       "properties": {
         "controlPolicy": {
           "type": "string",
-          "enum": [
-            "CCDischarge",
+          "enum": ["CCDischarge",
             "CCCharge",
-            "CC",
             "CCCV",
             "powerControl",
-            "timeControl"
-          ]
-        }
-      }
-    }
-  },
+                   "generic",
+		           "timeControl"]}}
+    }},
   "allOf": [
-    {
-      "if": {
-        "properties": {
-          "controlPolicy": {
-            "const": "CCDischarge"
-          }
-        },
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "CCDischarge"}},
         "then": {
           "$ref": "#/$defs/CCDischarge"
         }
@@ -53,56 +43,42 @@
           }
         },
         "then": {
-          "$ref": "#/$defs/CCCV"
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "controlPolicy": {
-            "const": "powerControl"
-          }
-        },
+          "$ref" : "#/$defs/powerControl"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "generic"}},
         "then": {
-          "$ref": "#/$defs/powerControl"
-        }
-      }
-    }
+          "$ref" : "GenericControl.schema.json"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "timeControl"}},
+        "then":{
+          "$ref" : "#/$defs/timeControl"}}}
   ],
+
   "$defs": {
     "CCDischarge": {
       "properties": {
         "DRate": {
           "type": "number",
-          "description": "discharge rate"
-        },
+          "description" : "discharge rate"},
         "rampupTime": {
           "type": "number",
-          "description": "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time"
-        },
+          "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current. Default value is zero, which means no rampup time"},
         "lowerCutoffVoltage": {
-          "type": "number"
-        },
+          "type" : "number"},
         "useCVswitch": {
           "type": "boolean",
           "description": "Switch to control voltage when the lower cutoff voltage is reached. Default value is false, which means that the simulation stops when the lower voltage is reached."
-        }
-      }
-    },
+        }}},
     "CCCharge": {
       "properties": {
         "CRate": {
           "type": "number",
-          "description": "charge rate"
-        },
+          "description" : "charge rate"},
         "rampupTime": {
           "type": "number",
-          "description": "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."
-        },
+        "description" : "Rampup time where the current is increased linearly from zero to target value. In this way, we can avoid convergence issues in case of high current."},
         "upperCutoffVoltage": {
-          "type": "number"
-        },
+         "type" : "number"},
         "useCVswitch": {
           "type": "boolean",
           "description": "Switch to control voltage when the upper cutoff voltage is reached. Default value is true."
@@ -216,7 +192,45 @@
             }
           }
         }
-      ]
+      ]},
+    "timeControl" : {
+      "properties" : {
+        "inputype" : {
+          "type" : "string",
+          "enum" : ["table", "function"],
+          "description" : "If inputtype is table, The time dependent control will be given using tables, using the values key and either the times or the durations key. If inputtype is function, the time dependent control will be given using a function given by the function key. To define the function, we use the function interface"
+        },        
+        "times" : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "description" : "Array of increasing time value (wall clock). We do not include the initial time (assumed to be zero). For each time interval, the value given by the value key and the control type key is applied"
+        },
+        "times" : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "description" : "Array of durations corresponding to successive time intervals. For each interval, the value given by the value key and the control type key is applied"
+        },
+        "values" : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "description" : "Value for the control at each interval. The value is either an applied current or voltage, depending on"
+        },
+        "controltypes" : {
+          "type" : "array",
+          "items" : {"type" : "number"},
+          "description" : "Control type for each interval. It can be either current, then we set the control type value to 1, or voltage, then we set the control type value to 2."
+ 
+        },        
+        "controlValueFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the control"
+        },
+        "controlTypeFunction" : {
+          "$ref": "Function.schema.json",
+          "description" : "function of time that returns the value for the type control, where 1 corresponds to current control and 2 corresponds to voltage control"
+        }
+      }
+
     }
   }
 }

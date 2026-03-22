@@ -87,7 +87,7 @@ function plot1DOutputFunc(simoutput, varargin)
       case 'concentrations'
 
         titlestr = 'Concentrations';
-        c = parula(floor(model.(elyte).nsp)/2);
+        c = parula(floor(model.(elyte).nsp));
         colororder(gca, c);
         set(gca, 'linestyleorder', {'-', '-.'});
         

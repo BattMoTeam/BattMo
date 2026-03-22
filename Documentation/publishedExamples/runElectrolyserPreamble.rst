@@ -1,7 +1,7 @@
 The implementation of a AEM simulation code was motivated by the need for better simulation capabilities for H2
 electrolysis and the possibility to validate the code using an implementation we had access to, which is also the one
-used in :cite:`gerhardt2023open`. The mathematical model for AEM is complex andincludes many coupledprocesses . We refer
-to the papers mentioned above for all the details. Here, we include a figure from :cite:`gerhardt2023open` which
+used in :cite:`gerhardt2023open`. The mathematical model for AEM is complex and includes many coupled processes . We
+refer to the papers mentioned above for all the details. Here, we include a figure from :cite:`gerhardt2023open` which
 illustrates the following processes
 
 * Two parallel ionic conduction path ways: ionomer and liquid electrolyte,

@@ -9,16 +9,15 @@
    Installation <installation>
    basicusage
    tutorials
-   intermediate
-   modeling
-   architecture
-   json
+   inputparameters
+   output
    geometryinput
-   juliabridge
-   Electrolyser simulation <publishedExamples/runElectrolyser>
-   protonicmembrane
-   app
-   Computational Graph <computationalGraph/graphdoc>
+   batteryphysics
+   elchemsystems
+   optimisation
+   modeling
+   battmointernals
+   programminginterfaces
    seealso
    References <bibliography>
 

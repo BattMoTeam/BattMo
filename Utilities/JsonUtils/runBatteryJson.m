@@ -55,17 +55,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the time step schedule
     %
 
-    if isfield(jsonstruct, 'TimeStepping')
-        timeSteppingParams = jsonstruct.TimeStepping;
-    else
-        timeSteppingParams = [];
-    end
-
-    step    = model.(ctrl).setupScheduleStep(timeSteppingParams);
-    control = model.(ctrl).setupScheduleControl();
-
-    % This control is used to set up the schedule
-    schedule = struct('control', control, 'step', step);
+    schedule = model.(ctrl).setupSchedule(jsonstruct);
 
     switch initializationSetup
       case "given SOC"
@@ -83,6 +73,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, nls, jsonstruct] = setupNonLinearSolverFromJson(model, jsonstruct);
 
+    simsetupInput = struct('model'          , model    , ...
+                           'initstate'      , initstate, ...
+                           'schedule'       , schedule , ...
+                           'NonLinearSolver', nls);
+
+    simsetup = SimulationSetup(simsetupInput);
+    
     model.verbose = opt.verbose;
 
     %% Run the simulation
@@ -101,7 +98,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
                                             'Directory'      , outputDirectory, ...
                                             'Name'           , name      , ...
                                             'NonLinearSolver', nls);
-            problem.SimulatorSetup.OutputMinisteps = true;
+            problem.SimulatorSetup.OutputMinisteps = simsetup.OutputMinisteps;
 
             if clearSimulation
                 %% clear previously computed simulation
@@ -111,14 +108,13 @@ function  output = runBatteryJson(jsonstruct, varargin)
             [globvars, states, reports] = getPackedSimulatorOutput(problem);
 
         else
-            [globvars, states, report] = simulateScheduleAD(initstate, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+            [states, globvars, reports] = simsetup.run();
         end
     else
-        output = struct('model'          , model      , ...
-                        'inputparams'    , inputparams, ...
-                        'schedule'       , schedule   , ...
-                        'initstate'      , initstate  , ...
-                        'nonLinearSolver', nls);
+        output = struct('model'      , model      , ...
+                        'inputparams', inputparams, ...
+                        'simsetup'   , simsetup   , ...
+                        'schedule'   , schedule);
         if opt.includeGridGenerator
             output.gridGenerator = gridGenerator;
         end
@@ -135,16 +131,26 @@ function  output = runBatteryJson(jsonstruct, varargin)
     I    = cellfun(@(state) state.Control.I, states);
     time = cellfun(@(state) state.time, states);
 
-    output = struct('model'          , model      , ...
-                    'inputparams'    , inputparams, ...
-                    'schedule'       , schedule   , ...
-                    'initstate'      , initstate  , ...
-                    'nonLinearSolver', nls        , ...
-                    'time'           , time       , ... % Unit : s
-                    'E'              , E          , ... % Unit : V
-                    'I'              , I); ... % Unit : A
+    output = struct('model'      , model      , ...
+                    'inputparams', inputparams, ...
+                    'simsetup'   , simsetup   , ...
+                    'jsonstruct' , jsonstruct , ...
+                    'time'       , time       , ... % Unit : s
+                    'E'          , E          , ... % Unit : V
+                    'I'          , I); ... % Unit : A
 
     output.globvars = globvars;
+
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'}, false);
+
+    if getJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'})
+
+        for istate = 1 : numel(states)
+            states{istate} = model.addVariables(states{istate});
+        end
+
+    end
+
     output.states   = states;
 
     if isAssigned(jsonstruct, {'Output', 'variables'}) ...

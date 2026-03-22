@@ -13,6 +13,7 @@ classdef ControlModel < BaseModel
         % - 'CC'
         % - 'CCCV'
         % - 'timecontrol'
+        % - 'generic'
         %
         controlPolicy
         
@@ -69,10 +70,11 @@ classdef ControlModel < BaseModel
         % Implemented by child model.
         % Base class behaviour is do nothing.
         % Called after each Newton iteration
+            
         end
         
         function state = updateControlAfterConvergence(model, state, state0, dt)
-        % This function is called in updateAfterConvergence after convergence and gives possibility to detect control switch.
+        % This function is called in updateAfterConvergence, after Newton method has converged.
         % Base class behaviour is do nothing.
                 
         end
@@ -120,8 +122,8 @@ classdef ControlModel < BaseModel
         function control = setupScheduleControl(model)
         % Setup and return the control structure that is sent to :mrst:`simulateScheduleAD`
             
-            control.stopFunction = model.setupStopFunction();
-            control.src          = model.setupControlFunction();
+            control.Control.stopFunction = model.setupStopFunction();
+            control.src                  = model.setupControlFunction();
             
         end
 
@@ -141,6 +143,29 @@ classdef ControlModel < BaseModel
                               'control', control);
             
         end
+
+        function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
+            
+            doend = drivingForces.stopFunction(model, state, state0_inner);
+        
+        end
+    
+        function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+        % Returns the current time-step and control index
+
+            done = (itstep > numel(schedule.step.val));
+
+            if done
+                dt = [];
+                currControl = [];
+            else
+                % Get the current time-step
+                dt          = schedule.step.val(itstep);
+                currControl = schedule.step.control(itstep);
+            end
+            
+        end
+
         
     end
     
@@ -150,33 +175,23 @@ classdef ControlModel < BaseModel
         % Parser for TimeStepping structure (see schema :battmofile:`Utilities/JsonSchemas/TimeStepping.schema.json`)
         % which defines default values if not given
             
-            paramstemplate = struct('totalTime'          , []   , ...
-                                    'numberOfTimeSteps'  , 100  , ...
-                                    'timeStepDuration'   , []   , ...
-                                    'useRampup'          , false, ...
-                                    'numberOfRampupSteps', 5);
+            paramsdefault = struct('numberOfTimeSteps'  , 100  , ...
+                                   'useRampup'          , false, ...
+                                   'numberOfRampupSteps', 5);
 
             if (nargin > 0) && ~isempty(params)
                 
                 params = resolveUnitInputJson(params);
-
-                vals    = struct2cell(params);
-                fdnames = fieldnames(params);
-
-                params = horzcat(fdnames, vals)';
-                params = params(:);
-
-
-                params = merge_options(paramstemplate, params{:});
+                params = mergeJsonStructs({params, paramsdefault}, 'warn', false);
                 
             else
                 
-                params = paramstemplate;
+                params = paramsdefault;
                 
             end
 
-
         end
+        
     end
     
         

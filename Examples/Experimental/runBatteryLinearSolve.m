@@ -74,7 +74,7 @@ model = Battery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgti = model.computationalGraph;
+    cgit = model.computationalGraph;
     return
 end
 

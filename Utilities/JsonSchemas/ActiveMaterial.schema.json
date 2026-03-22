@@ -4,9 +4,6 @@
   "description": "Active Material",
   "type": "object",
   "properties": {
-    "SEImodel" : {"type" : "string",
-                  "enum" : ["none", "Safari", "Bolay"],
-                  "description" : "The default is \"standard\" with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)"},
     "Interface": {
       "$ref": "Interface.schema.json"
     },
@@ -17,6 +14,15 @@
         "simple"
       ]
     },
+    "SEImodel" : {"type" : "string",
+                  "enum" : ["none", "Safari", "Bolay"],
+                  "description" : "The default is \"standard\" with no SEI layer model. Two SEI models are implemented Safari (2009) and Bolay et al (2022)"},
+    "useLithiumPlating" : {
+      "type" : "boolean",
+      "description" : "if true, includes Lithium plating effects. Default is false"
+    }
+    "LithiumPlating" : {
+      "$ref" : "LithiumPlating.schema.json"},
     "electronicConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
       "properties": {

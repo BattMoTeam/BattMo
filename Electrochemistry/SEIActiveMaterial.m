@@ -29,7 +29,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             varnames = {};
             % Total reaction rate
-            varnames{end + 1} = 'R';
+            varnames{end + 1} = 'totalReactionRate';
             % SEI charge consservation equation
             varnames{end + 1} = 'seiInterfaceChargeCons';
             % SEI charge consservation equation
@@ -44,14 +44,14 @@ classdef SEIActiveMaterial < ActiveMaterial
             end
 
             fn = @SEIActiveMaterial.assembleSEIchargeCons;
-            inputnames = {{itf, 'R'}, {sr, 'R'}, 'R'};
+            inputnames = {{itf, 'intercalationFlux'}, {sr, 'reactionRate'}, 'totalReactionRate'};
             model = model.registerPropFunction({'seiInterfaceChargeCons', fn, inputnames});
 
             fn = @SEIActiveMaterial.dispatchTemperature;
             model = model.registerPropFunction({{sr, 'T'}, fn, {'T'}});
 
             fn = @SEIActiveMaterial.updatePotentialDrop;
-            inputnames = {{'R'}, {'SolidElectrodeInterface', 'delta'}};
+            inputnames = {{'totalReactionRate'}, {'SolidElectrodeInterface', 'delta'}};
             model = model.registerPropFunction({{itf, 'externalPotentialDrop'}, fn, inputnames});
             model = model.registerPropFunction({{sr, 'externalPotentialDrop'}, fn, inputnames});
 
@@ -69,8 +69,8 @@ classdef SEIActiveMaterial < ActiveMaterial
             model = model.registerPropFunction(propfunction);
 
             fn = @SEIActiveMaterial.dispatchSEIRate;
-            inputnames = {{sr, 'R'}};
-            model = model.registerPropFunction({{sei, 'R'}, fn, inputnames});
+            inputnames = {{sr, 'reactionRate'}};
+            model = model.registerPropFunction({{sei, 'reactionRate'}, fn, inputnames});
 
             fn = @SEIActiveMaterial.updateSEISurfaceConcentration;
             inputnames = {{sei, 'cInterface'}};
@@ -83,7 +83,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
                 fn = @SEIActiveMaterial.updateChargeCons;
                 inputnames = {'I', ...
-                              'R'};
+                              'totalReactionRate'};
                 model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
             end
@@ -153,7 +153,7 @@ classdef SEIActiveMaterial < ActiveMaterial
 
         function state = setupControl(model, state)
 
-            state.R = state.controlCurrentSource;
+            state.totalReactionRate = state.controlCurrentSource;
 
         end
 
@@ -171,7 +171,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             F    = model.(itf).constants.F;
 
             I = state.I;
-            R = state.R;
+            R = state.totalReactionRate;
 
             state.chargeCons = I - R*F;
 
@@ -182,7 +182,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
 
-            state.(sei).R = state.(sr).R;
+            state.(sei).reactionRate = state.(sr).reactionRate;
 
         end
 
@@ -200,9 +200,9 @@ classdef SEIActiveMaterial < ActiveMaterial
 
             vsa = model.(itf).volumetricSurfaceArea;
 
-            Rint = state.(itf).R;
-            Rsei = state.(sr).R;
-            R = state.R;
+            Rint = state.(itf).intercalationFlux;
+            Rsei = state.(sr).reactionRate;
+            R    = state.totalReactionRate;
 
             state.seiInterfaceChargeCons = R - Rint - Rsei;
 
@@ -217,7 +217,7 @@ classdef SEIActiveMaterial < ActiveMaterial
             kappaSei = model.(sei).conductivity;
             F = model.(itf).constants.F;
 
-            R     = state.R;
+            R     = state.totalReactionRate;
             delta = state.(sei).delta;
 
             dphi = F*delta.*R/kappaSei;

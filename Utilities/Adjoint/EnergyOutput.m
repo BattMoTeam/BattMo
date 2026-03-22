@@ -1,4 +1,4 @@
-function obj = EnergyOutput(model, states, schedule, varargin)
+function obj = EnergyOutput(simsetup, states, varargin)
 %
 %
 % SYNOPSIS:
@@ -31,6 +31,9 @@ function obj = EnergyOutput(model, states, schedule, varargin)
                      'state'          , []   , ...
                      'from_states'    , true);
     opt     = merge_options(opt, varargin{:});
+
+    model    = simsetup.model;
+    schedule = simsetup.schedule;
     
     dts   = schedule.step.val;
 

@@ -11,8 +11,8 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
 
         % Function to update diffusion coefficient value, given as a struct with fields
         % - type         : element in {'function', 'constant'}. If 'constant' is chosen the value of referenceDiffusionCoefficient defined in parent class is used
-        % - functionname : matlab function name (should be available in path)
-        % - argumentlist : should be  ["c", "cmin", "cmax"]
+        % - functionName : matlab function name (should be available in path)
+        % - argumentList : should be  ["c", "cmin", "cmax"]
         diffusionCoefficient    
 
         % The following parameters are only need in the case the diffusionCoefficient is given as a function (see argument list)
@@ -41,10 +41,6 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
             
             assert(isAssigned(D0) || isAssigned(D), 'Either D0 or D should be provided');
 
-            if isAssigned(D) & strcmp(D.type, 'constant')
-                jsonstruct.referenceDiffusionCoefficient = D.value;
-            end
-            
             inputparams = inputparams@SolidDiffusionModelInputParams(jsonstruct);
             
         end

@@ -4,6 +4,7 @@ function jsonstruct = parseBattmoJson(filename)
     jsonstruct = battMojsondecode(jsonsrc);
     jsonstruct = resolveFileInputJson(jsonstruct);
     jsonstruct = resolveUnitInputJson(jsonstruct);
+    jsonstruct = resolveMergeInputJson(jsonstruct);
 end
 
 

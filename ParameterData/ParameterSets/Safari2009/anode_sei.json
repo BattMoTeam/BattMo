@@ -9,10 +9,10 @@
     "guestStoichiometry100": 0.88,
     "guestStoichiometry0": 0.15,
     "chargeTransferCoefficient": 0.5,
-    "openCircuitPotential" : {"type" : "function",
-                              "functionname" : "computeOCP_Graphite_Torchio",
-                              "argumentlist" : ["concentration", "temperature", "cmax"]}
-  },
+    "openCircuitPotential" : {
+      "functionFormat" : "named function",
+      "functionName" : "computeOCP_Graphite_Torchio",
+      "argumentList" : ["stoichiometry"]}},
   "diffusionModelType": "full",
   "SolidDiffusion" : {
     "activationEnergyOfDiffusion": 0,

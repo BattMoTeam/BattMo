@@ -1,0 +1,4 @@
+{"functionFormat": "csv",
+ "argumentList" : ["stoichiometry"],
+ "filename" : "path/to/file.csv"
+}

@@ -1,0 +1,10 @@
+{"LithiumPlating" : {
+  "symmetryFactorPlating" : 0.3,
+  "symmetryFactorStripping" : 0.7, 
+  "symmetryFactorChemicalIntercalation" : 0.5, 
+  "reactionRatePlating" : 4.635e-6, 
+  "reactionRateChemicalIntercalation" : 2.89e-9, 
+  "reactionRateDirectIntercalation" : 6.656e-9, 
+  "thresholdParameter" : 1.173e-23, 
+  "limitAmount" : 1.173e-17,
+  "platedLiMonolayerThickness" : 2.78e-10}}

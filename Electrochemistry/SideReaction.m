@@ -43,7 +43,7 @@ classdef SideReaction < BaseModel
             % potential in electrolyte
             varnames{end + 1} = 'phiElectrolyte';
             % Reaction rate
-            varnames{end + 1} = 'R';
+            varnames{end + 1} = 'reactionRate';
             % External potential drop used in Butler-Volmer
             varnames{end + 1} = 'externalPotentialDrop';
 
@@ -51,7 +51,7 @@ classdef SideReaction < BaseModel
 
             fn = @SideReaction.updateReactionRate;
             inputnames = {'T', 'phiElectrolyte', 'phiElectrode', 'externalPotentialDrop', 'c'};
-            model = model.registerPropFunction({'R', fn, inputnames});
+            model = model.registerPropFunction({'reactionRate', fn, inputnames});
 
         end
 
@@ -71,10 +71,10 @@ classdef SideReaction < BaseModel
 
             eta = (phiElde - phiElyte - dphi);
 
-            % Reaction rate in mol/(m^2*s) (not Coulomb and therefore no Faraday number in front). It is always negative
+            % Intercalation flux in mol/(m^2*s) (not Coulomb and therefore no Faraday number in front). It is always negative
             % (by construction) and corresponds to disappearance of solvent. It will come as a source term in the mass
             % conservation equation for the solvent concentration in the SEI film.
-            state.R = -k*c.*exp(-(beta*F)./(R*T).*eta);
+            state.reactionRate = -k*c.*exp(-(beta*F)./(R*T).*eta);
 
         end
 

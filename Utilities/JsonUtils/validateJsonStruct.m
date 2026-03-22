@@ -1,10 +1,40 @@
-function is_valid = validateJsonStruct(jsonstruct)
+function is_valid = validateJsonStruct(jsonstruct, varargin)
 
-    % Write the json struct to a temporary file
-    tempfilename = writeJsonStruct(jsonstruct);
+    opt = struct('useTmpFile', true, ...
+                 'schema', fullfile(battmoDir(), 'Utilities', 'JsonSchemas', 'Simulation.schema.json'));
 
-    % Validate
-    is_valid = validateJsonFiles({tempfilename});
+    [opt, extra] = merge_options(opt, varargin{:});
+
+    if opt.useTmpFile
+
+        % Write the json struct to a temporary file
+        tempfilename = writeJsonStruct(jsonstruct);
+
+        % Validate
+        is_valid = validateJsonFiles({tempfilename});
+
+    else
+
+        jsonstr = jsonencode(jsonstruct);
+
+        loadModule({'json', 'jsonschema'}, extra{:});
+
+        fid = fopen(opt.schema, 'r');
+        schemastr = fread(fid, '*char')';
+        fclose(fid);
+
+        pyschema = py.json.loads(schemastr);
+        pydict = py.json.loads(jsonstr);
+
+        try
+            py.jsonschema.validate(pydict, pyschema);
+            is_valid = true;
+        catch ME
+            disp(ME.message);
+            is_valid = false;
+        end
+
+    end
 
 end
 

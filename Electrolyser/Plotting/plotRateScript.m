@@ -36,9 +36,9 @@ str = 'P phi$';
 % str = 'Cat Rate';
 % str = 'Ox P B cOH';
 
-% cgti.printVarNames(str);
+% cgit.printVarNames(str);
 
-% varinds = cgti.regexpVarNameSelect(str);
+% varinds = cgit.regexpVarNameSelect(str);
 
 % fds = {'IonomerMembrane.j$'                                                        , ...
 %        'OxygenEvolutionElectrode.PorousTransportLayer.H2OvaporLiquidExchangeRate'  , ...
@@ -93,7 +93,7 @@ fds = horzcat(fds, fdsdivs);
 
 % for ifd = 1 : numel(fds)
 %     fd = fds{ifd};
-%     ind = cgti.regexpVarNameSelect(fd);
+%     ind = cgit.regexpVarNameSelect(fd);
 %     assert(numel(ind) == 1, ['too many field selected for ' fd]);
 %     varinds = [varinds; ind];
 % end
@@ -114,10 +114,10 @@ for ivar = 1 : numel(fds)
             end
             for ifd = 1 : numel(fd)
                 fdd = fd{ifd};
-                varind = cgti.regexpVarNameSelect(fdd);
+                varind = cgit.regexpVarNameSelect(fdd);
                 assert(numel(varind) == 1, ['too many field selected for ' fdd]);
-                varname = cgti.varNameList{varind};
-                nodenames = cgti.getNodeName(varname);
+                varname = cgit.varNameList{varind};
+                nodenames = cgit.getNodeName(varname);
                 % should be unique here
                 nnodename = nodenames{1};
                 if ifd == 1
@@ -134,10 +134,10 @@ for ivar = 1 : numel(fds)
     end
 
     if ~doaddbcterm
-        varind = cgti.regexpVarNameSelect(fd);
+        varind = cgit.regexpVarNameSelect(fd);
         assert(numel(varind) == 1, ['too many field selected for ' fd]);
-        varname = cgti.varNameList{varind};
-        nodenames = cgti.getNodeName(varname);
+        varname = cgit.varNameList{varind};
+        nodenames = cgit.getNodeName(varname);
         % should be unique here
         nodename = nodenames{1};
         [ymin, ymax, y] = getvals(nodename, states);
