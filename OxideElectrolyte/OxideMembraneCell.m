@@ -27,7 +27,7 @@ classdef OxideMembraneCell < BaseModel
     
     methods
         
-        function model = OxideMembraneCell(paramobj)
+        function model = OxideMembraneCell(inputparams)
 
             model = model@BaseModel();
 
@@ -35,12 +35,12 @@ classdef OxideMembraneCell < BaseModel
                        'dx'   , ...
                        'farea', ...
                        'couplingTerms'};
-            model = dispatchParams(model, paramobj, fdnames);
+            model = dispatchParams(model, inputparams, fdnames);
 
-            model.Anode       = OxideMembraneElectrode(paramobj.Anode);
-            model.Cathode     = OxideMembraneElectrode(paramobj.Cathode);
-            model.Electrolyte = OxideMembraneElectrolyte(paramobj.Electrolyte);
-            model.Control     = OxideMembraneControl(paramobj.Control);
+            model.Anode       = OxideMembraneElectrode(inputparams.Anode);
+            model.Cathode     = OxideMembraneElectrode(inputparams.Cathode);
+            model.Electrolyte = OxideMembraneElectrolyte(inputparams.Electrolyte);
+            model.Control     = OxideMembraneControl(inputparams.Control);
             
             % setup couplingNames
             model.couplingnames = cellfun(@(x) x.name, model.couplingTerms, 'uniformoutput', false);

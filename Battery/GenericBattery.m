@@ -32,6 +32,7 @@ classdef GenericBattery < BaseModel
         % flag that decide the model setup
         use_thermal
         include_current_collectors
+        include_swelling % true if swelling is included
 
         % We write here the jsonstruct that has been process when constructing inputparams
         jsonstruct
@@ -145,6 +146,16 @@ classdef GenericBattery < BaseModel
 
             eldes = {ne, pe};
 
+            switch model.(ctrl).controlPolicy
+              case {'CCDischarge', 'CCCharge', 'CC', 'CCCV', 'Impedance'}
+                % do nothing
+              case {'Generic', 'timeControl'}
+                model = model.registerVarName('time');
+                model = model.setAsStaticVarName('time');
+              otherwise
+                error('controlPolicy not recognized');
+            end
+
 
             %% Temperature dispatch functions
             fn = @GenericBattery.updateTemperature;
@@ -179,6 +190,10 @@ classdef GenericBattery < BaseModel
 
                     model = model.registerPropFunction({{elde, co, amc, itf, 'phiElectrolyte'}, fn, inputnames});
                     model = model.registerPropFunction({{elde, co, amc, itf, 'cElectrolyte'}  , fn, inputnames});
+
+                    if model.(elde).(co).(amc).(itf).useJ0Func
+                        model = model.removeVarName({elde, co, amc, itf, 'cElectrolyte'});
+                    end
 
                     switch model.(elde).(co).activeMaterialModelSetup.SEImodel
                       case {'none', 'Bolay'}
@@ -220,14 +235,51 @@ classdef GenericBattery < BaseModel
             fn = @GenericBattery.updateControl;
             fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
             switch model.(ctrl).controlPolicy
-              case {'CCDischarge', 'CCCharge', 'CC', 'timeControl'}
+              case {'CCDischarge', 'CCCharge', 'CC'}
                 model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, inputnames});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case 'timeControl'
+                model = model.registerPropFunction({{ctrl, 'ctrlVal'}, fn, {'time'}});
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, {'time'}});
+              case {'Generic'}
+                fn = @GenericBattery.updateControlTime;
+                model = model.registerPropFunction({{ctrl, 'time'}, fn, {'time'}});
               case {'CCCV', 'Impedance'}
+                model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+              case {'Generic'}
                 % do nothing
               otherwise
                 error('controlPolicy not recognized');
             end
-            model = model.registerPropFunction({{ctrl, 'ctrlType'}, fn, inputnames});
+
+            if model.include_swelling
+
+                fn = @GenericBattery.updateSwellingElectrolyteAccumTerm;
+                fn = {fn, @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction)};
+                inputNames = {{elyte,'c'}, {elyte, 'volumeFraction'}};
+                model = model.registerPropFunction({{elyte, 'massAccum'}, fn, inputNames});
+
+                fn = @GenericBattery.updateSwellingElectrolyteVolumeFraction;
+                inputNames = {};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).coatingModelSetup.swelling
+                        inputNames = horzcat(inputNames, {{elde, co, 'volumeFraction'}});
+                    end
+                end
+                model = model.registerPropFunction({{elyte,'volumeFraction'}, fn, inputNames});
+
+                fn = @GenericBattery.updateSwellingElectrolyteConvFlux;
+                inputNames = {{elyte, 'j'}, {elyte, 'c'}};
+                for ielde = 1 : numel(eldes)
+                    elde = eldes{ielde};
+                    if model.(elde).coatingModelSetup.swelling
+                        inputNames = horzcat(inputNames, {{elde, co, am, sd, 'x'}});
+                    end
+                end
+                model = model.registerPropFunction({{elyte,'convFlux'}, fn, inputNames});
+
+            end
 
             %% Function that update the Thermal Ohmic Terms
 
@@ -405,11 +457,11 @@ classdef GenericBattery < BaseModel
 
             scalings{end + 1} = {{elyte, 'chargeCons'}, F*volRef.(elyte)*RvolRef};
             scalings{end + 1} = {{elyte, 'massCons'}, volRef.(elyte)*RvolRef};
-            
+
             for ielde = 1 : numel(eldes)
 
                 elde = eldes{ielde};
-                
+
                 scalings{end + 1} = {{elde, co, 'chargeCons'}, F*volRef.(elde).(co)*RvolRef};
 
                 if model.include_current_collectors
@@ -440,7 +492,7 @@ classdef GenericBattery < BaseModel
                         D0  = model.(elde).(co).(amc).(sd).referenceDiffusionCoefficient;
                         scalings{end + 1} = {{elde, co, amc, sd, 'solidDiffusionEq'}, rp*RvolRef/(5*vsa*D0)};
 
-                      case 'full'
+                      case {'full', 'swelling'}
 
                         rp   = model.(elde).(co).(amc).(sd).particleRadius;
 
@@ -498,6 +550,11 @@ classdef GenericBattery < BaseModel
                       otherwise
 
                         error('SEI model not recognized');
+                    end
+
+                    if model.(elde).(co).(amc).useLithiumPlating
+                        lp = 'LithiumPlating';
+                        scalings{end + 1} = {{elde, co, am, lp, 'platedConcentration'}, model.(elde).(co).(am).(lp).platedReferenceConcentration};
                     end
 
                 end
@@ -559,6 +616,10 @@ classdef GenericBattery < BaseModel
               case "CC"
 
                 control = CCcontrolModel(inputparams);
+
+              case "Generic"
+
+                control = GenericControlModel(inputparams);
 
               otherwise
 
@@ -693,6 +754,8 @@ classdef GenericBattery < BaseModel
             co    = 'Coating';
             sep   = 'Separator';
 
+            eldes = {ne, pe};
+
             elyte_cells = zeros(model.G.getNumberOfCells(), 1);
             elyte_cells(inputparams.(elyte).G.mappings.cellmap) = (1 : inputparams.(elyte).G.getNumberOfCells())';
 
@@ -701,7 +764,13 @@ classdef GenericBattery < BaseModel
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(pe).(co).G.mappings.cellmap), 1 - model.(pe).(co).volumeFraction);
             inputparams.(elyte).volumeFraction = subsasgnAD(inputparams.(elyte).volumeFraction, elyte_cells(model.(sep).G.mappings.cellmap), model.(sep).porosity);
 
-            model.(elyte) = Electrolyte(inputparams.(elyte));
+            if inputparams.(ne).coatingModelSetup.swelling || inputparams.(pe).coatingModelSetup.swelling
+                model.include_swelling = true;
+                model.(elyte) = ElectrolyteSwelling(inputparams.(elyte));
+            else
+                model.include_swelling = false;
+                model.(elyte) = Electrolyte(inputparams.(elyte));
+            end
 
         end
 
@@ -773,13 +842,40 @@ classdef GenericBattery < BaseModel
                       case 'simple'
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
-                      case 'full'
+                      case {'full'}
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         N = model.(elde).(co).(amc).(sd).N;
                         np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
                         initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
+                      case  'swelling'
+                        % theta is interpretated as a fill-in level
+                        compmodel = model.(elde).(co);
+                        compmodel = compmodel.registerVarAndPropfuncNames();
+                        compmodel = compmodel.removePropFunction({amc, sd, 'x'});
+                        compmodel = compmodel.setupComputationalGraph();
+
+                        clear state
+                        state.(amc).(sd).x = theta;
+                        state = compmodel.evalVarName(state, {'volumeFraction'});
+                        state = compmodel.evalVarName(state, {amc, sd, 'radiusElongation'});
+
+                        re = state.(am).(sd).radiusElongation;
+                        vf = state.volumeFraction;
+
+                        N  = model.(elde).(co).(amc).(sd).N;
+                        np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
+
+                        c = model.(elde).(co).maximumTotalConcentration/vf*theta;
+
+                        initstate.(elde).(co).volumeFraction              = vf .* ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).cSurface         = c*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).c                = c*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sd).radiusElongation = re*ones(nc, 1);
+
                       otherwise
+
                         error('diffusionModelType not recognized')
+
                     end
 
                     if elde_itf.useDoubleLayerCapacity
@@ -815,6 +911,26 @@ classdef GenericBattery < BaseModel
                       otherwise
 
                         error('SEI model not recognized');
+
+                    end
+
+                    if model.(elde).(co).(amc).useLithiumPlating
+
+                        lp = 'LithiumPlating';
+                        thresholdParameter   = model.(elde).(co).(amc).(lp).thresholdParameter;
+                        r                    = model.(elde).(co).(amc).(lp).particleRadius;
+                        vf                   = model.(elde).(co).(amc).(lp).volumeFraction;
+                        platedConcentration0 = thresholdParameter * vf / ((4/3)*pi*r^3);
+
+                        %%
+                        % initialisation so that the overpotential are zero at the beginning
+                        initstate = model.evalVarName(initstate, {elde, co, amc, itf, 'OCP'});
+                        OCP = initstate.(elde).(co).(amc).(itf).OCP(1);
+
+                        platedConcentrationInit = platedConcentration0/(exp((PhysicalConstants.F*OCP)./(PhysicalConstants.R*T)) - 1)^(1/4);
+
+                        initstate.(elde).(co).(amc).(lp).platedConcentration     = platedConcentrationInit*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(lp).platedConcentrationNorm = platedConcentrationInit*ones(nc, 1)/model.(elde).(co).(amc).(lp).platedReferenceConcentration;
 
                     end
 
@@ -952,7 +1068,16 @@ classdef GenericBattery < BaseModel
                     error('initialControl not recognized');
                 end
 
+              case 'Generic'
+
+                % set first step
+                initstate.(ctrl).ctrlStepIndex  = 1;
+                initstate.(ctrl).ctrlSwitchTime = 0;
+                initstate.(ctrl).I              = 0;
+                initstate.time                  = 0;
+
               otherwise
+
                 error('control policy not recognized');
             end
 
@@ -1062,6 +1187,138 @@ classdef GenericBattery < BaseModel
 
         end
 
+        %% Update at each step the electrolyte volume fractions in the different regions (neg_elde, elyte, pos_elde)
+        function state = updateSwellingElectrolyteVolumeFraction(model, state)
+
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            co    = 'Coating';
+            am    = 'ActiveMaterial';
+            sep   = 'Separator';
+
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells)';
+
+            % Define the volumeFraction in the electrodes
+            eldes = {ne, pe};
+            % Initialisation of AD for the porosity of the elyte
+            state.(elyte).volumeFraction = 0 * state.(elyte).c;
+
+            % Define the porosity in the separator
+            sep_cells = elyte_cells(model.(sep).G.mappings.cellmap);
+            state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction, sep_cells, model.(sep).porosity);
+
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if model.(elde).coatingModelSetup.swelling
+                    porosity = 1 - state.(elde).(co).volumeFraction;
+                else
+                    porosity = 1 - model.(elde).(co).volumeFraction;
+                end
+                state.(elyte).volumeFraction = subsasgnAD(state.(elyte).volumeFraction                     , ...
+                                                          elyte_cells(model.(elde).(co).G.mappings.cellmap), ...
+                                                          porosity);
+            end
+
+            if model.use_thermal
+                warning('swelling model not in sync with thermal simulation yet...')
+                model.(elyte).EffectiveThermalConductivity = model.(elyte).volumeFraction.*model.(elyte).thermalConductivity;
+            end
+
+        end
+
+
+        %% Definition of the accumulation term (dc/dt)
+        function state = updateSwellingElectrolyteAccumTerm(model, state, state0, dt)
+
+            elyte   = 'Electrolyte';
+            ne      = 'NegativeElectrode';
+            pe      = 'PositiveElectrode';
+            co      = 'Coating';
+            am      = 'ActiveMaterial';
+
+            eldes = {ne, pe};
+
+            c         = state.(elyte).c;
+            vf        = state.(elyte).volumeFraction;
+            c0        = state0.(elyte).c;
+
+            elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+            elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells())';
+
+            vf0 = model.(elyte).volumeFraction;
+            vols = model.(elyte).G.getVolumes();
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                if model.(elde).coatingModelSetup.swelling
+
+                    elde_cells = elyte_cells(model.(elde).(co).G.mappings.cellmap);
+
+                    porosity0 = 1 - state0.(elde).(co).volumeFraction;
+                    vf0(elde_cells) = porosity0;
+
+                end
+
+            end
+
+            state.(elyte).massAccum  = vols.*(vf.*c - vf0.*c0)/dt;
+
+        end
+
+        function state = updateSwellingElectrolyteConvFlux(model, state)
+
+            elyte = 'Electrolyte';
+            ne    = 'NegativeElectrode';
+            pe    = 'PositiveElectrode';
+            co    = 'Coating';
+            am    = 'ActiveMaterial';
+            itf   = 'Interface';
+            sd    = 'SolidDiffusion';
+
+            eldes = {ne, pe};
+
+            % ad-hoc AD compatible initialization
+            j = state.(elyte).j;
+            state.(elyte).convFlux = 0 .* j;
+
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                if model.(elde).coatingModelSetup.swelling
+
+                    G  = model.(elyte).G;
+
+                    F = model.(elde).(co).(am).(itf).constants.F;
+                    s = -1;
+                    n = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+
+                    x = state.(elde).(co).(am).(sd).x;
+
+                    molarVolumeLithiated   = model.(elde).(co).computeMolarVolumeLithiated(x);
+                    molarVolumeDelithiated = model.(elde).(co).computeMolarVolumeLithiated(0);
+
+                    elyte_cells = zeros(model.G.getNumberOfCells(), 1);
+                    elyte_cells(model.(elyte).G.mappings.cellmap) = (1 : model.(elyte).G.getNumberOfCells)';
+                    elyte_cells_elde = elyte_cells(model.(elde).G.mappings.cellmap);
+
+                    j = state.(elyte).j;
+                    c = state.(elyte).c;
+
+                    flux = c(elyte_cells_elde).*(s./(n.*F)).*(molarVolumeLithiated - molarVolumeDelithiated).*j(elyte_cells_elde);
+
+                    state.(elyte).convFlux = subsasgnAD(state.(elyte).convFlux, elyte_cells_elde, flux);
+
+                end
+
+            end
+
+        end
+
         function state = updateTemperature(model, state)
         % Dispatch the temperature in all the submodels
 
@@ -1148,7 +1405,6 @@ classdef GenericBattery < BaseModel
 
         end
 
-
         function state = updateControl(model, state, drivingForces)
 
             ctrl = "Control";
@@ -1181,14 +1437,14 @@ classdef GenericBattery < BaseModel
                     [ctrlVal, ctrlType] = drivingForces.src(time, value(I), value(E), Imax);
 
                 else
-                    
+
                     ctrlVal = drivingForces.src(time, Imax);
-                    
+
                 end
 
                 state.(ctrl).ctrlVal  = ctrlVal;
                 state.(ctrl).ctrlType = ctrlType;
-                
+
               case 'CC'
 
                 time = state.time;
@@ -1205,6 +1461,12 @@ classdef GenericBattery < BaseModel
 
             end
 
+
+        end
+
+        function state = updateControlTime(model, state)
+
+            state.Control.time = state.time;
 
         end
 
@@ -1238,7 +1500,7 @@ classdef GenericBattery < BaseModel
                     cc_jsq   = cc_model.G.getCellFluxNorm(cc_j);
 
                     src = subsetPlus(src, cc_vols .* cc_jsq ./ cc_econd, cc_map);
-                    
+
                 end
 
                 co_model = model.(elde).(co);
@@ -1253,15 +1515,12 @@ classdef GenericBattery < BaseModel
             end
 
             % Electrolyte
-            elyte_model     = model.(elyte);
-            elyte_map       = elyte_model.G.mappings.cellmap;
-            elyte_vf        = elyte_model.volumeFraction;
-            elyte_j         = state.(elyte).jFace;
-            elyte_bruggeman = elyte_model.bruggemanCoefficient;
-            elyte_cond      = state.(elyte).conductivity;
-            elyte_econd     = elyte_cond.*elyte_vf.^elyte_bruggeman;
-            elyte_vols      = elyte_model.G.getVolumes();
-            elyte_jsq       = elyte_model.G.getCellFluxNorm(elyte_j);
+            elyte_model = model.(elyte);
+            elyte_map   = elyte_model.G.mappings.cellmap;
+            elyte_j     = state.(elyte).jFace;
+            elyte_econd = state.(elyte).conductivity; % effective conductivity
+            elyte_vols  = elyte_model.G.getVolumes();
+            elyte_jsq   = elyte_model.G.getCellFluxNorm(elyte_j);
 
             src = subsetPlus(src, elyte_vols.*elyte_jsq./elyte_econd, elyte_map);
 
@@ -1341,7 +1600,6 @@ classdef GenericBattery < BaseModel
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
                 eta  = state.(elde).(co).(am).(itf).eta;
 
                 itf_src = n*F*vols.*Rvol.*eta;
@@ -1370,26 +1628,30 @@ classdef GenericBattery < BaseModel
             nc = model.G.getNumberOfCells();
 
             T = state.(thermal).T;
-            
+
             src = zeros(nc, 1);
 
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
 
-                F      = model.(elde).(co).(am).(itf).constants.F;
-                n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
-                co_map = model.(elde).(co).G.mappings.cellmap;
-                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
-                vols   = model.(elde).(co).G.getVolumes();
+                if model.(elde).(co).(am).(itf).includeEntropyChange
 
-                Rvol = state.(elde).(co).(am).(sd).Rvol;
-                dUdT = state.(elde).(co).(am).(itf).dUdT;
-                eta  = state.(elde).(co).(am).(itf).eta;
+                    F      = model.(elde).(co).(am).(itf).constants.F;
+                    n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
+                    co_map = model.(elde).(co).G.mappings.cellmap;
+                    vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
+                    vols   = model.(elde).(co).G.getVolumes();
 
-                itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
+                    Rvol = state.(elde).(co).(am).(sd).Rvol;
+                    dUdT = state.(elde).(co).(am).(itf).dUdT;
+                    eta  = state.(elde).(co).(am).(itf).eta;
 
-                src = subsetPlus(src, itf_src, co_map);
+                    itf_src = n*F*vols.*Rvol.*T(co_map).*dUdT;
+
+                    src = subsetPlus(src, itf_src, co_map);
+
+                end
 
             end
 
@@ -1424,7 +1686,6 @@ classdef GenericBattery < BaseModel
                 F      = model.(elde).(co).(am).(itf).constants.F;
                 n      = model.(elde).(co).(am).(itf).numberOfElectronsTransferred;
                 co_map = model.(elde).(co).G.mappings.cellmap;
-                vsa    = model.(elde).(co).(am).(itf).volumetricSurfaceArea;
                 vols   = model.(elde).(co).G.getVolumes();
 
                 Rvol = state.(elde).(co).(am).(sd).Rvol;
@@ -1432,11 +1693,11 @@ classdef GenericBattery < BaseModel
 
                 if model.(elde).(co).(am).(itf).includeEntropyChange
                     dUdT = state.(elde).(co).(am).(itf).dUdT;
-                    itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
+                itf_src = n*F*vols.*Rvol.*(eta + T(co_map).*dUdT);
                 else
                     itf_src = n*F*vols.*Rvol.*eta;
                 end
-                
+
                 src = subsetPlus(src, itf_src, co_map);
 
             end
@@ -1616,10 +1877,11 @@ classdef GenericBattery < BaseModel
 
 
         function forces = getValidDrivingForces(model)
-
+        %% Mainly assignement to have the simulator from MRST running (nothing is done here)
             forces = getValidDrivingForces@PhysicalModel(model);
 
-            forces.src = [];
+            forces.src     = [];
+            forces.Control = [];
 
             ctrl = 'Control';
             ctrlpol = model.(ctrl).controlPolicy;
@@ -1702,13 +1964,14 @@ classdef GenericBattery < BaseModel
             am2   = 'ActiveMaterial2';
             sd    = 'SolidDiffusion';
             itf   = 'Interface';
+            lp    = 'LithiumPlating';
 
             cmin = model.cmin;
 
             state.(elyte).c = max(cmin, state.(elyte).c);
 
             eldes = {ne, pe};
-            
+
             for ind = 1 : numel(eldes)
 
                 elde = eldes{ind};
@@ -1727,16 +1990,20 @@ classdef GenericBattery < BaseModel
                       case 'simple'
                         state.(elde).(co).(amc).(sd).cAverage = max(cmin, state.(elde).(co).(amc).(sd).cAverage);
                         state.(elde).(co).(amc).(sd).cAverage = min(cmax, state.(elde).(co).(amc).(sd).cAverage);
-                      case 'full'
+                      case {'full', 'swelling'}
                         state.(elde).(co).(amc).(sd).c = max(cmin, state.(elde).(co).(amc).(sd).c);
                         state.(elde).(co).(amc).(sd).c = min(cmax, state.(elde).(co).(amc).(sd).c);
+                        if model.(elde).(co).(amc).useLithiumPlating
+                            state.(elde).(co).(amc).(lp).platedConcentrationNorm = max(0, state.(elde).(co).(amc).(lp).platedConcentrationNorm);
+                        end
                       otherwise
                         error('diffusionModelType not recognized')
                     end
 
                 end
+
             end
-            
+
             report = [];
 
         end
@@ -1765,7 +2032,7 @@ classdef GenericBattery < BaseModel
             ctrl = 'Control';
 
             state.(ctrl) = model.(ctrl).prepareStepControl(state.(ctrl), state0.(ctrl), dt);
-            
+
             if strcmp(model.(ctrl).controlPolicy, 'powerControl')
                 state.(ctrl).time = state.time;
             end
@@ -1830,6 +2097,7 @@ classdef GenericBattery < BaseModel
 
 
         function [state, report] = stepFunction(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin)
+        % This function runs one Newton step
 
             [state, report] = stepFunction@BaseModel(model, state, state0, dt, drivingForces, linsolver, nonlinsolver, iteration, varargin{:});
 
@@ -1837,7 +2105,7 @@ classdef GenericBattery < BaseModel
                 ctrl = 'Control';
                 state.(ctrl) = model.(ctrl).updateControlState(state.(ctrl), state0.(ctrl), dt);
             end
-            
+
             if report.Converged
 
                 if ismember(model.(ctrl).controlPolicy, {'CCCV'})
@@ -1856,6 +2124,23 @@ classdef GenericBattery < BaseModel
             end
 
         end
+
+        function [dt, done, currControl] = getTimeStep(model, itstep, schedule, state)
+        % Returns the current time-step and control index
+
+            [dt, done, currControl] = model.Control.getTimeStep(itstep, schedule, state.Control);
+
+        end
+
+        function doend = triggerSimulationEnd(model, state, state0_inner, drivingForces)
+
+            doend = triggerSimulationEnd@BaseModel(model, state, state0_inner, drivingForces);
+            if isfield(drivingForces, 'Control')
+                doend = model.Control.triggerSimulationEnd(state.Control, state0_inner.Control, drivingForces.Control);
+            end
+
+        end
+
 
         function outputvars = extractGlobalVariables(model, states)
 

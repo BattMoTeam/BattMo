@@ -246,7 +246,46 @@ classdef BaseModel < PhysicalModel
             end                
         end
 
+
+        function model = removePropFunction(model, varname)
+
+            if isa(varname, 'char')
                 
+                varname = VarName({}, varname);
+                model = model.removePropFunction(varname);
+                
+            elseif isa(varname, 'cell')
+                
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removePropFunction(varname);
+                
+            elseif isa(varname, 'VarName')
+
+                propfuncs = model.propertyFunctionList;
+                nprops = numel(propfuncs);
+                
+                for iprop = 1 : nprops
+                    [found, keep,  propfuncs{iprop}.varname] = BaseModel.extractVarName(varname, propfuncs{iprop}.varname);
+                    if found
+                        break
+                    end
+                end
+
+                inds = true(nprops, 1);
+                if ~keep
+                    inds(iprop) = false;
+                end
+                
+                model.propertyFunctionList = propfuncs(inds);
+                
+            else
+                
+                error('not recognized')
+
+            end
+            
+        end
+        
         function stateAD = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
             

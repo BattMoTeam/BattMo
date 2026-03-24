@@ -11,16 +11,44 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
 
             if isAssigned(isFile)
                 
-                filename = getJsonStructField(jsonstruct, 'filename');
+                filename  = getJsonStructField(jsonstruct, 'filename');
+                filenames = getJsonStructField(jsonstruct, 'filenames');
                 
-                fullfilename = resolveFileName(filename);
-                jsonsrc = fileread(fullfilename);
-                fileJsonstruct = battMojsondecode(jsonsrc);
-                fds = fieldnames(fileJsonstruct);
-                for ind = 1 : numel(fds)
-                    fileJsonstruct.(fds{ind}) = resolveFileInputJson(fileJsonstruct.(fds{ind}));
+                if isAssigned(filename)
+                    
+                    fullfilename = resolveFileName(filename);
+                    jsonsrc = fileread(fullfilename);
+                    fileJsonstruct = battMojsondecode(jsonsrc);
+                    fds = fieldnames(fileJsonstruct);
+                    for ind = 1 : numel(fds)
+                        fileJsonstruct.(fds{ind}) = resolveFileInputJson(fileJsonstruct.(fds{ind}));
+                    end
+                    jsonstruct = fileJsonstruct;
+
+                elseif isAssigned(filenames)
+                    
+                    filenames = jsonstruct.filenames;
+
+                    jsonstruct = removeJsonStructField(jsonstruct, {'isFile'}, 'handleMissing', 'quiet');
+                    jsonstruct = removeJsonStructField(jsonstruct, {'filenames'}, 'handleMissing', 'quiet');
+                    MergeInputs = struct('merge_order', 'ascending', ...
+                                         'conflict_handling', 'warn');
+                    Inputs = {};
+                    for ifile = 1 : numel(filenames)
+                        clear fileinput
+                        fileinput.isFile = true;
+                        fileinput.filename = filenames{ifile};
+                        Inputs{ifile} = fileinput;
+                    end
+                    MergeInputs.Inputs = Inputs;
+                    jsonstruct.MergeInputs = MergeInputs;
+                    jsonstruct = resolveFileInputJson(jsonstruct);
+                    return
+
+                else
+                    error('missing filename or filenames keyword');
                 end
-                jsonstruct = fileJsonstruct;
+                
 
             end
 

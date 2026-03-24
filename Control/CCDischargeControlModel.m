@@ -36,7 +36,7 @@ classdef CCDischargeControlModel < CCcontrolModel
             
             if ~model.useCVswitch
                 
-                func = @(model, state, state_prev) (state.Control.E < model.Control.lowerCutoffVoltage);
+                func = @(model, state, state_prev) (state.E < model.lowerCutoffVoltage);
 
             end
             

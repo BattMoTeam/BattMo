@@ -1,4 +1,3 @@
-        
 ========================
 JSON input specification
 ========================
@@ -27,7 +26,7 @@ schemas. Having separate schemas clarify the presentation and corresponds also t
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
 we use the :battmo:`mergeJsonStructs` function, see the example :ref:`here<mergeJsonStructs>`.
 
-Here, we give an :ref:`Example<jsonexample:Json input example>`
+Here, we give an :ref:`Example<jsonexample:My first Json Input>`
 
 
 Simulation Schema
@@ -249,8 +248,8 @@ For each design, the parameters are described in the schema.
 See json :ref:`input example<jsonexample:Geometry>`
 
                  
-Simulation Control Parameters
-=============================
+Control Parameters
+==================
 
 The control options are presented :ref:`here<controlinput:Control models>`. A description of each parameters for the
 various control models can be read from the schema.

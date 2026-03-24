@@ -1,20 +1,16 @@
 {
   "ActiveMaterial": {
     "isFile": true,
-    "filename" : "activeMaterial.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/activeMaterial.json"
   },
   "Binder": {
     "isFile": true,
-    "filename" : "binder.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/binder.json"
   },
   "ConductingAdditive": {
     "isFile": true,
-    "filename" : "conductingAdditive.json"
+    "filename" : "Examples/Documentation/jsonfiles/Example/conductingAdditive.json"
   },
-  
   "effectiveDensity": 1900,
-  "bruggemanCoefficient": 1.5,
-  "active_material_type": {
-    "composite" : false,
-    "SEImodel": "none"}
+  "bruggemanCoefficient": 1.5
 }

@@ -118,6 +118,7 @@ classdef ElectronicComponent < BaseModel
         end
 
         function state = updateConductivity(model, state)
+            
             % default function to update conductivity
             state.conductivity = model.effectiveElectronicConductivity;
 

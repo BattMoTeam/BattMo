@@ -8,7 +8,9 @@
     "volumeFraction" : {
       "type" : "number",
       "description" : "volume fraction occupied by membrane"},
-    
+    "conductivity" : {
+      "type" : "number",
+      "description" : "Conductivity of the membrane"},
     "H2O" : {
       "type" : "object",
       "description" : "Characteristic properties for the H2O molecule",

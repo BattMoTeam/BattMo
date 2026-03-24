@@ -2,6 +2,12 @@
 Computation Graph Model Design ang Assembly
 ===========================================
 
+BattMo simulators are implemented using an approach based on variable dependency graph. The general ideas behind the
+approach is presented in the slides and below, we go through an example.
+
+.. image:: img/first_page_variable_graph_simulator.png
+   :target: ../_static/documents/variable_graph_simulator.pdf
+
 Introduction
 ============
 

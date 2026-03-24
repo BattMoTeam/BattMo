@@ -10,9 +10,9 @@
           "type": "string",
           "enum": ["CCDischarge",
                    "CCCharge",
-                   "CC",
                    "CCCV",
                    "powerControl",
+                   "generic",
 		           "timeControl"]}}
     }},
     "allOf": [
@@ -29,13 +29,17 @@
         "then":{
           "$ref" : "#/$defs/CCCV"}}},
       {"if": {
-        "properties": {"controlPolicy" : {"const" : "CCCV"}},
-        "then":{
-          "$ref" : "#/$defs/timeControl"}}},
-      {"if": {
         "properties": {"controlPolicy" : {"const" : "powerControl"}},
         "then": {
-          "$ref" : "#/$defs/powerControl"}}}
+          "$ref" : "#/$defs/powerControl"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "generic"}},
+        "then": {
+          "$ref" : "GenericControl.schema.json"}}},
+      {"if": {
+        "properties": {"controlPolicy" : {"const" : "timeControl"}},
+        "then":{
+          "$ref" : "#/$defs/timeControl"}}}
     ],
 
   "$defs" : {
@@ -131,17 +135,17 @@
       "properties" : {
         "inputype" : {
           "type" : "string",
-          "enum" : ["table", "function"]
+          "enum" : ["table", "function"],
           "description" : "If inputtype is table, The time dependent control will be given using tables, using the values key and either the times or the durations key. If inputtype is function, the time dependent control will be given using a function given by the function key. To define the function, we use the function interface"
         },        
         "times" : {
           "type" : "array",
-          "items" : {"type" : "number"}
+          "items" : {"type" : "number"},
           "description" : "Array of increasing time value (wall clock). We do not include the initial time (assumed to be zero). For each time interval, the value given by the value key and the control type key is applied"
         },
         "times" : {
           "type" : "array",
-          "items" : {"type" : "number"}
+          "items" : {"type" : "number"},
           "description" : "Array of durations corresponding to successive time intervals. For each interval, the value given by the value key and the control type key is applied"
         },
         "values" : {

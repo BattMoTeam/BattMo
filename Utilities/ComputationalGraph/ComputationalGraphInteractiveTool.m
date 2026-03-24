@@ -235,8 +235,8 @@ classdef ComputationalGraphInteractiveTool < handle
             catch ME
                 fprintf('%s\n', fncallstr);
                 stack = ME.stack;
-                file = stack.file;
-                lineNum = stack.line;
+                file = stack(end - 1).file;
+                lineNum = stack(end - 1).line;
                 editor = settings().matlab.editor.OtherEditor.ActiveValue;
                 if contains(editor, 'emacs')
                     cmd = sprintf('%s +%d %s &', editor, lineNum, file);

@@ -1,14 +1,14 @@
 classdef LithiumPlatingLatz < BaseModel
 % Implementation of the model from Hein et al
 % @article{hein2020electrochemical,
-%   title={An electrochemical model of lithium plating and stripping in lithium ion batteries},
-%   author={Hein, Simon and Danner, Timo and Latz, Arnulf},
-%   journal={ACS Applied Energy Materials},
-%   volume={3},
-%   number={9},
-%   pages={8519--8531},
-%   year={2020},
-%   publisher={ACS Publications}
+%   title     = {An electrochemical model of lithium plating and stripping in lithium ion batteries},
+%   author    = {Hein, Simon and Danner, Timo and Latz, Arnulf},
+%   journal   = {ACS Applied Energy Materials},
+%   volume    = {3},
+%   number    = {9},
+%   pages     = {8519--8531},
+%   year      = {2020},
+%   publisher = {ACS Publications}
 % }
     
     properties
@@ -16,31 +16,36 @@ classdef LithiumPlatingLatz < BaseModel
         F = PhysicalConstants.F
         R = PhysicalConstants.R
 
-        alphaPl                                 % Symmetry factor for lithium plating/stripping reaction (typically ≈ 0.3)
-        alphaStr                                % Symmetry factor for stripping (may be 1-alphaPl)
-        alphaChInt                              % Symmetry factor for charge-neutral chemical intercalation of plated lithium
+        symmetryFactorPlating               % Symmetry factor for lithium plating/stripping reaction (typically ≈ 0.3)
+        symmetryFactorStripping             % Symmetry factor for stripping (may be 1-symmetryFactorPlating)
+        symmetryFactorChemicalIntercalation % Symmetry factor for charge-neutral chemical intercalation of plated lithium
 
-        kPl                                     % Reaction rate constant for lithium plating (N⁰₀ Plating)
-        kChInt                                  % Reaction rate constant for chemical intercalation of plated lithium
-        kInter                                  % Reaction rate constant for direct lithium-ion intercalation into graphite
+        reactionRatePlating                 % Reaction rate constant for lithium plating (N⁰₀ Plating)
+        reactionRateChemicalIntercalation   % Reaction rate constant for chemical intercalation of plated lithium
+        reactionRateDirectIntercalation     % Reaction rate constant for direct lithium-ion intercalation into graphite
 
-        nPl0                                    % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
-        nPlLimit                                % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
-        platedConcentrationRef                  % Reference concentration for plated lithium [mol/m^3]
-        c
-        volumetricSurfaceArea                   % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
-        particleRadius                          % Radius of graphite particles, used in solid-state diffusion modeling
-        volumeFraction                          % Porosity
-        
-        platedLiMonolayerThickness              % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
+        thresholdParameter                  % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
+        limitAmount                         % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
+        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]. The value is used in
+                                            % the computation for normalization. If not given, a default one will be
+                                            % computed
 
-        SEIFraction                             % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
-        MSEI                                    % Molar mass of SEI [kg/mol]
-        rhoSEI                                  % Density of SEI [kg/m³]
-        deltaSEI0                               % Initial thickness of SEI layer [m]
-        sigmaSEI                                % Ionic conductivity of SEI [S/m]
+        platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 
-        useSEI                                  % Boolean flag: whether SEI effects are included in overpotential calculations
+        volumetricSurfaceArea               % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
+        particleRadius                      % Radius of graphite particles, used in solid-state diffusion modeling
+        volumeFraction                      % Porosity
+
+
+        % Following parameters are not supported
+        %
+        % SEIFraction                         % Fraction of graphite surface covered by SEI (solid electrolyte interphase)
+        % SEImolarMass                        % Molar mass of SEI [kg/mol]
+        % SEIdensity                          % Density of SEI [kg/m³]
+        % SEIinitialThickness                 % Initial thickness of SEI layer [m]
+        % SEIconductivity                     % Ionic conductivity of SEI [S/m]
+
+        % useSEI                              % Boolean flag: whether SEI effects are included in overpotential calculations
 
         % numerical parameters
         logReg  = 1e-6 % Value used for regularization of the logarithm in the
@@ -52,33 +57,34 @@ classdef LithiumPlatingLatz < BaseModel
     methods
 
         function model = LithiumPlatingLatz(inputparams)
+            
             model = model@BaseModel();
-            fdnames = {'alphaPl'    , ...    
-                       'alphaStr'   , ...   
-                       'alphaChInt' , ... 
-                       'kPl'        , ...    
-                       'kChInt'     , ...
-                       'kInter'     , ...
-                       'nPl0'       , ...    
-                       'nPlLimit'   , ... 
-                       'platedConcentrationRef', ...
+            fdnames = {'symmetryFactorPlating'    , ...    
+                       'symmetryFactorStripping'   , ...   
+                       'symmetryFactorChemicalIntercalation' , ... 
+                       'reactionRatePlating'        , ...    
+                       'reactionRateChemicalIntercalation'     , ...
+                       'reactionRateDirectIntercalation'     , ...
+                       'thresholdParameter'       , ...    
+                       'limitAmount'   , ... 
+                       'platedReferenceConcentration', ...
                        'volumetricSurfaceArea' , ...
                        'particleRadius',...
                        'volumeFraction', ...
-                       'platedLiMonolayerThickness', ...
-                       'SEIFraction', ... 
-                       'MSEI'       , ...        
-                       'rhoSEI'     , ...      
-                       'deltaSEI0'  , ...   
-                       'sigmaSEI'   , ...    
-                       'useSEI'};
+                       'platedLiMonolayerThickness'};
             model = dispatchParams(model, inputparams, fdnames);
 
+            if isempty(model.platedReferenceConcentration)
+                thresholdParameter   = model.thresholdParameter;
+                r                    = model.particleRadius;
+                vf                   = model.volumeFraction;
+
+                model.platedReferenceConcentration = thresholdParameter * vf / ((4/3)*pi*r^3);;
+            end
+            
         end
 
         function model = registerVarAndPropfuncNames(model)
-
-            useSEI = model.useSEI;
 
             varnames = {};
 
@@ -160,23 +166,24 @@ classdef LithiumPlatingLatz < BaseModel
         end
         
         function state = updatePlatedConcentration(model, state)
-            state.platedConcentration = state.platedConcentrationNorm * model.platedConcentrationRef;
+            state.platedConcentration = state.platedConcentrationNorm * model.platedReferenceConcentration;
         end
 
         function state = updatePlatedConcentrationAccum(model, state, state0, dt)
-            state.platedConcentrationAccum = (state.platedConcentration - state0.platedConcentrationNorm * model.platedConcentrationRef) / dt;
+            state.platedConcentrationAccum = (state.platedConcentration - state0.platedConcentrationNorm * model.platedReferenceConcentration) / dt;
         end
 
         function state = updateActivityPlated(model, state)
             platedConcentration = state.platedConcentration;
             
-            n0 = model.nPl0;
-            r = model.particleRadius;
+            n0    = model.thresholdParameter;
+            r     = model.particleRadius;
             poros = model.volumeFraction;
             % switching the n of lithium plated for one particle to a concentration with this volume
             c0 = n0 * poros / ((4/3)*pi*r^3);
             
-            state.activityPlated = platedConcentration^4 ./ (platedConcentration^4 + c0^4);            
+            state.activityPlated = platedConcentration.^4 ./ (platedConcentration.^4 + c0^4);
+            
         end
 
         function state = updateEtaPlating(model, state)
@@ -210,11 +217,13 @@ classdef LithiumPlatingLatz < BaseModel
             ce  = state.cElectrolyte;
             T   = state.T;
 
-            th = model.platedConcentrationRef * 0.1;
-
-            i0 = model.kPl * regularizedPow(ce, model.alphaPl, th);
-            j = i0 .* (exp((model.alphaPl * F * eta) / (R * T)) - ...
-                       exp((-model.alphaStr * F * eta) / (R * T)));
+            th      = model.platedReferenceConcentration * 0.1;
+            alpha_p = model.symmetryFactorPlating;
+            alpha_s = model.symmetryFactorStripping;
+            
+            i0 = model.reactionRatePlating * regularizedPow(ce, alpha_p, th);
+            j = i0 .* (exp((alpha_p * F * eta) ./ (R * T)) - ...
+                       exp((-alpha_s * F * eta) ./ (R * T)));
             
             state.platingFlux = j; %mol/s/m2
             
@@ -222,16 +231,20 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updateChemicalFlux(model, state)
 
+            F = model.F;
+
             eta = state.etaChemical;
             T   = state.T;
-            F = model.F;
             cSo = state.cElectrodeSurface;
 
-            th = model.platedConcentrationRef * 0.001;
-            jCh = model.kChInt * regularizedSqrt(cSo, th)  * (exp(model.alphaChInt * F * eta / (model.R * T)) - ...
-                                  exp(-model.alphaChInt * F * eta / (model.R * T)));
+            th     = model.platedReferenceConcentration*0.001;
+            kChInt = model.reactionRateChemicalIntercalation;
+            alpha  = model.symmetryFactorChemicalIntercalation;
             
-            state.chemicalFlux = jCh; %mol/s/m2
+            jCh = kChInt*regularizedSqrt(cSo, th).*(exp(alpha*F*eta ./ (model.R*T)) - ...
+                                  exp(-alpha*F*eta ./ (model.R*T)));
+            
+            state.chemicalFlux = jCh; % mol/s/m2
             
         end
 
@@ -247,7 +260,7 @@ classdef LithiumPlatingLatz < BaseModel
             % coeff_plating = 1 - model.SEIFraction * model.useSEI;
             % flux  = (state.chemicalFlux - state.platingFlux*coeff_plating) * s;
 
-            flux  = (state.platingFlux - state.chemicalFlux) * surfcov;
+            flux  = (state.platingFlux - state.chemicalFlux).*surfcov;
             
             accum = state.platedConcentrationAccum;
             
@@ -260,7 +273,7 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updateSurfaceCoverage(model, state)
             
-            nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+            nLimit = model.limitAmount; % n of plated lithium necessary to cover the whole surface of the particle
             r      = model.particleRadius;
             vf     = model.volumeFraction;
             
@@ -274,7 +287,7 @@ classdef LithiumPlatingLatz < BaseModel
 
         function state = updatePlatedThickness(model, state)
 
-            nLimit = model.nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+            nLimit = model.limitAmount; % n of plated lithium necessary to cover the whole surface of the particle
             r      = model.particleRadius;
             vf     = model.volumeFraction;
             thck1layer = model.platedLiMonolayerThickness;

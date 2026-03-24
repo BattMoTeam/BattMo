@@ -1,5 +1,5 @@
 function [jExternal, jFaceExternal] = assembleBoundarySource(model, potential, boundary_potential, fluxCoefficient, boundaryFaces)
-% Returns a the source term (in fact a "sink") which correponds to the flux that leaves the domain at the boundary
+% Returns a the source term (in fact a "sink"), which corresponds to the flux that leaves the domain at the boundary.
 %
 % See function assembleBoundaryFlux
 %

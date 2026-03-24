@@ -103,7 +103,10 @@ classdef ActiveMaterial < BaseModel
 
             varnames = {'T'};
             model = model.registerVarNames(varnames);
-            if model.useLithiumPlating
+
+            isRootSimulationModel = ~isempty(model.isRootSimulationModel) && model.isRootSimulationModel;
+            
+            if model.useLithiumPlating 
                 model = model.removeVarName({sd, 'Rvol'});
             end
 
@@ -119,7 +122,7 @@ classdef ActiveMaterial < BaseModel
                 model = model.registerPropFunction({{lp, 'T'}, fn, {'T'}});
             end
             
-            if model.isRootSimulationModel
+            if isRootSimulationModel
 
                 varnames = {};
 
@@ -161,7 +164,7 @@ classdef ActiveMaterial < BaseModel
             fn = @ActiveMaterial.updateConcentrations;
             model = model.registerPropFunction({{itf, 'cElectrodeSurface'}, fn, {{sd, 'cSurface'}}});
             
-            if model.isRootSimulationModel
+            if isRootSimulationModel
                 
                 fn = @ActiveMaterial.updateControl;
                 fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
@@ -209,7 +212,8 @@ classdef ActiveMaterial < BaseModel
                     
                 end                
 
-            end            
+            end
+
         end
 
         function model = setupForSimulation(model)
@@ -231,8 +235,6 @@ classdef ActiveMaterial < BaseModel
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
             vf = model.(sd).volumeFraction;
-
-            
             
             scalings = {{{sd, 'massCons'}, I/(vf*n*F)}                  , ...
                         {{sd, 'solidDiffusionEq'}, I}, ...
@@ -250,9 +252,9 @@ classdef ActiveMaterial < BaseModel
                 ce = getJsonStructField(scalingparams, {'elyteConcentration'});
                 
                 vsa     = model.(itf).volumetricSurfaceArea;
-                kPl     = model.(lp).kPl;
-                alphaPl = model.(lp).alphaPl;
-                nLimit  = model.(lp).nPlLimit; % n of plated lithium necessary to cover the whole surface of the particle
+                kPl     = model.(lp).reactionRatePlating;
+                alphaPl = model.(lp).symmetryFactorPlating;
+                nLimit  = model.(lp).limitAmount; % n of plated lithium necessary to cover the whole surface of the particle
                 r       = model.(lp).particleRadius;
                 vf      = model.(lp).volumeFraction;
                 
@@ -317,7 +319,7 @@ classdef ActiveMaterial < BaseModel
             th = cmax * 1e-3;
 
             coef(coef < 0) = 0;
-            state.(itf).j0 =  model.(lp).kInter*regularizedSqrt(coef, th)*n*F;
+            state.(itf).j0 =  model.(lp).reactionRateDirectIntercalation*regularizedSqrt(coef, th)*n*F;
             %C/m2/s
             
         end
@@ -386,7 +388,7 @@ classdef ActiveMaterial < BaseModel
             chemFlux  = state.(lp).chemicalFlux;
             theta     = state.(lp).surfaceCoverage;
 
-            flux = (1 - theta)*interFlux + theta*chemFlux;
+            flux = (1 - theta).*interFlux + theta.*chemFlux;
             volflux = op.mapFromBc*(vsa*flux);
             
             state.(sd).massSource = - volflux.*((4*pi*rp^3)./(3*vf));
