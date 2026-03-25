@@ -104,14 +104,6 @@ classdef Electrolyser < BaseModel
                 end
             end
             
-            fn = @Electrolyser.updateDispatchEquations;
-            for ielde = 1 : numel(eldes)
-                elde = eldes{ielde};
-                if model.(elde).useEquilibrium
-                    model = model.registerPropFunction({{elde, exr, 'dispatchEquation'}, fn, {{elde, exr, 'cOHinmr'}, {inm, 'cOH'}}});
-                end
-            end
-                
             fn = @Electrolyser.setupControl;
             fn = {fn, @PropFunction.drivingForceFuncCallSetupFn};
             inputvarnames = {{oer, ctl, 'I'}, ...
@@ -352,41 +344,6 @@ classdef Electrolyser < BaseModel
 
         end
 
-
-        function state = updateDispatchEquations(model, state);
-
-            inm = 'IonomerMembrane';
-            her = 'HydrogenEvolutionElectrode';
-            oer = 'OxygenEvolutionElectrode';
-
-            ctl = 'CatalystLayer';
-            exr = 'ExchangeReaction';
-            ptl = 'PorousTransportLayer';
-
-            cOH = state.(inm).cOH;
-
-            vols = model.(inm).G.getVolumes();
-
-            eldes = {her, oer};
-            
-            for ielde = 1 : numel(eldes)
-
-                elde = eldes{ielde};
-
-                coupterms = model.couplingTerms;
-                coupnames = model.couplingNames;
-                
-                coupname  = sprintf('%s-%s', elde, inm);
-                coupterm  = getCoupTerm(coupterms, coupname, coupnames);
-                coupcells = coupterm.couplingcells;
-
-                cOHinmr = state.(elde).(exr).cOHinmr;
-                state.(elde).(exr).dispatchEquation = cOHinmr(coupcells(:, 1)) - cOH(coupcells(:, 2));
-                
-            end
-            
-        end
-        
         function state = setupControl(model, state, drivingForces)
 
             oer = 'OxygenEvolutionElectrode';

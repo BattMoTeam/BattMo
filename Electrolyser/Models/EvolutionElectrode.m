@@ -101,7 +101,13 @@ classdef EvolutionElectrode < BaseModel
             ngas = gasInd.ngas;
             model = model.registerPropFunction({VarName({ptl}, 'compGasSources', ngas, igas), fn, inputvarnames});
 
-
+            if model.useEquilibrium
+                fn = @() EvolutionElectrode.updateDispatchEquation;
+                lind = model.(ptl).liquidInd;
+                varname = VarName({ptl}, 'concentrations', lind.nliquid, lind.OH);
+                model = model.registerPropFunction({{exr, 'dispatchEquation'}, fn, {{exr, 'cOHinmr'}, varname}});
+            end
+            
             if ~model.(ctl).include_dissolution
                 fn = @() EvolutionElectrode.updateVolumetricSurfaceArea;
                 inputnames = {};
@@ -111,6 +117,24 @@ classdef EvolutionElectrode < BaseModel
 
         end
 
+        function state = updateDispatchEquation(model, state);
+
+            ctl = 'CatalystLayer';
+            exr = 'ExchangeReaction';
+            ptl = 'PorousTransportLayer';
+
+            lind = model.(ptl).liquidInd;
+            
+            coupterm = model.couplingTerm;
+            coupcells = coupterm.couplingcells;
+            
+            cOHinmr = state.(exr).cOHinmr;
+            cOH     = state.(ptl).concentrations{lind.OH};
+
+            state.(exr).dispatchEquation = cOH(coupcells(:, 1)) - cOHinmr(coupcells(:, 2));
+            
+        end
+        
         function state = updateVolumetricSurfaceArea(model, state);
 
             ctl = 'CatalystLayer';
