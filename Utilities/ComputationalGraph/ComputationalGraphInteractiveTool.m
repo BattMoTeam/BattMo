@@ -112,6 +112,9 @@ classdef ComputationalGraphInteractiveTool < handle
             
             [varnames, varnameinds, propfuncinds, distance] = cg.getDependencyList(varname, direction);
 
+            [distance, inds] = sort(distance, 'descend');
+            varnameinds = varnameinds(inds);
+            
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
                 fprintf('%s (%d)\n', cg.nodenames{varnameind}, distance(ivar));
