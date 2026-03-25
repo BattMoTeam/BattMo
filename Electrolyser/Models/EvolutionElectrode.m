@@ -8,7 +8,7 @@ classdef EvolutionElectrode < BaseModel
 
         couplingTerm % Coupling term between ptl and ctl
 
-        useEquilibrium = true;
+        useEquilibrium
         
     end
 
@@ -16,8 +16,9 @@ classdef EvolutionElectrode < BaseModel
 
         function model = EvolutionElectrode(inputparams)
 
-            fdnames = {'G',
-                       'couplingTerm'};
+            fdnames = {'G'           , ...
+                       'couplingTerm', ...
+                       'useEquilibrium'};
             model = dispatchParams(model, inputparams, fdnames);
 
             switch inputparams.porousTransportLayerType

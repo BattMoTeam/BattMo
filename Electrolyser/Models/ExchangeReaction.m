@@ -9,7 +9,7 @@ classdef ExchangeReaction < BaseModel
              % - z : number of charge
         ionomerSorptionCoefficient  % Ionomer sorption coefficient
 
-        useEquilibrium = true;
+        useEquilibrium
         
     end
 
@@ -19,9 +19,10 @@ classdef ExchangeReaction < BaseModel
 
             model = model@BaseModel();
             
-            fdnames = {'exchangeReactionRate', ...
-                       'OH'                  , ...
-                       'ionomerSorptionCoefficient' };
+            fdnames = {'exchangeReactionRate'      , ...
+                       'OH'                        , ...
+                       'ionomerSorptionCoefficient', ...
+                       'useEquilibrium'};
             model = dispatchParams(model, inputparams, fdnames);
 
             model.constants = PhysicalConstants;

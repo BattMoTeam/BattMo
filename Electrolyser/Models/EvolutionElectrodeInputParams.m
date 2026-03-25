@@ -11,12 +11,20 @@ classdef EvolutionElectrodeInputParams < ComponentInputParams
 
         couplingTerm
         
+        useEquilibrium
+        
     end
     
     methods
         
         function inputparams = EvolutionElectrodeInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useEquilibrium', true);
+
+            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+                                                 'useEquilibrium', ...
+                                                 {'ExchangeReaction', 'useEquilibrium'});
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             ptl = 'PorousTransportLayer';

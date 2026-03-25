@@ -7,12 +7,16 @@ classdef ExchangeReactionInputParams < ComponentInputParams
                                    % - z : number of charge
         ionomerSorptionCoefficient % Ionomer sorption coefficient
         
+        useEquilibrium
+        
     end
     
     methods
         
         function inputparams = ExchangeReactionInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'useEquilibrium', true);
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
