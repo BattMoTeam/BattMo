@@ -100,7 +100,7 @@ classdef ExchangeReaction < BaseModel
             cOHinmr  = state.cOHinmr;
             T        = state.T;
              
-            state.equilibriumEquation = phiInmr - phiElyte - R*T/F*log(cOHelyte./cOHinmr);
+            state.equilibriumEquation = phiInmr - phiElyte - R.*T/F.*log(cOHelyte./cOHinmr);
             
         end
         

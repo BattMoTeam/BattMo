@@ -216,11 +216,11 @@ classdef EvolutionElectrode < BaseModel
             activeGasSource(coupcells(:, 1)) = state.(ctl).activeGasSource(coupcells(:, 2));
 
             if model.useEquilibrium
+                state.(ptl).OHsource = vols.*elyteOHsource;
+            else
                 OHexchR                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
                 OHexchR(coupcells(:, 1))  = state.(exr).OHexchangeRate(coupcells(:, 2));
                 state.(ptl).OHsource = vols.*(elyteOHsource + OHexchR);
-            else
-                state.(ptl).OHsource = vols.*elyteOHsource;
             end
                 
             state.(ptl).H2OliquidSource                = vols.*(elyteH2Osource + H2OexchR - H2OvlR);

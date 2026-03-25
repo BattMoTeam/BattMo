@@ -380,7 +380,7 @@ classdef Electrolyser < BaseModel
                 coupterm  = getCoupTerm(coupterms, coupname, coupnames);
                 coupcells = coupterm.couplingcells;
 
-                cOHinmr = state.(elde).(exr).COHinmr;
+                cOHinmr = state.(elde).(exr).cOHinmr;
                 state.(elde).(exr).dispatchEquation = cOHinmr(coupcells(:, 1)) - cOH(coupcells(:, 2));
                 
             end
@@ -508,10 +508,10 @@ classdef Electrolyser < BaseModel
                 H2OexchR      = state.(elde).(exr).H2OexchangeRate(coupcells(:, 1));
 
                 if model.(elde).useEquilibrium
-                    OHexchR       = state.(elde).(exr).OHexchangeRate(coupcells(:, 1));
-                    OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
-                else
                     OHsource(coupcells(:, 2))  = vols.*inmrOHsource;
+                else
+                    OHexchR = state.(elde).(exr).OHexchangeRate(coupcells(:, 1));
+                    OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
                 end
                 
                 H2OSource(coupcells(:, 2)) = vols.*(inmrH2Osource - H2OexchR);
