@@ -407,13 +407,18 @@ classdef Electrolyser < BaseModel
                 for ilayer = 1 : numel(layers)
                     layer = layers{ilayer};
                     for ivar = 1 : numel(varnames)
+                        % We set to NaN values so that we make all values would be overriden (otherwise we get error when running)
                         varname = varnames{ivar};
-                        state.(elde).(layer).(varname) = initval;
+                        if model.(elde).useEquilibrium && strcmp(varname, 'cOHinmr') && strcmp(layer, exr)
+                            % do not set
+                        else
+                            state.(elde).(layer).(varname) = initval;
+                        end
                     end
                     state.(elde).(layer).H2OaInmr(coupcells(:, 1)) = state.(inm).H2Oa(coupcells(:, 2));
                     switch layer
                       case exr
-                        if model.(elde).(layer).useEquilibrium
+                        if model.(elde).useEquilibrium
                             % do nothing
                         else
                             state.(elde).(layer).cOHinmr(coupcells(:, 1)) = state.(inm).cOH(coupcells(:, 2));
