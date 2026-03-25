@@ -9,6 +9,8 @@ classdef ExchangeReaction < BaseModel
              % - z : number of charge
         ionomerSorptionCoefficient  % Ionomer sorption coefficient
 
+        useEquilibrium = true;
+        
     end
 
     methods
@@ -53,18 +55,28 @@ classdef ExchangeReaction < BaseModel
 
             % H2O exchange rate [mol*s^-1 m^-3]
             varnames{end + 1} = 'H2OexchangeRate';
-            % OH exchange rate [mol*s^-1 m^-3]
-            varnames{end + 1} = 'OHexchangeRate';
+
+            if model.useEquilibrium
+                varnames{end + 1} = 'equilibriumEquation';
+                varnames{end + 1} = 'dispatchEquation';
+            else
+                % OH exchange rate [mol*s^-1 m^-3]
+                varnames{end + 1} = 'OHexchangeRate';
+            end
 
             model = model.registerVarNames(varnames);
 
             % Assemble ionomer ion exchange rate [mol*s^-1 m^-3]
             % (OH-)_inmr <->> (OH-)_elyte
             % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
-            fn = @() ExchangeReaction.updateOHexchange;
-
             inputnames = {'phiElyte', 'phiInmr', 'cOHelyte', 'cOHinmr', 'T'};
-            model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
+            if model.useEquilibrium
+                fn = @() ExchangeReaction.updateEquilibriumEquation;
+                model = model.registerPropFunction({'equilibriumEquation', fn, inputnames});                
+            else
+                fn = @() ExchangeReaction.updateOHexchange;
+                model = model.registerPropFunction({'OHexchangeRate', fn, inputnames});
+            end
 
             % Assemble sorption rate [mol*s^-1 m^-3]
             % (H2O)_inmr <->> (H2O)_elyte
@@ -77,6 +89,21 @@ classdef ExchangeReaction < BaseModel
 
         end
 
+        function state = updateEquilibriumEquation(model, state)
+
+            R = model.constants.R;
+            F = model.constants.F;
+            
+            phiElyte = state.phiElyte;
+            phiInmr  = state.phiInmr;
+            cOHelyte = state.cOHelyte;
+            cOHinmr  = state.cOHinmr;
+            T        = state.T;
+             
+            state.equilibriumEquation = phiInmr - phiElyte - R*T/F*log(cOHelyte./cOHinmr);
+            
+        end
+        
         function state = updateSorption(model, state)
 
             kML = model.ionomerSorptionCoefficient;

@@ -8,6 +8,8 @@ classdef EvolutionElectrode < BaseModel
 
         couplingTerm % Coupling term between ptl and ctl
 
+        useEquilibrium = true;
+        
     end
 
     methods
@@ -84,11 +86,14 @@ classdef EvolutionElectrode < BaseModel
             fn = @() EvolutionElectrode.updateSourceTerms;
 
             inputvarnames = {{ctl, 'elyteOHsource'}             , ...
-                             {exr, 'OHexchangeRate'}            , ...
                              {ctl, 'elyteH2Osource'}            , ...
                              {exr, 'H2OexchangeRate'}           , ...
                              {ptl, 'H2OvaporLiquidExchangeRate'}, ...
                              {ctl, 'activeGasSource'}};
+            if ~model.useEquilibrium
+                inputvarnames{end + 1} = {exr, 'OHexchangeRate'};
+            end
+
             model = model.registerPropFunction({{ptl, 'OHsource'}, fn, inputvarnames});
             model = model.registerPropFunction({{ptl, 'H2OliquidSource'}, fn, inputvarnames});
             gasInd = model.(ptl).gasInd;
@@ -202,8 +207,6 @@ classdef EvolutionElectrode < BaseModel
 
             H2OexchR                  = 0*H2OvlR; % initialization so that get we get right AD and dimension
             H2OexchR(coupcells(:, 1)) = state.(exr).H2OexchangeRate(coupcells(:, 2));
-            OHexchR                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
-            OHexchR(coupcells(:, 1))  = state.(exr).OHexchangeRate(coupcells(:, 2));
 
             elyteH2Osource                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
             elyteH2Osource(coupcells(:, 1))  = state.(ctl).elyteH2Osource(coupcells(:, 2));
@@ -212,12 +215,18 @@ classdef EvolutionElectrode < BaseModel
             activeGasSource                  = 0*H2OvlR; % initialization so that get we get right AD and dimension
             activeGasSource(coupcells(:, 1)) = state.(ctl).activeGasSource(coupcells(:, 2));
 
-            state.(ptl).OHsource                       = vols.*(elyteOHsource + OHexchR);
+            if model.useEquilibrium
+                OHexchR                   = 0*H2OvlR; % initialization so that get we get right AD and dimension
+                OHexchR(coupcells(:, 1))  = state.(exr).OHexchangeRate(coupcells(:, 2));
+                state.(ptl).OHsource = vols.*(elyteOHsource + OHexchR);
+            else
+                state.(ptl).OHsource = vols.*elyteOHsource;
+            end
+                
             state.(ptl).H2OliquidSource                = vols.*(elyteH2Osource + H2OexchR - H2OvlR);
             state.(ptl).compGasSources{gInd.activeGas} = gasMW.*vols.*activeGasSource;
 
         end
-
 
         function state = dispatchFromCatalystLayer(model, state)
 

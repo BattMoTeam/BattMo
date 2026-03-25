@@ -73,7 +73,9 @@ classdef Electrolyser < BaseModel
                 inputvarnames{end + 1} = {elde, exr, 'H2OexchangeRate'};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrH2Osource'};
                 inputvarnames{end + 1} = {elde, ctl, 'inmrOHsource'};
-                inputvarnames{end + 1} = {elde, exr, 'OHexchangeRate'};
+                if ~model.(elde).useEquilibrium
+                    inputvarnames{end + 1} = {elde, exr, 'OHexchangeRate'};
+                end
             end
             model = model.registerPropFunction({{inm, 'H2OSource'}, fn, inputvarnames});
             model = model.registerPropFunction({{inm, 'OHsource'}, fn, inputvarnames});
@@ -87,12 +89,29 @@ classdef Electrolyser < BaseModel
                 for ilayer = 1 : numel(layers)
                     elde = eldes{ielde};
                     layer = layers{ilayer};
-                    model = model.registerPropFunction({{elde, layer, 'cOHinmr'}, fn, inputvarnames});
+                    switch layer
+                      case exr
+                        if ~model.(elde).useEquilibrium 
+                            model = model.registerPropFunction({{elde, layer, 'cOHinmr'}, fn, inputvarnames});
+                        end
+                      case ctl
+                        model = model.registerPropFunction({{elde, layer, 'cOHinmr'}, fn, inputvarnames});
+                      otherwise
+                        error('layer not recognized');
+                    end
                     model = model.registerPropFunction({{elde, layer, 'phiInmr'}, fn, inputvarnames});
                     model = model.registerPropFunction({{elde, layer, 'H2OaInmr'}, fn, inputvarnames});
                 end
             end
-
+            
+            fn = @Electrolyser.updateDispatchEquations;
+            for ielde = 1 : numel(eldes)
+                elde = eldes{ielde};
+                if model.(elde).useEquilibrium
+                    model = model.registerPropFunction({{elde, exr, 'dispatchEquation'}, fn, {{elde, exr, 'cOHinmr'}, {inm, 'cOH'}}});
+                end
+            end
+                
             fn = @Electrolyser.setupControl;
             fn = {fn, @PropFunction.drivingForceFuncCallSetupFn};
             inputvarnames = {{oer, ctl, 'I'}, ...
@@ -119,7 +138,8 @@ classdef Electrolyser < BaseModel
             ptl = 'PorousTransportLayer';
             ctl = 'CatalystLayer';
             inm = 'IonomerMembrane';
-
+            exr = 'ExchangeReaction';
+            
             con = model.con;
 
             pGas = 101325*Pascal; % pressure of active gas (O2 or H2)
@@ -141,6 +161,19 @@ classdef Electrolyser < BaseModel
 
                 elde = eldes{ielde};
 
+                if model.(elde).useEquilibrium
+                    
+                    % We need to setup OH initial concentration in ExchangeRate model
+                    coupterms = model.couplingTerms;
+                    coupnames = model.couplingNames;
+                    coupname  = sprintf('%s-%s', elde, inm);
+                    coupterm  = getCoupTerm(coupterms, coupname, coupnames);
+                    coupcells = coupterm.couplingcells;
+                    ncexr = size(coupcells(:, 1), 1); % same as size(coupcells(:, 2))
+                    state.(elde).(exr).cOHinmr = cOH*ones(ncexr, 1);
+                    
+                end
+                
                 % Compute density and partial molar volume using dedicated functions
                 % which are only used at initialisation. The partial molar volumes are kept constant for the remaining of
                 % the simulation (at least in current implementation!).
@@ -318,7 +351,41 @@ classdef Electrolyser < BaseModel
             end
 
         end
-        
+
+
+        function state = updateDispatchEquations(model, state);
+
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
+
+            ctl = 'CatalystLayer';
+            exr = 'ExchangeReaction';
+            ptl = 'PorousTransportLayer';
+
+            cOH = state.(inm).cOH;
+
+            vols = model.(inm).G.getVolumes();
+
+            eldes = {her, oer};
+            
+            for ielde = 1 : numel(eldes)
+
+                elde = eldes{ielde};
+
+                coupterms = model.couplingTerms;
+                coupnames = model.couplingNames;
+                
+                coupname  = sprintf('%s-%s', elde, inm);
+                coupterm  = getCoupTerm(coupterms, coupname, coupnames);
+                coupcells = coupterm.couplingcells;
+
+                cOHinmr = state.(elde).(exr).COHinmr;
+                state.(elde).(exr).dispatchEquation = cOHinmr(coupcells(:, 1)) - cOH(coupcells(:, 2));
+                
+            end
+            
+        end
         
         function state = setupControl(model, state, drivingForces)
 
@@ -387,7 +454,18 @@ classdef Electrolyser < BaseModel
                         state.(elde).(layer).(varname) = initval;
                     end
                     state.(elde).(layer).H2OaInmr(coupcells(:, 1)) = state.(inm).H2Oa(coupcells(:, 2));
-                    state.(elde).(layer).cOHinmr(coupcells(:, 1))  = state.(inm).cOH(coupcells(:, 2));
+                    switch layer
+                      case exr
+                        if model.(elde).(layer).useEquilibrium
+                            % do nothing
+                        else
+                            state.(elde).(layer).cOHinmr(coupcells(:, 1)) = state.(inm).cOH(coupcells(:, 2));
+                        end
+                      case ctl
+                        state.(elde).(layer).cOHinmr(coupcells(:, 1))  = state.(inm).cOH(coupcells(:, 2));
+                      otherwise
+                        error('layer name not recognized')
+                    end
                     state.(elde).(layer).phiInmr(coupcells(:, 1))  = state.(inm).phi(coupcells(:, 2));
                 end
 
@@ -427,10 +505,15 @@ classdef Electrolyser < BaseModel
 
                 inmrOHsource  = state.(elde).(ctl).inmrOHsource(coupcells(:, 1));
                 inmrH2Osource = state.(elde).(ctl).inmrH2Osource(coupcells(:, 1));
-                OHexchR       = state.(elde).(exr).OHexchangeRate(coupcells(:, 1));
                 H2OexchR      = state.(elde).(exr).H2OexchangeRate(coupcells(:, 1));
 
-                OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
+                if model.(elde).useEquilibrium
+                    OHexchR       = state.(elde).(exr).OHexchangeRate(coupcells(:, 1));
+                    OHsource(coupcells(:, 2))  = vols.*(inmrOHsource - OHexchR);
+                else
+                    OHsource(coupcells(:, 2))  = vols.*inmrOHsource;
+                end
+                
                 H2OSource(coupcells(:, 2)) = vols.*(inmrH2Osource - H2OexchR);
 
             end
