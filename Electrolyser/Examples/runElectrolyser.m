@@ -9,7 +9,23 @@ jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeome
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
+her = 'HydrogenEvolutionElectrode';
+oer = 'OxygenEvolutionElectrode';
+exr = 'ExchangeReaction';
+eldes = {her, oer};
+
+for ielde = 1 : numel(eldes)
+    elde = eldes{ielde};
+    jsonstruct.(elde).useEquilibrium = true;
+end
+
+inputparams = ElectrolyserInputParams(jsonstruct);
+inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
+
 simsetup = setupElectrolyserSimulation(jsonstruct);
+
+model = simsetup.model;
+cgit = model.cgit;
 
 %%
 % We use the function :battmo:`rampupControl` to increase the current linearly in time
