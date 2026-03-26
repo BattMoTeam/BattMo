@@ -271,7 +271,7 @@ classdef Interface < BaseModel
               case 1
                 state.OCP0 = computeOCPFunc.eval(c/cmax);
               otherwise
-                error('number of argument not recognized')
+                error('number of arguments %d not recognized', computeOCPFunc.numberOfArguments);
             end
 
         end
@@ -345,8 +345,8 @@ classdef Interface < BaseModel
 
                   otherwise
 
-                    error('number of argument not recgonized');
-                    
+                    error('number of argument %g not recgonized: ', model.computeJ0.numberOfArguments);
+
                 end
 
             else
