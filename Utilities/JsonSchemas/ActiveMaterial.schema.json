@@ -20,9 +20,9 @@
     "useLithiumPlating" : {
       "type" : "boolean",
       "description" : "if true, includes Lithium plating effects. Default is false"
-    }
+    },
     "LithiumPlating" : {
-      "$ref" : "LithiumPlating.schema.json"},
+      "$ref": "LithiumPlating.schema.json"},
     "electronicConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
       "properties": {
