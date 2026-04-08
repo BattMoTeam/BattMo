@@ -1,34 +1,42 @@
-clear all
-close all
+%% Battery impedance computation
+%
+% We compute the impedance of a lithium-ion battery cell at different states of charge (SOC) using the Battmo
+% framework. The impedance is computed using the ImpedanceSolver class, which takes into account the electrochemical
+% properties of the battery cell as defined in a JSON file. The results are plotted in a Nyquist plot, showing the real
+% and imaginary parts of the impedance.
+%
 
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
+%% Battery input parameters
+%
+% We load a JSON file containing the parameters of a lithium-ion battery cell, and set up the model using the
+% setupModelFromJson function. We also disable thermal effects and current collectors for this impedance computation.
+%
 
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+filename = fullfile(fullfile('ParameterData'        , ...
+                             'BatteryCellParameters', ...
+                             'LithiumIonBatteryCell', ...
+                             'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(filename);
 
-% We define some shorthand names for simplicity.
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
-co      = 'Coating';
-am      = 'ActiveMaterial';
-itf     = 'Interface';
-sd      = 'SolidDiffusion';
-ctrl    = 'Control';
-cc      = 'CurrentCollector';
-
-jsonstruct.use_thermal = false;
+jsonstruct.use_thermal                = false;
 jsonstruct.include_current_collectors = false;
 
-inputparams = BatteryInputParams(jsonstruct);
-gen = BatteryGeneratorP2D();
+[model, inputparams, jsonstruct, gen] = setupModelFromJson(jsonstruct);
 
-inputparams = gen.updateBatteryInputParams(inputparams);
+%% Impedance computation
+%
 
-set(0, 'defaultlinelinewidth', 3);
+%%
+% Plot settings
+set(0, 'defaultlinelinewidth', 1);
+set(0, 'defaultaxesfontsize', 15);
 
 figure
 hold on
+
+%%
+% We compute the impedance for different SOC values, and plot the results in a Nyquist plot. The impedance is normalized
+% by the face area of the model and converted to Ωcm^2 for better visualization.
 
 socs = linspace(0.1, 1, 5);
 
