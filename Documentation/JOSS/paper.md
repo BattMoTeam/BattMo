@@ -69,18 +69,21 @@ New high-performance electro-chemical systems such as Li-ion and post-Li-ion bat
 rigorous digital workflows can help industrial and research institutions reduce the need for physical prototyping
 and derive greater insight and knowledge from their data.
 
-Recently, a variety of
-open-source battery modelling codes have been released including PyBaMM [@sulzer2021python], cideMOD
-[@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], and PETLion [@Berliner_2021], among others. These
-open-source frameworks help the community reduce the cost of model development and help ensure the
-validity and the reproducibility of findings.
-
 BattMo prolongs this effort by supporting fully 3D geometry and the possibility to easily modify the underlying
 equations. We provide a library of standard parameterized battery geometries. Design optimization can also be done
 on the geometry, which is an essential part of the design.
 
 A challenge for physics-based models for battery and other electro-chemical systems is the difficulty to calibrate the parameters. With an adjoint-based
 approach, we can effectively calibrate the models from experiments in a reasonable computational time.
+
+# State of the field
+
+Recently, a variety of
+open-source battery modelling codes have been released including PyBaMM [@sulzer2021python], cideMOD
+[@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], and PETLion [@Berliner_2021], among others. These
+open-source frameworks help the community reduce the cost of model development and help ensure the
+validity and the reproducibility of findings. PyBaMM is, to our knowledge, the most popular option. Unlike BattMo, it has just recently allowed for simulations in 2D and 3D, and for calibration and optimization, it is usually recommended to utilize PyBOP which is an external package although coupled tightly to PyBaMM. BattMo's foundation is designed for coupled electro-chemical-thermal simulations in 3D, as well calibration and optimization. The extensive portfolio of degradation models in PyBaMM is a great strength. In BattMo we are currently allowing for SEI (Safari [@Safari2009] and Bolay [@Bolay2022]] models) as well as plating [@Hein2020].
+
 
 # Functionality overview
 
