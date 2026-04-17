@@ -12,4 +12,12 @@
   "C2" : 10,
   "initSOC" : 10,
   "initOverpotential2" : 10,
-  "lowerVoltageCutoff" : 10}
+  "lowerVoltageCutoff" : 10,
+  "I" : {
+    "functionFormat" : "tabulated",
+    "argumentList" : ["time"],
+    "dataX" : [0,  500, 500.1, 1000, 1000.1, 1500],
+    "dataY" : [1,  1,   0,     0,    -0.5,   -0.5] 
+  },
+  "totalTime" : 1500
+}

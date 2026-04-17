@@ -15,8 +15,12 @@ classdef EquivalentCircuitModel < BaseModel
         initOverpotential2
         lowerVoltageCutoff
 
+        I
+        totalTime
+        
         %% helpers
         OCPfunc
+        Ifunc 
     end
 
     methods
@@ -36,11 +40,13 @@ classdef EquivalentCircuitModel < BaseModel
                        'C2'                 , ...
                        'initSOC'            , ...
                        'initOverpotential2' , ...
-                       'lowerVoltageCutoff'};
+                       'lowerVoltageCutoff' , ...
+                       'I'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
             model.OCPfunc = setupFunction(model.OCP);
+            model.Ifunc   = setupFunction(model.I);
             
         end
 
@@ -129,10 +135,69 @@ classdef EquivalentCircuitModel < BaseModel
             state0.SOC = SOC0;
             
         end
-        
-        function solve(model, SOC0)
 
-            state0 = model.setupInitialCondition(SOC0);
+        function state = setupStateFromY(model, y)
+
+            state.U1  = y(1);
+            state.U2  = y(2);
+            state.SOC = y(3);
+            
+        end
+
+        function y = setupYfromState(model, state)
+
+            y(1) = state.U1;
+            y(2) = state.U2;
+            y(3) = state.SOC;
+            
+        end
+        
+        function y = setupFfromState(model, state)
+
+            y(1) = state.dU1dt;
+            y(2) = state.dU2dt;
+            y(3) = state.dSOCdt;
+            
+        end
+        
+        function f = ode(model, t, y)
+
+            state = model.setupStateFromY(y);
+
+            state.I = model.Ifunc(t);
+            
+            state = model.evalVarName(state, 'dU1dt');
+            state = model.evalVarName(state, 'dU2dt');
+            state = model.evalVarName(state, 'dSOCdt');
+            
+            f = model.setupFromState(state);
+            
+        end
+        
+        function U = solve(model)
+
+            if isempty(model.computationalGraph)
+                model = setupComputationalGraph(model)
+            end
+
+            % setup initial condition
+            state0 = model.setupInitialCondition(model.initSOC);
+            y0 = model.setupYfromState(state0);
+
+            % setup time span
+            tspan = [0, model.totalTime];
+
+            % solve ode
+            [t_out, y_out] = ode45(@(t, y) model.ode(t, y), tspan, y0)
+
+            for i = 1:length(t_out)
+                
+                state = model.setupStateFromY(y_out(i, :));
+                state.I = model.Ifunc(t_out(i));
+                state = model.evalVarName(state, 'U');
+                U(i) = state.U;
+                
+            end
             
         end
         

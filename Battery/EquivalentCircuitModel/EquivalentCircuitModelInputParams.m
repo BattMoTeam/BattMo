@@ -15,6 +15,7 @@ classdef EquivalentCircuitModelInputParams < InputParams
         initSOC
         initOverpotential2
         lowerVoltageCutoff
+        I 
         
     end
 
