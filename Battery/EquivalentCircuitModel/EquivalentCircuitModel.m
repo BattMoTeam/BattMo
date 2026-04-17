@@ -121,6 +121,20 @@ classdef EquivalentCircuitModel < BaseModel
             state.U = OCP - (state.U1 + state.U2 + state.UR);
             
         end
+
+        function state0 = setupInitialCondition(model, SOC0)
+
+            state0.U1  = 0;
+            state0.U2  = 0;
+            state0.SOC = SOC0;
+            
+        end
+        
+        function solve(model, SOC0)
+
+            state0 = model.setupInitialCondition(SOC0);
+            
+        end
         
     end
 
