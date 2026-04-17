@@ -147,7 +147,7 @@ By combining a modular modeling framework with documented JSON-based
 inputs, tutorials, and interfaces such as the Julia bridge, BattMo
 provide reproducible battery cell development for research and
 education.  BattMo has been used in several commercial and
-non-commercial projects. Publications include [@Clark2026].
+non-commercial projects. Publications include [@Clark2026] and [@Schmitt2026].
 
 # AI usage disclosure
 
