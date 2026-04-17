@@ -2,4 +2,12 @@ jsonstruct = parseBattmoJson('exampleECM.json');
 inputparams = EquivalentCircuitModelInputParams(jsonstruct);
 model = EquivalentCircuitModel(inputparams);
 
-model.solve()
+[t, U, I] = model.solve();
+
+%%
+
+tiledlayout(1, 2);
+nexttile
+plot(t, U)
+nexttile
+plot(t, I)

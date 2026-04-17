@@ -41,7 +41,8 @@ classdef EquivalentCircuitModel < BaseModel
                        'initSOC'            , ...
                        'initOverpotential2' , ...
                        'lowerVoltageCutoff' , ...
-                       'I'};
+                       'I'                  , ...
+                       'totalTime'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -157,6 +158,7 @@ classdef EquivalentCircuitModel < BaseModel
             y(1) = state.dU1dt;
             y(2) = state.dU2dt;
             y(3) = state.dSOCdt;
+            y = y';
             
         end
         
@@ -170,14 +172,14 @@ classdef EquivalentCircuitModel < BaseModel
             state = model.evalVarName(state, 'dU2dt');
             state = model.evalVarName(state, 'dSOCdt');
             
-            f = model.setupFromState(state);
+            f = model.setupFfromState(state);
             
         end
         
-        function U = solve(model)
+        function [t, U, I] = solve(model)
 
             if isempty(model.computationalGraph)
-                model = setupComputationalGraph(model)
+                model = setupComputationalGraph(model);
             end
 
             % setup initial condition
@@ -188,17 +190,18 @@ classdef EquivalentCircuitModel < BaseModel
             tspan = [0, model.totalTime];
 
             % solve ode
-            [t_out, y_out] = ode45(@(t, y) model.ode(t, y), tspan, y0)
+            [t_out, y_out] = ode45(@(t, y) model.ode(t, y), tspan, y0);
 
             for i = 1:length(t_out)
                 
                 state = model.setupStateFromY(y_out(i, :));
-                state.I = model.Ifunc(t_out(i));
+                I(i) = model.Ifunc(t_out(i));
+                state.I = I(i);
                 state = model.evalVarName(state, 'U');
                 U(i) = state.U;
-                
             end
-            
+
+            t = t_out;
         end
         
     end
