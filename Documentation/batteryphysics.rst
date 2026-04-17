@@ -13,6 +13,7 @@ Battery Physics
    plating
    runSwellingExample.ipynb
    soliddiffusion
+   exampleECM.nblink
 
 .. grid:: 2
 
@@ -50,6 +51,11 @@ Battery Physics
       :padding: 2
 
       :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
-           
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Equivalent Circuit Model <exampleECM>`
+                      
 
 
