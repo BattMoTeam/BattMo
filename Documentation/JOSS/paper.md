@@ -151,8 +151,11 @@ non-commercial projects. Publications include [@Clark2026].
 
 # AI usage disclosure
 
-No generative AI tools were used in the development of this software, the writing
-of this manuscript, or the preparation of supporting materials.
+This development of BattMo started before AI tools were
+introduced. Therefore only very minor use of generative AI tools were
+used in the development of this software, including the documentation
+and the examples. AI tools have been used to assist phrasing and
+conciseness when writing this manuscript.
 
 # Acknowledgements
 
