@@ -10,7 +10,6 @@ classdef EquivalentCircuitModel < BaseModel
         C1
         R2
         C2
-        
         initSOC
         initOverpotential2
         lowerVoltageCutoff

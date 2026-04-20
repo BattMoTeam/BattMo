@@ -17,21 +17,21 @@ tiledlayout(3, 1);
 
 nexttile
 plot(t, U, 'LineWidth', 2)
-title('Tension de la Batterie')
-xlabel('Temps (s)')
-ylabel('Tension (V)')
+title('Battery Voltage')
+xlabel('Time /s')
+ylabel('Voltage /V')
 grid on
 
 nexttile
 plot(t, I, 'LineWidth', 2, 'Color', 'r')
-title('Courant Appliqué')
-xlabel('Temps (s)')
-ylabel('Courant (A)')
+title('Applied Current')
+xlabel('Time /s')
+ylabel('Current /A')
 grid on
 
 nexttile
 plot(t, SOC, 'LineWidth', 2, 'Color', 'g')
 title('SOC')
-xlabel('Temps (s)')
+xlabel('Time /s')
 ylabel('SOC')
 grid on
