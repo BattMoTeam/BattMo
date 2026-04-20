@@ -102,13 +102,13 @@ classdef EquivalentCircuitModel < BaseModel
             
         end
         
-        function state = updatedU1dt(model, state)
+        function state = updatedU2dt(model, state)
             
             state.dU2dt = model.updatedUdt(state.U2, model.R2, model.C2, state.I);
             
         end
         
-        function state = updatedU2dt(model, state)
+        function state = updatedU1dt(model, state)
 
             state.dU1dt = model.updatedUdt(state.U1, model.R1, model.C1, state.I);
             
@@ -192,6 +192,9 @@ classdef EquivalentCircuitModel < BaseModel
             % solve ode
             [t_out, y_out] = ode45(@(t, y) model.ode(t, y), tspan, y0);
 
+
+            U = zeros(length(t_out), 1);
+            I = zeros(length(t_out), 1);                        %gagne du temps en allouant déjà la mémoire
             for i = 1:length(t_out)
                 
                 state = model.setupStateFromY(y_out(i, :));
