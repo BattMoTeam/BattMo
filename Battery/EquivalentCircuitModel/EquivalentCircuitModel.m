@@ -118,7 +118,7 @@ classdef EquivalentCircuitModel < BaseModel
 
             Qmax = model.nominalcellcapacity;
             
-            state.dSOCdt = -(1 / Qmax) * state.I;
+            state.dSOCdt = -(1 / (Qmax*3600)) * state.I;
             
         end
         
@@ -176,7 +176,7 @@ classdef EquivalentCircuitModel < BaseModel
             
         end
         
-        function [t, U, I] = solve(model)
+        function [t, U, I, SOC] = solve(model)
 
             if isempty(model.computationalGraph)
                 model = setupComputationalGraph(model);
@@ -192,7 +192,7 @@ classdef EquivalentCircuitModel < BaseModel
             % solve ode
             [t_out, y_out] = ode45(@(t, y) model.ode(t, y), tspan, y0);
 
-
+            SOC = zeros(length(t_out), 1);
             U = zeros(length(t_out), 1);
             I = zeros(length(t_out), 1);                        %gagne du temps en allouant déjà la mémoire
             for i = 1:length(t_out)
@@ -202,6 +202,8 @@ classdef EquivalentCircuitModel < BaseModel
                 state.I = I(i);
                 state = model.evalVarName(state, 'U');
                 U(i) = state.U;
+                state = model.evalVarName(state, 'SOC');
+                SOC(i) = state.SOC;
             end
 
             t = t_out;
