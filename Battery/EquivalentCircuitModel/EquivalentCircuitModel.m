@@ -20,6 +20,11 @@ classdef EquivalentCircuitModel < BaseModel
         %% helpers
         OCPfunc
         Ifunc 
+        R0func
+        R1func
+        C1func
+        R2func
+        C2func
     end
 
     methods
@@ -47,6 +52,11 @@ classdef EquivalentCircuitModel < BaseModel
 
             model.OCPfunc = setupFunction(model.OCP);
             model.Ifunc   = setupFunction(model.I);
+            model.R0func   = setupFunction(model.R0);
+            model.R1func   = setupFunction(model.R1);
+            model.C1func   = setupFunction(model.C1);
+            model.R2func   = setupFunction(model.R2);
+            model.C2func   = setupFunction(model.C2);
             
         end
 
@@ -97,19 +107,19 @@ classdef EquivalentCircuitModel < BaseModel
 
         function state = updateUR(model, state)
 
-            state.UR = model.R0*state.I;
+            state.UR = model.R0func(state.SOC)*state.I;
             
         end
         
         function state = updatedU2dt(model, state)
             
-            state.dU2dt = model.updatedUdt(state.U2, model.R2, model.C2, state.I);
+            state.dU2dt = model.updatedUdt(state.U2, model.R2func(state.SOC), model.C2func(state.SOC), state.I);
             
         end
         
         function state = updatedU1dt(model, state)
 
-            state.dU1dt = model.updatedUdt(state.U1, model.R1, model.C1, state.I);
+            state.dU1dt = model.updatedUdt(state.U1, model.R1func(state.SOC), model.C1func(state.SOC), state.I);
             
         end
         
