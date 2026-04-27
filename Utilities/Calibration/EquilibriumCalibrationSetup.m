@@ -863,43 +863,57 @@ classdef EquilibriumCalibrationSetup
 
         function [Xopt, hist] = runUnitBoxBFGS(ecs, varargin)
 
-            opt = struct('X0', ecs.X0);
+            opt = struct('X0', ecs.X0, ...
+                         'useBounds', false);
             [opt, extra] = merge_options(opt, varargin{:});
 
-            X0 = opt.X0;
-
-            scaledX0 = ecs.scaleVector(X0);
-            f = @(scaledX) ecs.scaledObjective(scaledX);
+            if opt.useBounds
+                X0start = opt.X0;
+                f = @(X) ecs.objective(X);
+                n = size(ecs.bounds.lower, 1);
+                linIneq.A = [-eye(n); eye(n)];
+                linIneq.b = [-ecs.bounds.lower; ecs.bounds.upper];
+            else
+                X0start = ecs.scaleVector(opt.X0);
+                f = @(scaledX) ecs.scaledObjective(scaledX);
+                linIneq = [];
+            end
 
             params = {'objChangeTol'    , 1e-12, ...
                       'maximize'        , false, ...
                       'maxit'           , 1000 , ...
                       'maxInitialUpdate', 1e-6 , ...
                       'enforceFeasible' , true , ...
-                      'lineSearchMaxIt' , 10};
+                      'lineSearchMaxIt' , 10, ...
+                      'wolfe2'          , 0.99 , ...
+                      'linIneq'         , linIneq};
 
             % NB: will prefer options in extra over params
-            [~, scaledXopt, hist] = unitBoxBFGS(scaledX0, f, params{:}, extra{:});
+            [~, Xopt0, hist] = unitBoxBFGS(X0start, f, params{:}, extra{:});
 
-            Xopt = ecs.unscaleVector(scaledXopt);
+            if opt.useBounds
+                Xopt = Xopt0;
+            else
+                Xopt = ecs.unscaleVector(Xopt0);
+            end
 
         end
 
         function [z, scaleddz] = scaledObjective(ecs, scaledX)
 
             X = ecs.unscaleVector(scaledX);
-            
+
             [z, dz] = ecs.objective(X);
-            
+
             scaleddz = ecs.scaleGradient(dz);
-           
+
         end
-        
+
         function scaledX = scaleVector(ecs, X)
         %% scaling function used for unitBoxBFGS
             scaledX = (X - ecs.bounds.lower)./(ecs.bounds.upper - ecs.bounds.lower);
         end
-        
+
         function X = unscaleVector(ecs, scaledX)
         %% scaling function used for unitBoxBFGS
             X = scaledX.*(ecs.bounds.upper - ecs.bounds.lower) + ecs.bounds.lower;

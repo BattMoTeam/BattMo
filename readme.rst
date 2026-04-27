@@ -3,7 +3,7 @@
 ==========================================================================
 
 .. |zenodo| image:: https://zenodo.org/badge/410005581.svg
-   :target: https://zenodo.org/badge/latestdoi/410005581
+   :target: https://doi.org/10.5281/zenodo.6362782
 
 .. |runGitHubTests| image:: https://github.com/BattMoTeam/BattMo/actions/workflows/runGitHubTests.yml/badge.svg
 
