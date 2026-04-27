@@ -28,6 +28,8 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
+jsonstruct_control.TimeStepping = struct('timeStepDuration', 100);
+
 %% 
 % We merge the structures into a single input structure
 
@@ -486,13 +488,21 @@ mat_out_candidates = { ...
     fullfile('..', '..', '..', 'BattMo.jl', 'test', 'data', 'matlab_files', 'run_only_thermal.mat') ...
 };
 
+nStates = numel(output_isothermal_states);
+c_e_first = zeros(nStates, 1);
+
+for i = 1:nStates
+    c_e_first(i) = output_isothermal_states{i}.Electrolyte.c(1);
+end
+
 output_isothermal_states = output_isothermal.states;
 output_isothermal_time = output_isothermal.time;
-
-vars_to_save = {'time', 'E', 'sourceTerms', 'states_thermal', ...
+I = output_isothermal.I;
+vars_to_save = {'time', 'E','I', 'sourceTerms', 'states_thermal', ...
                 'output_isothermal_states', 'output_isothermal_time', ...
                 'effectiveThermalConductivity', 'effectiveVolumetricHeatCapacity', ...
-                'thermalBoundaryNeighbors', 'thermalBoundaryAreas', 'jsonstruct', 'inputparams_thermal', 'states_heat','heatSourceData'};
+                'thermalBoundaryNeighbors', 'thermalBoundaryAreas', 'jsonstruct', ...
+                'inputparams_thermal', 'states_heat','heatSourceData','c_e_first'};
 
 saved_any = false;
 for iout = 1:numel(mat_out_candidates)
