@@ -1,4 +1,4 @@
-classdef EquivalentCircuitModel < BaseModel
+calassdef EquivalentCircuitModel < BaseModel
 
     properties
 
