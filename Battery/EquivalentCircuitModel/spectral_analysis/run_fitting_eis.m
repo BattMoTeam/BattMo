@@ -42,20 +42,40 @@ parameters.C1 = best_params(3);
 parameters.R2 = best_params(4);
 parameters.C2 = best_params(5);
 
-[Z_re_fit, Z_im_fit] = load_nyquist(best_params, logspace(-2, 4, 100));   %  doesn't work with omega which is strange
+[Z_re_fit, Z_im_fit] = load_nyquist(best_params, omega);   %  doesn't work with omega which is strange
 
 
 %%
 figure;
+subplot(3,1,1);
 plot(omega, Z_re_exp, 'ro', 'MarkerFaceColor', 'r');
 hold on;
-plot(omega, Z_re_fit, 'b-', 'LineWidth', 2);        
+plot(omega, Z_re_fit, 'bo', 'LineWidth', 2);        
 legend('Expérimental', 'Modèle (Fitted)');
 title('Fitting results');
-xlabel('Z_{re} (\Omega)');
-ylabel('-Z_{im} (\Omega)'); 
-grid on;
+xlabel('Omega');
+ylabel('Z_{re} '); 
+
+subplot(3,1,2);
+plot(omega, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+hold on;
+plot(omega, Z_im_fit, 'bo', 'LineWidth', 2);        
+legend('Expérimental', 'Modèle (Fitted)');
+title('Fitting results');
+xlabel('Omega');
+ylabel('-Z_{im} '); 
+
+subplot(3,1,3);
+plot(Z_re_exp, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+hold on;
+plot(Z_re_exp, Z_im_fit, 'bo', 'LineWidth', 2);        
+legend('Expérimental', 'Modèle (Fitted)');
+title('Nyquist');
+xlabel('Z_{re}');
+ylabel('-Z_{im} '); 
 axis equal;
+
+grid on;
 
 
 

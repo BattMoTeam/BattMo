@@ -22,7 +22,8 @@ function [Z_real, Z_imag, omega] = load_experimental_data()
     idx_valides = (Z_real ~= 0) & ~isnan(Z_real);
     Z_real = Z_real(idx_valides);
     Z_imag = Z_imag(idx_valides);
-    
+    omega = omega(idx_valides);
+
     Z_real = Z_real(8:60);
     Z_imag = Z_imag(8:60);
     omega = 2*pi*omega(8:60);
