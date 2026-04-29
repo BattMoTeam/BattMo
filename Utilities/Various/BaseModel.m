@@ -608,9 +608,10 @@ classdef BaseModel < PhysicalModel
                     eval(sprintf('%s = varvalue;', varname));
                 end
             end
-            
-            funcCall = strjoin(funcCallList, '');
-            eval(funcCall);
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
             
         end
 
