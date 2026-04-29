@@ -95,8 +95,8 @@ classdef IridiumCatalystLayer < CatalystLayer
         
         function state =  updateSources(model, state)
 
-        % Reaction in Electrolyte : H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_elyte
-        % Reaction in Membrane :    H2O + 2*e- + 0.5*O2 <<-> 2(OH-)_inmr
+        % Reaction in Electrolyte : (1/2)H2O + e- + (1/4)*O2 <<-> (OH-)_elyte
+        % Reaction in Membrane :    (1/2)H2O + e- + (1/4)*O2 <<-> (OH-)_inmr
         % Here, the direction of the reaction that is indicated by the repeated arrow symbol corresponds to a positive computed reaction rate
             F    = model.constants.F;
             vols = model.G.getVolumes();
