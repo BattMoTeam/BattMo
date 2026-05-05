@@ -7,10 +7,22 @@ params0 = [3e-3, 0.00260, 100, 0.00132, 1];
 
 
 [Z_re_exp, Z_im_exp, omega] = load_experimental_data();
+
+
 %lengthZ = length(Z_im_exp);
 
 % synthetic data
-% opti_params = [0.00341, 0.00260, 5663.9, 0.00132, 0.9];
+% opti_params = [0.00341, 0.00260, 5663.9, 0.00132, 0.9];     % params with
+% lsqnonlin
+% 
+% params with unitboxBFGS:
+% R0 = 0.00318 Ohms
+% R1 = 0.00247 Ohms
+% C1 = 10654.4 Farads
+% R2 = 0.00155 Ohms
+% C2 = 0.4 Farads
+% 
+
 % [Z_re_exp, Z_im_exp] = load_nyquist(opti_params, omega);
 
 %%
@@ -32,13 +44,17 @@ params0_norm = params0_norm(:);
     params0_norm, ...                             
     f_opt, ...           
     'maximize', false, ...              
-    'linIneq', struct('A', [0, 0, -1, 0, 10], 'b', 0), ...      
+    'linIneq', struct('A', [0, 0, -1, 0, 2*scales(5)/scales(3)], 'b', 0), ...      
     'enforceFeasible', true ...         
 );
 
 
 best_params = best_params_norm(:) .* scales(:);
 
+[v_opt, g_opt] = optifunc(best_params, scales, Z_re_exp, Z_im_exp, omega)
+
+fprintf('\n=== FITTING SCORE ===\n');
+fprintf('Error : %e\n', v_opt);
 
 fprintf('\n=== PARAMETERS FOUND ===\n');
 fprintf('R0 = %.5f Ohms\n', best_params(1));
@@ -56,7 +72,7 @@ parameters.C1 = best_params(3);
 parameters.R2 = best_params(4);
 parameters.C2 = best_params(5);
 
-[Z_re_fit, Z_im_fit] = load_nyquist(best_params, omega);   %  doesn't work with omega which is strange
+[Z_re_fit, Z_im_fit] = load_nyquist(best_params, omega);  
 
 
 %%
@@ -65,7 +81,7 @@ subplot(3,1,1);
 semilogx(omega, Z_re_exp, 'ro', 'MarkerFaceColor', 'r');
 hold on;
 semilogx(omega, Z_re_fit, 'bo', 'LineWidth', 2);        
-legend('Expérimental', 'Modèle (Fitted)');
+% legend('Expérimental', 'Modèle (Fitted)');
 title('Fitting results');
 xlabel('Omega');
 ylabel('Z_{re} '); 
@@ -74,7 +90,7 @@ subplot(3,1,2);
 semilogx(omega, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
 hold on;
 semilogx(omega, Z_im_fit, 'bo', 'LineWidth', 2);        
-legend('Expérimental', 'Modèle (Fitted)');
+% legend('Expérimental', 'Modèle (Fitted)');
 title('Fitting results');
 xlabel('Omega');
 ylabel('-Z_{im} '); 
@@ -83,7 +99,7 @@ subplot(3,1,3);
 plot(Z_re_exp, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
 hold on;
 plot(Z_re_exp, Z_im_fit, 'bo', 'LineWidth', 2);        
-legend('Expérimental', 'Modèle (Fitted)');
+% legend('Expérimental', 'Modèle (Fitted)');
 title('Nyquist');
 xlabel('Z_{re}');
 ylabel('-Z_{im} '); 
@@ -91,7 +107,15 @@ axis equal;
 
 grid on;
 
+text_error = sprintf('Fitting error : %.2e', v_opt);
 
+subplot(3,1,3);
+
+text(0.05, 0.90, text_error, 'Units', 'normalized', ...
+    'BackgroundColor', 'white', ...   
+    'EdgeColor', 'black', ...        
+    'FontSize', 11, ...               
+    'FontWeight', 'bold');
 
 function [v, g_norm] = optifunc(p_norm, scales, Z_re_exp, Z_im_exp, omega)
      
