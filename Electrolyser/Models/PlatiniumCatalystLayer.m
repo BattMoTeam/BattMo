@@ -66,15 +66,17 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             T    = state.T;
             cOH  = state.cOHelyte;
             H2Oa = state.H2OaElyte;
-            
-            E0  = model.E0eff;
-            c0  = model.species.OH.referenceConcentration;
-            con = model.constants;
+            p    = state.pressureActiveGas;
 
+            E0   = model.E0eff;
+            c0   = model.species.OH.referenceConcentration;
+            con  = model.constants;
+            pref = model.referencePressure;
+            
             F  = con.F;
             R  = con.R;
 
-            state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
+            state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
 
         end
         
@@ -83,15 +85,17 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             T    = state.T;
             cOH  = state.cOHinmr;
             H2Oa = state.H2OaInmr;
+            p    = state.pressureActiveGas;
             
-            E0  = model.E0eff;
-            c0  = model.species.OH.referenceConcentration;
-            con = model.constants;
-
+            E0   = model.E0eff;
+            c0   = model.species.OH.referenceConcentration;
+            con  = model.constants;
+            pref = model.referencePressure;
+            
             F  = con.F;
             R  = con.R;
 
-            state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2));
+            state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
             
         end
 

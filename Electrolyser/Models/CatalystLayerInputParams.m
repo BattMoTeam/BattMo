@@ -5,7 +5,8 @@ classdef CatalystLayerInputParams < ComponentInputParams
         referenceExchangeCurrentDensity    % Exchange current density
         standardEquilibriumPotential    % Standard equilibrium potential
         referencePotential  % Reference potential
-
+        referencePressure % reference pressure
+        
         species % species struct with field
         % - OH.chargeNumber  : Charge number
         % - OH.referenceConcentration : OH reference concentration
@@ -28,6 +29,8 @@ classdef CatalystLayerInputParams < ComponentInputParams
         
         function inputparams = CatalystLayerInputParams(jsonstruct)
 
+            jsonstruct = setDefaultJsonStructField(jsonstruct, 'referencePressure', 1*atm);
+            
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             if isempty(inputparams.include_dissolution)
