@@ -26,8 +26,6 @@ classdef fitting_eis < handle
 
         function [min_value, best_params, history] = optimizationBFGS(feis)
 
-            
-                
             f_opt = @(p_norm) feis.optifunc(p_norm.* feis.scales) ;
             
             params0_norm = feis.params0 ./ feis.scales; 
