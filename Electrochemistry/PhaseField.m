@@ -18,27 +18,31 @@ classdef PhaseField < BaseModel
         A   % Collocation mapping matrices
         dA  % Collocation mapping matrices, first derivative
         ddA % Collocation mapping matrices, second derivative
-     
         
     end
     
     methods
         
-        
-
-        function model = ActiveMaterial(inputparams)
+        function model = PhaseField(inputparams)
         %
         % ``inputparams`` is instance of :class:`ActiveMaterialInputParams <Electrochemistry.ActiveMaterialInputParams>`
         %
             model = model@BaseModel();
             
-            fdnames = {'N'            , ... 
-                       'mobilityFunc' , ...
-                       'dMobilityFunc', ...
-                       'energyFunc'}
+            % fdnames = {'N'            , ... 
+            %            'mobilityFunc' , ...
+            %            'dMobilityFunc', ...
+            %            'energyFunc'}
 
-            model = dispatchParams(model, inputparams, fdnames);
+            % model = dispatchParams(model, inputparams, fdnames);
 
+            % model = model.setupSpectralMethod();
+            
+        end
+
+        function model = setupSpectralModel();
+
+            % assign collocation mappings matrices (A, dA, ddA)
             
         end
         
@@ -49,23 +53,54 @@ classdef PhaseField < BaseModel
 
             model = registerVarAndPropfuncNames@BaseModel(model);
 
-            varnames = {'coefC'};
-            varnames = {'coefW'};
-            varnames = {'c'};
-            varnames = {'w'};
-            varnames = {'dC'};
-            varnames = {'dW'};
-            varnames = {'ddC'};
-            varnames = {'ddW'};
-            
+            varnames = {};
+            % Spectral decomposition coefficents for c
+            varnames{end + 1} = 'coefC';
+            % Spectral decomposition coefficents for w
+            varnames{end + 1} = 'coefW';
+            % collocation values for c
+            varnames{end + 1} = 'c';
+            % collocation values for w
+            varnames{end + 1} = 'w';
+            % collocation values for dC
+            varnames{end + 1} = 'dC';
+            % collocation values for dW
+            varnames{end + 1} = 'dW';
+            % collocation values for ddW
+            varnames{end + 1} = 'ddC';
+            % collocation values for ddW
+            varnames{end + 1} = 'ddW';
+            % equation for c
+            varnames{end + 1} = 'eqC';
+            % equation for w
+            varnames{end + 1} = 'eqW';
+
             model = model.registerVarNames(varnames);
 
-                
-            % fn = @ActiveMaterial.updateControl;
-            % fn = {fn, @(propfunction) PropFunction.drivingForceFuncCallSetupFn(propfunction)};
-            % model = model.registerPropFunction({'I', fn, {}});
-                
+            fn = @PhaseField.updateC;
+            model = model.registerPropFunction({'c', fn, {'coefC'}});
+            
+            fn = @PhaseField.updateW;
+            model = model.registerPropFunction({'w', fn, {'coefW'}});
 
+            fn = @PhaseField.updatedC;
+            model = model.registerPropFunction({'dC', fn, {'coefC'}});
+            
+            fn = @PhaseField.updatedW;
+            model = model.registerPropFunction({'dW', fn, {'coefW'}});
+
+            fn = @PhaseField.updateddC;
+            model = model.registerPropFunction({'ddC', fn, {'coefC'}});
+            
+            fn = @PhaseField.updateddW;
+            model = model.registerPropFunction({'ddW', fn, {'coefW'}});
+            
+            fn = @PhaseField.updateEqC;
+            model = model.registerPropFunction({'eqC', fn, {'c', 'dC', 'dW', 'ddW'}});
+
+            fn = @PhaseField.updateEqW;
+            model = model.registerPropFunction({'eqW', fn, {'w', 'ddC', 'c'}});
+            
         end
 
         function model = setupForSimulation(model)
@@ -75,7 +110,33 @@ classdef PhaseField < BaseModel
             % 
         end
 
+        function state = updateC(model, state)
 
+            state.c = model.A*state.coefC;
+            
+        end
+
+        function state = updateW(model, state)
+        end
+        
+        function state = updatedC(model, state)
+        end
+        
+        function state = updatedW(model, state)
+        end
+        
+        function state = updateddC(model, state)
+        end
+        
+        function state = updateddW(model, state)
+        end
+        
+        function state = updateEqC(model, state)
+        end
+        
+        function state = updateEqW(model, state)
+        end
+        
     end
     
 end
