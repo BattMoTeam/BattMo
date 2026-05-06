@@ -1,4 +1,4 @@
-classdef fitting_eis < handle
+classdef FittingEIS < handle
 
     properties
        params0
@@ -6,22 +6,23 @@ classdef fitting_eis < handle
        Z_im_exp
        omega
        scales
-       %commentaire2
        
        best_params_found = [] 
        fitting_error = []
+
     end
 
 
 
     methods        
 
-        function feis = fitting_eis(params0, scales, Z_re_exp, Z_im_exp, omega)
-            feis.params0 = params0(:);
-            feis.scales = scales(:);
-            feis.Z_re_exp = Z_re_exp(:);
-            feis.Z_im_exp = Z_im_exp(:);
-            feis.omega = omega(:);
+        function feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega)
+            
+            feis.params0  = params0;
+            feis.scales   = scales;
+            feis.Z_re_exp = Z_re_exp;
+            feis.Z_im_exp = Z_im_exp;
+            feis.omega    = omega;
         end
 
 
@@ -48,10 +49,10 @@ classdef fitting_eis < handle
             feis.best_params_found = best_params;
             [feis.fitting_error, ~] = feis.optifunc(best_params);
             
-
         end
 
         function plotresults(feis)
+
             if isempty(feis.best_params_found)
                 feis.optimizationBFGS();
             end
