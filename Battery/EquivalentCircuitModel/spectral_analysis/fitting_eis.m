@@ -6,6 +6,7 @@ classdef fitting_eis < handle
        Z_im_exp
        omega
        scales
+       %commentaire
        
        best_params_found = [] 
        fitting_error = []
