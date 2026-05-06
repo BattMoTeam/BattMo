@@ -1,6 +1,7 @@
-function [Z_real, Z_imag, omega] = load_experimental_data()
+function [Z_real, Z_imag, omega] = load_experimental_data(filename)
+    
     % --- 1. Configuration et Importation des données ---
-    filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
+    % filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
     
     % Le délimiteur est la tabulation ('\t')
     opts = detectImportOptions(filename, 'Delimiter', '\t');
