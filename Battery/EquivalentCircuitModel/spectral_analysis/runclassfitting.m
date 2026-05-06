@@ -1,14 +1,16 @@
 params0 = [3e-3, 0.00260, 100, 0.00132, 1];
 
+filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
+% filename = '/home/xavier/Matlab/Projects/battmo/Data/131-828_EIS_01_MB_CD8.txt';
 
-[Z_re_exp, Z_im_exp, omega] = load_experimental_data();
+[Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
 
 scales = [10e-2, 10e-3, 15000, 10e-3, 5];
 
-feis = fitting_eis(params0, scales, Z_re_exp, Z_im_exp, omega);
+feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
-fitting_eis.optimizationBFGS(feis);
+[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
 
-fitting_eis.plotresults(feis);
+feis.plotresults(best_params, fitting_error);
 
-fitting_eis.GiveResults(feis);
+feis.printResults(best_params, fitting_error);
