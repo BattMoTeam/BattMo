@@ -119,6 +119,11 @@ classdef CcCvControlModel2 < ControlModel
 
             % state = model.updateDerivatives(state, state0, dt);
 
+            % pass also state.time from stepFunction
+            % idx = find(model.times >= t, 1, 'first');
+            % Emin = model.lowerCutoffVoltage(idx);
+            % Emax = model.upperCutoffVoltage(idx);
+
             Emin = model.lowerCutoffVoltage;
             Emax = model.upperCutoffVoltage;
 
