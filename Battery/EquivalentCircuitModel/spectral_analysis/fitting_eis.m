@@ -1,4 +1,4 @@
-classdef fitting_eis 
+classdef fitting_eis < handle
 
     properties
        params0
@@ -6,19 +6,31 @@ classdef fitting_eis
        Z_im_exp
        omega
        scales
-       lb_true 
+       
+       best_params_found = [] 
+       fitting_error = []
     end
 
 
 
     methods        
 
+        function feis = fitting_eis(params0, scales, Z_re_exp, Z_im_exp, omega)
+            feis.params0 = params0(:);
+            feis.scales = scales(:);
+            feis.Z_re_exp = Z_re_exp(:);
+            feis.Z_im_exp = Z_im_exp(:);
+            feis.omega = omega(:);
+        end
 
-        function [min_value, best_params, history] = optimizationBFGS(params0, scales, Z_re_exp, Z_im_exp, omega)
-                
-            f_opt = @(p_norm) optifunc(p_norm, scales, Z_re_exp, Z_im_exp, omega) ;
+
+        function [min_value, best_params, history] = optimizationBFGS(feis)
+
             
-            params0_norm = params0 ./ scales; 
+                
+            f_opt = @(p_norm) feis.optifunc(p_norm.* feis.scales) ;
+            
+            params0_norm = feis.params0 ./ feis.scales; 
             % best_params_norm = lsqnonlin(deltagap, params0_norm, lb_norm, ub_norm, [0,0,-1,0,10], 0);
             params0_norm = params0_norm(:);
             
@@ -26,50 +38,50 @@ classdef fitting_eis
                 params0_norm, ...                             
                 f_opt, ...           
                 'maximize', false, ...      
-                'linIneq', struct('A', [0, 0, -1, 0, 2*scales(5)/scales(3)], 'b', 0), ...   
+                'linIneq', struct('A', [0, 0, -1, 0, 2*feis.scales(5)/feis.scales(3)], 'b', 0), ...   
                 'enforceFeasible', true, ...     
                 'maxIt', 300, ...               
                 'objChangeTol', 1e-6, ...       
                 'gradTol', 1e-5 ...
             );
-            best_params = best_params_norm(:) .* scales(:);
+            best_params = best_params_norm(:) .* feis.scales(:);
+
+            feis.best_params_found = best_params;
+            [feis.fitting_error, ~] = feis.optifunc(best_params);
+            
 
         end
 
-        function plotresults(params0, scales, Z_re_exp, Z_im_exp, omega)
-
-            [min_value, best_params, history] = optimizationBFGS(params0, scales, Z_re_exp, Z_im_exp, omega);
-            parameters.R0 = best_params(1);
-            parameters.R1 = best_params(2);
-            parameters.C1 = best_params(3);
-            parameters.R2 = best_params(4);
-            parameters.C2 = best_params(5);
+        function plotresults(feis)
+            if isempty(feis.best_params_found)
+                feis.optimizationBFGS();
+            end
             
-            [Z_re_fit, Z_im_fit] = load_nyquist(best_params, omega);  
+            [Z_re_fit, Z_im_fit] = load_nyquist(feis.best_params_found, feis.omega);  
             
             figure;
             subplot(3,1,1);
-            semilogx(omega, Z_re_exp, 'ro', 'MarkerFaceColor', 'r');
+            semilogx(feis.omega, feis.Z_re_exp, 'ro', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(omega, Z_re_fit, 'bo', 'LineWidth', 2);        
+            semilogx(feis.omega, Z_re_fit, 'bo', 'LineWidth', 2);        
             % legend('Expérimental', 'Modèle (Fitted)');
             title('Fitting results');
             xlabel('Omega');
             ylabel('Z_{re} '); 
             
             subplot(3,1,2);
-            semilogx(omega, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+            semilogx(feis.omega, feis.Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(omega, Z_im_fit, 'bo', 'LineWidth', 2);        
+            semilogx(feis.omega, Z_im_fit, 'bo', 'LineWidth', 2);        
             % legend('Expérimental', 'Modèle (Fitted)');
             title('Fitting results');
             xlabel('Omega');
             ylabel('-Z_{im} '); 
             
             subplot(3,1,3);
-            plot(Z_re_exp, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+            plot(feis.Z_re_exp, feis.Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
             hold on;
-            plot(Z_re_exp, Z_im_fit, 'bo', 'LineWidth', 2);        
+            plot(feis.Z_re_exp, Z_im_fit, 'bo', 'LineWidth', 2);        
             % legend('Expérimental', 'Modèle (Fitted)');
             title('Nyquist');
             xlabel('Z_{re}');
@@ -78,7 +90,7 @@ classdef fitting_eis
             
             grid on;
             
-            text_error = sprintf('Fitting error : %.2e', v_opt);
+            text_error = sprintf('Fitting error : %.2e', feis.fitting_error);
             
             subplot(3,1,3);
             
@@ -89,40 +101,41 @@ classdef fitting_eis
                 'FontWeight', 'bold');
         end
 
-        function GiveResults(params0, scales, Z_re_exp, Z_im_exp, omega)
+        function GiveResults(feis)
+            if isempty(feis.best_params_found)
+                feis.optimizationBFGS();
+            end
 
-            [min_value, best_params, history] = optimizationBFGS(params0, scales, Z_re_exp, Z_im_exp, omega);
-            [v_opt, g_opt] = optifunc(best_params_norm, scales, Z_re_exp, Z_im_exp, omega);
 
             fprintf('\n=== FITTING SCORE ===\n');
-            fprintf('Error : %e\n', v_opt);
+            fprintf('Error : %e\n', feis.fitting_error);
             
             fprintf('\n=== PARAMETERS FOUND ===\n');
-            fprintf('R0 = %.5f Ohms\n', best_params(1));
-            fprintf('R1 = %.5f Ohms\n', best_params(2));
-            fprintf('C1 = %.1f Farads\n', best_params(3));
-            fprintf('R2 = %.5f Ohms\n', best_params(4));
-            fprintf('C2 = %.1f Farads\n', best_params(5));
+            fprintf('R0 = %.5f Ohms\n', feis.best_params_found(1));
+            fprintf('R1 = %.5f Ohms\n', feis.best_params_found(2));
+            fprintf('C1 = %.1f Farads\n', feis.best_params_found(3));
+            fprintf('R2 = %.5f Ohms\n', feis.best_params_found(4));
+            fprintf('C2 = %.1f Farads\n', feis.best_params_found(5));
             
 
         end
 
 
-        function [v, g_norm] = optifunc(p, scales, Z_re_exp, Z_im_exp, omega)
+        function [v, g_norm] = optifunc(feis, p)
                    
-            [Z_re_param, Z_Im_param] = load_nyquist(p, omega);
+            [Z_re_param, Z_Im_param] = load_nyquist(p, feis.omega);
             
-            Module_Z = sqrt(Z_re_exp.^2 + Z_im_exp.^2);
+            Module_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
             Module_Z = Module_Z(:);
             
-            err_re = (Z_re_exp(:) - Z_re_param(:)) ./ Module_Z(:);
-            err_im = (Z_im_exp(:) - Z_Im_param(:)) ./ Module_Z(:);
+            err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Module_Z(:);
+            err_im = (feis.Z_im_exp(:) - Z_Im_param(:)) ./ Module_Z(:);
             
             v = sum(err_re.^2 + err_im.^2);
         
         
         if nargout > 1
-                w  = omega(:);
+                w  = feis.omega(:);
                 R0 = p(1);
                 R1 = p(2);
                 C1 = p(3);
@@ -151,7 +164,7 @@ classdef fitting_eis
             
         
                 g_true = 2 * (derr_re_dp' * err_re) + 2 * (derr_im_dp' * err_im);
-                g_norm = g_true .* scales(:);
+                g_norm = g_true .* feis.scales(:);
         end
         end
 
