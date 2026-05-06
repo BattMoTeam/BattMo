@@ -18,12 +18,26 @@ classdef FittingEIS
 
         function feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega)
             
-            feis.params0  = params0;
-            feis.scales   = scales;
-            feis.Z_re_exp = Z_re_exp;
-            feis.Z_im_exp = Z_im_exp;
-            feis.omega    = omega;
-            
+            % feis.params0  = params0;
+            % feis.scales   = scales;
+            % feis.Z_re_exp = Z_re_exp;
+            % feis.Z_im_exp = Z_im_exp;
+            % feis.omega    = omega;
+
+
+            if istable(Z_re_exp), Z_re_exp = table2array(Z_re_exp); end
+            if istable(Z_im_exp), Z_im_exp = table2array(Z_im_exp); end
+            if istable(omega), omega = table2array(omega); end
+            if istable(params0), params0 = table2array(params0); end
+            if istable(scales), scales = table2array(scales); end
+
+            % Everything has to be "double" and colon (:)
+            feis.params0 = double(params0(:));
+            feis.scales  = double(scales(:));
+            feis.Z_re_exp= double(Z_re_exp(:));
+            feis.Z_im_exp= double(Z_im_exp(:));
+            feis.omega   = double(omega(:));
+
         end
 
 
@@ -113,13 +127,28 @@ classdef FittingEIS
 
         function [v, g_norm] = optifunc(feis, p)
             
-            [Z_re_param, Z_Im_param] = load_nyquist(p, feis.omega);
+            [Z_re_param, Z_im_param] = load_nyquist(p, feis.omega);
+
+
+            if istable(Z_re_param), Z_re_param = table2array(Z_re_param); end
+            if istable(Z_im_param), Z_im_param = table2array(Z_im_param); end
+            
+           
+            Z_re_param = double(Z_re_param(:));
+            Z_im_param = double(Z_im_param(:));
+
+
+            if ~isnumeric(Z_re_param) || ~isreal(Z_re_param) || any(isnan(Z_re_param(:)))
+                v = 1e10; 
+                g_norm = zeros(5,1); 
+                return;
+            end
             
             Module_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
             Module_Z = Module_Z(:);
             
             err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Module_Z(:);
-            err_im = (feis.Z_im_exp(:) - Z_Im_param(:)) ./ Module_Z(:);
+            err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Module_Z(:);
             
             v = sum(err_re.^2 + err_im.^2);
             

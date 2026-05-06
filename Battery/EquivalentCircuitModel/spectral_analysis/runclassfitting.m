@@ -5,7 +5,7 @@ filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_Aug
 
 [Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
 
-scales = [10e-2, 10e-3, 15000, 10e-3, 5];
+scales = [10e-2, 10e-3, 5000, 100e-3, 50];
 
 feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
