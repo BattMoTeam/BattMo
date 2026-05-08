@@ -3,6 +3,7 @@ classdef GenericControlModelInputParams < ControlModelInputParams
     properties
 
         controlsteps
+        capacity % value is used if CRate or DRate are given
         
     end
     

@@ -3,6 +3,7 @@ classdef GenericControlModel < ControlModel
     properties
         
         controlsteps % cell array, each cell describing a control (see GenericControlModel.schema.json)
+        capacity % value is used if CRate or DRate are given
         
     end
     
@@ -12,7 +13,8 @@ classdef GenericControlModel < ControlModel
             
             model = model@ControlModel(inputparams);
             
-            fdnames = {'controlsteps'};
+            fdnames = {'controlsteps',
+                       'capacity'};
             model = dispatchParams(model, inputparams, fdnames);
 
             model = model.parseControlSteps();
@@ -71,10 +73,27 @@ classdef GenericControlModel < ControlModel
 
         function model = parseControlSteps(model)
 
-            model.controlsteps = GenericControlModel.unfoldCycle(model.controlsteps);
-            
+            controlsteps = GenericControlModel.unfoldCycle(model.controlsteps);
+
+            for icontrolstep = 1 : numel(controlsteps)
+                controlsteps{icontrolstep} = model.filterRate(controlsteps{icontrolstep});
+            end
+
+            model.controlsteps = controlsteps;
         end
 
+        function controlstep = filterRate(model, controlstep)
+
+            if strcmp(controlstep.controltype, 'current') && (strcmp(controlstep.valueType, 'CRate') || strcmp(controlstep.valueType, 'DRate'))
+                controlstep.valueType = 'currentValue';
+                controlstep.value = controlstep.value * (model.capacity/hour); 
+                
+            else
+                % do nothing
+                return
+            end
+            
+        end
         
         function model = setupTerminationFunctions(model)
             

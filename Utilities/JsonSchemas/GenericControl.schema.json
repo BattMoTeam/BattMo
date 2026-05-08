@@ -56,6 +56,11 @@
             "termination": {
               "$ref": "#/$defs/termination"
             },
+            "valueType" : {
+              "type" : "string",
+              "enum" : ["CRate", "DRate", "currentValue"],
+              "description" : "the value can be a CRate (or Drate) or a given current"
+            }
             "value": {
               "type": "number",
               "description": "Value of the imposed current"
