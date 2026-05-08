@@ -363,7 +363,7 @@ classdef GenericControlModel < ControlModel
                 
                 if strcmp(control.controltype, 'cycle')
 
-                    ncycle  = control.numberOfcycles;
+                    ncycle  = control.numberOfCycles;
                     control = control.cycleControlSteps;
                     control = GenericControlModel.unfoldCycle(control);
                     control = repmat(control, ncycle, 1);
