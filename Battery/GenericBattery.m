@@ -618,7 +618,8 @@ classdef GenericBattery < BaseModel
                 control = CCcontrolModel(inputparams);
 
               case "Generic"
-
+                
+                inputparams.capacity = C;
                 control = GenericControlModel(inputparams);
 
               otherwise
