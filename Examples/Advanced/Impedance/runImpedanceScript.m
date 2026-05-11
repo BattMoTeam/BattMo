@@ -2,8 +2,8 @@ clear all
 close all
 
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+addpath('C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\jp3-eis');
+jsonstruct = parseBattmoJson('C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\jp3-eis\jp3-opt-1d-full.json');
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
