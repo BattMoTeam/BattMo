@@ -3,7 +3,7 @@
   "thermalConductivity": 0.099,
   "density": 1210,
   "initialConcentration": {
-    "value": 1,
+    "value": 1.5,
     "unit": "mol/litre"
   },
   "ionicConductivity": {
