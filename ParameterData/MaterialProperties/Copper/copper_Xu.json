@@ -1,5 +1,5 @@
 {
-    "EffectiveElectricalConductivity": 6.33e7,
+    "effectiveElectronicConductivity": 6.33e7,
     "thermalConductivity": 398,
     "specificHeatCapacity": 385,
     "density": 8900
