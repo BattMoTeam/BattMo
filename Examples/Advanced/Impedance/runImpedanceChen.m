@@ -1,6 +1,9 @@
 clear all
 % close all
 
+
+
+
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -39,23 +42,33 @@ initstate = initStateChen2020(model, c_ne, c_pe);
 
 impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
 
-%%
+
+
+
+
+
 
 set(0, 'defaultlinelinewidth', 3);
+
+
+
+figure
+
 
 omegas = linspace(-4, 2, 30);
 omegas = 10.^omegas;
 Z = impsolv.computeImpedance(omegas);
-
-figure
 hold on
 
 plot(real(Z), -imag(Z), 'displayname', 'battmo');
 
+axis equal;
+
+
 docompare = true;
 if docompare
     p = fileparts(mfilename('fullpath'));
-    data = load(fullfile(p, 'utils', 'pybamm_chen_impedances.mat'));
+    data = load('C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\matlab\BattMo\Examples\Advanced\Impedance\utils\pybamm_chen_impedances.mat');
     Zpybamm = data.impedances;
     plot(real(Zpybamm), -imag(Zpybamm), 'displayname', 'pybamm');
 end

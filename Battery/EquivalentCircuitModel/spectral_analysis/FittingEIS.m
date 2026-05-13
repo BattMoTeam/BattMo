@@ -18,25 +18,25 @@ classdef FittingEIS
 
         function feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega)
             
-            % feis.params0  = params0;
-            % feis.scales   = scales;
-            % feis.Z_re_exp = Z_re_exp;
-            % feis.Z_im_exp = Z_im_exp;
-            % feis.omega    = omega;
+            feis.params0  = params0;
+            feis.scales   = scales;
+            feis.Z_re_exp = Z_re_exp;
+            feis.Z_im_exp = Z_im_exp;
+            feis.omega    = omega;
 
 
-            if istable(Z_re_exp), Z_re_exp = table2array(Z_re_exp); end
-            if istable(Z_im_exp), Z_im_exp = table2array(Z_im_exp); end
-            if istable(omega), omega = table2array(omega); end
-            if istable(params0), params0 = table2array(params0); end
-            if istable(scales), scales = table2array(scales); end
-
-            % Everything has to be "double" and colon (:)
-            feis.params0 = double(params0(:));
-            feis.scales  = double(scales(:));
-            feis.Z_re_exp= double(Z_re_exp(:));
-            feis.Z_im_exp= double(Z_im_exp(:));
-            feis.omega   = double(omega(:));
+            % if istable(Z_re_exp), Z_re_exp = table2array(Z_re_exp); end
+            % if istable(Z_im_exp), Z_im_exp = table2array(Z_im_exp); end
+            % if istable(omega), omega = table2array(omega); end
+            % if istable(params0), params0 = table2array(params0); end
+            % if istable(scales), scales = table2array(scales); end
+            % 
+            % % Everything has to be "double" and colon (:)
+            % feis.params0 = double(params0(:));
+            % feis.scales  = double(scales(:));
+            % feis.Z_re_exp= double(Z_re_exp(:));
+            % feis.Z_im_exp= double(Z_im_exp(:));
+            % feis.omega   = double(omega(:));
 
         end
 
@@ -71,28 +71,28 @@ classdef FittingEIS
             
             figure;
             subplot(3,1,1);
-            semilogx(feis.omega, feis.Z_re_exp, 'ro', 'MarkerFaceColor', 'r');
+            semilogx(feis.omega, feis.Z_re_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(feis.omega, Z_re_fit, 'bo', 'LineWidth', 2);        
-            % legend('Expérimental', 'Modèle (Fitted)');
+            semilogx(feis.omega, Z_re_fit, 'b', 'LineWidth', 2);        
+            legend('experience', 'fitted model');
             title('Fitting results');
             xlabel('Omega');
             ylabel('Z_{re} '); 
             
             subplot(3,1,2);
-            semilogx(feis.omega, feis.Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+            semilogx(feis.omega, feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(feis.omega, Z_im_fit, 'bo', 'LineWidth', 2);        
-            % legend('Expérimental', 'Modèle (Fitted)');
+            semilogx(feis.omega, Z_im_fit, 'b', 'LineWidth', 2);        
+            legend('experience', 'fitted model');
             title('Fitting results');
             xlabel('Omega');
             ylabel('-Z_{im} '); 
             
             subplot(3,1,3);
-            plot(feis.Z_re_exp, feis.Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
+            plot(feis.Z_re_exp, feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            plot(feis.Z_re_exp, Z_im_fit, 'bo', 'LineWidth', 2);        
-            % legend('Expérimental', 'Modèle (Fitted)');
+            plot(feis.Z_re_exp, Z_im_fit, 'b', 'LineWidth', 2);        
+            legend('experience', 'fitted model');
             title('Nyquist');
             xlabel('Z_{re}');
             ylabel('-Z_{im} '); 

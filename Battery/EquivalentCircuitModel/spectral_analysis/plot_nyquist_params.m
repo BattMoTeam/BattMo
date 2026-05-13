@@ -2,9 +2,9 @@
 %  params = [6.2261e-3, 0.3e-3, 10000.1264, 0.00097, 2e5];  % best params
 % handmade
 
-params = [0.003, 0.00134, 5, 0.00330, 20000]
+params = [0.003, 0.00134, 5, 0.00330, 20000];
 [Z_re_exp, Z_im_exp, omega] = load_experimental_data();
-omega = logspace(-2, 4, 100)
+omega = logspace(-2, 4, 100);
 
 [Z_real, Z_imag] = load_nyquist(params, omega)
 
