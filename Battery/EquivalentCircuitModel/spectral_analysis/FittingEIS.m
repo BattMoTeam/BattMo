@@ -50,21 +50,15 @@ classdef FittingEIS
             params0_norm = params0_norm(:);
            
 
-            A_custom = [0, 0, -1, 0, 2*feis.scales(5)/feis.scales(3)];
+            A_custom = [0, 0, 2*feis.scales(3)/feis.scales(5), 0, -1];
             b_custom = 0;
             
-            limite_basse = 1e-5;
-            A_lim = -eye(5); 
-            b_lim = -limite_basse * ones(5, 1);
-            
-            A_total = [A_custom; A_lim];
-            b_total = [b_custom; b_lim];
 
             [min_value, best_params_norm, history] = unitBoxBFGS(...
                 params0_norm, ...                             
                 f_opt, ...           
                 'maximize', false, ...      
-                'linIneq', struct('A', A_total, 'b', b_total), ...   
+                'linIneq', struct('A', A_custom, 'b', b_custom), ...   
                 'enforceFeasible', true, ...     
                 'maxIt', 300, ...               
                 'objChangeTol', 1e-6, ...       
@@ -139,7 +133,11 @@ classdef FittingEIS
 
         function [v, g_norm] = optifunc(feis, p)
             
-            [Z_re_param, Z_im_param] = load_nyquist(p, feis.omega);
+
+            % Preventing physical values to get too close from 0
+            p_safe = max(p, 1e-8);
+
+            [Z_re_param, Z_im_param] = load_nyquist(p_safe, feis.omega);
 
 
             if istable(Z_re_param), Z_re_param = table2array(Z_re_param); end
@@ -156,11 +154,11 @@ classdef FittingEIS
                 return;
             end
             
-            Module_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
-            Module_Z = Module_Z(:);
+            Modulus_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
+            Modulus_Z = Modulus_Z(:);
             
-            err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Module_Z(:);
-            err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Module_Z(:);
+            err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Modulus_Z(:);
+            err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Modulus_Z(:);
             
             v = sum(err_re.^2 + err_im.^2);
             
@@ -188,8 +186,8 @@ classdef FittingEIS
                 g_im_dC2 = -(R2^2.*w - C2^2*R2^4.*w.^3) ./ (1+(R2*C2.*w).^2).^2; 
 
                 J_im = [g_im_dR0, g_im_dR1, g_im_dC1, g_im_dR2, g_im_dC2];
-                derr_re_dp = J_re ./ Module_Z; 
-                derr_im_dp = J_im ./ Module_Z;
+                derr_re_dp = J_re ./ Modulus_Z; 
+                derr_im_dp = J_im ./ Modulus_Z;
 
                 g_true = 2 * (derr_re_dp' * err_re) + 2 * (derr_im_dp' * err_im);
                 g_norm = g_true .* feis.scales(:);
@@ -208,8 +206,8 @@ classdef FittingEIS
             % 
             %         [Z_re_pert, Z_im_pert] = load_nyquist(p_perturb, feis.omega);
             % 
-            %         err_re_pert = (feis.Z_re_exp(:) - double(Z_re_pert(:))) ./ Module_Z;
-            %         err_im_pert = (feis.Z_im_exp(:) - double(Z_im_pert(:))) ./ Module_Z;
+            %         err_re_pert = (feis.Z_re_exp(:) - double(Z_re_pert(:))) ./ Modulus_Z;
+            %         err_im_pert = (feis.Z_im_exp(:) - double(Z_im_pert(:))) ./ Modulus_Z;
             % 
             %         v_perturb = sum(err_re_pert.^2 + err_im_pert.^2);
             % 
@@ -237,17 +235,17 @@ classdef FittingEIS
             end
             
             % 3. Calcul du module pour l'erreur relative
-            Module_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
-            Module_Z = Module_Z(:);
+            Modulus_Z = sqrt(feis.Z_re_exp.^2 + feis.Z_im_exp.^2);
+            Modulus_Z = Modulus_Z(:);
             
             % 4. Vecteurs de résidus (Non mis au carré, lsqnonlin s'en charge)
-            err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Module_Z;
-            err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Module_Z;
+            err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Modulus_Z;
+            err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Modulus_Z;
             
             % 5. On empile les parties réelles et imaginaires en un seul vecteur colonne
             residuals = [err_re; err_im];
         end
-        
+
         function [min_value, best_params, resnorm] = optimizationLsqnonlin(feis)
             % Fonction objectif : renvoie le vecteur de résidus
             f_res = @(p_norm) feis.optifunc_lsq(p_norm(:) .* feis.scales(:));
