@@ -284,7 +284,7 @@ for k = 1:3
         else
             [ix, s] = deal([], 0);
         end
-        if ~isempty(ix) && s <= 1+sqrt(eps)
+        if ~isempty(ix) && s <= 1+sqrt(eps)  
             becomesActive(ix) = true;
             d  = d + s*dr;
             gr = (1-s)*gr;

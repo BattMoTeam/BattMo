@@ -5,15 +5,18 @@
 % 
 % [Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
 
-params0 = [3e-2, 1e-1, 1e2, 1e-2, 1e2];
+params0 = [3e-2, 1e-1, 3e1, 1e-2, 1e1];
 
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
 
-scales = [1e-1, 1, 1e3, 1e-1, 1000];
+scales = [1e-1, 1, 1e2, 1e-1, 1e2];
 
 feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
+% [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
+
+%% Lancement avec LSQNONLIN
+[min_value, best_params, fitting_error] = feis.optimizationLsqnonlin();
 
 %%
 feis.plotresults(best_params, fitting_error);
