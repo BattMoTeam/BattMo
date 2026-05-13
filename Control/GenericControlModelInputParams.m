@@ -4,6 +4,9 @@ classdef GenericControlModelInputParams < ControlModelInputParams
 
         controlsteps
         capacity % value is used if CRate or DRate are given
+
+        addDescription % boolean, if true, a description of the step is added to each state. default is false
+        description % description string
         
     end
     
@@ -12,7 +15,10 @@ classdef GenericControlModelInputParams < ControlModelInputParams
 
         function inputparams = GenericControlModelInputParams(jsonstruct)
 
-        % addon to compensate for matlab json parsing choice
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'addDescription'}, false);
+            jsonstruct = setDefaultJsonStructField(jsonstruct, {'description'}, '');
+            
+            % addon to compensate for matlab json parsing choice
             if isstruct(jsonstruct.controlsteps)
                 jsonstruct.controlsteps = {jsonstruct.controlsteps};
             end

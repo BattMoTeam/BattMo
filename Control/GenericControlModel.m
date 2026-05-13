@@ -4,6 +4,9 @@ classdef GenericControlModel < ControlModel
         
         controlsteps % cell array, each cell describing a control (see GenericControlModel.schema.json)
         capacity % value is used if CRate or DRate are given
+
+        addDescription % boolean, if true, a description of the step is added to each state
+        description % description string
         
     end
     
@@ -13,8 +16,10 @@ classdef GenericControlModel < ControlModel
             
             model = model@ControlModel(inputparams);
             
-            fdnames = {'controlsteps',
-                       'capacity'};
+            fdnames = {'controlsteps', ...
+                       'capacity'    , ...
+                       'addDescription', ...
+                       'description'};
             model = dispatchParams(model, inputparams, fdnames);
 
             model = model.parseControlSteps();
@@ -67,16 +72,30 @@ classdef GenericControlModel < ControlModel
         function newstate = addVariablesAfterConvergence(model, newstate, state)
 
             newstate.ctrlTime = state.ctrlTime;
+            if model.addDescription
+                newstate.description = model.controlsteps{newstate.ctrlStepIndex}.description;
+            end
             
         end
 
 
         function model = parseControlSteps(model)
-
-            controlsteps = GenericControlModel.unfoldCycle(model.controlsteps);
-
+            
+            controlsteps = model.controlsteps;
+            
+            if model.addDescription
+                for ic = 1 : numel(controlsteps)
+                    controlsteps{ic}.description = {'control description', model.description};
+                end
+            end
+            
+            controlsteps = GenericControlModel.unfoldCycle(controlsteps, model.addDescription);
+            
             for icontrolstep = 1 : numel(controlsteps)
                 controlsteps{icontrolstep} = model.filterRate(controlsteps{icontrolstep});
+                if model.addDescription
+                    controlsteps{icontrolstep}.description = [controlsteps{icontrolstep}.description; {'step index', icontrolstep}];
+                end
             end
 
             model.controlsteps = controlsteps;
@@ -299,7 +318,7 @@ classdef GenericControlModel < ControlModel
             state.controlEquation = ctrleq;
             
         end
-        
+
     end
 
     methods (Static)
@@ -355,19 +374,68 @@ classdef GenericControlModel < ControlModel
 
         end
 
-        function controlsteps = unfoldCycle(controlsteps)
+        function controlsteps = unfoldCycle(controlsteps, addDescription)
 
             for icontrol = 1 : numel(controlsteps)
 
                 control = controlsteps{icontrol};
+
+                if addDescription
+                    
+                    %% Add description
+                    
+                    if isfield(control, 'description')
+                        desc = control.description;
+                    else
+                        desc = {};
+                    end
+
+                    append_desc = {'local step index', icontrol};
+                    
+                    control.description = [desc; append_desc];
+
+                    controlsteps{icontrol} = control;
+                end
+                
+                %% Unfold cycle
                 
                 if strcmp(control.controltype, 'cycle')
 
                     ncycle  = control.numberOfCycles;
-                    control = control.cycleControlSteps;
-                    control = GenericControlModel.unfoldCycle(control);
-                    control = repmat(control, ncycle, 1);
+
+                    if addDescription
+                        if isfield(control, 'name')
+                            cycle_name = control.name;
+                        else
+                            cycle_name = {};
+                        end
+                        
+                        if isfield(control, 'description')
+                            desc = control.description;
+                        else
+                            desc = {};
+                        end
+                    end
+                    cyclecontrols = control.cycleControlSteps;
+
+                    newcontrols = {};
+                    
+                    for icycle = 1 : ncycle
+                        for ic = 1 : numel(cyclecontrols)
+                            newcontrols = vertcat(newcontrols, {cyclecontrols{ic}});
+                            if addDescription
+                                append_desc = [{'parent cycle name', cycle_name}; ...
+                                               {'cycle step', icycle}; ...
+                                               {'cycle inner step', ic}];
+                                newcontrols{end}.description = [desc; append_desc];
+                            end
+                        end
+                    end
+                    
+                    control = GenericControlModel.unfoldCycle(newcontrols, addDescription);
+                    
                     controlsteps = [controlsteps(1:icontrol-1); control; controlsteps(icontrol+1:end)];
+                    
                 end
 
             end
