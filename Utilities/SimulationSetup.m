@@ -177,11 +177,9 @@ classdef SimulationSetup
             simsetup.OutputMinisteps = getJsonStructField(simInput, 'OutputMinisteps', true);
             simsetup.Output          = getJsonStructField(simInput, 'Output');
 
-            simsetup = simsetup.resetOutputHandler();
-
         end
 
-        function simsetup = resetOutputHandler(simsetup)
+        function simsetup = setupOutputHandler(simsetup)
             
             if simsetup.Output.saveOutput
                 saveOptions = simsetup.Output.saveOptions;
@@ -200,6 +198,8 @@ classdef SimulationSetup
             model     = simsetup.model;
             schedule  = simsetup.schedule;
 
+            simsetup = simsetup.setupOutputHandler();
+            
             fds = {'Verbose'             , ...
                    'OutputMinisteps'     , ...
                    'Verbose'             , ...
