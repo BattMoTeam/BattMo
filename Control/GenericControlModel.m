@@ -7,7 +7,7 @@ classdef GenericControlModel < ControlModel
 
         addDescription % boolean, if true, a description of the step is added to each state
         description % description string
-        
+
     end
     
     methods
@@ -73,7 +73,7 @@ classdef GenericControlModel < ControlModel
 
             newstate.ctrlTime = state.ctrlTime;
             if model.addDescription
-                newstate.description = model.controlsteps{newstate.ctrlStepIndex}.description;
+                newstate.descriptions = model.controlsteps{newstate.ctrlStepIndex}.descriptions;
             end
             
         end
@@ -85,7 +85,7 @@ classdef GenericControlModel < ControlModel
             
             if model.addDescription
                 for ic = 1 : numel(controlsteps)
-                    controlsteps{ic}.description = {'control description', model.description};
+                    controlsteps{ic}.descriptions = model.description';
                 end
             end
             
@@ -94,7 +94,7 @@ classdef GenericControlModel < ControlModel
             for icontrolstep = 1 : numel(controlsteps)
                 controlsteps{icontrolstep} = model.filterRate(controlsteps{icontrolstep});
                 if model.addDescription
-                    controlsteps{icontrolstep}.description = [controlsteps{icontrolstep}.description; {'step index', icontrolstep}];
+                    controlsteps{icontrolstep}.descriptions = [controlsteps{icontrolstep}.descriptions; {'step index', icontrolstep}];
                 end
             end
 
@@ -384,17 +384,18 @@ classdef GenericControlModel < ControlModel
                     
                     %% Add description
                     
-                    if isfield(control, 'description')
-                        desc = control.description;
+                    if isfield(control, 'descriptions')
+                        descs = control.descriptions;
                     else
-                        desc = {};
+                        descs = {};
                     end
 
                     append_desc = {'local step index', icontrol};
                     
-                    control.description = [desc; append_desc];
+                    control.descriptions = [descs; append_desc];
 
                     controlsteps{icontrol} = control;
+                    
                 end
                 
                 %% Unfold cycle
@@ -404,18 +405,20 @@ classdef GenericControlModel < ControlModel
                     ncycle  = control.numberOfCycles;
 
                     if addDescription
-                        if isfield(control, 'name')
-                            cycle_name = control.name;
-                        else
-                            cycle_name = {};
-                        end
                         
-                        if isfield(control, 'description')
-                            desc = control.description;
+                        if isfield(control, 'descriptions')
+                            descs = control.descriptions;
                         else
-                            desc = {};
+                            descs = {};
                         end
+
+                        if isfield(control, 'description')
+                            append_desc = control.description';
+                            descs = [descs; append_desc];
+                        end
+
                     end
+                    
                     cyclecontrols = control.cycleControlSteps;
 
                     newcontrols = {};
@@ -424,10 +427,9 @@ classdef GenericControlModel < ControlModel
                         for ic = 1 : numel(cyclecontrols)
                             newcontrols = vertcat(newcontrols, {cyclecontrols{ic}});
                             if addDescription
-                                append_desc = [{'parent cycle name', cycle_name}; ...
-                                               {'cycle step', icycle}; ...
+                                append_desc = [{'cycle step', icycle}; ...
                                                {'cycle inner step', ic}];
-                                newcontrols{end}.description = [desc; append_desc];
+                                newcontrols{end}.descriptions = [descs; append_desc];
                             end
                         end
                     end
