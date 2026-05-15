@@ -133,6 +133,8 @@ classdef SimulationSetup
                         %     - isAltered: Flag indicated whether the schedule
                         %       was updated or not
 
+        Output % used for pack simulation see Output.schema.json
+        
     end
 
     methods
@@ -166,11 +168,23 @@ classdef SimulationSetup
             nls.continueOnFailure = false;
 
             simInput = setDefaultJsonStructField(simInput, 'NonLinearSolver', nls);
-
+            
+            simInput = setDefaultJsonStructField(simInput, {'Output', 'saveOutput'}, false);
+            
             simsetup.schedule        = getJsonStructField(simInput, 'schedule');
             simsetup.initstate       = getJsonStructField(simInput, 'initstate');
             simsetup.NonLinearSolver = getJsonStructField(simInput, 'NonLinearSolver');
             simsetup.OutputMinisteps = getJsonStructField(simInput, 'OutputMinisteps', true);
+            simsetup.Output          = getJsonStructField(simInput, 'Output');
+
+            if simsetup.Output.saveOutput
+                saveOptions = simsetup.Output.saveOptions;
+                simsetup.OutputHandler = ResultHandler('dataPrefix'   , 'states'                   , ...
+                                                       'writeToDisk'  , true                       ,...
+                                                       'dataDirectory', saveOptions.outputDirectory, ...
+                                                       'dataFolder'   , saveOptions.name           , ...
+                                                       'cleardir'     , saveOptions.clearSimulation);
+            end
             
         end
 
@@ -196,7 +210,30 @@ classdef SimulationSetup
             vals = cellfun(@(fd) simsetup.(fd), fds, 'uniformoutput', false);
 
             opts = reshape(vertcat(fds, vals), [], 1);
-            
+
+            % if simsetup.Output.saveOutput
+
+            %     outputDirectory = simsetup.Output.saveOptions.outputDirectory;
+            %     name            = simsetup.Output.saveOptions.name;
+            %     clearSimulation = simsetup.Output.saveOptions.clearSimulation;
+
+            %     problem = packSimulationProblem(initstate, model, schedule, [], ...
+            %                                     'Directory'      , outputDirectory, ...
+            %                                     'Name'           , name      , ...
+            %                                     opts{:});
+            %     problem.SimulatorSetup.OutputMinisteps = simsetup.OutputMinisteps;
+
+            %     if clearSimulation
+            %         %% clear previously computed simulation
+            %         clearPackedSimulatorOutput(problem, 'prompt', false);
+            %     end
+
+            %     simulatePackedProblem(problem);
+                
+            %     [globvars, states, reports] = getPackedSimulatorOutput(problem);
+
+            % else
+                
             [globVars, states, reports] = simulateScheduleAD(initstate, model, schedule, opts{:});
             
         end
