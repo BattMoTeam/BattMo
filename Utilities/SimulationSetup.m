@@ -177,6 +177,12 @@ classdef SimulationSetup
             simsetup.OutputMinisteps = getJsonStructField(simInput, 'OutputMinisteps', true);
             simsetup.Output          = getJsonStructField(simInput, 'Output');
 
+            simsetup = simsetup.resetOutputHandler();
+
+        end
+
+        function simsetup = resetOutputHandler(simsetup)
+            
             if simsetup.Output.saveOutput
                 saveOptions = simsetup.Output.saveOptions;
                 simsetup.OutputHandler = ResultHandler('dataPrefix'   , 'states'                   , ...
@@ -187,7 +193,7 @@ classdef SimulationSetup
             end
             
         end
-
+        
         function [states, globVars, reports] = run(simsetup)
 
             initstate = simsetup.initstate;
@@ -211,29 +217,6 @@ classdef SimulationSetup
 
             opts = reshape(vertcat(fds, vals), [], 1);
 
-            % if simsetup.Output.saveOutput
-
-            %     outputDirectory = simsetup.Output.saveOptions.outputDirectory;
-            %     name            = simsetup.Output.saveOptions.name;
-            %     clearSimulation = simsetup.Output.saveOptions.clearSimulation;
-
-            %     problem = packSimulationProblem(initstate, model, schedule, [], ...
-            %                                     'Directory'      , outputDirectory, ...
-            %                                     'Name'           , name      , ...
-            %                                     opts{:});
-            %     problem.SimulatorSetup.OutputMinisteps = simsetup.OutputMinisteps;
-
-            %     if clearSimulation
-            %         %% clear previously computed simulation
-            %         clearPackedSimulatorOutput(problem, 'prompt', false);
-            %     end
-
-            %     simulatePackedProblem(problem);
-                
-            %     [globvars, states, reports] = getPackedSimulatorOutput(problem);
-
-            % else
-                
             [globVars, states, reports] = simulateScheduleAD(initstate, model, schedule, opts{:});
             
         end
