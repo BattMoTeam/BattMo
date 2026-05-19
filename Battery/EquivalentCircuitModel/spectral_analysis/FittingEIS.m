@@ -18,25 +18,28 @@ classdef FittingEIS
 
         function feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega)
             
-            feis.params0  = params0;
-            feis.scales   = scales;
-            feis.Z_re_exp = Z_re_exp;
-            feis.Z_im_exp = Z_im_exp;
-            feis.omega    = omega;
+            % feis.params0  = params0;
+            % feis.scales   = scales;
+            % feis.Z_re_exp = Z_re_exp;
+            % feis.Z_im_exp = Z_im_exp;
+            % feis.omega    = omega;
 
 
-            % if istable(Z_re_exp), Z_re_exp = table2array(Z_re_exp); end
-            % if istable(Z_im_exp), Z_im_exp = table2array(Z_im_exp); end
-            % if istable(omega), omega = table2array(omega); end
-            % if istable(params0), params0 = table2array(params0); end
-            % if istable(scales), scales = table2array(scales); end
-            % 
-            % % Everything has to be "double" and colon (:)
-            % feis.params0 = double(params0(:));
-            % feis.scales  = double(scales(:));
-            % feis.Z_re_exp= double(Z_re_exp(:));
-            % feis.Z_im_exp= double(Z_im_exp(:));
-            % feis.omega   = double(omega(:));
+            if istable(Z_re_exp), Z_re_exp = table2array(Z_re_exp); end
+            if istable(Z_im_exp), Z_im_exp = table2array(Z_im_exp); end
+            if istable(omega), omega = table2array(omega); end
+            if istable(params0), params0 = table2array(params0); end
+            if istable(scales), scales = table2array(scales); end
+
+            % Everything has to be "double" and colon (:)
+            feis.params0 = double(params0(:));
+            feis.scales  = double(scales(:));
+            feis.Z_re_exp= double(Z_re_exp(:));
+            feis.Z_im_exp= double(Z_im_exp(:));
+            feis.omega   = double(omega(:));
+
+            %pb here because the way I take exp data changes a lot the
+            %result...
 
         end
 
@@ -50,7 +53,7 @@ classdef FittingEIS
             params0_norm = params0_norm(:);
            
 
-            A_custom = [0, 0, 2*feis.scales(3)/feis.scales(5), 0, -1];
+            A_custom = [0, 0, -1, 0, 2*feis.scales(5)/feis.scales(3)];
             b_custom = 0;
             
 
@@ -58,7 +61,7 @@ classdef FittingEIS
                 params0_norm, ...                             
                 f_opt, ...           
                 'maximize', false, ...      
-                'linIneq', struct('A', A_custom, 'b', b_custom), ...   
+                'linIneq', struct('A', A_custom, 'b', b_custom),  ...   %A*u<=b
                 'enforceFeasible', true, ...     
                 'maxIt', 300, ...               
                 'objChangeTol', 1e-6, ...       
@@ -79,7 +82,7 @@ classdef FittingEIS
             subplot(3,1,1);
             semilogx(feis.omega, feis.Z_re_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(feis.omega, Z_re_fit, 'b', 'LineWidth', 2);        
+            semilogx(feis.omega, Z_re_fit, 'b');        
             legend('experience', 'fitted model');
             title('Fitting results');
             xlabel('Omega');
@@ -88,7 +91,7 @@ classdef FittingEIS
             subplot(3,1,2);
             semilogx(feis.omega, feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            semilogx(feis.omega, Z_im_fit, 'b', 'LineWidth', 2);        
+            semilogx(feis.omega, Z_im_fit, 'b');        
             legend('experience', 'fitted model');
             title('Fitting results');
             xlabel('Omega');
@@ -97,7 +100,7 @@ classdef FittingEIS
             subplot(3,1,3);
             plot(feis.Z_re_exp, feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
             hold on;
-            plot(feis.Z_re_exp, Z_im_fit, 'b', 'LineWidth', 2);        
+            plot(feis.Z_re_exp, Z_im_fit, 'b');        
             legend('experience', 'fitted model');
             title('Nyquist');
             xlabel('Z_{re}');
@@ -165,11 +168,11 @@ classdef FittingEIS
             if nargout > 1
 
                 w  = feis.omega(:);
-                R0 = p(1);
-                R1 = p(2);
-                C1 = p(3);
-                R2 = p(4);
-                C2 = p(5);
+                R0 = p_safe(1);
+                R1 = p_safe(2);
+                C1 = p_safe(3);
+                R2 = p_safe(4);
+                C2 = p_safe(5);
 
                 g_re_dR0 = -ones(size(w)); 
                 g_re_dR1 = -(1-(R1*C1.*w).^2) ./ (1+(R1*C1.*w).^2).^2;  
@@ -255,7 +258,7 @@ classdef FittingEIS
             
             % Bornes (Limites inférieures strictes > 0 pour éviter les crashs)
             lb_norm = ones(5,1) * 1e-5; 
-            ub_norm = inf(5,1); 
+            ub_norm = ones(5,1) * 1e5./ feis.scales(:); 
             
             % Options de lsqnonlin
             options = optimoptions('lsqnonlin', ...
