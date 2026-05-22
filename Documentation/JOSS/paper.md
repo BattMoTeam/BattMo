@@ -6,32 +6,32 @@ tags:
   - MATLAB
 authors:
   - name: Xavier Raynaud^[corresponding author]
-	orcid: 0000-0002-4100-3035
-	affiliation: 1
+    orcid: 0000-0002-4100-3035
+    affiliation: 1
   - name: Halvor Møll Nilsen
-	orcid: 0000-0002-2153-0962
-	affiliation: 1
+    orcid: 0000-0002-2153-0962
+    affiliation: 1
   - name: August Johansson
-	orcid: 0000-0001-6950-6016
-	affiliation: 1
+    orcid: 0000-0001-6950-6016
+    affiliation: 1
   - name: Eibar Flores
-	orcid: 0000-0003-2954-1233
-	affiliation: 2
+    orcid: 0000-0003-2954-1233
+    affiliation: 2
   - name: Lorena Hendrix
-	orcid: 0009-0006-9621-6122
-	affiliation: 2
+    orcid: 0009-0006-9621-6122
+    affiliation: 2
   - name: Francesca Watson
-	orcid: 0000-0002-4391-4166
-	affiliation: 1
+    orcid: 0000-0002-4391-4166
+    affiliation: 1
   - name: Sridevi Krishnamurthi
-	orcid: 0009-0006-0805-6713
-	affiliation: 2
+    orcid: 0009-0006-0805-6713
+    affiliation: 2
   - name: Olav Møyner
-	orcid: 0000-0001-9993-3879
-	affiliation: 1
+    orcid: 0000-0001-9993-3879
+    affiliation: 1
   - name: Simon Clark
-	orcid: 0000-0002-8758-6109
-	affiliation: 2
+    orcid: 0000-0002-8758-6109
+    affiliation: 2
 affiliations:
  - name: SINTEF Digital, Dept. of Mathematics and Cybernetics, Norway
    index: 1
