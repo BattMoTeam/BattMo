@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Source code for runElectrolyser &mdash; BattMo  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -582,7 +582,7 @@
 <span class="c">%%</span>
 <span class="c">% We use the function :battmo:`rampupControl` to increase the current linearly in time</span>
 
-<span class="n">controlI</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">(</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c">% if negative, O2 and H2 are produced</span>
+<span class="n">controlI</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">(</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c">% if negative, O2 and H2 are produced</span>
 <span class="n">tup</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="n">total</span><span class="p">;</span>
 <span class="n">srcfunc</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="nb">time</span><span class="p">)</span><span class="w"> </span><span class="n">rampupControl</span><span class="p">(</span><span class="nb">time</span><span class="p">,</span><span class="w"> </span><span class="n">tup</span><span class="p">,</span><span class="w"> </span><span class="n">controlI</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;rampupcase&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linear&#39;</span><span class="p">);</span>
 <span class="n">control</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;src&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">srcfunc</span><span class="p">);</span>
@@ -634,7 +634,7 @@
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Polarisation curve&#39;</span><span class="p">);</span>
 
 <span class="nb">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">I</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">));</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">I</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">));</span>
 <span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [hour]&#39;</span><span class="p">);</span>
 <span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Current [A/cm^2]&#39;</span><span class="p">);</span>
 <span class="nb">title</span><span class="p">(</span><span class="s">&#39;Input current&#39;</span><span class="p">)</span>

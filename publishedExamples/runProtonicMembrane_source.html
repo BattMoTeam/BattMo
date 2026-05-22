@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Source code for runProtonicMembrane &mdash; BattMo  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -653,7 +653,7 @@
 <span class="c">% We sample the current value from 0 to 1 A/cm^2.</span>
 <span class="c">%</span>
 
-<span class="n">Is</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="mi">20</span><span class="p">);</span>
+<span class="n">Is</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">*</span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="mi">20</span><span class="p">);</span>
 
 <span class="c">%%</span>
 <span class="c">% We run the simulation for each current value and collect the results in the :code:`endstates`.</span>
@@ -678,7 +678,7 @@
 <span class="nb">figure</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 
-<span class="n">unit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span>^<span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="c">% shortcut</span>
+<span class="n">unit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="c">% shortcut</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">endstates</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;I=%g A/cm^2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
