@@ -47,5 +47,5 @@ function [Z_real, Z_imag, omegas] = load_chen_data()
     Z = impsolv.computeImpedance(omegas);
 
     Z_real = real(Z);
-    Z_imag = - imag(Z);
+    Z_imag = imag(Z);
 end

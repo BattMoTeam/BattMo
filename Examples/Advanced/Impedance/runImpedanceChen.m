@@ -55,8 +55,7 @@ set(0, 'defaultlinelinewidth', 3);
 figure
 
 
-omegas = linspace(-4, 2, 30);
-omegas = 10.^omegas;
+omegas = logspace(-4, 2, 30);
 Z = impsolv.computeImpedance(omegas);
 hold on
 
