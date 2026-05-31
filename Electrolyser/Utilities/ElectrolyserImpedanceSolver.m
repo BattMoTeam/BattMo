@@ -22,20 +22,19 @@ classdef ElectrolyserImpedanceSolver
 
         function eimpsolv = ElectrolyserImpedanceSolver(inputparams, varargin)
 
+            % NOT DONE
+
             default_options = struct('computeSteadyState' , true, ...
-                                     'soc'                , []  , ...
+                                     'appliedCurrent'     , []  , ...
                                      'initstate'          , []  , ...
                                      'numberOfRampupSteps', 3   , ...
                                      'numberOfTimeSteps'  , 10);
 
             eimpsolv.options = merge_options(default_options, varargin{:});
 
-            ctrl = 'Control';
-
             eimpsolv.inputparams = inputparams;
 
-            inputparams.(ctrl) = ImpedanceControlModelInputParams([]);
-            eimpsolv.model = ImpedanceBattery(inputparams);
+            eimpsolv.model = ImpedanceElectrolyser(inputparams);
 
             eimpsolv = eimpsolv.setupSteadyState();
             eimpsolv = eimpsolv.setupHelpers();
@@ -43,6 +42,8 @@ classdef ElectrolyserImpedanceSolver
         end
 
         function Z = computeImpedance(eimpsolv, omegas)
+
+            % NOT DONE
             
             DM    = eimpsolv.DM;
             DA    = eimpsolv.DA;
@@ -67,10 +68,15 @@ classdef ElectrolyserImpedanceSolver
             state = eimpsolv.state;
             model = eimpsolv.model;
             
-            ctrl = 'Control';
+            inm = 'IonomerMembrane';
+            her = 'HydrogenEvolutionElectrode';
+            oer = 'OxygenEvolutionElectrode';
 
-            state.(ctrl).omega = 1;
-            state.(ctrl).I = 0;
+            ctl = 'CatalystLayer';
+            exr = 'ExchangeReaction';
+            ptl = 'PorousTransportLayer';
+
+            state.omega = 1;
             
             state = model.initStateAD(state);
 
@@ -87,7 +93,7 @@ classdef ElectrolyserImpedanceSolver
             end
             eqs = vertcat(eqs{:});
             
-            indI = model.getIndexPrimaryVariable({ctrl, 'I'});
+            indI = model.getIndexPrimaryVariable({oer, ctl, 'I'});
 
             inds = true(numel(model.getPrimaryVariableNames), 1);
             inds(indI) = false;
@@ -98,7 +104,8 @@ classdef ElectrolyserImpedanceSolver
             eqs.jac = eqs.jac(inds); 
             eqs = combineEquations(eqs);
 
-            indUs = model.getRangePrimaryVariable(state.(ctrl).E, {ctrl, 'E'});
+            % the first argument from stats is just used by the function to get an AD sample
+            indUs = model.getRangePrimaryVariable(state.(oer).(ctl).E, {oer, ctl, 'E'});
             
             A = eqs.jac{1};
 

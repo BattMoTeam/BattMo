@@ -21,6 +21,8 @@ classdef ImpedanceElectrolyser < Electrolyser
             model = registerVarAndPropfuncNames@Electrolyser(model);
 
             model = model.registerVarName('omega');
+
+            model = model.setAsStaticVarName('omega');
             
             % defines shorthands for the submodels
             inm = 'IonomerMembrane';
@@ -62,6 +64,8 @@ classdef ImpedanceElectrolyser < Electrolyser
 
 
         function state = updateLiquideImpedanceTerm(model, state)
+
+            % NOT UPDATED
             
             ne      = 'NegativeElectrode';
             pe      = 'PositiveElectrode';
