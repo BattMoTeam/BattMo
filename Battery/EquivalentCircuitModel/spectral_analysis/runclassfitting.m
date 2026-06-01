@@ -9,15 +9,19 @@
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
 
 
-params0 = [3e-2, 1, 3e3, 1e-1, 1e3];
-scales = [1e-1, 1e1, 1e5, 1e0, 1e5];
+params0 = [2, ...
+             1, ...
+             5e2, ...
+             1, ...
+             1e2];                % initial condition: C1>2*C2
+scales = 100;
 
 params0_w = [1e-1,1e-1,1e-1,1e-1,1e-2,1,1,1e2,1e-07];
 scales_w = params0_w*10;              %to be changed between lsq and bfgs
 
-feis = FittingEIS(params0_w, scales_w, Z_re_exp, Z_im_exp, omega);
+feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS_warburg();
+[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
 
 % % Lancement avec LSQNONLIN
 % [min_value, best_params, fitting_error] = feis.optimizationLsqnonlin();
@@ -26,9 +30,9 @@ feis = FittingEIS(params0_w, scales_w, Z_re_exp, Z_im_exp, omega);
 
 
 %%
-feis.plotresults(best_params, fitting_error);
+feis.plotresults_thevenin(best_params, fitting_error);
 
-feis.printResults(best_params, fitting_error);
+feis.printResults(best_params, fitting_error);          % to be changed btw Warburg and Thevenin
 
 
 

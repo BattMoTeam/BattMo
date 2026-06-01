@@ -45,7 +45,9 @@ classdef FittingEIS
         end
 
         function p_norm = unscaled2scaled(feis, p)
-            p_norm = (p-feis.params0./feis.scales)./(feis.scales*feis.params0-feis.params0/feis.scales);
+            a = feis.scales;
+            p0 = feis.params0;
+            p_norm = (p-p0./a)./(a*p0-p0/a);
         end
 
         function p = scaled2unscaled(feis, p_norm)
@@ -54,6 +56,7 @@ classdef FittingEIS
             p = (a*p0-p0/a).*p_norm +p0/a;
         end
 
+        %% Thevenin Model
 
         function [min_value, history, best_params, fitting_error] = optimizationBFGS(feis)
 
@@ -63,10 +66,16 @@ classdef FittingEIS
             % best_params_norm = lsqnonlin(deltagap, params0_norm, lb_norm, ub_norm, [0,0,-1,0,10], 0);
             params0_norm = params0_norm(:);
            
+            a = feis.scales;
+            p03 = feis.params0(3);
+            p05 = feis.params0(5);
 
-            A_custom = [0, 0, -1, 0, 2*feis.scales(5)/feis.scales(3)];
-            b_custom = 0;
+            A_custom = [0, 0, -1, 0, 2*(a*p05 - p05/a)/(a*p03- p03/a)];
+            b_custom = (p03-2*p05)/(a^2*p03 - p03);
             
+            max_iter = 300;
+            tol_obj = 1e-7;
+            tol_grad = 1e-5;
 
             [min_value, best_params_norm, history] = unitBoxBFGS(...
                 params0_norm, ...                             
@@ -74,14 +83,35 @@ classdef FittingEIS
                 'maximize', false, ...      
                 'linIneq', struct('A', A_custom, 'b', b_custom),  ...   %A*u<=b
                 'enforceFeasible', true, ...     
-                'maxIt', 300, ...               
-                'objChangeTol', 1e-6, ...       
-                'gradTol', 1e-5, ...
+                'maxIt', max_iter, ...               
+                'objChangeTol', tol_obj, ...       
+                'gradTol', tol_grad, ...
                 'lineSearchMaxIt', 100 ...
                                                                 );
             best_params = scaled2unscaled(feis, best_params_norm(:) );
 
             fitting_error = feis.optifunc(best_params);
+
+            it_count = length(history.val) - 1; 
+            final_pg = history.pg(end);         
+            
+            % Cost function variation
+            if it_count >= 1
+                delta_v = abs(history.val(end) - history.val(end-1));
+            else
+                delta_v = inf;
+            end
+            
+            if it_count >= max_iter
+                fprintf('Stopped because %d iterations reached.\n', max_iter);
+            elseif final_pg < tol_grad
+                fprintf('Stopped because reached gradTol = %e.\n', tol_grad);
+            elseif delta_v < tol_obj
+                fprintf('Stopped because reached objChangeTol = %e.\n', tol_obj);
+            else
+                fprintf('Unexpected error or relative tolerance reached.\n');
+            end           
+
 
         end
 
@@ -136,17 +166,21 @@ classdef FittingEIS
                 J_re = [g_re_dR0, g_re_dR1, g_re_dC1, g_re_dR2, g_re_dC2];
 
                 g_im_dR0 = zeros(size(w));
-                g_im_dR1 = -(2*R1*C1.*w) ./ (1+(R1*C1.*w).^2).^2;  
-                g_im_dC1 = -(R1^2.*w - C1^2*R1^4.*w.^3) ./ (1+(R1*C1.*w).^2).^2;  
-                g_im_dR2 = -(2*R2*C2.*w) ./ (1+(R2*C2.*w).^2).^2;  
-                g_im_dC2 = -(R2^2.*w - C2^2*R2^4.*w.^3) ./ (1+(R2*C2.*w).^2).^2; 
+                g_im_dR1 = (2*R1*C1.*w) ./ (1+(R1*C1.*w).^2).^2;  
+                g_im_dC1 = (R1^2.*w - C1^2*R1^4.*w.^3) ./ (1+(R1*C1.*w).^2).^2;  
+                g_im_dR2 = (2*R2*C2.*w) ./ (1+(R2*C2.*w).^2).^2;  
+                g_im_dC2 = (R2^2.*w - C2^2*R2^4.*w.^3) ./ (1+(R2*C2.*w).^2).^2; 
 
                 J_im = [g_im_dR0, g_im_dR1, g_im_dC1, g_im_dR2, g_im_dC2];
                 derr_re_dp = J_re ./ Modulus_Z; 
                 derr_im_dp = J_im ./ Modulus_Z;
 
                 g_true = 2 * (derr_re_dp' * err_re) + 2 * (derr_im_dp' * err_im);
-                g_norm = unscaled2scaled(feis, g_true);
+                % Chain rule : 
+                a = feis.scales;
+                p0 = feis.params0(:);
+                dp_dpnorm = (a * p0 - p0 / a); % Dérivée de p par rapport à p_norm
+                g_norm = g_true .* dp_dpnorm;
                 
             end
             
@@ -410,7 +444,54 @@ classdef FittingEIS
 
         %% showing the results
 
-        function plotresults(feis, best_params, fitting_error)
+        function plotresults_thevenin(feis, best_params, fitting_error)
+
+            [Z_re_fit, Z_im_fit] = load_nyquist(best_params, feis.omega);  
+            
+            figure;
+            subplot(3,1,1);
+            semilogx(feis.omega, feis.Z_re_exp, 'r', 'MarkerFaceColor', 'r');
+            hold on;
+            semilogx(feis.omega, Z_re_fit, 'b');        
+            legend('experience', 'fitted model');
+            title('Fitting results');
+            xlabel('Omega');
+            ylabel('Z_{re} '); 
+            
+            subplot(3,1,2);
+            semilogx(feis.omega, -feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
+            hold on;
+            semilogx(feis.omega, -Z_im_fit, 'b');        
+            legend('experience', 'fitted model');
+            title('Fitting results');
+            xlabel('Omega');
+            ylabel('-Z_{im} '); 
+            
+            subplot(3,1,3);
+            plot(feis.Z_re_exp, -feis.Z_im_exp, 'r', 'MarkerFaceColor', 'r');
+            hold on;
+            plot(feis.Z_re_exp, -Z_im_fit, 'b');        
+            legend('experience', 'fitted model');
+            title('Nyquist');
+            xlabel('Z_{re}');
+            ylabel('-Z_{im} '); 
+            axis equal;
+            
+            grid on;
+            
+            text_error = sprintf('Fitting error : %.2e', fitting_error);
+            
+            subplot(3,1,3);
+            
+            text(0.05, 0.90, text_error, 'Units', 'normalized', ...
+                 'BackgroundColor', 'white', ...   
+                 'EdgeColor', 'black', ...        
+                 'FontSize', 11, ...               
+                 'FontWeight', 'bold');
+        end
+
+
+        function plotresults_warburg(feis, best_params, fitting_error)
 
             % [Z_re_fit, Z_im_fit] = load_nyquist(best_params, feis.omega);  
             w  = feis.omega(:);
@@ -478,23 +559,23 @@ classdef FittingEIS
             fprintf('\n=== FITTING SCORE ===\n');
             fprintf('Error : %e\n', fitting_error);
             
-            % fprintf('\n=== PARAMETERS FOUND ===\n');
-            % fprintf('R0 = %.5f Ohms\n', best_params(1));
-            % fprintf('R1 = %.5f Ohms\n', best_params(2));
-            % fprintf('C1 = %.1f Farads\n', best_params(3));
-            % fprintf('R2 = %.5f Ohms\n', best_params(4));
-            % fprintf('C2 = %.1f Farads\n', best_params(5));
-            
             fprintf('\n=== PARAMETERS FOUND ===\n');
-            fprintf('R0    = %.4e Ohms\n', best_params(1));
-            fprintf('R1    = %.4e Ohms\n', best_params(2));
-            fprintf('Q1    = %.4e s^a/Ohm\n', best_params(3));
-            fprintf('a1    = %.4f \n', best_params(4)); % %f suffit pour 'a' car il est entre 0 et 1
-            fprintf('R2    = %.4e Ohms\n', best_params(5));
-            fprintf('Q2    = %.4e s^a/Ohm\n', best_params(6));
-            fprintf('a2    = %.4f \n', best_params(7));
-            fprintf('Q     = %.4e \n', best_params(8));
-            fprintf('L     = %.4e Henrys\n', best_params(9));
+            fprintf('R0 = %.5f Ohms\n', best_params(1));
+            fprintf('R1 = %.5f Ohms\n', best_params(2));
+            fprintf('C1 = %.1f Farads\n', best_params(3));
+            fprintf('R2 = %.5f Ohms\n', best_params(4));
+            fprintf('C2 = %.1f Farads\n', best_params(5));
+            
+            % fprintf('\n=== PARAMETERS FOUND ===\n');
+            % fprintf('R0    = %.4e Ohms\n', best_params(1));
+            % fprintf('R1    = %.4e Ohms\n', best_params(2));
+            % fprintf('Q1    = %.4e s^a/Ohm\n', best_params(3));
+            % fprintf('a1    = %.4f \n', best_params(4)); % %f suffit pour 'a' car il est entre 0 et 1
+            % fprintf('R2    = %.4e Ohms\n', best_params(5));
+            % fprintf('Q2    = %.4e s^a/Ohm\n', best_params(6));
+            % fprintf('a2    = %.4f \n', best_params(7));
+            % fprintf('Q     = %.4e \n', best_params(8));
+            % fprintf('L     = %.4e Henrys\n', best_params(9));
         end
     end
 end
