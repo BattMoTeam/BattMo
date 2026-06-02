@@ -45,33 +45,37 @@ classdef FittingEIS
         end
 
         function p_norm = unscaled2scaled(feis, p)
-            a = feis.scales;
-            p0 = feis.params0;
-            p_norm = (p-p0./a)./(a*p0-p0/a);
+            pmin = feis.scales(1:5);
+            pmax = feis.scales(6:10);
+            p_norm = (p-pmin)./(pmax-pmin);
         end
 
         function p = scaled2unscaled(feis, p_norm)
-            a = feis.scales;
-            p0 = feis.params0;
-            p = (a*p0-p0/a).*p_norm +p0/a;
+            pmin = feis.scales(1:5);
+            pmax = feis.scales(6:10);
+            p = (pmax-pmin).*p_norm +pmin;
         end
 
         %% Thevenin Model
 
         function [min_value, history, best_params, fitting_error] = optimizationBFGS(feis)
+            [v0, g0] = feis.optifunc(feis.params0); 
 
-            f_opt = @(p_norm) feis.optifunc(scaled2unscaled(feis, p_norm)) ;
+            f_opt = @(p_norm) feis.optifunc(scaled2unscaled(feis, p_norm), v0, g0);
             
             params0_norm = unscaled2scaled(feis, feis.params0);
             % best_params_norm = lsqnonlin(deltagap, params0_norm, lb_norm, ub_norm, [0,0,-1,0,10], 0);
             params0_norm = params0_norm(:);
            
-            a = feis.scales;
-            p03 = feis.params0(3);
-            p05 = feis.params0(5);
+            pmin = feis.scales(1:5);
+            pmax = feis.scales(6:10);
+            p03min = pmin(3);
+            p03max = pmax(3);
+            p05min = pmin(5);
+            p05max = pmax(5);
 
-            A_custom = [0, 0, -1, 0, 2*(a*p05 - p05/a)/(a*p03- p03/a)];
-            b_custom = (p03-2*p05)/(a^2*p03 - p03);
+            A_custom = [0, 0, -1, 0, 2*(p05max - p05min)/(p03max- p03min)];
+            b_custom = (p03min-2*p05min)/(p03max - p03min);
             
             max_iter = 300;
             tol_obj = 1e-7;
@@ -90,6 +94,7 @@ classdef FittingEIS
                                                                 );
             best_params = scaled2unscaled(feis, best_params_norm(:) );
 
+            % explications of why it stopped
             fitting_error = feis.optifunc(best_params);
 
             it_count = length(history.val) - 1; 
@@ -117,9 +122,12 @@ classdef FittingEIS
 
         
 
-        function [v, g_norm] = optifunc(feis, p)
+        function [v, g_norm] = optifunc(feis, p, v0, g0)
             
-
+            if nargin < 4
+                v0 = 1; 
+                g0 = 1; 
+            end
             % Preventing physical values to get too close from 0
             p_safe = max(p, 1e-8);
 
@@ -146,8 +154,10 @@ classdef FittingEIS
             err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Modulus_Z(:);
             err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Modulus_Z(:);
             
-            v = sum(err_re.^2 + err_im.^2);
-            
+            v_abs = sum(err_re.^2 + err_im.^2);
+            v = v_abs / v0;
+
+
             if nargout > 1
 
                 w  = feis.omega(:);
@@ -177,10 +187,11 @@ classdef FittingEIS
 
                 g_true = 2 * (derr_re_dp' * err_re) + 2 * (derr_im_dp' * err_im);
                 % Chain rule : 
-                a = feis.scales;
-                p0 = feis.params0(:);
-                dp_dpnorm = (a * p0 - p0 / a); % Dérivée de p par rapport à p_norm
+                pmin = feis.scales(1:5);
+                pmax = feis.scales(6:10);
+                dp_dpnorm = (pmax - pmin);      % Dérivée de p par rapport à p_norm
                 g_norm = g_true .* dp_dpnorm;
+                g_norm = g_norm ./g0;
                 
             end
             
