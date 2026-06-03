@@ -59,9 +59,9 @@ classdef FittingEIS
         %% Thevenin Model
 
         function [min_value, history, best_params, fitting_error] = optimizationBFGS(feis)
-            [v0, g0] = feis.optifunc(feis.params0); 
+            
 
-            f_opt = @(p_norm) feis.optifunc(scaled2unscaled(feis, p_norm), v0, g0);
+            f_opt = @(p_norm) feis.optifunc(scaled2unscaled(feis, p_norm));
             
             params0_norm = unscaled2scaled(feis, feis.params0);
             % best_params_norm = lsqnonlin(deltagap, params0_norm, lb_norm, ub_norm, [0,0,-1,0,10], 0);
@@ -78,7 +78,7 @@ classdef FittingEIS
             b_custom = (p03min-2*p05min)/(p03max - p03min);
             
             max_iter = 300;
-            tol_obj = 1e-7;
+            tol_obj = 1e-15;
             tol_grad = 1e-5;
 
             [min_value, best_params_norm, history] = unitBoxBFGS(...
@@ -122,12 +122,8 @@ classdef FittingEIS
 
         
 
-        function [v, g_norm] = optifunc(feis, p, v0, g0)
+        function [v, g_norm] = optifunc(feis, p)
             
-            if nargin < 4
-                v0 = 1; 
-                g0 = 1; 
-            end
             % Preventing physical values to get too close from 0
             p_safe = max(p, 1e-8);
 
@@ -154,8 +150,7 @@ classdef FittingEIS
             err_re = (feis.Z_re_exp(:) - Z_re_param(:)) ./ Modulus_Z(:);
             err_im = (feis.Z_im_exp(:) - Z_im_param(:)) ./ Modulus_Z(:);
             
-            v_abs = sum(err_re.^2 + err_im.^2);
-            v = v_abs / v0;
+            v = sum(err_re.^2 + err_im.^2);
 
 
             if nargout > 1
@@ -191,7 +186,7 @@ classdef FittingEIS
                 pmax = feis.scales(6:10);
                 dp_dpnorm = (pmax - pmin);      % Dérivée de p par rapport à p_norm
                 g_norm = g_true .* dp_dpnorm;
-                g_norm = g_norm ./g0;
+               
                 
             end
             

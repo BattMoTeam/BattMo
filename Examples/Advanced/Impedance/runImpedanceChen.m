@@ -24,7 +24,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-includeDoubleLayer = false;
+includeDoubleLayer = true;
 
 if includeDoubleLayer
 
