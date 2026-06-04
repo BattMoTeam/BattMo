@@ -29,14 +29,29 @@ b = logspace(-2, 2, 20);                        %change here
 
 frequences = logspace(-2, 4, 30); 
 
+<<<<<<< HEAD
 figure;
 for i = 1:length(b)
     
     jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);        %change here
+=======
 
+for i = 18:20
+>>>>>>> e9e4a96ab3cdbc2f0ce14a0e473826216d412978
+
+    fprintf('compute impedance for doubleLayerCapacitance = %.2e ... ', b(i));  %change here
+
+    tic
+    % jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);        %change here
+    % [model, inputparams, ~] = setupModelFromJson(jsonstruct);
+
+    inputparams.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);
     impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
     
     Z = impsolv.computeImpedance(frequences);
+
+    fprintf('done in %g s\n', toc);
+    
     Z_re = real(Z);
     Z_im = imag(Z);
     curve = sprintf('doubleLayerCapacitance = %.2e', b(i));  %change here
