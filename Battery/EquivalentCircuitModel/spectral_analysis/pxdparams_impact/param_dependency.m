@@ -1,88 +1,115 @@
 function param_dependency()
     mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-
+    
+    % 1. Chargement des données (Conservez votre méthode de chargement ici)
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
+    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
     
-    jsonstruct = mergeJsonStructs({jsonstruct_material, ...
-                                   jsonstruct_geometry});
+    c_ne = 29.866*mol/litre; 
+    c_pe = 17.038*mol/litre; 
     
+    % 2. Création de l'interface graphique (Fenêtre plus haute pour accueillir les curseurs)
+    fig = uifigure('Name', 'Impedance Explorer', 'Position', [100, 50, 600, 650]);
     
-    
-    includeDoubleLayer = false;
-    
-    if includeDoubleLayer
-    
-        jsonstruct.(ne).(co).(am).(itf).useDoubleLayerCapacity = true;
-        jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 0.2;
-    
-    end
-    
-    
-    [~, inputparams, ~] = setupModelFromJson(jsonstruct);
-    
-    c_ne = 29.866*mol/litre; % initial concentration at negative electrode
-    c_pe = 17.038*mol/litre; % initial concentration at positive electrode
-    
-    % 2. Création de l'interface graphique
-    fig = uifigure('Name', 'Impedance explorer', 'Position', [100, 100, 600, 450]);
-    ax = uiaxes(fig, 'Position', [50, 150, 500, 250]);
-    title(ax, 'Diagramme de Nyquist (Chen 2020)');
-    xlabel(ax, 'Z'' (\Omega)');
-    ylabel(ax, '-Z" (\Omega)');
+    % Graphique
+    ax = uiaxes(fig, 'Position', [50, 350, 500, 250]);
+    title(ax, 'Nyquist Diagram');
+    xlabel(ax, 'Re(Z)');
+    ylabel(ax, '-Im(Z)');
     grid(ax, 'on');
+    
+    % Label de statut
+    lbl = uilabel(fig, 'Position', [50, 310, 500, 22], 'Text', 'Ready, use slider to start.');
+    lbl.FontWeight = 'bold';
 
-    % 3. Création du curseur (-1 à +1 ordre de grandeur)
-    sld = uislider(fig, ...
-        'Position', [100, 80, 400, 3], ...
-        'Limits', [-1, 1], ... 
+    % --- CURSEUR 1 : Diffusion Solide (Anode) ---
+    % Modifie le transport du Lithium dans les particules de graphite.
+    uilabel(fig, 'Position', [50, 260, 500, 40], 'WordWrap', 'on', ...
+        'Text', '1. refDiffusionCoefficient * 10^x');
+
+    sld1 = uislider(fig, 'Position', [50, 240, 500, 3], ...
+        'Limits', [-10, 10], ...           % Définit le minimum et le maximum
+        'MajorTicks', -10:1:10, ...        % Ajoute une graduation tous les 1
         'Value', 0);
     
-    lbl = uilabel(fig, 'Position', [100, 100, 400, 22], 'Text', 'Prêt. Bougez le curseur pour lancer un calcul.');
-
-    % 4. Connexion au relâchement de la souris (ValueChangedFcn)
-    % On passe la structure inputparams complète à notre fonction
-    sld.ValueChangedFcn = @(src, event) updatePlot(ax, lbl, inputparams, event.Value);
+    % --- CURSEUR 2 : Taux de réaction (Anode) ---
+    % Modifie la cinétique de transfert de charge.
+    uilabel(fig, 'Position', [50, 170, 500, 40], 'WordWrap', 'on', ...
+        'Text', '2. Anode reactionRateConstant * 10^x');
+    sld2 = uislider(fig, 'Position', [50, 150, 500, 3],...
+        'Limits', [-10, 10], ...           % Définit le minimum et le maximum
+        'MajorTicks', -10:1:10, ...        % Ajoute une graduation tous les 1
+        'Value', 0);
     
-    % (Optionnel) Lancer un premier calcul d'initialisation
-    % updatePlot(ax, lbl, inputparams, 0);
+    % --- CURSEUR 3 : Taux de réaction (Cathode) ---
+    % Modifie la cinétique de transfert de charge.
+    uilabel(fig, 'Position', [50, 80, 500, 40], 'WordWrap', 'on', ...
+        'Text', '3. Cathode reactionRateConstant * 10^x');
+    sld3 = uislider(fig, 'Position', [50, 60, 500, 3], ...
+        'Limits', [-10, 10], ...           % Définit le minimum et le maximum
+        'MajorTicks', -10:1:10, ...        % Ajoute une graduation tous les 1
+        'Value', 0);
+
+    % 4. Connexion aux événements
+    % On crée une fonction anonyme qui passe TOUS les curseurs
+    callback_fcn = @(src, event) updatePlot(ax, lbl, jsonstruct, c_ne, c_pe, sld1, sld2, sld3);
+    
+    sld1.ValueChangedFcn = callback_fcn;
+    sld2.ValueChangedFcn = callback_fcn;
+    sld3.ValueChangedFcn = callback_fcn;
+    
+    % Optionnel : Tracer l'état initial
+    % updatePlot(ax, lbl, jsonstruct, c_ne, c_pe, sld1, sld2, sld3);
 end
 
-% --- Fonction de mise à jour lourde ---
-function updatePlot(ax, lbl, inputparams, slider_val)
+% --- Fonction de mise à jour ---
+function updatePlot(ax, lbl, jsonstruct, c_ne, c_pe, sld1, sld2, sld3)
     
-    % 1. Avertir l'utilisateur et figer l'affichage
-    lbl.Text = 'Calcul en cours... Veuillez patienter (cela peut prendre quelques secondes).';
-    drawnow; % CRUCIAL : Force MATLAB à afficher le texte avant de bloquer
+    % Figer l'affichage
+    lbl.Text = 'Processing... ';
+    lbl.FontColor = '#D95319';
+    drawnow; 
     
-    % 2. Calculer la nouvelle valeur et modifier la structure
-    % On modifie ici le SolidDiffusion.referenceDiffusionCoefficient
-    valeur_initiale = 3.3e-14;
-    nouvelle_valeur = valeur_initiale * (10^slider_val);
+    % 1. Récupération des valeurs de base depuis votre JSON
+    base_diff_anode = 1.3135e-15;
+    base_rate_anode = 5.031e-11;
+    base_rate_cathode = 2.33e-11;
     
-    % On navigue dans l'arborescence exacte de votre fichier JSON
-    inputparams.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.referenceDiffusionCoefficient = nouvelle_valeur;
+    % 2. Application des multiplicateurs (10^slider_val)
+    val_diff_anode = base_diff_anode * (10^(sld1.Value));
+    val_rate_anode = base_rate_anode * (10^(sld2.Value));
+    val_rate_cathode = base_rate_cathode * (10^(sld3.Value));
     
-    % 3. APPEL DE VOS FONCTIONS
+    % 3. Injection dans la structure JSON AVANT de construire le modèle
+    jsonstruct.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.referenceDiffusionCoefficient = val_diff_anode;
+    jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.reactionRateConstant = val_rate_anode;
+    jsonstruct.PositiveElectrode.Coating.ActiveMaterial.Interface.reactionRateConstant = val_rate_cathode;
+    
     try
-        [model, ~, ~] = setupModelFromJson(jsonstruct);
+        % 4. Exécution de BattMo
+        [model, inputparams, ~] = setupModelFromJson(jsonstruct);
         initstate = initStateChen2020(model, c_ne, c_pe);
+        
         impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
     
-        % Définition des fréquences et calcul de l'impédance
         frequences = logspace(-2, 3, 30); 
         Z = impsolv.computeImpedance(frequences);
         
-        % 4. Tracer le vrai résultat
-        % On utilise -imag(Z) car on trace traditionnellement l'opposé de la partie imaginaire
-        plot(ax, real(Z), -imag(Z), '-o', 'LineWidth', 2, 'Color', '#D95319');
+        % 5. Tracé
+        plot(ax, real(Z), -imag(Z), '-o', 'LineWidth', 2, 'Color', '#0072BD');
         
-        % Restaurer le texte
-        lbl.Text = sprintf('Calcul terminé. Diffusion = %.2e (10^{%.2f}x)', nouvelle_valeur, slider_val);
+        % Retour à la normale
+        lbl.Text = 'Done';
+        lbl.FontColor = '#77AC30';
         
     catch ME
-        % Si le solveur plante (par exemple si la nouvelle valeur rend le système instable)
-        lbl.Text = 'Erreur lors du calcul (paramètre hors limites ?)';
-        disp(ME.message); % Affiche l'erreur dans la console MATLAB
+        lbl.Text = 'Erreur lors du calcul (vérifiez la console).';
+        lbl.FontColor = '#A2142F';
+        disp('--- ERREUR DANS LE CALCUL ---');
+        disp(ME.message);
+        for k = 1:length(ME.stack)
+            disp(['Ligne ', num2str(ME.stack(k).line), ' dans ', ME.stack(k).name]);
+        end
     end
 end

@@ -29,7 +29,7 @@ b = logspace(-2, 2, 20);                        %change here
 
 frequences = logspace(-2, 4, 30); 
 
-
+figure;
 for i = 1:length(b)
     
     jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);        %change here
@@ -40,8 +40,9 @@ for i = 1:length(b)
     Z_re = real(Z);
     Z_im = imag(Z);
     curve = sprintf('doubleLayerCapacitance = %.2e', b(i));  %change here
-    figure;
-    plot(Z_re, -Z_im, 'DisplayName', curve);
-    legend('show');
     
+    plot(Z_re, -Z_im, 'DisplayName', curve);
+        
 end
+
+legend('show');

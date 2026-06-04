@@ -5,18 +5,18 @@
 
 % [Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
 % [Z_re_exp, Z_im_exp, omega] = load_santoni_data();
-[Z_re_exp, Z_im_exp, omega] = load_chen_data();
+% [Z_re_exp, Z_im_exp, omega] = load_chen_data();
 
-% omega = logspace(-4, 2, 50);
-% params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
-% [Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
+omega = logspace(-4, 2, 50);
+params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
+[Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
 
-params0 = [2, ...
+params0 = [5, ...
+           10, ...
+           7e1, ...
            1, ...
-           7e2, ...
-           1, ...
-           1.5e2];  % initial condition: C1>2*C2
-a = 100;
+           1.5e1];  % initial condition: C1>2*C2
+a = 1000;
 
 pmin = params0 / a;
 pmax = params0 * a;
