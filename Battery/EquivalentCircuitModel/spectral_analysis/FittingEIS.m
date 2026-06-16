@@ -460,7 +460,7 @@ classdef FittingEIS
             hold on;
             semilogx(feis.omega, Z_re_fit, 'b');        
             legend('experience', 'fitted model');
-            title('Fitting results');
+            title('Fitting Real Impedance');
             xlabel('Omega');
             ylabel('Z_{re} '); 
             
@@ -469,7 +469,7 @@ classdef FittingEIS
             hold on;
             semilogx(feis.omega, -Z_im_fit, 'b');        
             legend('experience', 'fitted model');
-            title('Fitting results');
+            title('Fitting Imaginary Impedance');
             xlabel('Omega');
             ylabel('-Z_{im} '); 
             
@@ -478,7 +478,7 @@ classdef FittingEIS
             hold on;
             plot(feis.Z_re_exp, -Z_im_fit, 'b');        
             legend('experience', 'fitted model');
-            title('Nyquist');
+            title('Nyquist Diagram');
             xlabel('Z_{re}');
             ylabel('-Z_{im} '); 
             axis equal;
@@ -566,11 +566,11 @@ classdef FittingEIS
             fprintf('Error : %e\n', fitting_error);
             
             fprintf('\n=== PARAMETERS FOUND ===\n');
-            fprintf('R0 = %.5f Ohms\n', best_params(1));
-            fprintf('R1 = %.5f Ohms\n', best_params(2));
-            fprintf('C1 = %.1f Farads\n', best_params(3));
-            fprintf('R2 = %.5f Ohms\n', best_params(4));
-            fprintf('C2 = %.1f Farads\n', best_params(5));
+            fprintf('R0 = %.2e Ohms\n', best_params(1));
+            fprintf('R1 = %.2e Ohms\n', best_params(2));
+            fprintf('C1 = %.2e Farads\n', best_params(3));
+            fprintf('R2 = %.2e Ohms\n', best_params(4));
+            fprintf('C2 = %.2e Farads\n', best_params(5));
             
             % fprintf('\n=== PARAMETERS FOUND ===\n');
             % fprintf('R0    = %.4e Ohms\n', best_params(1));

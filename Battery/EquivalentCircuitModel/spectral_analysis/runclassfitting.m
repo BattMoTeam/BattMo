@@ -1,21 +1,19 @@
 
+%% Main code:
 
 % filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
 % filename = '/home/xavier/Matlab/Projects/battmo/Data/131-828_EIS_01_MB_CD8.txt';
-
+% 
 % [Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
 % [Z_re_exp, Z_im_exp, omega] = load_santoni_data();
-% [Z_re_exp, Z_im_exp, omega] = load_chen_data();
+[Z_re_exp, Z_im_exp, omega] = load_chen_data();
 
-omega = logspace(-4, 2, 50);
-params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
-[Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
+% omega = logspace(-4, 2, 50);
+% params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
+% [Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
 
-params0 = [5, ...
-           10, ...
-           7e1, ...
-           1, ...
-           1.5e1];  % initial condition: C1>2*C2
+params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
+
 a = 1000;
 
 pmin = params0 / a;
@@ -29,18 +27,34 @@ feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
 [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
 
-% % Lancement avec LSQNONLIN
+
 % [min_value, best_params, fitting_error] = feis.optimizationLsqnonlin();
+%            %  Lancement avec LSQNONLIN
 
 
-
-
-%%
+%% Printing results
 feis.plotresults_thevenin(best_params, fitting_error);
 
 feis.printResults(best_params, fitting_error);          % to be changed btw Warburg and Thevenin
 
 
+
+
+%% Robustness test
+% for i = 1:5
+    % params0 = pmin + (pmax - pmin) .* rand(1, 5);
+    % disp(['Tour ', num2str(i), ' - params0 :']);
+    % disp(params0);
+    % feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
+    % 
+    % [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
+    % feis.plotresults_thevenin(best_params, fitting_error);
+    % feis.printResults(best_params, fitting_error);
+    % 
+    % drawnow; 
+
+% end
+%%
 
 % result with lsqnonlin:
 % === FITTING SCORE ===

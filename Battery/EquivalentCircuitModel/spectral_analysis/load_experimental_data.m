@@ -28,13 +28,13 @@ function [Z_real, Z_imag, omega] = load_experimental_data(filename)
         freq  = str2double(strrep(freq_raw, ',', '.'));
     else
         Z_real = Z_real_raw;
-        Z_imag = Z_imag_raw;
+        Z_imag = Z_imag_raw;    
         freq  = freq_raw;
     end
 
     idx_valides = (Z_real ~= 0) & ~isnan(Z_real);
     Z_real = Z_real(idx_valides);
-    Z_imag = Z_imag(idx_valides);
+    Z_imag = -Z_imag(idx_valides);                   % in the file is given -Im
     freq = freq(idx_valides);
 
     Z_real = Z_real(8:60);
