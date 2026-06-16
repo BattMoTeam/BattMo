@@ -189,7 +189,7 @@ classdef FittingEIS
                
                 
             end
-            
+        end 
 
             % finite difference method
             % if nargout > 1
@@ -210,7 +210,7 @@ classdef FittingEIS
             %         g_norm = (v_perturb - v) / dp_norm;
             %     end
             % end
-        end
+       
 
 %% Warburg Model
 
