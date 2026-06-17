@@ -134,13 +134,13 @@ classdef ImpedanceSolver
               case 'soc'
                 
                 inputparams.SOC = options.soc;
-                model = Battery(inputparams);
+                model = GenericBattery(inputparams);
                 state = model.setupInitialState();
 
               case 'state'
 
                 state = options.initstate;
-                model = Battery(inputparams);
+                model = GenericBattery(inputparams);
                 
               otherwise
                 
