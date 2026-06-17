@@ -788,7 +788,7 @@ classdef BaseModel < PhysicalModel
             primvarnames = model.getPrimaryVariableNames();
 
             for ivar = 1 : numel(primvarnames)
-                isequal = ImpedanceBattery.compareVarName(varname, primvarnames{ivar});
+                isequal = model.compareVarName(varname, primvarnames{ivar});
                 if isequal
                     ind = ivar;
                     return
@@ -854,6 +854,44 @@ classdef BaseModel < PhysicalModel
             end
             
         end
+
+        function isequal = compareVarName(varname1, varname2)
+            
+            if isempty(varname1) & isempty(varname2)
+                % Needed in recursion
+                isequal = true;
+                return
+            end
+            
+            if numel(varname1) == numel(varname2)
+
+                svarname1 = varname1{1};
+                svarname2 = varname2{1};
+
+                if ischar(svarname1) & ischar(svarname2)
+                    if strcmp(svarname1, svarname2)
+                        isequal = model.compareVarName(varname1(2 : end), varname2(2 : end));
+                    else
+                        isequal = false;
+                        return
+                    end
+                elseif isnumeric(svarname1) & isnumeric(svarname2)
+                    if svarname1 == svarname2
+                        isequal = model.compareVarName(varname1(2 : end), varname2(2 : end));
+                    else
+                        isequal = false;
+                        return
+                    end
+                else
+                    isequal = false;
+                    return
+                end
+            else
+                isequal = false;
+                return
+            end
+        end
+        
         
     end
     
