@@ -114,52 +114,22 @@ classdef ImpedanceSolver < handle
 
         end
 
-        function setupIndices(impsolv)
-
-            model = impsolv.model;
-            
-            Ivarname = impsolv.Ivarname;
-            Uvarname = impsolv.Uvarname;
-            
-            indI = model.getIndexPrimaryVariable(Ivarname);
-
-            impsolv.indI = indI;
-            
-            inds = true(numel(model.getPrimaryVariableNames), 1);
-            inds(indI) = false;
-            inds = find(inds);
-
-            impsolv.inds = inds;
-            
-            state = model.initStateAD(impsolv.state); % just needed to get AD sample
-            adsample = model.getProp(state, Uvarname);
-            indUs = model.getRangePrimaryVariable(adsample, Uvarname);
-
-            impsolv.indUs = indUs;
-            
-        end
-        
         function jac = getJacobian(impsolv, dt)
 
+            % is called first because, may modify model
+            drivingForces = impsolv.setupDrivingForces();
+            
             state = impsolv.state;
             model = impsolv.model;
             indI  = impsolv.indI;
             inds  = impsolv.inds;
             indUs = impsolv.indUs;
             
-            ctrl = 'Control';
-
-            state.(ctrl).I = 0; %steady state
+            state = model.setProp(state, impsolv.Ivarname, 0);
             
             state0 = state; % perturbation around equilibrium, state0 is an equilibrium
 
             state = model.initStateAD(state);
-            
-            inputparams = ControlModelInputParams([]);
-            model.Control = ControlModel(inputparams);
-            model.Control.controlPolicy = 'None';
-
-            drivingForces = model.getValidDrivingForces();
 
             % same code as BaseModel.getEquations
             funcCallList = model.funcCallList;
@@ -185,6 +155,33 @@ classdef ImpedanceSolver < handle
             jac = eqs.jac{1};
             
         end
+
+        
+        function setupIndices(impsolv)
+
+            model = impsolv.model;
+            
+            Ivarname = impsolv.Ivarname;
+            Uvarname = impsolv.Uvarname;
+            
+            indI = model.getIndexPrimaryVariable(Ivarname);
+
+            impsolv.indI = indI;
+            
+            inds = true(numel(model.getPrimaryVariableNames), 1);
+            inds(indI) = false;
+            inds = find(inds);
+
+            impsolv.inds = inds;
+            
+            state = model.initStateAD(impsolv.state); % just needed to get AD sample
+            adsample = model.getProp(state, Uvarname);
+            indUs = model.getRangePrimaryVariable(adsample, Uvarname);
+
+            impsolv.indUs = indUs;
+            
+        end
+        
         
         function setupSteadyState(impsolv)
 

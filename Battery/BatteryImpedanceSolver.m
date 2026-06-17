@@ -15,50 +15,15 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
             
         end
 
-        function jac = getJacobian(impsolv, dt)
 
-            state = impsolv.state;
-            model = impsolv.model;
-            indI  = impsolv.indI;
-            inds  = impsolv.inds;
-            indUs = impsolv.indUs;
-            
-            ctrl = 'Control';
+        function drivingForces = setupDrivingForces(impsolv)
 
-            state.(ctrl).I = 0; %steady state
-            
-            state0 = state; % perturbation around equilibrium, state0 is an equilibrium
-
-            state = model.initStateAD(state);
-            
             inputparams = ControlModelInputParams([]);
-            model.Control = ControlModel(inputparams);
-            model.Control.controlPolicy = 'None';
 
-            drivingForces = model.getValidDrivingForces();
-
-            % same code as BaseModel.getEquations
-            funcCallList = model.funcCallList;
-
-            for ifunc = 1 : numel(funcCallList)
-                eval(funcCallList{ifunc});
-            end
-
-            state = model.applyScaling(state);
+            impsolv.model.Control = ControlModel(inputparams);
+            impsolv.model.Control.controlPolicy = 'None';
             
-            for ieq = 1 : numel(model.equationVarNames)
-                eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
-            end
-            eqs = vertcat(eqs{:});
-            
-            if isempty(impsolv.b)
-                impsolv.b = eqs.jac{indI};
-            end
-
-            eqs.jac = eqs.jac(inds); 
-            eqs = combineEquations(eqs);
-            
-            jac = eqs.jac{1};
+            drivingForces = impsolv.model.getValidDrivingForces();
             
         end
         
