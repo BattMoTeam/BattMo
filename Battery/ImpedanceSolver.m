@@ -1,4 +1,4 @@
-classdef ImpedanceSolver2 < handle
+classdef ImpedanceSolver < handle
 
     properties (SetAccess = private)
 
@@ -24,7 +24,7 @@ classdef ImpedanceSolver2 < handle
 
     methods
 
-        function impsolv = ImpedanceSolver2(inputparams, options, extrastructs)
+        function impsolv = ImpedanceSolver(inputparams, options, extrastructs)
             
             if nargin < 3
                 extrastructs = [];
@@ -186,13 +186,13 @@ classdef ImpedanceSolver2 < handle
               case 'soc'
                 
                 inputparams.SOC = options.stateInitialization.soc;
-                model = Battery(inputparams);
+                model = GenericBattery(inputparams);
                 state = model.setupInitialState();
 
               case 'given state'
 
                 state = impsolv.extrastructs.initstate;
-                model = Battery(inputparams);
+                model = GenericBattery(inputparams);
                 
               otherwise
                 
