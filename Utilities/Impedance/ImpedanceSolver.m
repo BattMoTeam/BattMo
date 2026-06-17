@@ -14,6 +14,7 @@ classdef ImpedanceSolver < handle
 
         Ivarname
         Uvarname
+        eqIvarname
         
         %% helpers quantity (see compute Impedance to see how they are used)
         %
@@ -23,7 +24,9 @@ classdef ImpedanceSolver < handle
         
         indUs
         indI
-        inds
+        indEqI
+        indEqs
+        indPvs
         
     end
 
@@ -128,9 +131,6 @@ classdef ImpedanceSolver < handle
             
             state = impsolv.state;
             model = impsolv.model;
-            indI  = impsolv.indI;
-            inds  = impsolv.inds;
-            indUs = impsolv.indUs;
             
             state = impsolv.model.setProp(state, impsolv.Ivarname, impsolv.I);
             
@@ -150,13 +150,14 @@ classdef ImpedanceSolver < handle
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
+            eqs = eqs(impsolv.indEqs);
             eqs = vertcat(eqs{:});
             
             if isempty(impsolv.b)
-                impsolv.b = eqs.jac{indI};
+                impsolv.b = eqs.jac{impsolv.indI};
             end
 
-            eqs.jac = eqs.jac(inds); 
+            eqs.jac = eqs.jac(impsolv.indPvs); 
             eqs = combineEquations(eqs);
             
             jac = eqs.jac{1};
@@ -168,18 +169,27 @@ classdef ImpedanceSolver < handle
 
             model = impsolv.model;
             
-            Ivarname = impsolv.Ivarname;
-            Uvarname = impsolv.Uvarname;
+            Ivarname   = impsolv.Ivarname;
+            Uvarname   = impsolv.Uvarname;
+            eqIvarname = impsolv.eqIvarname;
             
             indI = model.getIndexPrimaryVariable(Ivarname);
-
             impsolv.indI = indI;
             
-            inds = true(numel(model.getPrimaryVariableNames), 1);
-            inds(indI) = false;
-            inds = find(inds);
+            indEqI = model.getIndexEquationVarName(eqIvarname);
+            impsolv.indEqI = indEqI;
 
-            impsolv.inds = inds;
+            indPvs = true(numel(model.getPrimaryVariableNames), 1);
+            indPvs(indI) = false;
+            indPvs = find(indPvs);
+
+            impsolv.indPvs = indPvs;
+
+            indEqs = true(numel(model.getPrimaryVariableNames), 1);
+            indEqs(indEqI) = false;
+            indEqs = find(indEqs);
+
+            impsolv.indEqs = indEqs;
             
             state = model.initStateAD(impsolv.state); % just needed to get AD sample
             adsample = model.getProp(state, Uvarname);

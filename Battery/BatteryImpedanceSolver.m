@@ -35,29 +35,31 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
         
         function setupModel(impsolv)
 
+            % We assign some control. Not used in computation
             ctrl = 'Control';
-            impsolv.inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
+            jsonstruct.DRate = 1;
+            impsolv.inputparams.(ctrl) = CCDischargeControlModelInputParams(jsonstruct);
+            
             impsolv.model = GenericBattery(impsolv.inputparams);
             
         end
         
         function setupVarNames(impsolv)
             
-            impsolv.Ivarname = {'Control', 'I'};
-            impsolv.Uvarname = {'Control', 'E'};
+            impsolv.Ivarname   = {'Control', 'I'};
+            impsolv.Uvarname   = {'Control', 'E'};
+            impsolv.eqIvarname = {'Control', 'controlEquation'};
             
         end
 
 
         function drivingForces = setupDrivingForces(impsolv)
 
-            inputparams = ControlModelInputParams([]);
 
-            impsolv.model.Control = ControlModel(inputparams);
-            impsolv.model.Control.controlPolicy = 'None';
-            
             drivingForces = impsolv.model.getValidDrivingForces();
-            
+            schedule = impsolv.model.Control.setupSchedule();
+            drivingForces.src = schedule.control.src;
+
         end
         
         function setupSteadyState(impsolv)
@@ -115,11 +117,12 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
 
             else
 
-                state.time = 0; % value appears to be needed
                 impsolv.state = state;
                 
             end
 
+            impsolv.state.time = 0;
+            
         end
         
     end
