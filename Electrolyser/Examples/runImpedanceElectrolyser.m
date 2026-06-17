@@ -1,8 +1,8 @@
-%% Alkaline Membrane Electrolyser
+%% Alkaline Membrane Electrolyser Impedance computation
+%
 
-%% Setup input
-% Setup the physical properties for the electrolyser using json input file :battmofile:`alkalineElectrolyser.json<Electrolyser/Parameters/alkalineElectrolyser.json>`
-
+%% Setup model
+% 
 jsonstruct_material = parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
 jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
 
@@ -12,22 +12,30 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 inputparams = ElectrolyserInputParams(jsonstruct);
 inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
-options = [];
+%% Setup Impedance solver 
+%
 
+%%
+% We use a given current. The steady state is computed at setup.
+%
+
+options = [];
 options.stateInitialization.initializationSetup = 'given current';
 options.stateInitialization.computeSteadyState  = true;
-options.stateInitialization.I                   = -3*ampere/(centi*meter)^2;
-
-options.stateInitialization.dt = 1;
+options.stateInitialization.I = -3*ampere/(centi*meter)^2;
 
 impsolv = ElectrolyserImpedanceSolver(inputparams, options);
 
-set(0, 'defaultlinelinewidth', 3);
-
+%% Compute the impedance for a range of frequencies
+%
 omegas = linspace(-4, 2, 30);
 omegas = 10.^omegas;
 Z = impsolv.computeImpedance(omegas);
 
+%% Plots of the results
+%
+
+set(0, 'defaultlinelinewidth', 3);
 figure
 plot(real(Z), -imag(Z));
 xlabel('real(Z) / Ω')
