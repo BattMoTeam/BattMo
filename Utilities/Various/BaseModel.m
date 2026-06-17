@@ -870,14 +870,14 @@ classdef BaseModel < PhysicalModel
 
                 if ischar(svarname1) & ischar(svarname2)
                     if strcmp(svarname1, svarname2)
-                        isequal = model.compareVarName(varname1(2 : end), varname2(2 : end));
+                        isequal = BaseModel.compareVarName(varname1(2 : end), varname2(2 : end));
                     else
                         isequal = false;
                         return
                     end
                 elseif isnumeric(svarname1) & isnumeric(svarname2)
                     if svarname1 == svarname2
-                        isequal = model.compareVarName(varname1(2 : end), varname2(2 : end));
+                        isequal = BaseModel.compareVarName(varname1(2 : end), varname2(2 : end));
                     else
                         isequal = false;
                         return

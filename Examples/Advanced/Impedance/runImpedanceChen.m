@@ -19,7 +19,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-includeDoubleLayer = true;
+includeDoubleLayer = false;
 
 if includeDoubleLayer
 
@@ -42,7 +42,7 @@ options.stateInitialization.computeSteadyState  = false;
 extrastructs = [];
 extrastructs.initstate = initstate;
 
-impsolv = ImpedanceSolver2(inputparams, options, extrastructs);
+impsolv = ImpedanceSolver(inputparams, options, extrastructs);
 
 %%
 
