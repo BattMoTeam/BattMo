@@ -798,6 +798,22 @@ classdef BaseModel < PhysicalModel
             error('primary variable not found');
             
         end
+
+        function ind = getIndexEquationVarName(model, varname)
+
+            eqvarnames = model.equationVarNames();
+
+            for ivar = 1 : numel(eqvarnames)
+                isequal = model.compareVarName(varname, eqvarnames{ivar});
+                if isequal
+                    ind = ivar;
+                    return
+                end
+            end
+
+            error('equation not found');
+            
+        end        
                 
     end
 
