@@ -5,9 +5,10 @@ classdef ImpedanceSolver
         model
         inputparams
         state
-
+        
         %% options
         options
+        extrastructs
         
         %% helpers quantity (see compute Impedance to see how they are used)
         %
@@ -20,16 +21,35 @@ classdef ImpedanceSolver
 
     methods
 
-        function impsolv = ImpedanceSolver(inputparams, varargin)
+        function impsolv = ImpedanceSolver(inputparams, options, extrastructs)
 
-            default_options = struct('computeSteadyState' , true, ...
-                                     'soc'                , []  , ...
-                                     'initstate'          , []  , ...
-                                     'numberOfRampupSteps', 3   , ...
-                                     'numberOfTimeSteps'  , 10);
+            if nargin < 3
+                extrastructs = [];
+                if nargin < 2
+                    options = [];
+                end
+            end
 
-            impsolv.options = merge_options(default_options, varargin{:});
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  % other value are 'given state'
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
 
+            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+              case 'soc'
+                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
+              case 'given state'
+                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
+              otherwise
+                error('initializationSetup not recognized');
+            end
+            
+            % options used if computing steady state
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
+            
+            impsolv.options = options;
+
+            impsolv.extrastructs = extrastructs;
+            
             ctrl = 'Control';
 
             impsolv.inputparams = inputparams;
@@ -119,43 +139,35 @@ classdef ImpedanceSolver
             inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
 
-            initcase = [];
-            if ~isempty(options.soc)
-                initcase = 'soc';
-            elseif ~isempty(options.initstate)
-                initcase = 'state';
-            else
-                error('initcase not found');
-            end
-
-
-            switch initcase
+            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
+            
+            switch initsetup
 
               case 'soc'
                 
-                inputparams.SOC = options.soc;
-                model = GenericBattery(inputparams);
+                inputparams.SOC = options.stateInitialization.soc;
+                model = Battery(inputparams);
                 state = model.setupInitialState();
 
-              case 'state'
+              case 'given state'
 
-                state = options.initstate;
-                model = GenericBattery(inputparams);
+                state = impsolv.extrastructs.initstate;
+                model = Battery(inputparams);
                 
               otherwise
                 
-                error('initcase not found');
+                error('initsetup not found');
                 
             end
 
 
-            if options.computeSteadyState
+            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
                 
                 state.(ctrl).I = 0;
                 
-                N         = impsolv.options.numberOfTimeSteps;
+                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
                 totalTime = 10*hour;
-                nr        = impsolv.options.numberOfRampupSteps;
+                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
                 
                 dt = rampupTimesteps(totalTime, totalTime/N, nr);
 
