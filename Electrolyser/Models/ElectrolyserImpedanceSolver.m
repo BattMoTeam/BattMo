@@ -22,6 +22,18 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
             
         end
 
+        function setupVarNames(impsolv)
+            
+            oer = 'OxygenEvolutionElectrode';
+            ptl = 'PorousTransportLayer';
+            ctl = 'CatalystLayer';
+            
+            impsolv.Ivarname   = {oer, ctl, 'I'};
+            impsolv.Uvarname   = {oer, ptl, 'E'};
+            impsolv.eqIvarname = {'controlEqs', 1};
+            
+        end
+
         function setupIvalue(impsolv)
 
             options = impsolv.options;
@@ -54,15 +66,6 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
             
         end
         
-        function setupVarNames(impsolv)
-            
-            oer = 'OxygenEvolutionElectrode';
-            ptl = 'PorousTransportLayer';
-            ctl = 'CatalystLayer';
-            impsolv.Ivarname = {oer, ctl, 'I'};
-            impsolv.Uvarname = {oer, ptl, 'E'};
-            
-        end
 
 
         function drivingForces = setupDrivingForces(impsolv)

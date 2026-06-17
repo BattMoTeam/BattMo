@@ -12,16 +12,28 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 inputparams = ElectrolyserInputParams(jsonstruct);
 inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
-
 options = [];
-options.stateInitialization.initializationSetup = 'given state';
-options.stateInitialization.computeSteadyState  = false;
 
-extrastructs = [];
-extrastructs.initstate = initstate;
+options.stateInitialization.initializationSetup = 'given current';
+options.stateInitialization.computeSteadyState  = true;
+options.stateInitialization.I                   = -3*ampere/(centi*meter)^2;
 
-impsolv = ElectrolyserImpedanceSolver(inputparams, options, extrastructs);
+options.stateInitialization.dt = 1;
 
+impsolv = ElectrolyserImpedanceSolver(inputparams, options);
+
+set(0, 'defaultlinelinewidth', 3);
+
+omegas = linspace(-4, 2, 30);
+omegas = 10.^omegas;
+Z = impsolv.computeImpedance(omegas);
+
+figure
+plot(real(Z), -imag(Z));
+xlabel('real(Z) / Ω')
+ylabel('-imag(Z) / Ω')
+legend show
+title('Impedance')
 
 
 
