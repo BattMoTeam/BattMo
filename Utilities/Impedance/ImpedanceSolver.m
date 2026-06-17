@@ -38,20 +38,9 @@ classdef ImpedanceSolver < handle
 
             % reference dt used to compute jacobians
             options = setDefaultJsonStructField(options, {'dt'}, 1e3);
-            
-            % other choice for state initializaztion is 'given state'
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
-                                                                                                                             
-            % default soc value
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
 
-            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
-              case 'soc'
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
-              case 'given state'
+            if strcmp(getJsonStructField(options, {'stateInitialization', 'initializationSetup'}), 'given state')
                 options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
-              otherwise
-                error('initializationSetup not recognized');
             end
             
             % options used if computing steady state
@@ -61,19 +50,30 @@ classdef ImpedanceSolver < handle
             impsolv.options = options;
 
             impsolv.extrastructs = extrastructs;
+            impsolv.inputparams  = inputparams;
 
-            ctrl = 'Control';
-
-            impsolv.inputparams = inputparams;
-
-            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
-            impsolv.model = GenericBattery(inputparams);
-
+            impsolv.setupModel();
             impsolv.setupSteadyState();
             impsolv.setupHelpers();
             
         end
 
+        function setupModel(impsolv)
+        %% virtual function
+        end
+
+        function setupVarNames(impsolv)
+        %% virtual function
+        end
+
+        function drivingForces = setupDrivingForces(impsolv)
+        %% virtual function            
+        end
+
+        function setupSteadyState(impsolv)
+        %% virtual function
+        end
+        
         function Z = computeImpedance(impsolv, omegas)
             
             DM    = impsolv.DM;
@@ -114,6 +114,13 @@ classdef ImpedanceSolver < handle
 
         end
 
+        function state = setupIvalue(impsolv, state)
+        % default behavior
+            
+            state = impsolv.model.setProp(state, impsolv.Ivarname, 0);
+
+        end
+        
         function jac = getJacobian(impsolv, dt)
 
             % is called first because, may modify model
@@ -125,7 +132,7 @@ classdef ImpedanceSolver < handle
             inds  = impsolv.inds;
             indUs = impsolv.indUs;
             
-            state = model.setProp(state, impsolv.Ivarname, 0);
+            state = impsolv.setupIvalue(state);
             
             state0 = state; % perturbation around equilibrium, state0 is an equilibrium
 
@@ -180,69 +187,6 @@ classdef ImpedanceSolver < handle
 
             impsolv.indUs = indUs;
             
-        end
-        
-        
-        function setupSteadyState(impsolv)
-
-            ctrl = 'Control';
-
-            inputparams = impsolv.inputparams;
-            options     = impsolv.options;
-            
-            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
-            inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
-
-            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
-
-            switch initsetup
-
-              case 'soc'
-                
-                inputparams.SOC = options.stateInitialization.soc;
-                model = GenericBattery(inputparams);
-                state = model.setupInitialState();
-
-              case 'given state'
-
-                state = impsolv.extrastructs.initstate;
-                model = GenericBattery(inputparams);
-                
-              otherwise
-                
-                error('initsetup not found');
-                
-            end
-
-            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
-                
-                state.(ctrl).I = 0;
-                
-                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
-                totalTime = 10*hour;
-                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
-                
-                dt = rampupTimesteps(totalTime, totalTime/N, nr);
-
-                step.val = dt;
-                step.control = ones(numel(dt), 1);
-
-                control.src = @(time, Imax) 0;
-
-                schedule = struct('step'   , step, ...
-                                  'control', control);
-                
-                [~, states, report] = simulateScheduleAD(state, model, schedule);
-
-                impsolv.state = states{end};
-
-            else
-
-                state.time = 0; % value appears to be needed
-                impsolv.state = state;
-                
-            end
-
         end
         
     end

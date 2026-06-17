@@ -5,9 +5,31 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
         function impsolv = BatteryImpedanceSolver(inputparams, options, extrastructs)
 
             impsolv = impsolv@ImpedanceSolver(inputparams, options, extrastructs);
+
+            options = impsolv.options;
+
+            % other choice for state initializaztion is 'given state'
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
+                                                                                                                             
+            % default soc value
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
             
+            if strcmp(getJsonStructField(options, {'stateInitialization', 'initializationSetup'}), 'soc')
+                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
+            end
+
         end
 
+        function setupModel(impsolv)
+
+            inputparams = impsolv.inputparams;
+            
+            ctrl = 'Control';
+            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
+            impsolv.model = GenericBattery(inputparams);
+            
+        end
+        
         function setupVarNames(impsolv)
             
             impsolv.Ivarname = {'Control', 'I'};
