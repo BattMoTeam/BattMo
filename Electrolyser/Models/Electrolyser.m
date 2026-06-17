@@ -106,7 +106,8 @@ classdef Electrolyser < BaseModel
                                                   'T'});
 
             model = model.removeVarNames({{her, ctl, 'I'}, ...
-                                          {her, ctl, 'eSource'}});
+                                          {her, ctl, 'eSource'}, ...
+                                          {her, ctl, 'chargeCons'}});
 
             
         end
@@ -223,10 +224,12 @@ classdef Electrolyser < BaseModel
 
             state.(her).(ptl).E   = 0;
             state.(her).(ptl).phi = - Eelyte_her*ones(nc_her, 1);
+            state.(her).(ctl).I   = 0;
             state.(inm).phi       = - Einmr_her*ones(nc_inm, 1);
             state.(oer).(ptl).E   = Einmr_oer - Einmr_her;
             state.(oer).(ptl).phi = (Einmr_oer - Einmr_her - Eelyte_oer)*ones(nc_oer, 1);
-
+            state.(oer).(ctl).I   = 0;
+            
             bd = 'Boundary';
 
             state = model.evalVarName(state, '.*compGasMasses');

@@ -115,6 +115,9 @@ classdef CatalystLayer < BaseModel
             varnames{end + 1} = 'inmrH2Osource';
             varnames{end + 1} = 'elyteOHsource';
             varnames{end + 1} = 'inmrOHsource';
+
+            % Charge conservation equation
+            varnames{end + 1} = 'chargeCons';
             
             model = model.registerVarNames(varnames);
 
@@ -144,9 +147,9 @@ classdef CatalystLayer < BaseModel
             model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
             model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
 
-            fn = @() CatalystLayer.updateI;
-            inputnames = {'eSource'};
-            model = model.registerPropFunction({'I', fn, inputnames});
+            fn = @() CatalystLayer.updateChargeCons;
+            inputnames = {'I', 'eSource'};
+            model = model.registerPropFunction({'chargeCons', fn, inputnames});
 
             if model.include_dissolution
 
@@ -246,9 +249,9 @@ classdef CatalystLayer < BaseModel
             
         end
 
-        function state = updateI(model, state)
+        function state = updateChargeCons(model, state)
 
-            state.I = sum(state.eSource);
+            state.chargeCons = state.I - sum(state.eSource);
             
         end
         
