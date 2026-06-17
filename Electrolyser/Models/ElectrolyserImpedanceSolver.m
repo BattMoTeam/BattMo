@@ -4,6 +4,13 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
 
         function impsolv = ElectrolyserImpedanceSolver(inputparams, options, extrastructs)
 
+            if nargin < 3
+                extrastructs = [];
+                if nargin < 2
+                    options = [];
+                end
+            end
+
             impsolv = impsolv@ImpedanceSolver(inputparams, options, extrastructs);
             
             % other choice for state initializaztion is 'given state'
@@ -15,6 +22,38 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
             
         end
 
+        function setupIvalue(impsolv)
+
+            options = impsolv.options;
+            
+            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+                
+              case 'given current'
+
+                impsolv.I = getJsonStructField(options, {'stateInitialization', 'I'});
+                
+              case 'given state'
+
+                initstate = impsolv.extrastructs.initstate;
+                impsolv.I = impsolv.model.getProp(initstate, impsolv.Ivarname);
+                
+              otherwise
+                
+                error('initializationSetup not recognized');
+                
+            end
+            
+        end
+        
+        function setupModel(impsolv)
+
+            model = Electrolyser(impsolv.inputparams);
+            model = model.setupBcAndInitialState();
+
+            impsolv.model = model;
+            
+        end
+        
         function setupVarNames(impsolv)
             
             oer = 'OxygenEvolutionElectrode';
@@ -29,87 +68,73 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
         function drivingForces = setupDrivingForces(impsolv)
             
             drivingForces = impsolv.model.getValidDrivingForces();
-                      
-        end
-        
-        function state = setupIvalue(impsolv, state)
+            drivingForces.src = @(time) impsolv.I;
             
-            %% TO BE UPDATED
-
-            options = impsolv.options
-
-            if strcmp(getStructField(options, {'stateInitialization', 'initializationSetup'}), 'given current')
-                
-                I = getStructField(options, {'stateInitialization', 'current'});
-
-                assert(isAssigned(I), 'A value for the current must be given');
-                
-                state = model.setProp(state, impsolv.Ivarname, I);
-
-            end
-
         end
 
         function setupSteadyState(impsolv)
 
-            ctrl = 'Control';
+            options = impsolv.options;
 
-            inputparams = impsolv.inputparams;
-            options     = impsolv.options;
-            
-            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
-            inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
+            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'})
 
-            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
-
-            switch initsetup
-
-              case 'soc'
+                model    = impsolv.model;
+                controlI = impsolv.I;
                 
-                inputparams.SOC = options.stateInitialization.soc;
-                model = GenericBattery(inputparams);
-                state = model.setupInitialState();
+                switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+                    
+                  case 'given current'
 
-              case 'given state'
+                    [~, initstate] = model.setupBcAndInitialState();
+                    
+                  case 'given state'
 
-                state = impsolv.extrastructs.initstate;
-                model = GenericBattery(inputparams);
+                    initstate = impsolv.extrastructs.initstate;
+                    
+                  otherwise
+                    
+                    error('initializationSetup not recognized');
+                    
+                end
                 
-              otherwise
-                
-                error('initsetup not found');
-                
-            end
+                total = 10*hour;
 
-            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
-                
-                state.(ctrl).I = 0;
-                
-                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
-                totalTime = 10*hour;
-                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
-                
-                dt = rampupTimesteps(totalTime, totalTime/N, nr);
+                n   = 10;
+                dt  = total/n;
+                dts = rampupTimesteps(total, dt, 5);
 
-                step.val = dt;
-                step.control = ones(numel(dt), 1);
+                tup      = total;
+                srcfunc  = @(time) rampupControl(time, tup, controlI, 'rampupcase', 'linear');
+                control  = struct('src', srcfunc);
 
-                control.src = @(time, Imax) 0;
+                step = struct('val', dts, 'control', ones(numel(dts), 1));
+                schedule = struct('control', control, 'step', step);
 
-                schedule = struct('step'   , step, ...
-                                  'control', control);
+                nls = NonLinearSolver();
                 
-                [~, states, report] = simulateScheduleAD(state, model, schedule);
+                nls.verbose        = false;
+                nls.errorOnFailure = false;
+                
+                simsetupInput = struct('model'          , model    , ...
+                                       'initstate'      , initstate, ...
+                                       'NonLinearSolver', nls      , ...
+                                       'schedule'       , schedule);
+
+                %% Run the simulation
+                
+                simsetup.model.verbose = true;
+
+                simsetup = SimulationSetup(simsetupInput);
+                
+                states = simsetup.run();
 
                 impsolv.state = states{end};
 
             else
-
-                state.time = 0; % value appears to be needed
-                impsolv.state = state;
+                
+                impsolv.state = impsolv.extrastructs.initstate;
                 
             end
-
         end
         
     end
