@@ -12,6 +12,18 @@ jsonstruct = mergeJsonStructs({jsonstruct_material, ...
 inputparams = ElectrolyserInputParams(jsonstruct);
 inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
-model = ImpedanceElectrolyser(inputparams);
+
+options = [];
+options.stateInitialization.initializationSetup = 'given state';
+options.stateInitialization.computeSteadyState  = false;
+
+extrastructs = [];
+extrastructs.initstate = initstate;
+
+impsolv = ElectrolyserImpedanceSolver(inputparams, options, extrastructs);
+
+
+
+
 
 
