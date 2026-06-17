@@ -4,6 +4,13 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
 
         function impsolv = BatteryImpedanceSolver(inputparams, options, extrastructs)
 
+            if nargin < 3
+                extrastructs = [];
+                if nargin < 2
+                    options = [];
+                end
+            end
+
             impsolv = impsolv@ImpedanceSolver(inputparams, options, extrastructs);
 
             options = impsolv.options;
@@ -20,13 +27,17 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
 
         end
 
+        function setupIvalue(impsolv)
+
+            impsolv.I = 0;
+            
+        end
+        
         function setupModel(impsolv)
 
-            inputparams = impsolv.inputparams;
-            
             ctrl = 'Control';
-            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
-            impsolv.model = GenericBattery(inputparams);
+            impsolv.inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
+            impsolv.model = GenericBattery(impsolv.inputparams);
             
         end
         
