@@ -6,6 +6,8 @@ classdef ImpedanceSolver < handle
         inputparams
         state
 
+        I
+        
         %% options
         options
         extrastructs
@@ -52,7 +54,9 @@ classdef ImpedanceSolver < handle
             impsolv.extrastructs = extrastructs;
             impsolv.inputparams  = inputparams;
 
+            impsolv.setupVarNames();
             impsolv.setupModel();
+            impsolv.setupIvalue();
             impsolv.setupSteadyState();
             impsolv.setupHelpers();
             
@@ -64,6 +68,10 @@ classdef ImpedanceSolver < handle
 
         function setupVarNames(impsolv)
         %% virtual function
+        end
+
+        function state = setupIvalue(impsolv, state)
+        %% Virtual function
         end
 
         function drivingForces = setupDrivingForces(impsolv)
@@ -96,7 +104,6 @@ classdef ImpedanceSolver < handle
 
         function setupHelpers(impsolv)
 
-            impsolv.setupVarNames();
             impsolv.setupIndices();
             impsolv.setupMatrices();
             
@@ -114,13 +121,6 @@ classdef ImpedanceSolver < handle
 
         end
 
-        function state = setupIvalue(impsolv, state)
-        % default behavior
-            
-            state = impsolv.model.setProp(state, impsolv.Ivarname, 0);
-
-        end
-        
         function jac = getJacobian(impsolv, dt)
 
             % is called first because, may modify model
@@ -132,7 +132,7 @@ classdef ImpedanceSolver < handle
             inds  = impsolv.inds;
             indUs = impsolv.indUs;
             
-            state = impsolv.setupIvalue(state);
+            state = impsolv.model.setProp(state, impsolv.Ivarname, impsolv.I);
             
             state0 = state; % perturbation around equilibrium, state0 is an equilibrium
 
