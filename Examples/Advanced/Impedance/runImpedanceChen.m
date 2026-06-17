@@ -42,7 +42,7 @@ options.stateInitialization.computeSteadyState  = false;
 extrastructs = [];
 extrastructs.initstate = initstate;
 
-impsolv = ImpedanceSolver(inputparams, options, extrastructs);
+impsolv = BatteryImpedanceSolver(inputparams, options, extrastructs);
 
 %%
 

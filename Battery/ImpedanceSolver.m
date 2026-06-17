@@ -1,6 +1,6 @@
 classdef ImpedanceSolver < handle
 
-    properties (SetAccess = private)
+    properties (SetAccess = protected)
 
         model
         inputparams
@@ -9,6 +9,9 @@ classdef ImpedanceSolver < handle
         %% options
         options
         extrastructs
+
+        Ivarname
+        Uvarname
         
         %% helpers quantity (see compute Impedance to see how they are used)
         %
@@ -90,28 +93,17 @@ classdef ImpedanceSolver < handle
             end
             
         end
-        
+
         function setupHelpers(impsolv)
 
-            model = impsolv.model;
+            impsolv.setupVarNames();
+            impsolv.setupIndices();
+            impsolv.setupMatrices();
             
-            ctrl = 'Control';
+        end
+        
+        function setupMatrices(impsolv)
             
-            indI = model.getIndexPrimaryVariable({ctrl, 'I'});
-
-            impsolv.indI = indI;
-            
-            inds = true(numel(model.getPrimaryVariableNames), 1);
-            inds(indI) = false;
-            inds = find(inds);
-
-            impsolv.inds = inds;
-            
-            state = model.initStateAD(impsolv.state); % just needed to get AD sample
-            indUs = model.getRangePrimaryVariable(state.(ctrl).E, {ctrl, 'E'});
-
-            impsolv.indUs = indUs;
-
             dt = impsolv.options.dt;
 
             jac1 = impsolv.getJacobian(dt);
@@ -122,6 +114,31 @@ classdef ImpedanceSolver < handle
 
         end
 
+        function setupIndices(impsolv)
+
+            model = impsolv.model;
+            
+            Ivarname = impsolv.Ivarname;
+            Uvarname = impsolv.Uvarname;
+            
+            indI = model.getIndexPrimaryVariable(Ivarname);
+
+            impsolv.indI = indI;
+            
+            inds = true(numel(model.getPrimaryVariableNames), 1);
+            inds(indI) = false;
+            inds = find(inds);
+
+            impsolv.inds = inds;
+            
+            state = model.initStateAD(impsolv.state); % just needed to get AD sample
+            adsample = model.getProp(state, Uvarname);
+            indUs = model.getRangePrimaryVariable(adsample, Uvarname);
+
+            impsolv.indUs = indUs;
+            
+        end
+        
         function jac = getJacobian(impsolv, dt)
 
             state = impsolv.state;
