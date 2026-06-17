@@ -40,11 +40,15 @@ hold on
 
 socs = linspace(0.1, 1, 5);
 
+options = [];
+options.stateInitialization.initializationSetup = 'soc';
+
 for isoc = 1 : numel(socs)
 
     soc = socs(isoc);
     
-    impsolv = ImpedanceSolver(inputparams, 'soc', soc, 'computeSteadyState', false);
+    options.stateInitialization.soc = soc;
+    impsolv = ImpedanceSolver(inputparams, options);
 
     omegas = linspace(-3, 6, 500);
     omegas = 10.^omegas;

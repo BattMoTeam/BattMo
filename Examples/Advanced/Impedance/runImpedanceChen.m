@@ -1,4 +1,4 @@
-clear all
+% clear all
 % close all
 
 % We define some shorthand names for simplicity.
@@ -19,7 +19,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-includeDoubleLayer = false;
+includeDoubleLayer = true;
 
 if includeDoubleLayer
 
@@ -42,7 +42,7 @@ options.stateInitialization.computeSteadyState  = false;
 extrastructs = [];
 extrastructs.initstate = initstate;
 
-impsolv = ImpedanceSolver(inputparams, options, extrastructs);
+impsolv = ImpedanceSolver2(inputparams, options, extrastructs);
 
 %%
 
