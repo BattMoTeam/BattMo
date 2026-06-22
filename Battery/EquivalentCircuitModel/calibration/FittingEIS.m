@@ -191,25 +191,6 @@ classdef FittingEIS
             end
         end 
 
-            % finite difference method
-            % if nargout > 1
-            %     g_norm = zeros(5,1);
-            %     dp_norm = 1e-6; 
-            % 
-            %     for i = 1:5
-            %         p_perturb = p;
-            %         p_perturb(i) = p_perturb(i) + dp_norm * feis.scales(i);
-            % 
-            %         [Z_re_pert, Z_im_pert] = load_nyquist(p_perturb, feis.omega);
-            % 
-            %         err_re_pert = (feis.Z_re_exp(:) - double(Z_re_pert(:))) ./ Modulus_Z;
-            %         err_im_pert = (feis.Z_im_exp(:) - double(Z_im_pert(:))) ./ Modulus_Z;
-            % 
-            %         v_perturb = sum(err_re_pert.^2 + err_im_pert.^2);
-            % 
-            %         g_norm = (v_perturb - v) / dp_norm;
-            %     end
-            % end
        
 
 %% Warburg Model
