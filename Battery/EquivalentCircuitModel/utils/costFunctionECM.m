@@ -1,4 +1,4 @@
-function total_error = cost_function(params_test, parameters, initial_values, t_exp, V_exp)
+function total_error = costFunctionECM(params_test, parameters, initial_values, t_exp, V_exp)
 
 
     parameters.R0 = abs(params_test(1));
