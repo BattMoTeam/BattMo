@@ -1,113 +1,61 @@
-clear all
-close all
+%% Battery impedance computation
+%
+% We compute the impedance of a lithium-ion battery cell at different states of charge (SOC) using the Battmo
+% framework. The impedance is computed using the ImpedanceSolver class, which takes into account the electrochemical
+% properties of the battery cell as defined in a JSON file. The results are plotted in a Nyquist plot, showing the real
+% and imaginary parts of the impedance.
+%
 
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
-addpath('C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\jp3-eis');
+%% Battery input parameters
+%
+% We load a JSON file containing the parameters of a lithium-ion battery cell, and set up the model using the
+% setupModelFromJson function. We also disable thermal effects and current collectors for this impedance computation.
+%
 
-filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\2026-alexandre-fichter\jp3-eis\jp3-opt-1d-full.json';
+filename = fullfile(fullfile('ParameterData'        , ...
+                             'BatteryCellParameters', ...
+                             'LithiumIonBatteryCell', ...
+                             'lithium_ion_battery_nmc_graphite.json'));
 jsonstruct = parseBattmoJson(filename);
 
-% We define some shorthand names for simplicity.
-ne      = 'NegativeElectrode';
-pe      = 'PositiveElectrode';
-elyte   = 'Electrolyte';
-thermal = 'ThermalModel';
-co      = 'Coating';
-am      = 'ActiveMaterial';
-itf     = 'Interface';
-sd      = 'SolidDiffusion';
-ctrl    = 'Control';
-cc      = 'CurrentCollector';
-
-jsonstruct.use_thermal = false;
+jsonstruct.use_thermal                = false;
 jsonstruct.include_current_collectors = false;
 
-inputparams = BatteryInputParams(jsonstruct);
-gen = BatteryGeneratorP2D();
+[model, inputparams, jsonstruct, gen] = setupModelFromJson(jsonstruct);
 
-inputparams = gen.updateBatteryInputParams(inputparams);
+%% Impedance computation
+%
 
-set(0, 'defaultlinelinewidth', 3);
-
-
-params0 = [3e-3, 0.00260, 100, 0.00132, 1];
-
-filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
-% filename = '/home/xavier/Matlab/Projects/battmo/Data/131-828_EIS_01_MB_CD8.txt';
-
-[Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename);
-
-scales = [10e-2, 10e-3, 5000, 100e-3, 50];
-
-feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
-
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
-
-[Z_re_fit, Z_im_fit] = load_nyquist(best_params, feis.omega);
-
-%% Comparison with Ank's experimental data
+%%
+% Plot settings
+set(0, 'defaultlinelinewidth', 1);
+set(0, 'defaultaxesfontsize', 15);
 
 figure
-
-
-subplot(3,1,1);
-legtxt = sprintf('exp data');
-semilogx(feis.omega, feis.Z_re_exp,'r', 'displayname', legtxt);
-hold on;
-legtxt = sprintf('fitted data');
-semilogx(feis.omega, Z_re_fit, 'b', 'displayname', legtxt); 
-xlabel('Omega');
-ylabel('Z_{re} '); 
-
-subplot(3,1,2);
-legtxt = sprintf('exp data');
-semilogx(feis.omega, feis.Z_im_exp, 'r',  'displayname', legtxt);
-hold on;
-legtxt = sprintf('fitted data');
-semilogx(feis.omega, Z_im_fit, 'b', 'displayname', legtxt); 
-xlabel('Omega');
-ylabel('-Z_{im} '); 
-
-subplot(3,1,3);
-legtxt = sprintf('exp data');
-plot(feis.Z_re_exp, feis.Z_im_exp, 'r',  'displayname', legtxt);
-hold on;
-legtxt = sprintf('fitted data');
-plot(feis.Z_re_exp, Z_im_fit, 'b',  'displayname', legtxt);
-axis equal;
-
-
-
-
 hold on
 
-socs = linspace(0.1, 1, 2);
+%%
+% We compute the impedance for different SOC values, and plot the results in a Nyquist plot. The impedance is normalized
+% by the face area of the model and converted to Ωcm^2 for better visualization.
 
-socs = [socs, 0.2];
+socs = linspace(0.1, 1, 5);
+
+options = [];
+options.stateInitialization.initializationSetup = 'soc';
 
 for isoc = 1 : numel(socs)
+
     soc = socs(isoc);
     
-    impsolv = ImpedanceSolver(inputparams, 'soc', soc, 'computeSteadyState', false);
+    options.stateInitialization.soc = soc;
+    impsolv = ImpedanceSolver(inputparams, options);
 
-    omegas = linspace(-2, 4, 500);
+    omegas = linspace(-3, 6, 500);
     omegas = 10.^omegas;
     Z = impsolv.computeImpedance(omegas);
     
-    % Z = (Z*gen.faceArea)/((centi*meter)^2);
-    Z = (Z*gen.faceArea);
+    Z = (Z*gen.faceArea)/((centi*meter)^2);
 
-
-    subplot(3,1,1);
-    legtxt = sprintf('SOC=%g', soc);
-    semilogx(omegas, real(Z), 'displayname', legtxt);
-    
-
-    subplot(3,1,2);
-    legtxt = sprintf('SOC=%g', soc);
-    semilogx(omegas, -imag(Z), 'displayname', legtxt);
-    
-    subplot(3,1,3);
     legtxt = sprintf('SOC=%g', soc);
     plot(real(Z), -imag(Z), 'displayname', legtxt);
     xlabel('real(Z) / Ωcm^2')

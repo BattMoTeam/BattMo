@@ -16,7 +16,7 @@ function [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(js
     end        
 
     if isUnAssigned(jsonstruct, {'Geometry'})
-        jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometry1d.json')
+        jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometry1d.json');
         jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_geometry});
     end
     

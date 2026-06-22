@@ -6,7 +6,7 @@ V_exp = 4.1 * ones(1001, 1) - 0.1 * (t_exp/1000); % Fausse courbe de tension
 I_exp = ones(1001, 1); % Courant expérimental
 
 
-parameters = create_parameters();
+parameters = createParametersECM();
 
 % Remplacer le courant du modèle par le courant expérimental
 parameters.I.dataX = t_exp;
@@ -19,7 +19,7 @@ options = optimset('Display', 'iter', 'TolX', 1e-4);
 disp('beginning of optimization');
 
 % Optimization with fminsearch
-best_params = fminsearch(@(p) cost_function(p, parameters, initial_values, t_exp, V_exp), initial_values, options);
+best_params = fminsearch(@(p) costFunctionECM(p, parameters, initial_values, t_exp, V_exp), initial_values, options);
 
 fprintf('\n=== PARAMETERS FOUND ===\n');
 fprintf('R0 = %.5f Ohms\n', best_params(1));

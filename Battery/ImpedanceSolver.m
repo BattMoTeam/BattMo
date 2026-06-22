@@ -1,4 +1,4 @@
-classdef ImpedanceSolver
+classdef ImpedanceSolver < handle
 
     properties (SetAccess = private)
 
@@ -8,37 +8,66 @@ classdef ImpedanceSolver
 
         %% options
         options
+        extrastructs
         
         %% helpers quantity (see compute Impedance to see how they are used)
         %
         DM
         DA
         b
+        
         indUs
+        indI
+        inds
         
     end
 
     methods
 
-        function impsolv = ImpedanceSolver(inputparams, varargin)
+        function impsolv = ImpedanceSolver(inputparams, options, extrastructs)
+            
+            if nargin < 3
+                extrastructs = [];
+                if nargin < 2
+                    options = [];
+                end
+            end
 
-            default_options = struct('computeSteadyState' , true, ...
-                                     'soc'                , []  , ...
-                                     'initstate'          , []  , ...
-                                     'numberOfRampupSteps', 3   , ...
-                                     'numberOfTimeSteps'  , 10);
+            % reference dt used to compute jacobians
+            options = setDefaultJsonStructField(options, {'dt'}, 1e3);
+            
+            % other choice for state initializaztion is 'given state'
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
+                                                                                                                             
+            % default soc value
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
 
-            impsolv.options = merge_options(default_options, varargin{:});
+            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+              case 'soc'
+                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
+              case 'given state'
+                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
+              otherwise
+                error('initializationSetup not recognized');
+            end
+            
+            % options used if computing steady state
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
+            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
+            
+            impsolv.options = options;
+
+            impsolv.extrastructs = extrastructs;
 
             ctrl = 'Control';
 
             impsolv.inputparams = inputparams;
 
-            inputparams.(ctrl) = ImpedanceControlModelInputParams([]);
-            impsolv.model = ImpedanceBattery(inputparams);
+            inputparams.(ctrl) = CCDischargeControlModelInputParams([]);
+            impsolv.model = GenericBattery(inputparams);
 
-            impsolv = impsolv.setupSteadyState();
-            impsolv = impsolv.setupHelpers();
+            impsolv.setupSteadyState();
+            impsolv.setupHelpers();
             
         end
 
@@ -62,18 +91,60 @@ classdef ImpedanceSolver
             
         end
         
-        function impsolv = setupHelpers(impsolv)
+        function setupHelpers(impsolv)
 
-            state = impsolv.state;
             model = impsolv.model;
             
             ctrl = 'Control';
-
-            state.(ctrl).omega = 1;
-            state.(ctrl).I = 0;
             
-            state = model.initStateAD(state);
+            indI = model.getIndexPrimaryVariable({ctrl, 'I'});
 
+            impsolv.indI = indI;
+            
+            inds = true(numel(model.getPrimaryVariableNames), 1);
+            inds(indI) = false;
+            inds = find(inds);
+
+            impsolv.inds = inds;
+            
+            state = model.initStateAD(impsolv.state); % just needed to get AD sample
+            indUs = model.getRangePrimaryVariable(state.(ctrl).E, {ctrl, 'E'});
+
+            impsolv.indUs = indUs;
+
+            dt = impsolv.options.dt;
+
+            jac1 = impsolv.getJacobian(dt);
+            jac2 = impsolv.getJacobian(2*dt);
+            
+            impsolv.DM = 2*dt*(jac1 - jac2);
+            impsolv.DA = 2*jac2 - jac1;
+
+        end
+
+        function jac = getJacobian(impsolv, dt)
+
+            state = impsolv.state;
+            model = impsolv.model;
+            indI  = impsolv.indI;
+            inds  = impsolv.inds;
+            indUs = impsolv.indUs;
+            
+            ctrl = 'Control';
+
+            state.(ctrl).I = 0; %steady state
+            
+            state0 = state; % perturbation around equilibrium, state0 is an equilibrium
+
+            state = model.initStateAD(state);
+            
+            inputparams = ControlModelInputParams([]);
+            model.Control = ControlModel(inputparams);
+            model.Control.controlPolicy = 'None';
+
+            drivingForces = model.getValidDrivingForces();
+
+            % same code as BaseModel.getEquations
             funcCallList = model.funcCallList;
 
             for ifunc = 1 : numel(funcCallList)
@@ -87,29 +158,18 @@ classdef ImpedanceSolver
             end
             eqs = vertcat(eqs{:});
             
-            indI = model.getIndexPrimaryVariable({ctrl, 'I'});
-
-            inds = true(numel(model.getPrimaryVariableNames), 1);
-            inds(indI) = false;
-            inds = find(inds);
-
-            b = eqs.jac{indI};
+            if isempty(impsolv.b)
+                impsolv.b = eqs.jac{indI};
+            end
 
             eqs.jac = eqs.jac(inds); 
             eqs = combineEquations(eqs);
-
-            indUs = model.getRangePrimaryVariable(state.(ctrl).E, {ctrl, 'E'});
             
-            A = eqs.jac{1};
-
-            impsolv.DM    = imag(A);
-            impsolv.DA    = real(A);
-            impsolv.b     = b;
-            impsolv.indUs = indUs;
+            jac = eqs.jac{1};
             
         end
-
-        function impsolv = setupSteadyState(impsolv)
+        
+        function setupSteadyState(impsolv)
 
             ctrl = 'Control';
 
@@ -119,43 +179,34 @@ classdef ImpedanceSolver
             inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
 
-            initcase = [];
-            if ~isempty(options.soc)
-                initcase = 'soc';
-            elseif ~isempty(options.initstate)
-                initcase = 'state';
-            else
-                error('initcase not found');
-            end
+            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
 
-
-            switch initcase
+            switch initsetup
 
               case 'soc'
                 
-                inputparams.SOC = options.soc;
-                model = Battery(inputparams);
+                inputparams.SOC = options.stateInitialization.soc;
+                model = GenericBattery(inputparams);
                 state = model.setupInitialState();
 
-              case 'state'
+              case 'given state'
 
-                state = options.initstate;
-                model = Battery(inputparams);
+                state = impsolv.extrastructs.initstate;
+                model = GenericBattery(inputparams);
                 
               otherwise
                 
-                error('initcase not found');
+                error('initsetup not found');
                 
             end
 
-
-            if options.computeSteadyState
+            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
                 
                 state.(ctrl).I = 0;
                 
-                N         = impsolv.options.numberOfTimeSteps;
+                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
                 totalTime = 10*hour;
-                nr        = impsolv.options.numberOfRampupSteps;
+                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
                 
                 dt = rampupTimesteps(totalTime, totalTime/N, nr);
 
@@ -181,4 +232,6 @@ classdef ImpedanceSolver
         end
         
     end
+    
 end
+
