@@ -7,7 +7,6 @@ function total_error = cost_function(params_test, parameters, initial_values, t_
     parameters.R2 = abs(params_test(4));
     parameters.C2 = max(abs(params_test(5)), 0.1);
 
-
     inputparams = EquivalentCircuitModelInputParams(parameters);
     model = EquivalentCircuitModel(inputparams);
     [t_sim, V_sim, ~] = model.solve();
@@ -15,7 +14,6 @@ function total_error = cost_function(params_test, parameters, initial_values, t_
     % Time synchronization
     V_sim_aligne = interp1(t_sim, V_sim, t_exp, 'linear', 'extrap');
 
-   
     voltage_error = sum((V_exp - V_sim_aligne).^2);
 
     lambda = 0.5;
