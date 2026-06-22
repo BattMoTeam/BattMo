@@ -2,7 +2,7 @@
 
 % Load data set
 
-params = create_parameters();
+params = createParametersECM();
 inputparams = EquivalentCircuitModelInputParams(params);
 
 % Setup model
