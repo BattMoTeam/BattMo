@@ -13,8 +13,8 @@ Battery Physics
    plating
    runSwellingExample.ipynb
    soliddiffusion
-   exampleECM.nblink
-
+   runImpedanceScript.nblink
+   
 .. grid:: 2
 
    .. grid-item-card::
@@ -51,11 +51,10 @@ Battery Physics
       :padding: 2
 
       :ref:`Solid Diffusion Models <soliddiffusion:Solid Diffusion Models>`
-
+           
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Equivalent Circuit Model <exampleECM>`
-                      
-
+      :ref:`Battery Impedance Computation <runImpedanceScript>`
+           
 

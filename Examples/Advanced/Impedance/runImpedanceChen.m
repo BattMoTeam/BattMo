@@ -1,4 +1,4 @@
-clear all
+% clear all
 % close all
 
 
@@ -15,8 +15,6 @@ itf     = 'Interface';
 sd      = 'SolidDiffusion';
 ctrl    = 'Control';
 cc      = 'CurrentCollector';
-
-mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
@@ -40,7 +38,14 @@ c_pe = 17.038*mol/litre; % initial concentration at positive electrode
 
 initstate = initStateChen2020(model, c_ne, c_pe);
 
-impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
+options = [];
+options.stateInitialization.initializationSetup = 'given state';
+options.stateInitialization.computeSteadyState  = false;
+
+extrastructs = [];
+extrastructs.initstate = initstate;
+
+impsolv = ImpedanceSolver(inputparams, options, extrastructs);
 
 
 
