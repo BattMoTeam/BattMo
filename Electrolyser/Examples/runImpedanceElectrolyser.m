@@ -28,7 +28,7 @@ impsolv = ElectrolyserImpedanceSolver(inputparams, options);
 
 %% Compute the impedance for a range of frequencies
 %
-omegas = linspace(-4, 2, 30);
+omegas = linspace(-4, 2, 100);
 omegas = 10.^omegas;
 Z = impsolv.computeImpedance(omegas);
 
@@ -42,6 +42,8 @@ xlabel('real(Z) / Ω')
 ylabel('-imag(Z) / Ω')
 legend show
 title('Impedance')
+
+
 
 
 
