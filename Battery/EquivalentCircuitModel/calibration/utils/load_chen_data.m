@@ -28,7 +28,7 @@ function [Z_real, Z_imag, omegas] = load_chen_data()
     if includeDoubleLayer
     
         jsonstruct.(ne).(co).(am).(itf).useDoubleLayerCapacity = true;
-        jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 0.2;
+        jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 30;
     
     end
     
