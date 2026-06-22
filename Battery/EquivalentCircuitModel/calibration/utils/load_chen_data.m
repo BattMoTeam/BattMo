@@ -38,9 +38,15 @@ function [Z_real, Z_imag, omegas] = load_chen_data()
     c_pe = 17.038*mol/litre; % initial concentration at positive electrode
     
     initstate = initStateChen2020(model, c_ne, c_pe);
+
+    options = [];
+    options.stateInitialization.initializationSetup = 'given state';
+    options.stateInitialization.computeSteadyState = false;
+
+    extrastructs = [];
+    extrastructs.initstate = initstate;
     
-    impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
-    
+    impsolv = ImpedanceSolver(inputparams, options, extrastructs);
     
     omegas = logspace(-4, 2, 50);
     Z = impsolv.computeImpedance(omegas);
