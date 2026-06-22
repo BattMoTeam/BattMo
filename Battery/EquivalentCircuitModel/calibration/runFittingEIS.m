@@ -5,11 +5,9 @@
 
 params0 = [3e-3, 0.00260, 100, 0.00132, 1];
 
-
 [Z_re_exp, Z_im_exp, omega] = load_experimental_data();
 
-
-%lengthZ = length(Z_im_exp);
+% lengthZ = length(Z_im_exp);
 
 % synthetic data
 % opti_params = [0.00341, 0.00260, 5663.9, 0.00132, 0.9];     % params with
