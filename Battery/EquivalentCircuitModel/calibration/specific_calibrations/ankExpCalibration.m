@@ -14,6 +14,10 @@ pmin = params0 / a;
 pmax = params0 * a;
 scales = [pmin, pmax];
 
+set(0, 'defaultlinelinewidth', 3);
+set(0, 'DefaultAxesFontSize', 16);
+set(0, 'defaulttextfontsize', 18);
+
 feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
 [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
