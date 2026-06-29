@@ -21,11 +21,11 @@ function experience = plotexperience()
 
     inputparams.Control.controlPolicy = 'CCDischarge';
     inputparams.Control.DRate = 2;
-    inputparams.Control.tmax = 30;
+    % inputparams.Control.tmax = 30;
     inputparams.Control.rampupTime = 0.1;
     inputparams.Control.lowerCutoffVoltage = 2.5;
 
-    schedule1 = setupSchedule(model, inputparams);
+    schedule1 = model.setupSchedule(jsonstruct);
     [~, states1] = simulateBattery(model, state0, schedule1);
     state_after_pulse = states1{end};
 
