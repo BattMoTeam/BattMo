@@ -1,4 +1,4 @@
-function p = runClassFitting(Z_re_exp, Z_im_exp, omega)
+function p = runClassFitting(Z_re_exp, Z_im_exp, omega, print)  %print is a boolean, if one gives it to the function it will plot the results.
     %% Main code:
     
     % filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
@@ -27,13 +27,13 @@ function p = runClassFitting(Z_re_exp, Z_im_exp, omega)
     
     [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
     
-    
+    p = best_params;
     % [min_value, best_params, fitting_error] = feis.optimizationLsqnonlin();
     %            %  Lancement avec LSQNONLIN
     
     
     %% Printing results
-    if nargin == 2
+    if nargin == 4
     feis.plotresults_thevenin(best_params, fitting_error);
     
     feis.printResults(best_params, fitting_error);          % to be changed btw Warburg and Thevenin
