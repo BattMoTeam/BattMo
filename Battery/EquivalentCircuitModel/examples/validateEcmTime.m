@@ -1,12 +1,19 @@
-function validateEcmTime()
+function validateEcmTime(file_name)
+    
     %% ====================================================================
     %% STEP 1 : DATA LOADING AND OCV CATCHING
     %% ====================================================================
     
-    if exist('ecm_map_results.mat', 'file')
-        load('ecm_map_results.mat', 'ecm_table');
+    % Set default file name if no argument is provided
+    if nargin < 1
+        file_name = 'ecm_map_results_10.mat'; 
+    end
+
+    % Check if the file exists and load it
+    if exist(file_name, 'file')
+        load(file_name, 'ecm_table');
     else
-        error('file not found ecm_map_results.mat. Run mapEisToEcmTable first.');
+        error(['File not found: ', file_name]);
     end
     
     % Cathode (Positive)
@@ -20,28 +27,34 @@ function validateEcmTime()
     [fn_ocp_ne, ~] = setupFunction(json_ne.openCircuitPotential);
     
     % 1.3. Generation of the "Ground Truth": Continuous P2D discharge (BattMo)
-    % We run a constant current discharge WITHOUT any pauses to serve as a temporal reference
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
     
     [model, inputparams] = setupModelFromJson(jsonstruct);
-    state_init = setupInitialState(model);
     
-    C_rate = 1; 
-    t_sim = 3200; % Duration in seconds, be careful not to reach the computed SOC limit (here <10%)
+    %% New time-varying current profile setup
+    custom_time    = [0, 100,  600, 800, 1500, 2000]; 
+    custom_current = [0,   5,   -2,   0,    6,    0]; % Current profile in Amperes
     
-    inputparams.Control.controlPolicy = 'CCDischarge';
-    inputparams.Control.DRate = C_rate;
+    t_sim = custom_time(end); 
+    
+    % FIX HERE: Keeping CCDischarge ensures the MRST time-stepper steps correctly
+    inputparams.Control.controlPolicy = 'CCDischarge'; 
     model.Control = model.setupControl(inputparams.Control);
     
-    % Continuous schedule construction
-    dt_step = 10;
+    % Safe initialization using the standard policy branch
+    state_init = setupInitialState(model);
+    
+    % Building the fine-grained time schedule (2-second steps)
+    dt_step = 50; 
     N_sim_steps = floor(t_sim / dt_step);
     schedule_p2d = struct();
     schedule_p2d.step.val = ones(N_sim_steps, 1) * dt_step;
     schedule_p2d.step.control = ones(N_sim_steps, 1);
-    schedule_p2d.control.src = @(t, varargin) varargin{end};
+    
+    % Dynamically feed the current profile into the simulation via interpolation
+    schedule_p2d.control.src = @(t, varargin) interp1(custom_time, custom_current, t, 'previous', 0);
     schedule_p2d.control.Control = struct('stopFunction', @(model, state, state0) false);
     
     fprintf('Simulation of the P2D physical model (BattMo) in progress...\n');
@@ -52,6 +65,14 @@ function validateEcmTime()
     time_vec = zeros(N_points, 1);
     V_p2d = zeros(N_points, 1);
     I_p2d = zeros(N_points, 1);
+    soc_p2d = zeros(N_points, 1); % Pre-allocation du vrai SOC
+
+
+    pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
+    pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
+    ne_guestStoichiometry0   = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
+    ne_guestStoichiometry100 = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
+    sat_conc_ne              = model.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;   
     
     for k = 1:N_points
         time_vec(k) = states_p2d{k}.time;
@@ -60,9 +81,15 @@ function validateEcmTime()
     end
     
     % Coulomb Counting to obtain SOC
-    total_charge = trapz(time_vec, I_p2d);
-    soc_p2d = 1 - cumtrapz(time_vec, I_p2d) / total_charge;
-    
+     [Q_nominal, ~] = computeCellCapacity(model); 
+
+    % Genuine SOC calculation tracking the real capacity depletion
+    soc_p2d = 1 - cumtrapz(time_vec, I_p2d) / Q_nominal;
+
+    % Security boundary to avoid interpolation out-of-bounds [0, 1]
+    soc_p2d = max(0, min(1, soc_p2d));
+
+
     %% ====================================================================
     %% STEP 2 : ECM EQUATIONS IMPLEMENTATION (Simulation)
     %% ====================================================================
@@ -75,15 +102,14 @@ function validateEcmTime()
     Uc2 = 0; % Initial voltage across RC branch #2 (V)
     
     for k = 1:N_points
-        % Calculation of the real time-step (dt)
         if k == 1
             dt = time_vec(1);
         else
             dt = time_vec(k) - time_vec(k-1);
         end
         
-        I = I_p2d(k);           % Current measured at this timestamp (A)
-        soc = soc_p2d(k);       % SOC estimated at this timestamp
+        I = I_p2d(k);           
+        soc = soc_p2d(k);       
         
         % 2.1. Dynamic interpolation of fitted ECM parameters according to SOC
         R0 = interp1(ecm_table.SOC, ecm_table.R0, soc, 'linear', 'extrap');
@@ -92,21 +118,10 @@ function validateEcmTime()
         R2 = interp1(ecm_table.SOC, ecm_table.R2, soc, 'linear', 'extrap');
         C2 = interp1(ecm_table.SOC, ecm_table.C2, soc, 'linear', 'extrap');
         
-        % 2.2. Evaluation of the exact thermodynamic OCV via setupFunction
-        % For the Positive Electrode (NMC Cathode)
-        pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
-        pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
         
-        % For the Negative Electrode (Graphite Anode)
-        ne_guestStoichiometry0   = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
-        ne_guestStoichiometry100 = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
-        
-        % Note: Chen2020 uses stoichiometry (0 to 1) instead of raw SOC.
         x_pe = soc * (pe_guestStoichiometry100 - pe_guestStoichiometry0) + pe_guestStoichiometry0;              
-        % Translation of SOC into stoichiometry for the anode (Negative)
         x_ne = soc * (ne_guestStoichiometry100 - ne_guestStoichiometry0) + ne_guestStoichiometry0;
         
-        % 3. Calculation of the true open circuit voltage of the cell
         V_ocv = fn_ocp_pe(x_pe) - fn_ocp_ne(x_ne);
        
         % 2.3. Solving the Differential Equations of the RC branches (Explicit Euler)
@@ -116,37 +131,51 @@ function validateEcmTime()
         % 2.4. Calculation of the final cell voltage (Kirchhoff's Voltage Law)
         V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
         
-        % Passing states to the next step
         Uc1 = Uc1_next;
         Uc2 = Uc2_next;
     end
     
-    %% ====================================================================
-    %% STEP 3 : PLOTTING THE TWO FUNCTIONS (Visualization)
+   %% ====================================================================
+    %% STEP 3 : PLOTTING THE THREE FUNCTIONS (Visualization)
     %% ====================================================================
     fprintf('\n--- Step 3: Generating comparison plots ---\n');
     
-    figure('Color', 'w', 'Name', 'Validation P2D vs ECM', 'Position', [100, 100, 900, 600]);
+    % Hauteur augmentée à 800 pixels pour accueillir confortablement les 3 subplots
+    figure('Color', 'w', 'Name', 'Validation P2D vs ECM', 'Position', [100, 100, 900, 800]);
     
-    % Voltage Plot
-    subplot(2,1,1);
+    % --- SUBPLOT 1: Tension (Axe gauche) & Courant (Axe droit) ---
+    subplot(3,1,1);
+    yyaxis left
     plot(time_vec, V_p2d, 'b-', 'LineWidth', 2.5); hold on;
     plot(time_vec, V_ecm, 'r--', 'LineWidth', 2);
-    grid on;
     ylabel('Cell Voltage (V)', 'FontSize', 11);
-    title('Time-domain validation: Physical P2D Model vs Reduced ECM', 'FontSize', 13);
-    legend('Ground Truth : BattMo P2D', 'Reduced Model : ECM (2-RC fitted by EIS)', 'Location', 'SouthWest');
+    ax = gca; ax.YColor = 'k'; 
     
-    % Absolute Voltage Error Plot
-    subplot(2,1,2);
-    error_voltage = abs(V_p2d - V_ecm) * 1000; % Conversion to mV
+    yyaxis right
+    plot(time_vec, I_p2d, 'g-', 'LineWidth', 1.5);
+    ylabel('Current (A)', 'FontSize', 11);
+    ax.YColor = 'g'; 
+    
+    grid on;
+    title('Time-domain validation: Physical P2D Model vs Reduced ECM', 'FontSize', 13);
+    legend('Ground Truth: BattMo P2D', 'Reduced Model: ECM (2-RC)', 'Input Current Profile', 'Location', 'SouthWest');
+    
+    % --- SUBPLOT 2: Profil du SOC physique au cours du temps ---
+    subplot(3,1,2);
+    plot(time_vec, soc_p2d * 100, 'Color', [0.4660, 0.6740, 0.1880], 'LineWidth', 2); % Tracé en pourcentage
+    grid on;
+    ylabel('State of Charge (%)', 'FontSize', 11);
+    title('Physical State of Charge (SOC) profile extracted from BattMo', 'FontSize', 11);
+    
+    % --- SUBPLOT 3: Erreur absolue de tension ---
+    subplot(3,1,3);
+    error_voltage = abs(V_p2d - V_ecm) * 1000; 
     plot(time_vec, error_voltage, 'k-', 'LineWidth', 1.5);
     grid on;
     xlabel('Time (s)', 'FontSize', 11);
     ylabel('Absolute Error (mV)', 'FontSize', 11);
     title('Instantaneous error of the equivalent circuit model', 'FontSize', 11);
     
-    % Calculation of the global mean error for the analysis report
     rmse = sqrt(mean((V_p2d - V_ecm).^2)) * 1000;
     fprintf('*** Analysis complete! Root Mean Square Error (RMSE): %.2f mV ***\n', rmse);
 end

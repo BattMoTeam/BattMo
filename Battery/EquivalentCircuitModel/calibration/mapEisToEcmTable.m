@@ -9,15 +9,16 @@ function ecm_table = mapEisToEcmTable()
     
     [model, inputparams] = setupModelFromJson(jsonstruct);
     state_current = setupInitialState(model);
-    
-    soc_list = (1.0:-0.1:0.1)';
+
+    soc_step = 0.08; 
+    soc_list = (1.0:-soc_step:0.1)';
     N_steps = length(soc_list);
     
     results_matrix = zeros(N_steps, 6);
     
     freq = logspace(-4, 2, 50)./(2*pi);
     C_rate = 1;
-    t_5percent = 3600 * 0.05 / C_rate;
+    t_xpercent = 3600 * soc_step / C_rate;
     
     %% 2. Main loop
     for i = 1:N_steps
@@ -54,18 +55,18 @@ function ecm_table = mapEisToEcmTable()
         
         %% Décharge de 5% pour passer au SOC suivant
         if i < N_steps
-            fprintf(' 5%% discharge...\n');
+            fprintf(' %02d %% discharge...\n', soc_step);
             inputparams.Control.controlPolicy = 'CCDischarge';
             inputparams.Control.DRate = C_rate;
-            jsonstruct.TimeStepping.tmax = t_5percent;
+            jsonstruct.TimeStepping.tmax = t_xpercent;
             
             model.Control = model.setupControl(inputparams.Control);
             
-           % CONVERSIONS MANUELLES DU SCHEDULE (Plus de setupScheduleStep !)
+           % CONVERSIONS MANUELLES DU SCHEDULE 
             % On découpe les 180s en 10 étapes de 18s pour aider le solveur à converger
             N_substeps = 10; 
             schedule_pulse = struct();
-            schedule_pulse.step.val = ones(N_substeps, 1) * (t_5percent / N_substeps);
+            schedule_pulse.step.val = ones(N_substeps, 1) * (t_xpercent / N_substeps);
             schedule_pulse.step.control = ones(N_substeps, 1);
             % Cette fonction anonyme renvoie le courant Imax calculé par BattMo
             schedule_pulse.control.src = @(t, varargin) varargin{end}; 
@@ -102,9 +103,13 @@ function ecm_table = mapEisToEcmTable()
     ecm_table = array2table(results_matrix, 'VariableNames', ...
         {'SOC', 'R0', 'R1', 'C1', 'R2', 'C2'});
     
-    fprintf('\n--- CARTOGRAPHIE DES PARAMÈTRES ECM TERMINÉE ---\n');
+    % ecm_table = sortrows(ecm_table, 'SOC', 'ascend');
+
     disp(ecm_table);
+
+    file_name = sprintf('ecm_map_results_%02d.mat', soc_step * 100);
     
-    % automatic save
-    save('ecm_map_results.mat', 'ecm_table');
+
+    save(file_name, 'ecm_table');
+    fprintf('Table saved successfully as: %s\n', file_name);
 end

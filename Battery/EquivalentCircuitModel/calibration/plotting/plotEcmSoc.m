@@ -1,0 +1,55 @@
+function plotEcmSoc(file_name)
+    % Set default file name if no argument is provided
+    if nargin < 1
+        file_name = 'ecm_map_results_10.mat'; 
+    end
+
+    % Check if the file exists and load it
+    if exist(file_name, 'file')
+        load(file_name, 'ecm_table');
+    else
+        error(['File not found: ', file_name]);
+    end
+
+    % Create a clean figure window
+    figure('Color', 'w', 'Name', 'ECM Parameters vs SOC', 'Position', [100, 100, 1100, 700]);
+
+    % 1. Plot Ohmic Resistance R0
+    subplot(2,3,1);
+    plot(ecm_table.SOC * 100, ecm_table.R0, 'b-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'b');
+    grid on;
+    xlabel('SOC (%)'); ylabel('R0 (\Omega)');
+    title('Internal Resistance (R0)');
+
+    % 2. Plot RC1 Resistance R1
+    subplot(2,3,2);
+    plot(ecm_table.SOC * 100, ecm_table.R1, 'r-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'r');
+    grid on;
+    xlabel('SOC (%)'); ylabel('R1 (\Omega)');
+    title('Charge Transfer Resistance (R1)');
+
+    % 3. Plot RC1 Capacitance C1
+    subplot(2,3,3);
+    plot(ecm_table.SOC * 100, ecm_table.C1, 'm-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'm');
+    grid on;
+    xlabel('SOC (%)'); ylabel('C1 (F)');
+    title('Double Layer Capacitance (C1)');
+
+    % 4. Plot RC2 Resistance R2
+    subplot(2,3,4);
+    plot(ecm_table.SOC * 100, ecm_table.R2, 'g-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'g');
+    grid on;
+    xlabel('SOC (%)'); ylabel('R2 (\Omega)');
+    title('Diffusion Resistance (R2)');
+
+    % 5. Plot RC2 Capacitance C2
+    subplot(2,3,5);
+    plot(ecm_table.SOC * 100, ecm_table.C2, 'k-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'k');
+    grid on;
+    xlabel('SOC (%)'); ylabel('C2 (F)');
+    title('Diffusion Capacitance (C2)');
+
+    % Global title for the entire figure
+    sgtitle(['Fitted ECM Parameters Evolution across SOC Range - File: ', file_name], ...
+            'FontSize', 14, 'FontWeight', 'bold');
+end
