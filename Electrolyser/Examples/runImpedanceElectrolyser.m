@@ -9,7 +9,10 @@ jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeome
 jsonstruct = mergeJsonStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
+%%
+% We setup the parameter structure inputparams for an electolyser
 inputparams = ElectrolyserInputParams(jsonstruct);
+% We setup the discretization grid. The parameters have been loaded in the json structure
 inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 %% Setup Impedance solver 
@@ -21,8 +24,10 @@ inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 
 options = [];
 options.stateInitialization.initializationSetup = 'given current';
-options.stateInitialization.computeSteadyState  = true;
+% We use a current density of -3 A/cm^2
 options.stateInitialization.I = -3*ampere/(centi*meter)^2;
+% The steady state is computed at setup.
+options.stateInitialization.computeSteadyState  = true;
 
 impsolv = ElectrolyserImpedanceSolver(inputparams, options);
 
