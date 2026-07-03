@@ -58,7 +58,7 @@ simsetup.NonLinearSolver = nls;
 simsetup.model.nonlinearTolerance = 1e-3*simsetup.model.Control.Imax;
 
 % Set verbosity
-simstup.model.verbose = false;
+simsetup.model.verbose = false;
 
 states = simsetup.run;
 

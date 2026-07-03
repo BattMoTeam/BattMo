@@ -55,17 +55,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
     %% Setup the time step schedule
     %
 
-    if isAssigned(jsonstruct, 'TimeStepping')
-        timeSteppingParams = jsonstruct.TimeStepping;
-    else
-        timeSteppingParams = [];
-    end
-
-    step    = model.(ctrl).setupScheduleStep(timeSteppingParams);
-    control = model.(ctrl).setupScheduleControl();
-
-    % This control is used to set up the schedule
-    schedule = struct('control', control, 'step', step);
+    schedule = model.(ctrl).setupSchedule(jsonstruct);
 
     switch initializationSetup
       case "given SOC"
@@ -150,6 +140,17 @@ function  output = runBatteryJson(jsonstruct, varargin)
                     'I'          , I); ... % Unit : A
 
     output.globvars = globvars;
+
+    jsonstruct = setDefaultJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'}, false);
+
+    if getJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'})
+
+        for istate = 1 : numel(states)
+            states{istate} = model.addVariables(states{istate});
+        end
+
+    end
+
     output.states   = states;
 
     if isAssigned(jsonstruct, {'Output', 'variables'}) ...

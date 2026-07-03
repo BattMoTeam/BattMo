@@ -100,11 +100,11 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         gen = BatteryGeneratorP4D();
 
         zlength = gen.zlength;
-        zlength(1) = jsonstruct.NegativeElectrode.Coating.thickness;
+        zlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         zlength(2) = jsonstruct.NegativeElectrode.Coating.thickness;
         zlength(3) = jsonstruct.Separator.thickness;
         zlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
-        zlength(5) = jsonstruct.PositiveElectrode.Coating.thickness;
+        zlength(5) = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
         gen.zlength = zlength;
 
         gen.sep_nz   = jsonstruct.Separator.N;

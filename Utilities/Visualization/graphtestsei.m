@@ -43,18 +43,18 @@ model = model.registerVarAndPropfuncNames();
 
 dograph = true;
 if dograph
-    cgti = ComputationalGraphInteractiveTool(model);
-    % cgti.includeNodeNames = 'cSurface';
-    cgti.includeNodeNames = 'phiElectrolyte';
-    % gg = cgti.setupDescendantGraph();
-    % gg = cgti.getComputationalGraph('oneParentOnly', true);    
-    [g, edgelabels] = cgti.getComputationalGraph();
+    cgit = ComputationalGraphInteractiveTool(model);
+    % cgit.includeNodeNames = 'cSurface';
+    cgit.includeNodeNames = 'phiElectrolyte';
+    % gg = cgit.setupDescendantGraph();
+    % gg = cgit.getComputationalGraph('oneParentOnly', true);    
+    [g, edgelabels] = cgit.getComputationalGraph();
     figure
     h = plot(g, 'edgelabel', edgelabels, 'nodefontsize', 10);
 end
 
-A = cgti.A;
-nodenames = cgti.nodenames;
+A = cgit.A;
+nodenames = cgit.nodenames;
 
 doprintspecialvariables = true;
 

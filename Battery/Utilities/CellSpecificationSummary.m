@@ -8,29 +8,29 @@ classdef CellSpecificationSummary
 
         % We want the computed values to remain synchronized with the model. To do so we set the "setAccess" property to
         % immutable.
-        
+
         model
 
         gridGenerator
 
         jsonstruct
-        
+
     end
-    
+
     properties (SetAccess = private)
 
         has_packing
-        
+
         packing_mass
         packing_volume
 
         thicknesses % Used to compute mass loading
-        
+
         mass   % total mass (includes packing mass if packing is present)
         masses % structure with mass of each of the cell components
 
         massLoadings % Computed if thicknesses are available
-        
+
         volume  % total volume (includes packing volume if packing is present)
         volumes % structure with volume of each of the cell components
 
@@ -42,7 +42,7 @@ classdef CellSpecificationSummary
 
         capacity
         capacities % structure with capacity of negative and positive electrode
-        
+
         dischargeFunction % Maximum energy discharge function (voltage versus state of charge)
 
         temperature
@@ -53,10 +53,10 @@ classdef CellSpecificationSummary
                              % - specificEnergy
                              % - energyDensity
                              % - dischargeCurve
-                             % - E    % Voltage output 
+                             % - E    % Voltage output
                              % - I    % Current output
                              % - time % time output
-        
+
     end
 
     methods
@@ -77,7 +77,7 @@ classdef CellSpecificationSummary
                 [model, ~, ~, gridGenerator] = setupModelFromJson(model);
                 opt.gridGenerator = gridGenerator;
             end
-            
+
             css.packing_mass          = opt.packing_mass;
             css.temperature          = opt.temperature;
             css.gridGenerator        = opt.gridGenerator;
@@ -85,7 +85,7 @@ classdef CellSpecificationSummary
             css.model                = model;
 
             thicknesses = css.extractThicknessFromModel(); % can be done in 1D model or when gridGenerator is given (if possible)
-            
+
             if ~isempty(opt.jsonstruct)
                 % We fetch the thicknesses from the jsonstruct
                 thicknesses.NegativeElectrode = opt.jsonstruct.NegativeElectrode.Coating.thickness;
@@ -98,17 +98,17 @@ classdef CellSpecificationSummary
             end
 
             css.thicknesses = thicknesses;
-            
+
             css = css.computeSpecs();
-            
+
         end
 
         function css = setupPacking(css, varargin)
 
             opt = struct('packing_mass'  , []  , ...
-                         'packing_volume', []  , ...                         
+                         'packing_volume', []  , ...
                          'total_volume'  , []);
-            
+
             opt = merge_options(opt, varargin{:});
 
             packing_mass   = opt.packing_mass;
@@ -121,7 +121,7 @@ classdef CellSpecificationSummary
             end
 
             css.has_packing = true;
-            
+
             if isempty(packing_mass)
                 fprintf('Packing mass is not given. We set the packing mass to zero.\n');
                 packing_mass = 0;
@@ -129,7 +129,7 @@ classdef CellSpecificationSummary
             css.packing_mass = packing_mass;
 
             if ~isempty(total_volume)
-                
+
                 css.volume = total_volume;
                 assert(css.volume > css.volumes.val, 'Total volume given is smaller that the sum of the components in the cell');
                 if ~isempty(packing_volume)
@@ -143,33 +143,33 @@ classdef CellSpecificationSummary
                 css.packing_volume = packing_volume;
 
             else
-                
+
                 if ~isempty(packing_volume)
                     css.packing_volume = packing_volume;
                 else
                     fprintf('Packing volume or total volume are not given. We set the packing volume to zero\n');
                     css.packing_volume = 0;
                 end
-                    
+
                 if ~isempty(css.volumes)
                     total_volume = css.packing_volume + css.volumes.val;
                 else
                     total_volume = [];
                 end
-                
+
                 css.volume = total_volume;
-                
+
             end
 
             css = css.computeSpecs();
-            
+
         end
 
         function thicknesses = extractThicknessFromModel(css)
 
             gridgen = css.gridGenerator;
             model   = css.model;
-            
+
             if isempty(gridgen) & model.grid.griddim > 1
                 thicknesses = [];
                 return
@@ -178,11 +178,11 @@ classdef CellSpecificationSummary
             ne = 'NegativeElectrode';
             pe = 'PositiveElectrode';
             co = 'Coating';
-            
+
             if model.grid.griddim == 1
-                
+
                 % we recover the lengths from the model directly
-                
+
                 eldes = {ne, pe};
 
                 for ielde = 1 : numel(eldes)
@@ -194,7 +194,7 @@ classdef CellSpecificationSummary
                     xmin = min(G.faces.centroids(:, 1));
 
                     thicknesses.(elde) = xmax - xmin;
-                    
+
                 end
 
                 return
@@ -203,54 +203,54 @@ classdef CellSpecificationSummary
             switch class(gridgen)
 
               case {'BatteryGeneratorMultilayerPouch'}
-                
+
                 thicknesses.(ne) = gridgen.unit_cell_thickness(2);
                 thicknesses.(pe) = gridgen.unit_cell_thickness(4);
-                
+
               case {'BatteryGeneratorP4D'}
 
                 thicknesses.(ne) = gridgen.zlength(2);
                 thicknesses.(pe) = gridgen.zlength(4);
 
               otherwise
-                
+
                 error('grid generator class not recognized');
-                
+
             end
-            
+
         end
 
-        
+
         function css = updateNegativeElectrodeThickness(css, thickness)
-            
+
             css.thicknesses.NegativeElectrode = thickness;
             css = css.computeSpecs();
-            
+
         end
-        
+
         function css = updatePositiveElectrodeThickness(css, thickness)
-            
+
             css.thicknesses.PositiveElectrode = thickness;
             css = css.computeSpecs();
-            
+
         end
 
         function css = updateThicknesses(css, thicknesses)
-            
+
             css.thicknesses = thicknesses;
             css = css.computeSpecs();
-            
+
         end
-        
+
 
         function css = computeSpecs(css)
 
-            % Reset the simulations 
+            % Reset the simulations
 
             css.dischargeSimulations = {};
 
             model = css.model;
-            
+
             temperature = css.temperature;
 
             [mass, masses, volumes] = computeCellMass(model);
@@ -258,10 +258,10 @@ classdef CellSpecificationSummary
             if css.has_packing
                 mass = mass + css.packing_mass;
             end
-            
+
             [capacity, capacities]  = computeCellCapacity(model);
             [energy, output]        = computeCellEnergy(model, 'temperature', temperature);
-            
+
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
             co  = 'Coating';
@@ -278,7 +278,7 @@ classdef CellSpecificationSummary
                 massLoadings.(ne) = [];
                 massLoadings.(pe) = [];
             end
-            
+
             % Compute specific energy and energy density
 
             if css.has_packing
@@ -293,13 +293,13 @@ classdef CellSpecificationSummary
 
             specificEnergy = energy/mass;
             energyDensity  = energy/volume;
-            
+
             % Compute NP ratio
-            
+
             NPratio = capacities.(ne)/capacities.(pe);
 
             %  Assign values
-            
+
             css.mass              = mass;
             css.masses            = masses;
             css.volume            = volume;
@@ -312,10 +312,13 @@ classdef CellSpecificationSummary
             css.capacity          = capacity;
             css.capacities        = capacities;
             css.dischargeFunction = output.dischargeFunction;
-        
+
         end
 
-        function printSpecifications(css)
+        function output = printSpecifications(css, varargin)
+
+            opt = struct('returnStruct', false);
+            opt = merge_options(opt, varargin{:});
 
             ne  = 'NegativeElectrode';
             pe  = 'PositiveElectrode';
@@ -327,9 +330,9 @@ classdef CellSpecificationSummary
                 line.value       = value;
 
                 lines{end + 1} = line;
-                
+
             end
-            
+
             lines = {};
 
             if css.has_packing
@@ -363,22 +366,22 @@ classdef CellSpecificationSummary
             function str = appendDrate(str, crate)
 
                 str = sprintf('%s (DRate = %g)', str, crate);
-                
+
             end
-            
+
             for isim = 1 : numel(css.dischargeSimulations)
-                
+
                 simres = css.dischargeSimulations{isim};
-                ac = @(str) appendDrate(str, simres.DRate); 
+                ac = @(str) appendDrate(str, simres.DRate);
                 lines = addLine(lines, ac('Energy'), 'Wh', simres.energy/hour);
                 lines = addLine(lines, ac('Specific Energy'), 'Wh/kg', simres.specificEnergy/hour);
                 lines = addLine(lines, ac('Energy Density') , 'Wh/L' , (simres.energyDensity/hour)*litre);
-                
+
             end
-            
+
             function printLines(lines)
             %% print lines
-                
+
             % Setup format for fprintf
             % Get maximum string length for the description field
                 descriptions = cellfun(@(line) line.description, lines, 'uniformoutput', false);
@@ -387,7 +390,7 @@ classdef CellSpecificationSummary
 
                 fmt = sprintf('%%%ds : %%-8g %%s\n', s);
                 fmt2 = sprintf('%%%ds\n', s);
-                
+
                 for iline = 1 : numel(lines)
                     line = lines{iline};
                     if ~isempty(line.value)
@@ -400,12 +403,33 @@ classdef CellSpecificationSummary
                                 line.description);
                     end
                 end
-                
+
             end
-            
+
             printLines(lines);
-            
+
+            if opt.returnStruct
+
+                s = [lines{:}];
+                output = struct();
+
+                for i = 1:numel(s)
+                    fieldName = matlab.lang.makeValidName(s(i).description);
+                    output.(fieldName) = struct( ...
+                        'Unit',  s(i).unit, ...
+                        'Value', s(i).value);
+
+                end
+
+            else
+
+                output = lines;
+
+            end
+
         end
+
+
 
         function css = addDrates(css, DRates, varargin)
 
@@ -415,18 +439,18 @@ classdef CellSpecificationSummary
                 css = css.addDrate(DRate, varargin{:});
 
             end
-            
+
         end
-        
+
         function css = addDrate(css, DRate, varargin)
 
             % the extras options are passed to computeCellEnergy
             extras = varargin;
-            
+
             model = css.model;
-            
+
             [energy, output] = computeCellEnergy(model, 'DRate', DRate, extras{:});
-            
+
             specificEnergy = energy/css.mass;
             energyDensity  = energy/css.volume;
 
@@ -440,13 +464,13 @@ classdef CellSpecificationSummary
                                'time'             , output.time);
 
             css.dischargeSimulations{end + 1} = simresult;
-            
+
         end
-            
-        
+
+
     end
 
-    
+
 end
 
 

@@ -9,16 +9,15 @@
    Installation <installation>
    basicusage
    tutorials
-   intermediate
-   modeling
-   architecture
-   json
+   inputparameters
+   output
    geometryinput
-   juliabridge
-   Electrolyser simulation <publishedExamples/runElectrolyser>
-   protonicmembrane
-   app
-   Computational Graph <computationalGraph/graphdoc>
+   batteryphysics
+   elchemsystems
+   optimisation
+   modeling
+   battmointernals
+   programminginterfaces
    seealso
    References <bibliography>
 
@@ -33,15 +32,12 @@ Welcome to the Battery Modelling Toolbox (**BattMo**), a comprehensive solution 
 Our toolbox offers a flexible framework for building fully coupled electrochemical-thermal simulations with 1D, 2D, or 3D geometries. Powered by the open-source MATLAB Reservoir Simulation Toolbox (MRST), **BattMo** provides efficient finite volume grid generation and advanced numerical solvers, ensuring swift simulations even for complex systems. Whether you're a researcher or developer, **BattMo** is your gateway to unlocking the potential of continuum modelling for electrochemical devices. Dive into our documentation and explore the possibilities!
 
 For the latest information including video tutorials and project gallery, please visit the project webpage :
-`https://batterymodel.com <https://batterymodel.com/>`_
+`https://battmo.org <https://battmo.org/>`_
 
 .. image:: battmologo.png
    :width: 50%
    :align: center
-   :target: https://batterymodel.com/
-
-.. note::
-  This project is under active development.
+   :target: https://battmo.org/
 
 
 Acknowledgements

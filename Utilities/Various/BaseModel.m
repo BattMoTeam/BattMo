@@ -246,7 +246,46 @@ classdef BaseModel < PhysicalModel
             end                
         end
 
+
+        function model = removePropFunction(model, varname)
+
+            if isa(varname, 'char')
                 
+                varname = VarName({}, varname);
+                model = model.removePropFunction(varname);
+                
+            elseif isa(varname, 'cell')
+                
+                varname = VarName(varname(1 : end - 1), varname{end});
+                model = model.removePropFunction(varname);
+                
+            elseif isa(varname, 'VarName')
+
+                propfuncs = model.propertyFunctionList;
+                nprops = numel(propfuncs);
+                
+                for iprop = 1 : nprops
+                    [found, keep,  propfuncs{iprop}.varname] = BaseModel.extractVarName(varname, propfuncs{iprop}.varname);
+                    if found
+                        break
+                    end
+                end
+
+                inds = true(nprops, 1);
+                if ~keep
+                    inds(iprop) = false;
+                end
+                
+                model.propertyFunctionList = propfuncs(inds);
+                
+            else
+                
+                error('not recognized')
+
+            end
+            
+        end
+        
         function stateAD = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
             
@@ -569,9 +608,10 @@ classdef BaseModel < PhysicalModel
                     eval(sprintf('%s = varvalue;', varname));
                 end
             end
-            
-            funcCall = strjoin(funcCallList, '');
-            eval(funcCall);
+
+            for ifunc = 1 : numel(funcCallList)
+                eval(funcCallList{ifunc});
+            end
             
         end
 
@@ -700,13 +740,18 @@ classdef BaseModel < PhysicalModel
                 jsonstruct = [];
             end
         end
-        
-        function cgti = cgti(model)
-        % Shortcut to retrieve the computational graph
+
+        function cgit = getComputationalGrapInteractiveTool(model)
+        % setup and retrieve the computational graph interactive tool
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
             end
-            cgti =  ComputationalGraphInteractiveTool(model.computationalGraph);
+            cgit = ComputationalGraphInteractiveTool(model.computationalGraph);
+
+        end
+
+        function cgit = cgit(model)
+            cgit = model.getComputationalGrapInteractiveTool();
         end
 
         function G = grid(model)
@@ -743,7 +788,7 @@ classdef BaseModel < PhysicalModel
             primvarnames = model.getPrimaryVariableNames();
 
             for ivar = 1 : numel(primvarnames)
-                isequal = ImpedanceBattery.compareVarName(varname, primvarnames{ivar});
+                isequal = model.compareVarName(varname, primvarnames{ivar});
                 if isequal
                     ind = ivar;
                     return
@@ -809,6 +854,44 @@ classdef BaseModel < PhysicalModel
             end
             
         end
+
+        function isequal = compareVarName(varname1, varname2)
+            
+            if isempty(varname1) & isempty(varname2)
+                % Needed in recursion
+                isequal = true;
+                return
+            end
+            
+            if numel(varname1) == numel(varname2)
+
+                svarname1 = varname1{1};
+                svarname2 = varname2{1};
+
+                if ischar(svarname1) & ischar(svarname2)
+                    if strcmp(svarname1, svarname2)
+                        isequal = BaseModel.compareVarName(varname1(2 : end), varname2(2 : end));
+                    else
+                        isequal = false;
+                        return
+                    end
+                elseif isnumeric(svarname1) & isnumeric(svarname2)
+                    if svarname1 == svarname2
+                        isequal = BaseModel.compareVarName(varname1(2 : end), varname2(2 : end));
+                    else
+                        isequal = false;
+                        return
+                    end
+                else
+                    isequal = false;
+                    return
+                end
+            else
+                isequal = false;
+                return
+            end
+        end
+        
         
     end
     

@@ -178,7 +178,8 @@ for ielde = 1:numel(eldes)
     c     = theta.*cmax;
     
     %%%
-    % The function |computeOCPFunc| returns the OCP function for the given concentration
+
+    % The function |computeOCPFunc| returns the OCP function for the given stoichiometry
     
     OCP = interface_model.computeOCP(c./cmax);
 

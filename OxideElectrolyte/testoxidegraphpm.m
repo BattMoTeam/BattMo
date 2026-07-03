@@ -8,25 +8,25 @@ filename = '/home/xavier/Matlab/Projects/battmo/OxideElectrolyte/oxidemembrane.j
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 
-paramobj = OxideMembraneCellInputParams(jsonstruct);
+inputparams = OxideMembraneCellInputParams(jsonstruct);
 
-paramobj = setupProtonicMembraneCellGrid(paramobj, jsonstruct);
+inputparams = setupProtonicMembraneCellGrid(inputparams, jsonstruct);
 
 % Setup model
-model = OxideMembraneCell(paramobj);
+model = OxideMembraneCell(inputparams);
 
 % Setup computational graph
 model = model.setupComputationalGraph();
-cgti = model.computationalGraph;
+cgit = model.computationalGraph;
 
 % Print root variables
-cgti.printRootVariables();
+cgit.printRootVariables();
 
 % Print tail variables
-cgti.printTailVariables();
+cgit.printTailVariables();
 
 % plot computational graph
-[g, edgelabels] = cgti.getComputationalGraph();
+[g, edgelabels] = cgit.getComputationalGraph();
 
 figure
 h = plot(g, 'nodefontsize', 14);

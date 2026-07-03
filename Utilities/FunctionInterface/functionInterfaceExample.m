@@ -79,3 +79,28 @@ xlabel('Stoichiometry');
 ylabel('Voltage / V');
 title('OCP function NMC Chen 2020')
 
+%%
+% Example with csv input data
+%
+
+jsonstruct = parseBattmoJson('Documentation/jsonfiles/LFP_Xu2015_csv.json')
+
+[fn, func] = setupFunction(jsonstruct.openCircuitPotential);
+
+%%
+% The function is converted to a tabulated function format
+% 
+disp(func)
+
+%%
+% we plot the results
+%
+
+x = linspace(0, 1, 100);
+y = fn(x);
+
+figure
+plot(x, y);
+xlabel('Stoichiometry');
+ylabel('Voltage / V');
+title('OCP function LFP Xu2015')

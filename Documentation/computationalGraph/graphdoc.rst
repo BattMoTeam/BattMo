@@ -2,6 +2,12 @@
 Computation Graph Model Design ang Assembly
 ===========================================
 
+BattMo simulators are implemented using an approach based on variable dependency graph. The general ideas behind the
+approach is presented in the slides and below, we go through an example.
+
+.. image:: img/first_page_variable_graph_simulator.png
+   :target: ../_static/documents/variable_graph_simulator.pdf
+
 Introduction
 ============
 
@@ -468,13 +474,13 @@ that acts on the graph.
 
    model = ThermalModel();
    model = model.setupComputationalGraph();
-   cgt   = model.computationalGraph;
+   cgit  = model.computationalGraph;
 
 We have written a shortcut for the two last lines
 
 .. code:: matlab
 
-   cgt =  model.cgt;
+   cgit =  model.cgit;
 
 
 When the computational graph is setup, the property :code:`varNameList` of :battmo:`BaseModel` is populated
@@ -484,7 +490,7 @@ that have been registered.
 
 .. code:: 
 
-   >> cgt.printVarNames()
+   >> cgit.printVarNames()
    
    T
    source
@@ -534,8 +540,8 @@ Similary, we setup a :ref:`reaction model<reacmodelgraph>` as follows
 .. code::
 
    >> model = ReactionModel();
-   >> cgt = model.cgt;
-   >> cgt.printVarNames
+   >> cgit = model.cgit;
+   >> cgit.printVarNames
    
    phi_s
    c_s
@@ -579,8 +585,8 @@ We can already instantiate this model (for the impatient, the full model setup i
 .. code:: 
 
    >> model = ReactionThermalModel();
-   >> cgt = model.cgt;
-   >> cgt.printVarNames();
+   >> cgit = model.cgit;
+   >> cgit.printVarNames();
 
    Reaction.phi_s
    Reaction.c_s
@@ -681,8 +687,8 @@ evaluation is computed from the graph structure.
 
 .. code::
 
-   >> cgt = model.cgt
-   >> cgt.printOrderedFunctionCallList
+   >> cgit = model.cgit
+   >> cgit.printOrderedFunctionCallList
 
    Function call list
    state = model.updateAccumTerm(state);
@@ -730,8 +736,8 @@ In this case, we obtain the following list of function calls
 .. code:: 
 
    >> model = ReactionThermalModel();
-   >> cgt = model.cgt;
-   >> cgt.printOrderedFunctionCallList;
+   >> cgit = model.cgit;
+   >> cgit.printOrderedFunctionCallList;
    
    Function call list
    state = model.updateOCP(state);

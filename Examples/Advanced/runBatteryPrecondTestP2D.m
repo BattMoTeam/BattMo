@@ -85,8 +85,8 @@ model = Battery(inputparams);
 inspectgraph = false;
 if inspectgraph
     % plot the computational graph
-    cgti = ComputationalGraphInteractiveTool(model);
-    cgti.getComputationalGraph('doplot', true);
+    cgit = ComputationalGraphInteractiveTool(model);
+    cgit.getComputationalGraph('doplot', true);
     return
 end
 
