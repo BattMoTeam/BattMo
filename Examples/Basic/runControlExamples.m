@@ -22,7 +22,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 %%%
 % We merge the material and geometrical parameters in |jsonstruct|
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material
                               });
 

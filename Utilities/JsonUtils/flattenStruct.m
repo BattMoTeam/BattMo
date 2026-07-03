@@ -1,4 +1,4 @@
-function flatjsonviewer = flattenJsonStruct(jsonstruct, varargin)
+function flatjsonviewer = flattenStruct(jsonstruct, varargin)
 %
 % A json struct is hierarchical by design. For visualization, it is however convenient to have a flattened version with
 % all the entries given in the structure at the same level. This function returns an object of the class
@@ -7,7 +7,7 @@ function flatjsonviewer = flattenJsonStruct(jsonstruct, varargin)
     opt = struct('doprint', true);
     opt = merge_options(opt, varargin{:});
     
-    flatjson = flattenJsonStruct_({}, jsonstruct, []);
+    flatjson = flattenStruct_({}, jsonstruct, []);
     flatjson = reshape(flatjson, 2, [])';
 
     flatjsonviewer = FlatJsonViewer(flatjson);
@@ -18,7 +18,7 @@ function flatjsonviewer = flattenJsonStruct(jsonstruct, varargin)
 
 end
 
-function flatjson = flattenJsonStruct_(flatjson, jsonstruct, prefix)
+function flatjson = flattenStruct_(flatjson, jsonstruct, prefix)
 
     dostruct = false;
     
@@ -28,7 +28,7 @@ function flatjson = flattenJsonStruct_(flatjson, jsonstruct, prefix)
     elseif isstruct(jsonstruct) && numel(jsonstruct) > 2
         for ijson = 1 : numel(jsonstruct)
             subjsonstruct = jsonstruct(ijson);
-            flatjson = flattenJsonStruct_(flatjson, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
+            flatjson = flattenStruct_(flatjson, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
         end
     elseif isstruct(jsonstruct)    
         fds = fieldnames(jsonstruct);
@@ -50,7 +50,7 @@ function flatjson = flattenJsonStruct_(flatjson, jsonstruct, prefix)
             if iscell(subjsonstruct) && numel(subjsonstruct) > 1
                 subjsonstruct = {subjsonstruct};
             end
-            flatjson = flattenJsonStruct_(flatjson, subjsonstruct, subprefix);
+            flatjson = flattenStruct_(flatjson, subjsonstruct, subprefix);
         end
     end
     

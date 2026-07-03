@@ -25,7 +25,7 @@ jsonGeom    = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometry1d.
 jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
 
-json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
+json = mergeStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
 
 json.use_thermal = false;
 

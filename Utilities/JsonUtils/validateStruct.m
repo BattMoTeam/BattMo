@@ -1,4 +1,4 @@
-function is_valid = validateJsonStruct(jsonstruct, varargin)
+function is_valid = validateStruct(jsonstruct, varargin)
 
     opt = struct('useTmpFile', true, ...
                  'schema', fullfile(battmoDir(), 'Utilities', 'JsonSchemas', 'Simulation.schema.json'));
@@ -8,7 +8,7 @@ function is_valid = validateJsonStruct(jsonstruct, varargin)
     if opt.useTmpFile
 
         % Write the json struct to a temporary file
-        tempfilename = writeJsonStruct(jsonstruct);
+        tempfilename = writeStruct(jsonstruct);
 
         % Validate
         is_valid = validateJsonFiles({tempfilename});

@@ -1,12 +1,12 @@
-function subjsonstruct = subsetJsonStruct(jsonstruct, fieldnamelists)
+function subjsonstruct = subsetStruct(jsonstruct, fieldnamelists)
 
     subjsonstruct = [];
     
     for ifs = 1 : numel(fieldnamelists)
         
         fdlist = fieldnamelists{ifs};
-        val = getJsonStructField(jsonstruct, fdlist);
-        subjsonstruct = setJsonStructField(subjsonstruct, fdlist, val);
+        val = getStructField(jsonstruct, fdlist);
+        subjsonstruct = setStructField(subjsonstruct, fdlist, val);
         
     end
     

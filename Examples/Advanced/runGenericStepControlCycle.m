@@ -27,7 +27,7 @@ jsonstruct_control  = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'gen
 %%
 % We print it to command window
 
-viewJsonStruct(jsonstruct_control)
+viewStruct(jsonstruct_control)
 
 %%
 % We remove the fields that are not relevant for this example. This is done to simplify the input parameters and focus
@@ -35,7 +35,7 @@ viewJsonStruct(jsonstruct_control)
 %
 
 
-jsonstruct_material = removeJsonStructFields(jsonstruct_material              , ...
+jsonstruct_material = removeStructFields(jsonstruct_material              , ...
                                              {'Control', 'DRate'}             , ...
                                              {'Control', 'controlPolicy'}     , ...
                                              {'Control', 'upperCutoffVoltage'}, ...
@@ -46,7 +46,7 @@ jsonstruct_material = removeJsonStructFields(jsonstruct_material              , 
 % We merge all the input structures
 % 
 
-jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
 

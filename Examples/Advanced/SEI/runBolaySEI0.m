@@ -29,7 +29,7 @@ jsonstruct.use_thermal = false;
 jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
-jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
+jsonstruct.(ne).(co).(am) = mergeStructs({jsonstruct.(ne).(co).(am), ...
                                               jsonstruct_bolay});
 
 jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';
@@ -47,10 +47,10 @@ jsonstruct.(ctrl) = jsontruct_control;
 jsonstruct.(ne).(co).(am).(itf).SEIelectronicDiffusionCoefficient = 3.5e-15;
 
 jsonstruct.SOC = 1;
-doPrintJsonStruct = false;
+doPrintStruct = false;
 
-if doPrintJsonStruct
-    fjv = flattenJsonStruct(jsonstruct);
+if doPrintStruct
+    fjv = flattenStruct(jsonstruct);
     % fjv.print('filter', {'parame name', 'SEI'})
 end
 

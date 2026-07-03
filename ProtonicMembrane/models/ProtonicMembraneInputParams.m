@@ -17,9 +17,9 @@ classdef ProtonicMembraneInputParams < ComponentInputParams
         
         function inputparams = ProtonicMembraneInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'TimeStepping', 'useSwitch'}, true);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'TimeStepping', 'fractionSwitch'}, 0.5);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'TimeStepping', 'orderSwitch'}, 'I-first');
+            jsonstruct = setDefaultStructField(jsonstruct, {'TimeStepping', 'useSwitch'}, true);
+            jsonstruct = setDefaultStructField(jsonstruct, {'TimeStepping', 'fractionSwitch'}, 0.5);
+            jsonstruct = setDefaultStructField(jsonstruct, {'TimeStepping', 'orderSwitch'}, 'I-first');
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             

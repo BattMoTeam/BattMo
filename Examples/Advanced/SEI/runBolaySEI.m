@@ -62,7 +62,7 @@ jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_se
 jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
 
-jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
+jsonstruct.(ne).(co).(am) = mergeStructs({jsonstruct.(ne).(co).(am), ...
                                               jsonstruct_bolay});
 
 %%
@@ -88,7 +88,7 @@ jsonstruct.SOC = 1;
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsontruct_geometry = parseBattmoJson(jsonfilename);
 
-jsonstruct = mergeJsonStructs({jsonstruct, jsontruct_geometry});
+jsonstruct = mergeStructs({jsonstruct, jsontruct_geometry});
 
 %% Simulation
 %

@@ -96,7 +96,7 @@ function [capacity, capacities] = computeCellCapacity(model)
                 error('Electrode not recognized');
             end
 
-            if getJsonStructField(model.(elde).(co).activeMaterialModelSetup, 'swelling', false)
+            if getStructField(model.(elde).(co).activeMaterialModelSetup, 'swelling', false)
                 % Special setup in case of swelling material
                 % the guest stochiometries are interpretated as fill-in levels
                 

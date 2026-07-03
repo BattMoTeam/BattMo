@@ -1,11 +1,11 @@
-function result = isEqualJsonStructField(jsonstruct, fieldnamelist, testValue)
+function result = isEqualStructField(jsonstruct, fieldnamelist, testValue)
 
     if isUnAssigned(jsonstruct, fieldnamelist)
         result = false;
         return
     end
     
-    value = getJsonStructField(jsonstruct, fieldnamelist);
+    value = getStructField(jsonstruct, fieldnamelist);
     result = isequal(value, testValue);
     
 end

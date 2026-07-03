@@ -22,16 +22,16 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     %% Validate
     if opt.validateJson
-        validateJsonStruct(jsonstruct);
+        validateStruct(jsonstruct);
     end
 
     %% model parameter required for initialization if initializationSetup = "given SOC";
     % The initial state of the model is setup using the model.setupInitialState() method.
 
     if ~isempty(opt.initstate)
-        jsonstruct = setJsonStructField(jsonstruct, {'initializationSetup'}, 'given matlab object', 'handleMisMatch', 'warn');
+        jsonstruct = setStructField(jsonstruct, {'initializationSetup'}, 'given matlab object', 'handleMisMatch', 'warn');
     else
-        jsonstruct = setDefaultJsonStructField(jsonstruct, {'initializationSetup'}, 'given SOC');
+        jsonstruct = setDefaultStructField(jsonstruct, {'initializationSetup'}, 'given SOC');
     end
 
     %%  Initialize the battery model.
@@ -39,7 +39,7 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
-    initializationSetup = getJsonStructField(jsonstruct, {'initializationSetup'});
+    initializationSetup = getStructField(jsonstruct, {'initializationSetup'});
     
     switch initializationSetup
       case "given SOC"
@@ -141,9 +141,9 @@ function  output = runBatteryJson(jsonstruct, varargin)
 
     output.globvars = globvars;
 
-    jsonstruct = setDefaultJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'}, false);
+    jsonstruct = setDefaultStructField(jsonstruct, {'Output', 'includeIntermediateVariables'}, false);
 
-    if getJsonStructField(jsonstruct, {'Output', 'includeIntermediateVariables'})
+    if getStructField(jsonstruct, {'Output', 'includeIntermediateVariables'})
 
         for istate = 1 : numel(states)
             states{istate} = model.addVariables(states{istate});

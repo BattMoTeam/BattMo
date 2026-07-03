@@ -228,9 +228,9 @@ classdef ActiveMaterial < BaseModel
             itf = 'Interface';
             sd  = 'SolidDiffusion';
 
-            scalingparams = setDefaultJsonStructField(scalingparams, {'I'}, 5e-10);
+            scalingparams = setDefaultStructField(scalingparams, {'I'}, 5e-10);
 
-            I = getJsonStructField(scalingparams, {'I'});
+            I = getStructField(scalingparams, {'I'});
 
             n  = model.(itf).numberOfElectronsTransferred; % number of electron transfer (equal to 1 for Lithium)
             F  = model.(sd).constants.F;
@@ -245,11 +245,11 @@ classdef ActiveMaterial < BaseModel
 
                 lp = 'LithiumPlating';
 
-                scalingparams = setDefaultJsonStructField(scalingparams, {'platedConcentration'}, 8e-07);
-                scalingparams = setDefaultJsonStructField(scalingparams, {'elyteConcentration'}, 5e-1*mol/litre);
+                scalingparams = setDefaultStructField(scalingparams, {'platedConcentration'}, 8e-07);
+                scalingparams = setDefaultStructField(scalingparams, {'elyteConcentration'}, 5e-1*mol/litre);
                 
-                cp = getJsonStructField(scalingparams, {'platedConcentration'});
-                ce = getJsonStructField(scalingparams, {'elyteConcentration'});
+                cp = getStructField(scalingparams, {'platedConcentration'});
+                ce = getStructField(scalingparams, {'elyteConcentration'});
                 
                 vsa     = model.(itf).volumetricSurfaceArea;
                 kPl     = model.(lp).reactionRatePlating;
