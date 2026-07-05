@@ -9,7 +9,7 @@ BattMo Input
    Introduction <self>
    jsonexample
    json
-   mergejsonstruct
+   mergestruct
    jsonfiles
    functioninterface
    controlinput
@@ -44,7 +44,7 @@ your BattMo installationa and corresponding to different components in the simul
 controls ...).
 
 Combining different inputs is a standard way to create you own input, for the model you are targetting, and is is easily
-achieved using the function `mergeStructs`, see :ref:`Merging Parameters<mergejsonstruct:Merging parameters>`.
+achieved using the function `mergeStructs`, see :ref:`Merging Parameters<mergestruct:Merging parameters>`.
 
 .. grid:: 2
 
@@ -61,7 +61,7 @@ achieved using the function `mergeStructs`, see :ref:`Merging Parameters<mergejs
    .. grid-item-card::
       :padding: 2
       
-      :ref:`Merging Parameters<mergejsonstruct:Merging parameters>`
+      :ref:`Merging Parameters<mergestruct:Merging parameters>`
 
    .. grid-item-card::
       :padding: 2
