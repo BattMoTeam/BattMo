@@ -76,7 +76,7 @@ mathjax3_config = {
   'tex': {'packages': {'[+]': ['mhchem']}}
 }
 
-_nbsphinx_custom_formats_strs = {
+nbsphinx_custom_formats_strs = {
     # store import-path strings so the config is picklable for Sphinx cache
     # format: "module.func:fmt" where the trailing ":fmt" is passed as the
     # `fmt` argument to the callable at setup time.
@@ -173,6 +173,7 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 suppress_warnings = [
     'nbsphinx',
+    'config.cache',  # silence warnings about unpicklable config values
 ]
 
 # -- Options for HTML output ----------------------------------------------
