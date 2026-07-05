@@ -30,7 +30,7 @@ your BattMo installationa and corresponding to different components in the simul
 controls, ...).
 
 Combining different inputs is a standard way to create you own input, for the model you are targetting, and is is easily
-achieved using the function :battmo:`mergeJsonStructs`, see :ref:`Merging Parameters<mergejsonstruct:Merging
+achieved using the function :battmo:`mergeStructs`, see :ref:`Merging Parameters<mergejsonstruct:Merging
 parameters>`.
 
 
