@@ -21,7 +21,7 @@ The source of the json files can be seen in :battmofile:`protonicMembrane.json<P
   filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', '1d-PM-geometry.json');
   jsonstruct_geometry = parseBattmoJson(filename);
   
-  jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+  jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
 
 Input structure setup
