@@ -567,8 +567,8 @@ classdef GenericBattery < BaseModel
 
         function printStruct(model)
 
-            fjv = flattenStruct(model.jsonstruct);
-            fjv.print();
+            fsv = flattenStruct(model.jsonstruct);
+            fsv.print();
 
         end
 

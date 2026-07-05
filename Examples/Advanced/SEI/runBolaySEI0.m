@@ -50,8 +50,8 @@ jsonstruct.SOC = 1;
 doPrintStruct = false;
 
 if doPrintStruct
-    fjv = flattenStruct(jsonstruct);
-    % fjv.print('filter', {'parame name', 'SEI'})
+    fsv = flattenStruct(jsonstruct);
+    % fsv.print('filter', {'parame name', 'SEI'})
 end
 
 %%

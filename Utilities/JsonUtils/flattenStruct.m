@@ -1,24 +1,24 @@
-function flatjsonviewer = flattenStruct(jsonstruct, varargin)
+function flatstructviewer = flattenStruct(jsonstruct, varargin)
 %
 % A json struct is hierarchical by design. For visualization, it is however convenient to have a flattened version with
 % all the entries given in the structure at the same level. This function returns an object of the class
-% :battmo:`FlatJsonViewer` which offers visualization capabilities with sorting and filtering.
+% :battmo:`FlatStructViewer` which offers visualization capabilities with sorting and filtering.
 
     opt = struct('doprint', true);
     opt = merge_options(opt, varargin{:});
     
-    flatjson = flattenStruct_({}, jsonstruct, []);
-    flatjson = reshape(flatjson, 2, [])';
+    flatstruct = flattenStruct_({}, jsonstruct, []);
+    flatstruct = reshape(flatstruct, 2, [])';
 
-    flatjsonviewer = FlatJsonViewer(flatjson);
+    flatstructviewer = FlatStructViewer(flatstruct);
 
     if opt.doprint
-        flatjsonviewer.print();
+        flatstructviewer.print();
     end
 
 end
 
-function flatjson = flattenStruct_(flatjson, jsonstruct, prefix)
+function flatstruct = flattenStruct_(flatstruct, jsonstruct, prefix)
 
     dostruct = false;
     
@@ -28,14 +28,14 @@ function flatjson = flattenStruct_(flatjson, jsonstruct, prefix)
     elseif isstruct(jsonstruct) && numel(jsonstruct) > 2
         for ijson = 1 : numel(jsonstruct)
             subjsonstruct = jsonstruct(ijson);
-            flatjson = flattenStruct_(flatjson, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
+            flatstruct = flattenStruct_(flatstruct, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
         end
     elseif isstruct(jsonstruct)    
         fds = fieldnames(jsonstruct);
         dostruct = true;
     else
-        flatjson{end + 1} = prefix;
-        flatjson{end + 1} = jsonstruct;
+        flatstruct{end + 1} = prefix;
+        flatstruct{end + 1} = jsonstruct;
     end
 
     if dostruct
@@ -50,7 +50,7 @@ function flatjson = flattenStruct_(flatjson, jsonstruct, prefix)
             if iscell(subjsonstruct) && numel(subjsonstruct) > 1
                 subjsonstruct = {subjsonstruct};
             end
-            flatjson = flattenStruct_(flatjson, subjsonstruct, subprefix);
+            flatstruct = flattenStruct_(flatstruct, subjsonstruct, subprefix);
         end
     end
     

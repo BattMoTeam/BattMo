@@ -75,8 +75,8 @@ classdef InputParams
         function printStruct(inputparams)
             
             jsonstruct = inputparams.buildStruct();
-            fjv = flattenStruct(jsonstruct);
-            fjv.print();
+            fsv = flattenStruct(jsonstruct);
+            fsv.print();
             
         end
         
