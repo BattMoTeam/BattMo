@@ -1,19 +1,15 @@
-=========================================
-Installation and First Steps
-=========================================
+============
+Installation
+============
 
 .. _installation:
 
-Install BattMo by cloning the git repository using :code:`--recurse-submodules` to also install the `MRST`_ dependencies.
+Download the latest release version using the following link
 
-First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command:
-
-.. code-block:: shell
-
-   git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
+`battmo.zip <https://github.com/BattMoTeam/BattMo-test/releases/latest/download/battmo.zip>`__
 
 
-Start MATLAB and in the directory :code:`battmo` where you cloned the repository. In the MATLAB Command Window run:
+Unzip the file and start MATLAB and in the same directory. In the MATLAB Command Window run:
 
 .. code-block:: matlab
 
@@ -26,13 +22,28 @@ You can check that that your installation is setup correctly by running one of t
 
    runBatteryP2D
 
+
+
+Installation from git
+=====================
+
+Install BattMo by cloning the git repository using :code:`--recurse-submodules` to also install the `MRST`_ dependencies.
+
+First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command:
+
+.. code-block:: shell
+
+   git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
+
+
 Here is video which guides you through the installation in details
 
 .. youtube:: -XVppzyNSs0
-              
+
 For a detailed guided installation of git, you can consult this `video <https://www.youtube.com/watch?v=FMXpZjXhaFY>`_
 
 .. _MRST: https://www.sintef.no/Projectweb/MRST/
+
 
 Update existing installation
 ============================
