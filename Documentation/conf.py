@@ -63,7 +63,6 @@ extensions = ['nbsphinx',
               'sphinxcontrib.globalsubs',
               'sphinxcontrib.bibtex',
               'sphinx.ext.intersphinx',
-              'nbsphinx',
               'sphinx.ext.autosectionlabel',
               'sphinx.ext.mathjax',
               'sphinxcontrib.youtube',
@@ -77,9 +76,12 @@ mathjax3_config = {
   'tex': {'packages': {'[+]': ['mhchem']}}
 }
 
-nbsphinx_custom_formats = {
-    '.pct.py': ['jupytext.reads', {'fmt': 'py:percent'}],
-    '.md': ['jupytext.reads', {'fmt': 'Rmd'}],
+_nbsphinx_custom_formats_strs = {
+    # store import-path strings so the config is picklable for Sphinx cache
+    # format: "module.func:fmt" where the trailing ":fmt" is passed as the
+    # `fmt` argument to the callable at setup time.
+    '.pct.py': 'jupytext.reads:py:percent',
+    '.md': 'jupytext.reads:Rmd',
 }
 
 import matplotlib.pyplot
