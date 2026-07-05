@@ -14,13 +14,13 @@ BattMo Input
    functioninterface
    controlinput
    parsets
-
+   units
 
 BattMo uses a simple object dictionary structure as unique input for a whole simulation. The structure is easily
 editable programmatically in matlab. As a file, it is written using the `json format
 <https://en.wikipedia.org/wiki/JSON>`_ provides a basic but yet extremly flexible way to provide a dictionary-like data.
 
-As seen in :ref:`Your First Example<You First Example>`, you can simply provide the path of your input data using the
+As seen in :ref:`Your First Example<basicusage:Your First Example>`, you can simply provide the path of your input data using the
 command :code:`parseBattmoJson`
 
 .. code:: matlab
