@@ -2,7 +2,7 @@
 Merging parameters
 ==================
 
-Setup a P4D Model using :code:`mergeJsonStructs`
+Setup a P4D Model using :code:`mergeStructs`
 ================================================
 
 Let's build a pseudo-four-dimensional Li-ion battery model and explore more about how to mix-and-match |battmo| parameter definitions!
@@ -11,7 +11,7 @@ P4D simulations provide the most spatial detail for battery simulations. They ca
 
 P4D models can be setup using a similar JSON parameter definition as described in the section on Basic Usage.
 
-|battmo| aims to provide a modular solution for building electrochemical models. That allows us to mix-and-match different sets of parameter definitions without needing to do much re-coding. In this example, we will use the :battmo:`mergeJsonStructs` function to build a model definition from multiple sources. 
+|battmo| aims to provide a modular solution for building electrochemical models. That allows us to mix-and-match different sets of parameter definitions without needing to do much re-coding. In this example, we will use the :battmo:`mergeStructs` function to build a model definition from multiple sources. 
 
 Define Parameters
 -----------------
@@ -65,7 +65,7 @@ We can now merge these parameter definitions into a single parameter set and run
 
 .. code:: matlab
           
-   jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+   jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                   jsonstruct_material , ...
                                   jsonstruct_control  , ...
                                   jsonstruct_simparams, ...
@@ -119,7 +119,7 @@ File links and insertions with :code:`parseBattmoJson`
 
 There are two mechanisms which can be used to combine JSON input files:
 
-#. Merge function using :code:`mergeJsonStruct`
+#. Merge function using :code:`mergeStruct`
 #. Direct insertion using :code:`parseBattmoJson`
 
 We have just seen an example of the first mechanism, which can be used within Matlab when we setup the simulation.
