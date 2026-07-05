@@ -129,7 +129,7 @@ author = 'Simon Clark'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'unparsed']
 # exclude_patterns += ['*.nblink']
 # exclude_patterns += ["exploreOutput.nblink"]
 # exclude_patterns += ["functionInterfaceExample.nblink"]
