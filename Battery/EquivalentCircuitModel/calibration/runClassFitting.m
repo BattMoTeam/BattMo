@@ -12,6 +12,9 @@ function p = runClassFitting(Z_re_exp, Z_im_exp, omega, print)  %print is a bool
     % params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
     % [Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
     
+    % params0_w = [1e-1,1e-1,1e-1,1e-1,1e-2,1,1,1e2,1e-07];
+    % scales_w = params0_w*10;              %to be changed between lsq and bfgs
+    
     params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
     
     a = 1000;
@@ -19,21 +22,16 @@ function p = runClassFitting(Z_re_exp, Z_im_exp, omega, print)  %print is a bool
     pmin = params0 / a;
     pmax = params0 * a;
     scales = [pmin, pmax];
-    
-    params0_w = [1e-1,1e-1,1e-1,1e-1,1e-2,1,1,1e2,1e-07];
-    scales_w = params0_w*10;              %to be changed between lsq and bfgs
-    
+        
     feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
     
     [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
     
     p = best_params;
-    % [min_value, best_params, fitting_error] = feis.optimizationLsqnonlin();
-    %            %  Lancement avec LSQNONLIN
     
     
     %% Printing results
-    if nargin == 4
+    if nargin == 4 || nargin == 1
     feis.plotresults_thevenin(best_params, fitting_error);
     
     feis.printResults(best_params, fitting_error);          % to be changed btw Warburg and Thevenin
@@ -41,20 +39,7 @@ function p = runClassFitting(Z_re_exp, Z_im_exp, omega, print)  %print is a bool
 
 end
 
-%% Robustness test
-% for i = 1:5
-    % params0 = pmin + (pmax - pmin) .* rand(1, 5);
-    % disp(['Tour ', num2str(i), ' - params0 :']);
-    % disp(params0);
-    % feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
-    % 
-    % [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
-    % feis.plotresults_thevenin(best_params, fitting_error);
-    % feis.printResults(best_params, fitting_error);
-    % 
-    % drawnow; 
 
-% end
 %%
 
 % result with lsqnonlin:

@@ -1,4 +1,4 @@
-function ecm_table = mapEisToEcmTable()
+function ecm_table = mapEisToEcmTable(soc_step)
     %% 1. Initialisation
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
@@ -9,8 +9,9 @@ function ecm_table = mapEisToEcmTable()
     
     [model, inputparams] = setupModelFromJson(jsonstruct);
     state_current = setupInitialState(model);
-
-    soc_step = 0.08; 
+    if nargin < 1
+        soc_step = 0.1; 
+    end
     soc_list = (1.0:-soc_step:0.1)';
     N_steps = length(soc_list);
     

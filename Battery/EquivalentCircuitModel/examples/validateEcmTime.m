@@ -16,17 +16,9 @@ function validateEcmTime(file_name)
         error(['File not found: ', file_name]);
     end
     
-    % Cathode (Positive)
-    json_pe_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_positive_electrode_interface.json');
-    json_pe = parseBattmoJson(json_pe_path);
-    [fn_ocp_pe, ~] = setupFunction(json_pe.openCircuitPotential);
     
-    % Anode (Negative)
-    json_ne_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_negative_electrode_interface.json');
-    json_ne = parseBattmoJson(json_ne_path);
-    [fn_ocp_ne, ~] = setupFunction(json_ne.openCircuitPotential);
     
-    % 1.3. Generation of the "Ground Truth": Continuous P2D discharge (BattMo)
+    %  Generation of the "Ground Truth": Continuous P2D discharge (BattMo)
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
     jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
@@ -65,14 +57,12 @@ function validateEcmTime(file_name)
     time_vec = zeros(N_points, 1);
     V_p2d = zeros(N_points, 1);
     I_p2d = zeros(N_points, 1);
-    soc_p2d = zeros(N_points, 1); % Pre-allocation du vrai SOC
 
 
     pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
     pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
     ne_guestStoichiometry0   = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
-    ne_guestStoichiometry100 = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
-    sat_conc_ne              = model.NegativeElectrode.Coating.ActiveMaterial.Interface.saturationConcentration;   
+    ne_guestStoichiometry100 = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100; 
     
     for k = 1:N_points
         time_vec(k) = states_p2d{k}.time;
@@ -117,8 +107,19 @@ function validateEcmTime(file_name)
         C1 = interp1(ecm_table.SOC, ecm_table.C1, soc, 'linear', 'extrap');
         R2 = interp1(ecm_table.SOC, ecm_table.R2, soc, 'linear', 'extrap');
         C2 = interp1(ecm_table.SOC, ecm_table.C2, soc, 'linear', 'extrap');
+       
+        % Loading of ocp functions with setupFunction
+        % Cathode (Positive)
+        json_pe_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_positive_electrode_interface.json');
+        json_pe = parseBattmoJson(json_pe_path);
+        [fn_ocp_pe, ~] = setupFunction(json_pe.openCircuitPotential);
         
-        
+        % Anode (Negative)
+        json_ne_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_negative_electrode_interface.json');
+        json_ne = parseBattmoJson(json_ne_path);
+        [fn_ocp_ne, ~] = setupFunction(json_ne.openCircuitPotential);
+         
+        %link between soc and stoechiometry
         x_pe = soc * (pe_guestStoichiometry100 - pe_guestStoichiometry0) + pe_guestStoichiometry0;              
         x_ne = soc * (ne_guestStoichiometry100 - ne_guestStoichiometry0) + ne_guestStoichiometry0;
         
