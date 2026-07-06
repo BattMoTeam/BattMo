@@ -7,7 +7,7 @@ jsonstruct_material = parseBattmoJson('Electrolyser/Parameters/alkalineElectroly
 jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
 
 jsonstruct = mergeStructs({jsonstruct_material, ...
-                               jsonstruct_geometry});
+                           jsonstruct_geometry});
 
 simsetup = setupElectrolyserSimulation(jsonstruct);
 

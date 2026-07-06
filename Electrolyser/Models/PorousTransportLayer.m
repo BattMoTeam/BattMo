@@ -144,8 +144,6 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'H2Ogasrhoeps';
             % Liquid volume fraction, without unit [-]
             varnames{end + 1} = 'liqeps';
-            % total liquid density (mass of liquid per total volume) in [kg m^-3]
-            varnames{end + 1} = 'liqrhoeps';
             % Phase pressures in [Pa]
             phasePressures = VarName({}, 'phasePressures', nph);
             varnames{end + 1} = phasePressures;
@@ -235,12 +233,14 @@ classdef PorousTransportLayer < ElectronicComponent
             varnames{end + 1} = 'liquidMassCons';
             % Residual for the conservation equation for OH in the liquid phase
             varnames{end + 1} = 'OHMassCons';
-            % Residual for the equation of state of the liquid
-            varnames{end + 1} = 'liquidStateEquation';
 
             model = model.registerVarNames(varnames);
 
-
+            %% Extra variables
+            % The concentration of OH and H2O are not used in the assembly but can be evaluated.
+            inds = setdiff((1 : nliquid)', liquidInd.OH);
+            model = model.setAsExtraVarName(VarName({}, 'concentrations', nliquid, inds));
+            
             fn = @() PorousTransportLayer.updateVolumeFractions;
             inputnames = {'liqeps'};
             model = model.registerPropFunction({volumeFractions, fn, inputnames});
@@ -267,8 +267,8 @@ classdef PorousTransportLayer < ElectronicComponent
 
             % update liquid density
             fn = @() PorousTransportLayer.updateLiquidDensity;
-            inputnames = {'liqrhoeps', ...
-                          VarName({}, 'volumeFractions', nph, phaseInd.liquid)};
+            inputnames = {'T', ...
+                          VarName({}, 'concentrations', nliquid, liquidInd.OH)};
             model = model.registerPropFunction({'liqrho', fn, inputnames});
 
             % update conductivity
@@ -408,13 +408,8 @@ classdef PorousTransportLayer < ElectronicComponent
             fn = @() PorousTransportLayer.updateLiquidAccum;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
             fn = {fn, functionCallSetupFn};
-            inputnames = {'liqrhoeps'};
+            inputnames = {'liqrho', 'liqeps'};
             model = model.registerPropFunction({'liquidAccumTerm', fn, inputnames});
-
-            % Assemble residual of equation of state for the liquid phase
-            fn = @() PorousTransportLayer.setupLiquidStateEquation;
-            inputnames = {concentrations};
-            model = model.registerPropFunction({'liquidStateEquation', fn, inputnames});
 
             fn = @() PorousTransportLayer.updateAccumTerms;
             functionCallSetupFn = @(propfunction) PropFunction.accumFuncCallSetupFn(propfunction);
@@ -624,7 +619,7 @@ classdef PorousTransportLayer < ElectronicComponent
 
             vols   = model.G.getVolumes();
 
-            state.liquidAccumTerm = vols.*(state.liqrhoeps - state0.liqrhoeps)/dt;
+            state.liquidAccumTerm = vols.*(state.liqrho.*state.liqeps - state0.liqrho.*state0.liqeps)/dt;
 
         end
 
@@ -717,15 +712,6 @@ classdef PorousTransportLayer < ElectronicComponent
             j = j + assembleFlux(model, cOH, coef);
 
             state.j = j;
-
-        end
-
-
-        function state = updateLiquidDensity(model, state)
-
-            vf = state.volumeFractions{model.phaseInd.liquid};
-
-            state.liqrho = state.liqrhoeps./vf;
 
         end
 
@@ -949,6 +935,47 @@ classdef PorousTransportLayer < ElectronicComponent
         end
 
 
+        function state = updateLiquidDensity(model, state)
+        % Calculates the density of aqueous KOH solution as a
+        % function of concentration (c) in mol/m3 and temperature (T) in
+        % K.
+        %
+        % Density data is compiled from Zatysev et al., Ref [1], and
+        % fit using the MATLAB curve fitting toolbox. Units are kg/m3
+        % or g/L. Valid from 0 - 50 wt% and 0 - 100 degC.
+
+
+            c = state.concentrations{model.liquidInd.OH};
+            T = state.T;
+            
+            coefs = [ 794.7015;
+                      0.0456546;
+                      1.6355;
+                      -8.392e-7;
+                      1.659e-5;
+                      -0.003205;
+                      1.73e-11;
+                      -9.7647e-12;
+                      -3.3927e-08 ];
+
+            % Empirical model for mass density, rho = f(c,T)
+            state.liqrho = coefs(1)                                         + ...
+                           coefs(2).*c + coefs(3).*T                        + ...
+                           coefs(4).*c.^2 + coefs(5).*c.*T + coefs(6).*T.^2 + ...
+                           coefs(7).*c.^3                                   + ...
+                           coefs(8).*c.^2.*T + coefs(9).*c.*T.^2;
+
+                        
+        end
+
+
+        function newstate = addVariablesAfterConvergence(model, newstate, state)
+            
+            newstate = addVariablesAfterConvergence@ElectronicComponent(model, newstate, state);
+            newstate.liqrho = state.liqrho;
+            
+        end
+        
         function state = updateGasMassCons(model, state)
         % Assemble mass conservation equations for components in gas phase
 
@@ -1054,49 +1081,6 @@ classdef PorousTransportLayer < ElectronicComponent
             state.concentrations{liquidInd.H2O} = cH2O;
             % TODO  : check if we need H+ concentration later, if yes, we should uncomment the line below and adjust the indexings.
             % state.concentrations{lInd.H}   = cH;
-
-        end
-
-        function state = setupLiquidStateEquation(model, state)
-
-            liqStateEq = -1;
-            for ind = 1 : model.liquidInd.nliquid
-                liqStateEq = liqStateEq + state.concentrations{ind}.*model.Vs(ind);
-            end
-
-            state.liquidStateEquation = liqStateEq;
-
-        end
-
-        function rho = density(model, c, T)
-        % NOTE :
-        % In the current implementatiom this method is only used for initialization
-
-        % Calculates the density of aqueous KOH solution as a
-        % function of concentration (c) in mol/m3 and temperature (T) in
-        % K.
-        %
-        % Density data is compiled from Zatysev et al., Ref [1], and
-        % fit using the MATLAB curve fitting toolbox. Units are kg/m3
-        % or g/L. Valid from 0 - 50 wt% and 0 - 100 degC.
-
-
-            coefs = [ 794.7015;
-                      0.0456546;
-                      1.6355;
-                      -8.392e-7;
-                      1.659e-5;
-                      -0.003205;
-                      1.73e-11;
-                      -9.7647e-12;
-                      -3.3927e-08 ];
-
-            % Empirical model for mass density, rho = f(c,T)
-            rho = coefs(1)                                         + ...
-                  coefs(2).*c + coefs(3).*T                        + ...
-                  coefs(4).*c.^2 + coefs(5).*c.*T + coefs(6).*T.^2 + ...
-                  coefs(7).*c.^3                                   + ...
-                  coefs(8).*c.^2.*T + coefs(9).*c.*T.^2;
 
         end
 

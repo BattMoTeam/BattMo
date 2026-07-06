@@ -142,13 +142,21 @@ classdef Electrolyser < BaseModel
 
                 elde = eldes{ielde};
 
+                nc = model.(elde).(ptl).G.getNumberOfCells();
+
                 % Compute density and partial molar volume using dedicated functions
                 % which are only used at initialisation. The partial molar volumes are kept constant for the remaining of
                 % the simulation (at least in current implementation!).
-                liqrho = model.(elde).(ptl).density(cOH, T);
-                Vs     = model.(elde).(ptl).partialMolarVolume(cOH, liqrho, T);
-
                 nc = model.(elde).(ptl).G.getNumberOfCells();
+                OHind = model.(elde).(ptl).liquidInd.OH;
+                
+                eldestate.concentrations{OHind} = cOH;
+                eldestate.T                     = T;
+                eldestate = model.(elde).(ptl).updateLiquidDensity(eldestate);
+
+                liqrho = eldestate.liqrho;
+
+                Vs     = model.(elde).(ptl).partialMolarVolume(cOH, liqrho, T);
 
                 fun = @(s) leverett(model.(elde).(ptl).leverettCoefficients, s); % Define Leverett function handle
                 sLiquid = fzero(fun, 0.7); % Solve equilibrium liquid saturation
@@ -158,7 +166,6 @@ classdef Electrolyser < BaseModel
 
                 state.(elde).(ptl).liqeps    = sLiquid.*(1 - svf);
                 state.(elde).(ptl).OHceps    = cOH.*lvf;
-                state.(elde).(ptl).liqrhoeps = liqrho*lvf;
 
                 % OBS : the following two values are not the ones that are finally assigned (only sent here so that dispatch functions can be used)
                 state.(elde).(ptl).phi = NaN*zeros(nc, 1);
@@ -506,7 +513,6 @@ classdef Electrolyser < BaseModel
                 bd  = 'Boundary';
 
                 varnames = {{her, ptl, 'H2rhoeps'}                   , ...
-                            {her, ptl, 'liqrhoeps'}                  , ...
                             {her, ptl, 'liqeps'}                     , ...
                             {her, ptl, 'H2Ogasrhoeps'}               , ...
                             {her, ptl, 'OHceps'}                     , ...
@@ -515,7 +521,6 @@ classdef Electrolyser < BaseModel
                             {her, ptl, 'Boundary', 'gasDensities', 2}, ...
                             {her, ptl, 'Boundary', 'gasDensities', 1}, ...
                             {oer, ptl, 'O2rhoeps'}                   , ...
-                            {oer, ptl, 'liqrhoeps'}                  , ...
                             {oer, ptl, 'liqeps'}                     , ...
                             {oer, ptl, 'H2Ogasrhoeps'}               , ...
                             {oer, ptl, 'OHceps'}                     , ...

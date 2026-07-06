@@ -23,7 +23,6 @@ for istate = 1 : numel(states)
     % val = states{istate}.(her).(ptl).H2OliquidSource;
     % val = states{istate}.(her).(ptl).OHsource;
     % val = states{istate}.(her).(ptl).concentrations{1};
-    % val = states{istate}.(her).(ptl).liqrhoeps;
     % val = states{istate}.(her).(ptl).liquidMassFlux;
     % val = states{istate}.(her).(ptl).liqrho;
     % val = states{istate}.(her).(ptl).phasePressures{1};
