@@ -2,39 +2,40 @@
 Installation
 ============
 
+Release installation
+====================
+
 .. _installation:
 
-Download the latest release version using the following link
+The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo-test/releases/latest>`__ as a **zip file**.
 
-`battmo.zip <https://github.com/BattMoTeam/BattMo-test/releases/latest/download/battmo.zip>`__
+1. **Download** :code:`battmo.zip` in the directory of your choice and **unzip** the file there.
 
+2. Start MATLAB and run the file :code:`startupBattMo` which is located at the root of the directory
 
-Unzip the file and start MATLAB and in the same directory. In the MATLAB Command Window run:
+   .. code-block:: matlab
 
-.. code-block:: matlab
+      startupBattMo
 
-   startupBattMo
-
-
-You can check that that your installation is setup correctly by running one of the example scripts
+BattMo is now **installed**. You can check that that your installation is setup correctly by running one of the example scripts, directly from Matlab command line.
 
 .. code-block:: matlab
 
    runBatteryP2D
 
-
-
+   
 Installation from git
 =====================
 
-Install BattMo by cloning the git repository using :code:`--recurse-submodules` to also install the `MRST`_ dependencies.
+BattMo source code can be installed using git. In this way, you can easily keep track of the last developments.
 
-First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command:
+First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command, which will include all the dependencies as submodules
 
 .. code-block:: shell
 
    git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
 
+Then, run :code:`startupBattMo` 
 
 Here is video which guides you through the installation in details
 
@@ -49,14 +50,14 @@ Update existing installation
 ============================
 
 In the case where we alread have installed BattMo and you want to update to the latest version. As usual in git, you
-will do that by runnin
+will do that by running
 
 .. code-block:: shell
 
    git pull
 
-In addition to that, the dependencies that are given through git submodules. To update those you need to run in addition
-to the previous command,
+In addition to that, the dependencies that are given through git submodules. The are not updated often but, if it is the
+case, you will need to run in addition to the previous command,
 
 .. code-block:: shell
 
