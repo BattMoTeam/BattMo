@@ -59,7 +59,7 @@ effect of using a finer time discretization and stricter tolerances.
 	  jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 	  jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
 
-	  json = mergeJsonStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
+	  json = mergeStructs({jsonParams, jsonGeom, jsonControl, jsonSim});
 
 	  json.Control.useCVswitch = true;
 

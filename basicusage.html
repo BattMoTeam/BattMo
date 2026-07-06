@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>You First Example &mdash; BattMo  documentation</title>
+  <title>Your First Example &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/sphinx_collapse.css?v=226d88b4" />
@@ -26,7 +26,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorials" href="tutorials.html" />
-    <link rel="prev" title="Installation and First Steps" href="installation.html" /> 
+    <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,10 +51,12 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#release-installation">Release installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation-from-git">Installation from git</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#update-existing-installation">Update existing installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">You First Example</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Your First Example</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#define-parameters">Define Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run-simulation">Run Simulation</a></li>
@@ -68,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#change-control-parameters">Change Control Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#change-structural-parameters">Change Structural Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#change-material-parameters">Change Material Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#notebooks">Notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -124,6 +125,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Construct-the-Model-from-Different-Sources">Construct the Model from Different Sources</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
@@ -192,14 +194,14 @@
 <li class="toctree-l3"><a class="reference internal" href="json.html#output-parameters">Output Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="mergejsonstruct.html">Merging parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#define-parameters">Define Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#run-simulation">Run Simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#visualize-results">Visualize Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mergestruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mergestruct.html#setup-a-p4d-model-using-mergestructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#visualize-results">Visualize Results</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mergestruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="jsonfiles.html">List of Json File Examples</a></li>
@@ -219,9 +221,9 @@
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(1)">Plot Results (1)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#id1">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(2)">Plot Results (2)</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
@@ -245,6 +247,11 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="output.html">BattMo output</a><ul>
@@ -274,6 +281,7 @@
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-the-full-input">Setup the full input</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
@@ -341,6 +349,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="runSwellingExample.html">Silicon Swelling Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Material-properties">Material properties</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Geometry">Geometry</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Control">Control</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
@@ -418,7 +427,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -436,7 +444,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -527,7 +534,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">You First Example</li>
+      <li class="breadcrumb-item active">Your First Example</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/basicusage.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -537,8 +544,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="you-first-example">
-<h1>You First Example<a class="headerlink" href="#you-first-example" title="Link to this heading"></a></h1>
+  <section id="your-first-example">
+<h1>Your First Example<a class="headerlink" href="#your-first-example" title="Link to this heading"></a></h1>
 <p>Here we introduce the basic usage of <strong>BattMo</strong> by showing some simple workflows and highlighting important functions.</p>
 <section id="a-first-battmo-model">
 <h2>A First <strong>BattMo</strong> Model<a class="headerlink" href="#a-first-battmo-model" title="Link to this heading"></a></h2>
@@ -736,8 +743,8 @@ in the jsonstruct and re-run the simulation.</p>
 <span class="n">jsonstruct_lfp</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">Interface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">lfp</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>To merge new parameter data into our existing model, we can use the <strong>BattMo</strong> function <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code>.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeJsonStructs</span><span class="p">({</span><span class="n">jsonstruct_lfp</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<p>To merge new parameter data into our existing model, we can use the <strong>BattMo</strong> function <code class="code docutils literal notranslate"><span class="pre">mergeStructs</span></code>.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_lfp</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                              </span><span class="n">jsonstruct</span><span class="p">});</span>
 </pre></div>
 </div>
@@ -760,61 +767,6 @@ in the jsonstruct and re-run the simulation.</p>
 </pre></div>
 </div>
 </section>
-<section id="notebooks">
-<h2>Notebooks<a class="headerlink" href="#notebooks" title="Link to this heading"></a></h2>
-<p>We have written and published matlab notebooks in the <a class="reference external" href="https://se.mathworks.com/help/matlab/matlab_prog/live-script-file-format.html">Live Code File Format</a> (<code class="code docutils literal notranslate"><span class="pre">.mlx</span></code>) .</p>
-<p>They basically go through the material described above in the interactive manner.</p>
-<p>The notebooks can be found in the <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Notebooks">Examples/Notebooks</a> directory or downloaded from here.</p>
-<table class="docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p>Tutorial 1</p></td>
-<td><p><strong>Your first BattMo model</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_1_a_simple_p2d_model_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_1_a_simple_p2d_model_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-even"><td><p>Tutorial 2</p></td>
-<td><p><strong>Change the Control Protocol</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_2_changing_control_protocol_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_2_changing_control_protocol_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>Tutorial 3</p></td>
-<td><p><strong>Modify Structural Parameters</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_3_modify_structural_parameters_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_3_modify_structural_parameters_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-even"><td><p>Tutorial 4</p></td>
-<td><p><strong>Modify Material Parameters</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_4_modify_material_parameters_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_4_modify_material_parameters_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>Tutorial 5</p></td>
-<td><p><strong>Simulate CC-CV cycling</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_5_simulate_CCCV_cycling_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_5_simulate_CCCV_cycling_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-even"><td><p>Tutorial 6</p></td>
-<td><p><strong>Simulate Thermal Performance</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_6_simulate_thermal_performance_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_6_simulate_thermal_performance_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>Tutorial 7</p></td>
-<td><p><strong>A Simple P4D Simulation</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_7_a_simple_p4d_model_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_7_a_simple_p4d_model_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-even"><td><p>Tutorial 8</p></td>
-<td><p><strong>Simulate a Multi-Layer Pouch cell</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx">download</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>Tutorial 9</p></td>
-<td><p><strong>Simulate a Cylindrical Cell</strong></p></td>
-<td><p><a class="reference external" href="_static/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.html">view</a></p></td>
-<td><p><a class="reference external" href="https://github.com/BattMoTeam/BattMo/raw/main/Examples/Notebooks/tutorial_9_simulate_a_cylindrical_cell_live.mlx">download</a></p></td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
 <p>Congratulations! 🎉 You are now familiar with the <strong>BattMo</strong> basics!</p>
@@ -826,7 +778,7 @@ in the jsonstruct and re-run the simulation.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-left" title="Installation and First Steps" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

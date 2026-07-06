@@ -25,7 +25,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Computation Graph Model Design ang Assembly" href="computationalGraph/graphdoc.html" />
+    <link rel="next" title="Computation Graph Model Design And Assembly" href="computationalGraph/graphdoc.html" />
     <link rel="prev" title="BattMo Internals" href="battmointernals.html" /> 
 </head>
 
@@ -51,10 +51,12 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#release-installation">Release installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation-from-git">Installation from git</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#update-existing-installation">Update existing installation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="basicusage.html">You First Example</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="basicusage.html">Your First Example</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="basicusage.html#define-parameters">Define Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="basicusage.html#run-simulation">Run Simulation</a></li>
@@ -68,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-control-parameters">Change Control Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#change-material-parameters">Change Material Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="basicusage.html#notebooks">Notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="basicusage.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -124,6 +125,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Construct-the-Model-from-Different-Sources">Construct the Model from Different Sources</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
@@ -192,14 +194,14 @@
 <li class="toctree-l3"><a class="reference internal" href="json.html#output-parameters">Output Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="mergejsonstruct.html">Merging parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#setup-a-p4d-model-using-mergejsonstructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeJsonStructs</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#define-parameters">Define Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#run-simulation">Run Simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="mergejsonstruct.html#visualize-results">Visualize Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mergestruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mergestruct.html#setup-a-p4d-model-using-mergestructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mergestruct.html#visualize-results">Visualize Results</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="mergejsonstruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mergestruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="jsonfiles.html">List of Json File Examples</a></li>
@@ -219,9 +221,9 @@
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(1)">Plot Results (1)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#id1">Plot Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(2)">Plot Results (2)</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
@@ -245,6 +247,11 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="output.html">BattMo output</a><ul>
@@ -274,6 +281,7 @@
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-the-full-input">Setup the full input</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
@@ -341,6 +349,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="runSwellingExample.html">Silicon Swelling Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Material-properties">Material properties</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Geometry">Geometry</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Control">Control</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
@@ -418,7 +427,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -436,7 +444,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pynbnotebooks/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -551,7 +558,7 @@ following sub-models:</p>
 <li><p>Electrolyte model <a class="reference internal" href="json.html#electrolyte"><span class="std std-ref">(schema)</span></a></p></li>
 <li><p>Separator model <a class="reference internal" href="json.html#separator"><span class="std std-ref">(schema)</span></a></p></li>
 <li><p>ThermalModel model <a class="reference internal" href="json.html#thermal-model"><span class="std std-ref">(schema)</span></a></p></li>
-<li><p>Control model <span class="xref std std-ref">(schema)</span></p></li>
+<li><p>Control model <a class="reference internal" href="json.html#control-parameters"><span class="std std-ref">(schema)</span></a></p></li>
 </ul>
 <figure class="align-default">
 <a class="reference external image-reference" href="_images/cutbatterygraph.png"><img alt="_images/cutbatterygraph.png" src="_images/cutbatterygraph.png" />
@@ -593,10 +600,10 @@ organized in two sub-models.</p>
 <p>In the interface model, the function and variables that enter the reaction are defined (Butler-Volmer model). The solid
 diffusion model contains the functions to model and solve the diffusion equation in the solid. We have implemented two
 solid diffusion model, see <a class="reference internal" href="soliddiffusion.html#solid-diffusion-models"><span class="std std-ref">here</span></a>.</p>
-<p>The <strong>Control</strong> <span class="xref std std-ref">(schema)</span>, <strong>Separator</strong> <a class="reference internal" href="json.html#separator"><span class="std std-ref">(schema)</span></a> and
+<p>The <strong>Control</strong> <a class="reference internal" href="json.html#control-parameters"><span class="std std-ref">(schema)</span></a>, <strong>Separator</strong> <a class="reference internal" href="json.html#separator"><span class="std std-ref">(schema)</span></a> and
 <strong>Thermal</strong> <a class="reference internal" href="json.html#thermal-model"><span class="std std-ref">(schema)</span></a> models do not have sub-models. The control model is described in more
 details <a class="reference internal" href="controlinput.html#control-models"><span class="std std-ref">here</span></a>. A example of a fully coupled thermal simulation is presented
-<a class="reference internal" href="thermal.html#thermal-simulation"><span class="std std-ref">here</span></a>.</p>
+<a class="reference internal" href="runThermalExample.html#runthermalexample"><span class="std std-ref">here</span></a>.</p>
 </section>
 
 
@@ -604,7 +611,7 @@ details <a class="reference internal" href="controlinput.html#control-models"><s
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="battmointernals.html" class="btn btn-neutral float-left" title="BattMo Internals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="computationalGraph/graphdoc.html" class="btn btn-neutral float-right" title="Computation Graph Model Design ang Assembly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="computationalGraph/graphdoc.html" class="btn btn-neutral float-right" title="Computation Graph Model Design And Assembly" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
