@@ -15,7 +15,9 @@ jobs:
         with:
           submodules: recursive
       - name: Create zip with submodules
-        run: zip -r battmo.zip .
+        run: |
+          chmod -R +r .
+          zip -r battmo.zip .
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "battmo.zip"
