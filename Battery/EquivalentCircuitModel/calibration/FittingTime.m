@@ -178,7 +178,16 @@ classdef FittingTime
             
             % Valeur de la fonction objectif (Erreur quadratique totale)
             v = sum((ftime.voltage_exp - V_ecm).^2);
-            
+          
+
+            if isnan(v) || isinf(v) || (nargout > 1 && (any(isnan(g_true)) || any(isinf(g_true))))
+                v = 1e10; % Assigne un coût massif pour rejeter le point instable
+                if nargout > 1
+                    g_norm = zeros(5, 1); % Renvoie un gradient plat pour forcer le pas arrière
+                end
+                return;
+            end
+
             % 5. Application de la règle de dérivation en chaîne pour l'espace normalisé
             if nargout > 1
                 pmin = ftime.scales(1:5);
