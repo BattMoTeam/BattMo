@@ -10,7 +10,19 @@ function ok = setupPythonExecutable(exec)
             % https://se.mathworks.com/support/requirements/python-compatibility.html
 
             if isunix || ismac
-                executables = {'/usr/bin/python3.11', ...
+
+                [st, out] = system('which python3');
+
+                if st == 0
+                    exec = strtrim(out);
+                    ok = setExec(exec);
+                    if ok
+                        return;
+                    end
+                end
+
+                executables = {'/usr/bin/python3.12', ...
+                               '/usr/bin/python3.11', ...
                                '/usr/bin/python3.10', ...
                                '/usr/bin/python3.9', ...
                                '/usr/bin/python3.8', ...
