@@ -1060,19 +1060,19 @@ classdef EquilibriumCalibrationSetup
                 totalAmount  = vals.(elde).totalAmount;
                 totalAmount0 = vals0.(elde).totalAmount;
 
-                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry100);
-                jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry0'}, guestStoichiometry0);
+                jsonstruct = setStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry100'}, guestStoichiometry100);
+                jsonstruct = setStructField(jsonstruct, {elde, co, am, itf, 'guestStoichiometry0'}, guestStoichiometry0);
 
                 switch ecs.totalAmountVariableChoice
 
                   case 'volumeFraction'
 
-                    jsonstruct = setJsonStructField(jsonstruct, {elde, co, 'volumeFraction'}, ...
+                    jsonstruct = setStructField(jsonstruct, {elde, co, 'volumeFraction'}, ...
                                                     (totalAmount/totalAmount0) * ecs.model.(elde).(co).volumeFraction);
 
                   case 'saturationConcentration'
 
-                    jsonstruct = setJsonStructField(jsonstruct, {elde, co, am, itf, 'saturationConcentration'}, ...
+                    jsonstruct = setStructField(jsonstruct, {elde, co, am, itf, 'saturationConcentration'}, ...
                                                     (totalAmount/totalAmount0)*ecs.model.(elde).(co).(am).(itf).saturationConcentration);
 
                   otherwise

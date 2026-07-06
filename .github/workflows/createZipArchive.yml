@@ -1,0 +1,23 @@
+name: Releases
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Create zip with submodules
+        run: |
+          chmod -R +r .
+          zip -r battmo.zip . -x "./.git/*" "./Documentation/*" "./.gitattributes" "./.github/*" ".gitmodules"
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "battmo.zip"

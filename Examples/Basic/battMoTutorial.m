@@ -73,9 +73,9 @@ filename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(filename);
 
 %%
-% We can use the function |flattenJsonStruct| which flattens the structure so that we can visualize all the fields at once
+% We can use the function |flattenStruct| which flattens the structure so that we can visualize all the fields at once
 
-flattenJsonStruct(jsonstruct_geometry);
+flattenStruct(jsonstruct_geometry);
 
 %%
 % We can change the thickness of the coating of the negative electrode
@@ -83,16 +83,16 @@ flattenJsonStruct(jsonstruct_geometry);
 jsonstruct_geometry.(ne).(co).thickness = 6e-05;
 
 %%
-% We merge the jsonstuct that contains the geometrical property to the main one using the function |mergeJsonStructs|
+% We merge the jsonstuct that contains the geometrical property to the main one using the function |mergeStructs|
 
-jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_geometry});
+jsonstruct = mergeStructs({jsonstruct, jsonstruct_geometry});
 
 %%
-% We can now visualise the whole input parameter set using |flattenJsonStruct|. Note that some of the parameters will
+% We can now visualise the whole input parameter set using |flattenStruct|. Note that some of the parameters will
 % not be used because of our model choice, for example the thermal parameters or the parameters for the current
 % collectors.
 
-flattenJsonStruct(jsonstruct);
+flattenStruct(jsonstruct);
 
 
 %% Run the simulation

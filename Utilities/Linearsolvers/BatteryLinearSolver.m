@@ -986,7 +986,7 @@ classdef BatteryLinearSolver < handle
 
 
             if nargin > 1
-                opts = mergeJsonStructs({amgclsolverspec, defaultOpts}, 'warn', false);
+                opts = mergeStructs({amgclsolverspec, defaultOpts}, 'warn', false);
                 opts = rmfield(opts, 'library');
             else
                 opts = defaultOpts;

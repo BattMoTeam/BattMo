@@ -115,7 +115,7 @@ classdef TimeControlModel < ControlModel
 
             params = model.parseTimeSteppingStruct(params);
 
-            totalTime = getJsonStructField(params, 'totalTime');
+            totalTime = getStructField(params, 'totalTime');
 
             if isa(totalTime, 'UnAssigned')
                 if isa(model.getValue, 'TabulatedFunction1D')

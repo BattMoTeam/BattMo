@@ -25,6 +25,6 @@ for itest = 1:numel(experiment)
     printer(jsonstruct);
 
     schema = fullfile(battmoDir, 'Utilities', 'JsonSchemas', 'GenericControl.schema.json');
-    validateJsonStruct(jsonstruct, 'useTmpFile', false, 'schema', schema);
+    validateStruct(jsonstruct, 'useTmpFile', false, 'schema', schema);
 
 end

@@ -76,7 +76,7 @@ jsonstruct.(ne).(co).(am).(itf).includeEntropyChange = false;
 % We load the lithium plating specific data
 %
 jsonstruct_lithium_plating = parseBattmoJson(fullfile('Examples', 'Advanced', 'Plating', 'lithium_plating.json'));
-viewJsonStruct(jsonstruct_lithium_plating);
+viewStruct(jsonstruct_lithium_plating);
 
 %%
 % We add this parameter set to our global parameter structure
@@ -86,7 +86,7 @@ jsonstruct.(ne).(co).(am).LithiumPlating = jsonstruct_lithium_plating.LithiumPla
 filename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(filename);
 
-jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_geometry});
+jsonstruct = mergeStructs({jsonstruct, jsonstruct_geometry});
 
 %%
 % We change control to charge control

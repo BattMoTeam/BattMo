@@ -16,7 +16,7 @@ jsonstruct_control.Control.dIdtLimit          = 1E-4;
 jsonstruct_control.Control.dEdtLimit          = 1E-2;
 jsonstruct_control.Control.numberOfCycles     = 5;
 
-jsonstruct = mergeJsonStructs({jsonstruct_control, jsonstruct});
+jsonstruct = mergeStructs({jsonstruct_control, jsonstruct});
 
 jsonstruct.TimeStepping.numberOfTimeSteps = 1000;
 

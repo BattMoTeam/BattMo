@@ -57,7 +57,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
         end
 
         % Merge
-        jsonstruct = mergeJsonStructs(jsonstructs);
+        jsonstruct = mergeStructs(jsonstructs);
 
     else
         error('Cannot parse input variable jsonfiles. It should either be a character array ('''') or a cell array of one or more character arrays {'''', '''', ...}.');

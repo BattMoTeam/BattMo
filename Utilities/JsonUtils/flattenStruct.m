@@ -1,0 +1,80 @@
+function flatstructviewer = flattenStruct(jsonstruct, varargin)
+%
+% A json struct is hierarchical by design. For visualization, it is however convenient to have a flattened version with
+% all the entries given in the structure at the same level. This function returns an object of the class
+% :battmo:`FlatStructViewer` which offers visualization capabilities with sorting and filtering.
+
+    opt = struct('doprint', true);
+    opt = merge_options(opt, varargin{:});
+    
+    flatstruct = flattenStruct_({}, jsonstruct, []);
+    flatstruct = reshape(flatstruct, 2, [])';
+
+    flatstructviewer = FlatStructViewer(flatstruct);
+
+    if opt.doprint
+        flatstructviewer.print();
+    end
+
+end
+
+function flatstruct = flattenStruct_(flatstruct, jsonstruct, prefix)
+
+    dostruct = false;
+    
+    if isobject(jsonstruct)
+        fds = properties(jsonstruct);
+        dostruct = true;
+    elseif isstruct(jsonstruct) && numel(jsonstruct) > 2
+        for ijson = 1 : numel(jsonstruct)
+            subjsonstruct = jsonstruct(ijson);
+            flatstruct = flattenStruct_(flatstruct, subjsonstruct, sprintf('%s(%d)', prefix, ijson));
+        end
+    elseif isstruct(jsonstruct)    
+        fds = fieldnames(jsonstruct);
+        dostruct = true;
+    else
+        flatstruct{end + 1} = prefix;
+        flatstruct{end + 1} = jsonstruct;
+    end
+
+    if dostruct
+        for ifd = 1 : numel(fds)
+            fd = fds{ifd};
+            if isempty(prefix)
+                subprefix = fd;
+            else
+                subprefix = sprintf('%s.%s', prefix, fd);
+            end
+            subjsonstruct = jsonstruct.(fd);
+            if iscell(subjsonstruct) && numel(subjsonstruct) > 1
+                subjsonstruct = {subjsonstruct};
+            end
+            flatstruct = flattenStruct_(flatstruct, subjsonstruct, subprefix);
+        end
+    end
+    
+end
+
+
+
+
+%{
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

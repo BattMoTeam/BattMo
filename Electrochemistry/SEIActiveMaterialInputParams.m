@@ -14,16 +14,16 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
         function inputparams = SEIActiveMaterialInputParams(jsonstruct)
             
             errorMessage = 'We should have the Safari SEI model as input (otherwise this model should not be called)';
-            jsonstruct = setJsonStructField(jsonstruct, 'SEImodel', 'Safari', 'errorMessage', errorMessage);
+            jsonstruct = setStructField(jsonstruct, 'SEImodel', 'Safari', 'errorMessage', errorMessage);
             
             errorMessage = 'For the Safari SEI model, the use of the full diffusion model is required';
-            jsonstruct = setJsonStructField(jsonstruct, 'diffusionModelType', 'full', 'errorMessage', errorMessage);
+            jsonstruct = setStructField(jsonstruct, 'diffusionModelType', 'full', 'errorMessage', errorMessage);
             
-            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+            isRootSimulationModel = getStructField(jsonstruct, 'isRootSimulationModel');
             
             if isAssigned(isRootSimulationModel) && isRootSimulationModel
                 % only one particle in the stand-alone model
-                jsonstruct = setJsonStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
+                jsonstruct = setStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
             end
 
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);

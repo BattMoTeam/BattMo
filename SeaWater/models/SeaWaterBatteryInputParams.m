@@ -19,7 +19,7 @@ classdef SeaWaterBatteryInputParams < ComponentInputParams
 
         function inputparams = SeaWaterBatteryInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_precipitation', true);
+            jsonstruct = setDefaultStructField(jsonstruct, 'include_precipitation', true);
 
             inputparams = inputparams@ComponentInputParams(jsonstruct);
             

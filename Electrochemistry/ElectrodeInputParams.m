@@ -34,25 +34,25 @@ classdef ElectrodeInputParams < ComponentInputParams
             am = 'ActiveMaterial';
             cc = 'CurrentCollector';
 
-            jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
+            jsonstruct = equalizeStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
 
-            include_current_collectors = getJsonStructField(jsonstruct, 'include_current_collectors');
+            include_current_collectors = getStructField(jsonstruct, 'include_current_collectors');
 
             if isAssigned(include_current_collectors) && include_current_collectors
-                jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
+                jsonstruct = equalizeStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
             end
 
             if include_current_collectors
-                jsonstruct = setDefaultJsonStructField(jsonstruct, {'use_normed_current_collector'}, false);
+                jsonstruct = setDefaultStructField(jsonstruct, {'use_normed_current_collector'}, false);
             end
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {'coatingModelSetup', 'swelling'}, false);
             
-            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+            jsonstruct = equalizeStructField(jsonstruct, ...
                                                  {'coatingModelSetup', 'swelling'}, ...
                                                  {'Coating', 'activeMaterialModelSetup', 'swelling'});
             
-            is_swelling = getJsonStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
+            is_swelling = getStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
 
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
@@ -65,7 +65,7 @@ classdef ElectrodeInputParams < ComponentInputParams
             end
             
             if include_current_collectors
-                if getJsonStructField(jsonstruct, 'use_normed_current_collector')
+                if getStructField(jsonstruct, 'use_normed_current_collector')
                     inputparams.(cc) = NormedCurrentCollectorInputParams(pick(cc));
                 else
                     inputparams.(cc) = CurrentCollectorInputParams(pick(cc));

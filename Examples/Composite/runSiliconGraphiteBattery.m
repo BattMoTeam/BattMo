@@ -9,7 +9,7 @@ jsonstruct_composite_material = parseBattmoJson('ParameterData/BatteryCellParame
 
 %%
 % In this structure, we have the material property of two active materials, |ActiveMaterial1| and |ActiveMaterial2|.
-flattenJsonStruct(jsonstruct_composite_material);
+flattenStruct(jsonstruct_composite_material);
 
 %%
 % For the remaining properties, we load a standard data set
@@ -18,7 +18,7 @@ jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIo
 %%
 % We remove from this structure active material field. This step is not necessary but is cleaner and we avoid a
 % warning.
-jsonstruct_cell = removeJsonStructField(jsonstruct_cell, {'NegativeElectrode', 'Coating', 'ActiveMaterial'});
+jsonstruct_cell = removeStructField(jsonstruct_cell, {'NegativeElectrode', 'Coating', 'ActiveMaterial'});
 
 %%
 % we load a 1d geometry
@@ -27,7 +27,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
 %%
 % We merge the json structures
-jsonstruct = mergeJsonStructs({jsonstruct_composite_material, ...
+jsonstruct = mergeStructs({jsonstruct_composite_material, ...
                                jsonstruct_cell              , ...
                                jsonstruct_geometry});
 
@@ -53,10 +53,10 @@ ctrl = 'Control';
 %% We modify some parameters
 % We adjust the mass fractions  parameters of the active material in the negative electrode
 
-jsonstruct = setJsonStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
-jsonstruct = setJsonStructField(jsonstruct, {ne, co, am2, 'massFraction'}, 0.08, 'handleMisMatch', 'quiet');
-jsonstruct = setJsonStructField(jsonstruct, {ne, co, bd , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
-jsonstruct = setJsonStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
+jsonstruct = setStructField(jsonstruct, {ne, co, am1, 'massFraction'}, 0.9, 'handleMisMatch', 'quiet');
+jsonstruct = setStructField(jsonstruct, {ne, co, am2, 'massFraction'}, 0.08, 'handleMisMatch', 'quiet');
+jsonstruct = setStructField(jsonstruct, {ne, co, bd , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
+jsonstruct = setStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'handleMisMatch', 'quiet');
 
 %% We run the simulations
 %
@@ -153,7 +153,7 @@ end
 
 initstate = states{end};
 jsonstruct.(ctrl).CRate = 1;
-jsonstruct = setJsonStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCharge', 'handleMisMatch', 'quiet');
+jsonstruct = setStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCharge', 'handleMisMatch', 'quiet');
 
 jsonstruct.initializationSetup = 'given matlab object';
 

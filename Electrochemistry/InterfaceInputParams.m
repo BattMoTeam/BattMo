@@ -56,9 +56,9 @@ classdef InterfaceInputParams < InputParams
         function inputparams = InterfaceInputParams(jsonstruct)
 
             if isUnAssigned(jsonstruct, 'entropyChange')
-                jsonstruct = setJsonStructField(jsonstruct, 'includeEntropyChange', false);
+                jsonstruct = setStructField(jsonstruct, 'includeEntropyChange', false);
             else
-                jsonstruct = setDefaultJsonStructField(jsonstruct, 'includeEntropyChange', true);
+                jsonstruct = setDefaultStructField(jsonstruct, 'includeEntropyChange', true);
             end
             
             inputparams = inputparams@InputParams(jsonstruct);

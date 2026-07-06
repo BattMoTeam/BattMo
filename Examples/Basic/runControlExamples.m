@@ -22,7 +22,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 %%%
 % We merge the material and geometrical parameters in |jsonstruct|
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material
                               });
 
@@ -76,7 +76,7 @@ jsonstruct.TimeStepping.totalTime = 2*hour;
 output = runBatteryJson(jsonstruct);
 
 
-%% Plot Results
+%% Plot Results (1)
 %
 
 set(0, 'defaulttextfontsize', 15);
@@ -111,7 +111,7 @@ jsonstruct.Control = struct('controlPolicy'     , 'CCCV'       , ...
 output = runBatteryJson(jsonstruct);
 
 
-%% Plot Results
+%% Plot Results (2)
 
 set(0, 'defaulttextfontsize', 15);
 set(0, 'defaultaxesfontsize', 15);

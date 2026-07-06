@@ -33,7 +33,7 @@ jsonstruct_control.TimeStepping = struct('timeStepDuration', 100);
 %% 
 % We merge the structures into a single input structure
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control}, 'warn', false);
 %% Modify input structure
@@ -56,8 +56,8 @@ locations = {{'NegativeElectrode', 'CurrentCollector', 'specificHeatCapacity'}, 
 
 for iloc = 1 : numel(locations)
     loc = locations{iloc};
-    val = getJsonStructField(jsonstruct, loc);
-    jsonstruct = setJsonStructField(jsonstruct, loc, coef*val, 'handleMisMatch', 'quiet');
+    val = getStructField(jsonstruct, loc);
+    jsonstruct = setStructField(jsonstruct, loc, coef*val, 'handleMisMatch', 'quiet');
 end
 %% 
 % We change the lower cutoff voltage
@@ -73,7 +73,7 @@ plotBatteryGrid(output_fullycoupled.model, 'shortLegendText', true, 'figure', 1)
 %% Run iso-thermal simulation
 % We modify the input structure and switch to iso-thermal
 
-jsonstruct_isothermal = setJsonStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
+jsonstruct_isothermal = setStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
 %% 
 % We run the iso-thermal simulation
 

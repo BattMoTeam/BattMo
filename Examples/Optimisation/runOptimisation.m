@@ -18,7 +18,7 @@ jsonstruct.use_thermal = false;
 
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');
 jsonstruct_geometry = parseBattmoJson(jsonfilename);
-jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_geometry});
+jsonstruct = mergeStructs({jsonstruct, jsonstruct_geometry});
 
 output = runBatteryJson(jsonstruct, 'runSimulation', false, 'includeGridGenerator', true);
 

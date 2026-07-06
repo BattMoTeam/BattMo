@@ -36,8 +36,8 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         
         function inputparams = FullSolidDiffusionModelInputParams(jsonstruct)
 
-            D0 = getJsonStructField(jsonstruct, 'referenceDiffusionCoefficient');
-            D  = getJsonStructField(jsonstruct, 'diffusionCoefficient');
+            D0 = getStructField(jsonstruct, 'referenceDiffusionCoefficient');
+            D  = getStructField(jsonstruct, 'diffusionCoefficient');
             
             assert(isAssigned(D0) || isAssigned(D), 'Either D0 or D should be provided');
 

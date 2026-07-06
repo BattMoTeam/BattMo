@@ -52,7 +52,7 @@ if doplot.jellyroll
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
     
-    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+    jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
@@ -69,7 +69,7 @@ if doplot.multilayerpouch
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
     
-    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+    jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 

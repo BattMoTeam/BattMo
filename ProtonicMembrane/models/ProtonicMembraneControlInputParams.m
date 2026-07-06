@@ -16,8 +16,8 @@ classdef ProtonicMembraneControlInputParams < InputParams
         
         function inputparams = ProtonicMembraneControlInputParams(jsonstruct)
 
-            jsonstruct  = setDefaultJsonStructField(jsonstruct, {'useCurrentDensity'}, false);
-            jsonstruct  = setDefaultJsonStructField(jsonstruct, {'I'}, 0);
+            jsonstruct  = setDefaultStructField(jsonstruct, {'useCurrentDensity'}, false);
+            jsonstruct  = setDefaultStructField(jsonstruct, {'I'}, 0);
             inputparams = inputparams@InputParams(jsonstruct);
             
         end
