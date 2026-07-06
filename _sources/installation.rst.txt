@@ -7,7 +7,7 @@ Release installation
 
 .. _installation:
 
-The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo-test/releases/latest>`__ as a **zip file**.
+The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo/releases/latest>`__ as a **zip file**.
 
 1. **Download** :code:`battmo.zip` in the directory of your choice and **unzip** the file there.
 
