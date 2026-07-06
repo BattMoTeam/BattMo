@@ -42,15 +42,15 @@ classdef ImpedanceSolver < handle
             end
 
             % reference dt used to compute jacobians
-            options = setDefaultJsonStructField(options, {'dt'}, 1e3);
+            options = setDefaultStructField(options, {'dt'}, 1e3);
 
-            if strcmp(getJsonStructField(options, {'stateInitialization', 'initializationSetup'}), 'given state')
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
+            if strcmp(getStructField(options, {'stateInitialization', 'initializationSetup'}), 'given state')
+                options = setDefaultStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
             end
             
             % options used if computing steady state
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
+            options = setDefaultStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
+            options = setDefaultStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
             
             impsolv.options = options;
 

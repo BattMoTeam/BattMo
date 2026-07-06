@@ -29,7 +29,7 @@ classdef CatalystLayerInputParams < ComponentInputParams
         
         function inputparams = CatalystLayerInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'referencePressure', 1*atm);
+            jsonstruct = setDefaultStructField(jsonstruct, 'referencePressure', 1*atm);
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 

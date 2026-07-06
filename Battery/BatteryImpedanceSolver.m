@@ -16,13 +16,13 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
             options = impsolv.options;
 
             % other choice for state initializaztion is 'given state'
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
+            options = setDefaultStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
                                                                                                                              
             % default soc value
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
+            options = setDefaultStructField(options, {'stateInitialization', 'soc'}, 1);
             
-            if strcmp(getJsonStructField(options, {'stateInitialization', 'initializationSetup'}), 'soc')
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
+            if strcmp(getStructField(options, {'stateInitialization', 'initializationSetup'}), 'soc')
+                options = setDefaultStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
             end
 
         end
@@ -72,7 +72,7 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
             inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
 
-            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
+            initsetup = getStructField(options, {'stateInitialization', 'initializationSetup'});
 
             switch initsetup
 
@@ -93,13 +93,13 @@ classdef BatteryImpedanceSolver < ImpedanceSolver
                 
             end
 
-            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
+            if getStructField(options, {'stateInitialization', 'computeSteadyState'});
                 
                 state.(ctrl).I = 0;
                 
-                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
+                N         = getStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
                 totalTime = 10*hour;
-                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
+                nr        = getStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
                 
                 dt = rampupTimesteps(totalTime, totalTime/N, nr);
 

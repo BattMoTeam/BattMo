@@ -14,10 +14,10 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
             impsolv = impsolv@ImpedanceSolver(inputparams, options, extrastructs);
             
             % other choice for state initializaztion is 'given state'
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'given current');
+            options = setDefaultStructField(options, {'stateInitialization', 'initializationSetup'}, 'given current');
 
-            if strcmp(getJsonStructField(options, {'stateInitialization', 'initializationSetup'}), 'given current')
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
+            if strcmp(getStructField(options, {'stateInitialization', 'initializationSetup'}), 'given current')
+                options = setDefaultStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
             end
             
         end
@@ -38,11 +38,11 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
 
             options = impsolv.options;
             
-            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+            switch getStructField(options, {'stateInitialization', 'initializationSetup'})
                 
               case 'given current'
 
-                impsolv.I = getJsonStructField(options, {'stateInitialization', 'I'});
+                impsolv.I = getStructField(options, {'stateInitialization', 'I'});
                 
               case 'given state'
 
@@ -79,12 +79,12 @@ classdef ElectrolyserImpedanceSolver < ImpedanceSolver
 
             options = impsolv.options;
 
-            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'})
+            if getStructField(options, {'stateInitialization', 'computeSteadyState'})
 
                 model    = impsolv.model;
                 controlI = impsolv.I;
                 
-                switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+                switch getStructField(options, {'stateInitialization', 'initializationSetup'})
                     
                   case 'given current'
 

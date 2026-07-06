@@ -6,7 +6,7 @@
 jsonstruct_material = parseBattmoJson('Electrolyser/Parameters/alkalineElectrolyser.json');
 jsonstruct_geometry = parseBattmoJson('Electrolyser/Parameters/electrolysergeometry1d.json');
 
-jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
 %%
