@@ -49,13 +49,13 @@ will therefore have to launch the server themselves. This can be done in the fol
                   'p2d_40.json')
     jsonstruct = parseBattmoJson(fn)
 
-    man.runBatteryJson(jsonstruct)
+    man.runBattery(jsonstruct)
 ```
 
 For 1D model you can use directly json input (should be also faster)
 
 ```matlab
-    man.runBatteryJson(jsonstruct, 'useDirectJsonInput', true)
+    man.runBattery(jsonstruct, 'useDirectJsonInput', true)
 ```
 
 
