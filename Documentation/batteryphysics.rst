@@ -6,14 +6,14 @@ Battery Physics
    :maxdepth: 2
    :hidden:
 
-   runThermalExample.nblink
-   runOnlyThermal.nblink
-   runBolaySEI.ipynb
-   runSiliconGraphiteBattery.ipynb
+   nblinks/runThermalExample.ipynb
+   nblinks/runOnlyThermal.ipynb
+   nblinks/runBolaySEI.ipynb
+   nblinks/runSiliconGraphiteBattery.ipynb
    plating
-   runSwellingExample.ipynb
+   nblinks/runSwellingExample.ipynb
    soliddiffusion
-   runImpedanceScript.nblink
+   nblinks/runImpedanceScript.ipynb
    
 .. grid:: 2
 

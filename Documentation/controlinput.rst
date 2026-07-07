@@ -6,10 +6,10 @@ Control models
    :maxdepth: 2
    :hidden:
       
-   runControlExamples.nblink
-   runTimeControlExample.nblink
-   runGenericStepControlSimple.nblink
-   runGenericStepControlCycle.nblink
+   nblinks/runControlExamples.ipynb
+   nblinks/runTimeControlExample.ipynb
+   nblinks/runGenericStepControlSimple.ipynb
+   nblinks/runGenericStepControlCycle.ipynb
       
 The battery model contains a *Control* sub-model, see the overall model structure :ref:`description<architecture:BattMo
 Model Architecture>`. The Control model determine the control *values* and *type*.
