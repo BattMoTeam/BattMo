@@ -31,7 +31,7 @@ Then, you can modify this structure as you want within Matlab before sending it 
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct)
+   output = runBattery(jsonstruct)
 
 We use json schema to describe the expected keys or field names in the input, see :ref:`JSON input
 specification<json:JSON input specification>`. All the schemas are collected under the directory

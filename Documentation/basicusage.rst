@@ -48,7 +48,7 @@ We can run the simulation with the command:
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct)
+   output = runBattery(jsonstruct)
 
 Show the Dashboard
 ------------------
@@ -193,7 +193,7 @@ in the jsonstruct and re-run the simulation.
    figure()
    for i = 1 : numel(CRates)
        jsonstruct.Control.CRate = CRates(i);
-       output = runBatteryJson(jsonstruct);
+       output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
@@ -224,7 +224,7 @@ For example, we could simulate the cell considering different thickness values f
    figure()
    for i = 1 : numel(thickness)
        jsonstruct.NegativeElectrode.Coating.thickness = thickness(i);
-       output = runBatteryJson(jsonstruct);
+       output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
@@ -277,7 +277,7 @@ And now, we can run the simulation and plot the discharge curve:
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct);
+   output = runBattery(jsonstruct);
 
    states = output.states;
    model  = output.model;

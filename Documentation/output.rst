@@ -11,7 +11,7 @@ BattMo output
 
 Simulation output visualization and postprocessing are best illustrated in the :ref:`Tutorials <tutorials:Tutorials>`.
 
-Here, we provide a very short overview of the output structure returned by :code:`runBatteryJson`.
+Here, we provide a very short overview of the output structure returned by :code:`runBattery`.
 .
 
 We give also an overview of simple routines to compute _static_ cell specifications. By static, we mean specifications

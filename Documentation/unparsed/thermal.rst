@@ -88,7 +88,7 @@ We run the simulation
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct);
+   output = runBattery(jsonstruct);
 
 We obtain the standard discharge curve
 

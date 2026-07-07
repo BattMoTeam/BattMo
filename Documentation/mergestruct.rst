@@ -77,7 +77,7 @@ Run Simulation
 
 .. code:: matlab
           
-   output = runBatteryJson(jsonstruct);  
+   output = runBattery(jsonstruct);  
 
 Visualize Results
 -----------------
