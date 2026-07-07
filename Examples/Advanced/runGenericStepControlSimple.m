@@ -58,7 +58,7 @@ jsonstruct.include_current_collectors = false;
 %%
 % We run the simulation
 %
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plotting
 % 

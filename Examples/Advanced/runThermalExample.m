@@ -91,7 +91,7 @@ colorbar
 
 %% Run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot of the voltage
 %
@@ -152,7 +152,7 @@ jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 %%%
 % We re-run the simulation and obtain higher temperatures.
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot of temperatures
 %

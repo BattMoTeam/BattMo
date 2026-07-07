@@ -65,7 +65,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
 
     % Run battery simulation with function that takes json input
     % NB: the output is a struct with many fields.
-    output = runBatteryJson(jsonstruct);
+    output = runBattery(jsonstruct);
 
     %%
 

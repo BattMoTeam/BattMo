@@ -55,7 +55,7 @@ jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_control});
 
 
-output = runBatteryJson(jsonstruct, 'runSimulation', true);
+output = runBattery(jsonstruct, 'runSimulation', true);
 
 model  = output.model;
 states = output.states;

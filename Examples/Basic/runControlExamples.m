@@ -34,7 +34,7 @@ jsonstruct.Control = struct('controlPolicy'     , 'CCDischarge', ...
                             'DRate'             , 1            , ...
                             'lowerCutoffVoltage', 2.4);
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%
 % We plot the results
@@ -73,7 +73,7 @@ jsonstruct.TimeStepping.totalTime = 2*hour;
 %%%
 % We run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 
 %% Plot Results (1)
@@ -108,7 +108,7 @@ jsonstruct.Control = struct('controlPolicy'     , 'CCCV'       , ...
 %%%
 % We run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 
 %% Plot Results (2)

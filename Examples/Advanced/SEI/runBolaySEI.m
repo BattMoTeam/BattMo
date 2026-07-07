@@ -94,7 +94,7 @@ jsonstruct = mergeStructs({jsonstruct, jsontruct_geometry});
 %
 % We run the simulation
 %
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 
 %% Plotting

@@ -1,6 +1,6 @@
 jsonstruct = parseBattmoJson('simulation.json');
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% plotting
 

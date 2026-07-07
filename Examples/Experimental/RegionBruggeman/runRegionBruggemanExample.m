@@ -30,7 +30,7 @@ jsonstruct = mergeStructs({jsonstruct_bruggeman, ...
                                jsonstruct_control  , ...
                                jsonstruct_timestepping});
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 doplot = true;
 

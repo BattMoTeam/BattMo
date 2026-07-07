@@ -23,4 +23,4 @@ jsonstruct = mergeStructs({jsonstruct_material, ...
 
 jsonstruct.include_current_collectors = true;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);

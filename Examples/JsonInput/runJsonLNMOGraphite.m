@@ -51,9 +51,9 @@ jsonstruct = mergeStructs({jsonstruct_geometry , ...
 
 
 %% We start the simulation
-% We use the function :code:`runBatteryJson` to run the simulation with json input structure
+% We use the function :code:`runBattery` to run the simulation with json input structure
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot model specifications (could be done prior to simulation with the model only)
 

@@ -27,7 +27,7 @@ jsonstruct.NegativeElectrode.Coating.ActiveMaterial2.massFraction = 0.04;
 jsonstruct.NegativeElectrode.Coating.ActiveMaterial1.massFraction = 0.96;
 jsonstruct.Control.numberOfCycles = 1;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 states = output.states;
 model  = output.model;

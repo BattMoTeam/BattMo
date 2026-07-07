@@ -222,7 +222,7 @@ classdef ServerManager < handle
 
         end
 
-        function result = runBatteryJson(manager, jsonstruct, varargin)
+        function result = runBattery(manager, jsonstruct, varargin)
 
             opt = struct('useDirectJsonInput', false);
             opt = merge_options(opt, varargin{:});

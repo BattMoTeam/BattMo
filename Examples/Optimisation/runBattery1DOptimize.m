@@ -39,7 +39,7 @@ jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
 jsonstruct.(ctrl).useCVswitch = true;
 
-output = runBatteryJson(jsonstruct, 'runSimulation', false);
+output = runBattery(jsonstruct, 'runSimulation', false);
 
 simsetup = output.simsetup;
 

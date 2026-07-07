@@ -102,7 +102,7 @@ jsonstruct.Control.useCVswitch        = true;
 % We run the simulation
 %
 
-output = runBatteryJson(jsonstruct, 'runSimulation', true);
+output = runBattery(jsonstruct, 'runSimulation', true);
 
 
 %% Plotting

@@ -63,7 +63,7 @@ end
 jsonstruct.Control.lowerCutoffVoltage = 3.6;
 %% Run thermal simulation
 
-output_fullycoupled = runBatteryJson(jsonstruct);
+output_fullycoupled = runBattery(jsonstruct);
 %% Plot mesh
 % Now the model is setup, we can plot the grid mesh
 
@@ -75,7 +75,7 @@ jsonstruct_isothermal = setStructField(jsonstruct, 'use_thermal', false, 'handle
 %% 
 % We run the iso-thermal simulation
 
-output_isothermal = runBatteryJson(jsonstruct_isothermal);
+output_isothermal = runBattery(jsonstruct_isothermal);
 %% Setup thermal-only simulation
 % We compute the source terms from the output states obtained from the isothermal 
 % simulation. The source terms depends on the norm of the charge and mass fluxes 

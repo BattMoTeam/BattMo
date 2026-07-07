@@ -40,7 +40,7 @@ validateJson = false;
 
 %% Run with initial guess
 json0 = json;
-output0 = runBatteryJson(json0);
+output0 = runBattery(json0);
 
 simsetup = output0.simsetup;
 

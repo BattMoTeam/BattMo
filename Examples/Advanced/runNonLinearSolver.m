@@ -36,7 +36,7 @@ jsonstruct = mergeStructs({jsonstruct_nonlinear_solver, ...
 
 %% Run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% plot voltage
 
@@ -78,7 +78,7 @@ legend show
 jsonstruct.ThermalModel.externalHeatTransferCoefficientTab = 100;
 jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot the minimum and maximum values of the temperature
 

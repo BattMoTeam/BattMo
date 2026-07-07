@@ -33,7 +33,7 @@ jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Process output and recover the output voltage and current from the output states.
 

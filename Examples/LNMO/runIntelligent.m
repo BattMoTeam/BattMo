@@ -24,7 +24,7 @@ jsonstruct.TimeStepping.numberOfTimeSteps = 1000;
 % increase the number of time step cut allowed.
 jsonstruct.NonLinearSolver.maxTimestepCuts = 20;
 
-output = runBatteryJson(jsonstruct, 'runSimulation', true);
+output = runBattery(jsonstruct, 'runSimulation', true);
 
 % Integrate the current over time to calculate capacity
 capacity = cumtrapz(output.time, output.I);

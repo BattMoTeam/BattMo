@@ -97,9 +97,9 @@ flattenStruct(jsonstruct);
 
 %% Run the simulation
 %
-% We run the simulation by passing the json input structure to the function |runBatteryJson|
+% We run the simulation by passing the json input structure to the function |runBattery|
 %
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%
 % Let us look at the returned output

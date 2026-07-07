@@ -4,4 +4,4 @@ jsonstruct   = parseBattmoJson(jsonfilename);
 % The server should be start only once.
 man = ServerManager();
 
-output = man.runBatteryJson(jsonstruct)
+output = man.runBattery(jsonstruct)

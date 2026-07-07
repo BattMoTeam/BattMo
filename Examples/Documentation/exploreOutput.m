@@ -6,7 +6,7 @@
 %
 
 jsonstruct = parseBattmoJson('Examples/Documentation/jsonfiles/explore_output_example.json');
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Output structure overview
 %
@@ -130,7 +130,7 @@ states = simsetup.run();
 %
 
 jsonstruct.Output.includeIntermediateVariables = true;
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%
 % It is also possible to do the same _manually_ after the simulation

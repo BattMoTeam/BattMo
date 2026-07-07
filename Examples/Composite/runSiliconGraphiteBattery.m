@@ -60,7 +60,7 @@ jsonstruct = setStructField(jsonstruct, {ne, co, ad , 'massFraction'}, 0.01, 'ha
 
 %% We run the simulations
 %
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plotting
 % We extract the voltage, current and time from the simulation output
@@ -157,7 +157,7 @@ jsonstruct = setStructField(jsonstruct, {'Control', 'controlPolicy'}, 'CCCharge'
 
 jsonstruct.initializationSetup = 'given matlab object';
 
-output = runBatteryJson(jsonstruct, 'initstate', initstate);
+output = runBattery(jsonstruct, 'initstate', initstate);
 
 %% Visualisation
 
