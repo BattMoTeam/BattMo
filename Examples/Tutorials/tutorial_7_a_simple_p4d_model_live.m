@@ -75,7 +75,7 @@ jsonstruct = mergeStructs({jsonstruct_geometry , ...
 output = cell(2,1);
 
 % run the simulation
-output{1} = runBatteryJson(jsonstruct);
+output{1} = runBattery(jsonstruct);
 %% Visualize the Results
 % We plot the model using <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotBatteryGrid.m 
 % plotBatteryGrid> (note that the different axis are scaled differently)
@@ -134,7 +134,7 @@ jsonstruct.Control.CRate = 1;
 jsonstruct.TimeStepping.totalTime = (1./jsonstruct.Control.CRate) .* 3600 .* 1.1;
 
 % run the simulation
-output{2} = runBatteryJson(jsonstruct);
+output{2} = runBattery(jsonstruct);
 %% 
 % In this case, MATLAB sends many warnings about the ill-conditionness of the 
 % system. The ill-conditionness appears to come mainly from the very high ratio 

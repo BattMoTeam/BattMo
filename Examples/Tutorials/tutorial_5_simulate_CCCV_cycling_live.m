@@ -30,7 +30,7 @@ disp(jsonstruct_modified.Control)
 % Let's run the simulation and plot the cell voltage curve.
 
 % run the simulation
-output = runBatteryJson(jsonstruct_modified);
+output = runBattery(jsonstruct_modified);
 %% 
 % get the states
 

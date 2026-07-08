@@ -33,7 +33,7 @@ jsonstruct.NegativeElectrode.Coating.thickness = 72*micro;
 
 % instantiate an empty figure
 figure()
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% 
 % retrieve the states from the simulation result
 
@@ -77,7 +77,7 @@ for i = 1 : numel(thickness)
     jsonstruct.NegativeElectrode.Coating.thickness = thickness(i);
     
     % run the simulation and store the results in the output cell array
-    output{i} = runBatteryJson(jsonstruct);
+    output{i} = runBattery(jsonstruct);
     
     % retrieve the states from the simulation result
     states = output{i}.states;

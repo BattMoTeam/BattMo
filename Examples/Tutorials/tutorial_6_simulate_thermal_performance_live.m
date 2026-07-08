@@ -28,7 +28,7 @@ model = setupModelFromJson(jsonstruct);
 %% Run the simulation
 % We run the simulation. We have used here a standard discharge control at C-Rate=1.
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% Visualisation of the results
 % We plot the voltage versus time for the simulation.
 
@@ -130,7 +130,7 @@ jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 %% 
 % We run the model for the new values
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% 
 % We plot the results
 

@@ -46,8 +46,8 @@ jsonstruct = mergeStructs({jsonstruct_geometry , ...
     jsonstruct_control  , ...
     jsonstruct_simparams}, 'warn', false);
 %% Setup the model for inspection
-% When we run the simulation using function <https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonInput/runBatteryJson.m 
-% runBatteryJson.m>, the model is setup. In the case where we want to setup the 
+% When we run the simulation using function <https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonInput/runBattery.m 
+% runBattery.m>, the model is setup. In the case where we want to setup the 
 % model for inspection, prior to simulation, we can use the function <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/setupModelFromJson.m 
 % setupModelFromJson.m>
 
@@ -62,7 +62,7 @@ axis tight
 view(45,45)
 %% Run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% Visualize the Results
 % extract the time and voltage quantities
 

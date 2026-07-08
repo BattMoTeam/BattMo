@@ -39,7 +39,7 @@ disp(jsonstruct.NegativeElectrode.Coating.thickness)
 %% Run Simulation
 % We can run the simulation with the command:
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% Show the Dashboard
 % We can dashboard the main results using <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotDashboard.m 
 % plotDashboard>. Here, for example at time step 10,

@@ -56,7 +56,7 @@ for i = 1 : numel(radius)
     jsonstruct.PositiveElectrode.Coating.ActiveMaterial.SolidDiffusion.particleRadius = radius(i);
     
     % run the simulation and store the results in the output cell array
-    output{i} = runBatteryJson(jsonstruct);
+    output{i} = runBattery(jsonstruct);
     
     % retrieve the states from the simulation result
     states = output{i}.states;
@@ -111,7 +111,7 @@ jsonstruct.PositiveElectrode.Coating.effectiveDensity = 900;
 % And now, we can run the simulation and plot the discharge curve:
 
 % run the simulation
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% 
 % get the states
 

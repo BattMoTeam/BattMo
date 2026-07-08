@@ -44,7 +44,7 @@ jsonstruct.TimeStepping.totalTime = (1./jsonstruct.Control.DRate) .* 3600 .* 1.1
 % duration based on the C-Rate. We can then run the simulation and plot the discharge 
 % curve.
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 %% 
 % retrieve the states from the simulation result
 
@@ -85,7 +85,7 @@ for i = 1 : numel(DRates)
     jsonstruct.TimeStepping.totalTime = (1./jsonstruct.Control.DRate) .* 3600 .* 1.2;
     
     % run the simulation and store the results in the output cell array
-    output{i} = runBatteryJson(jsonstruct);
+    output{i} = runBattery(jsonstruct);
     
     % retrieve the states from the simulation result
     states = output{i}.states;
@@ -118,7 +118,7 @@ for i = 1 : numel(output)
     jsonstruct.TimeStepping.totalTime = (1./jsonstruct.Control.DRate) .* 3600 .* 1.2;
     
     % run the simulation and store the results in the output cell array
-    output{i} = runBatteryJson(jsonstruct);
+    output{i} = runBattery(jsonstruct);
     
     % retrieve the states from the simulation result
     states = output{i}.states;
