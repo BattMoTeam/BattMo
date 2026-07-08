@@ -1,3 +1,0 @@
-{
-  "path" : "../Examples/Advanced/SEI/notebooks/runBolaySEI.ipynb"
-}

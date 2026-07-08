@@ -1,0 +1,721 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example using generic control input with cycles &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c92655ae" />
+
+  
+    <link rel="shortcut icon" href="../_static/battmologo.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Parameter sets" href="../parsets.html" />
+    <link rel="prev" title="Example using generic control input" href="runGenericStepControlSimple.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BattMo
+              <img src="../_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#release-installation">Release installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#installation-from-git">Installation from git</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#update-existing-installation">Update existing installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Your First Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#show-the-dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-states">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#plot-a-result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-control-parameters">Change Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-material-parameters">Change Material Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../inputparameters.html">BattMo Input</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../inputparameters.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../jsonexample.html">My First Json Input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#negative-electrode">Negative Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#thermal-model">Thermal Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#geometry">Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#model-specification">Model Specification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#state-initialization">State Initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#time-stepping">Time Stepping</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html">JSON input specification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#simulation-schema">Simulation Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#material-parameters">Material Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrode">Electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#coating">Coating</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#active-material">Active Material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#interface">Interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#binder">Binder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#current-collector">Current Collector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#separator">Separator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#thermal-model">Thermal Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#geometry-setup">Geometry Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#control-parameters">Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#solver-parameters">Solver Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#output-parameters">Output Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../mergestruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mergestruct.html#setup-a-p4d-model-using-mergestructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#visualize-results">Visualize Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mergestruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../jsonfiles.html">List of Json File Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functioninterface.html">Functional parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#function-name">Function name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#function-formula">Function formula</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#tabulated-function">Tabulated function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#csv-file">CSV file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#example">Example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="functionInterfaceExample.html">Example of the function interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../controlinput.html">Control models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="runControlExamples.html">Examples of the different control policies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-json-input">Setup json input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Discharge-control-and-run-simulation">Setup Constant Current Discharge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Charge-control-and-run-simulation">Setup Constant Current Charge control and run simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(1)">Plot Results (1)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Setup-Constant-Current-Constant-Voltage-control-and-run-the-simulation">Setup Constant Current Constant Voltage control and run the simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runControlExamples.html#Plot-Results-(2)">Plot Results (2)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runTimeControlExample.html">Example of function control</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Case-setup">Case setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Functional-time-control">Functional time control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Value-Control-setup">Value Control setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#We-finalize-the-setup-of-the-jsonstruct-input">We finalize the setup of the jsonstruct input</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runTimeControlExample.html#Tabulated-data-for-the-function-control">Tabulated data for the function control</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runGenericStepControlSimple.html">Example using generic control input</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runGenericStepControlSimple.html#Input-setup">Input setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runGenericStepControlSimple.html#Plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Example using generic control input with cycles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Input-setup">Input setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plotting">Plotting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../output.html">BattMo output</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exploreOutput.html">Simulation Output Structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Output-structure-overview">Output structure overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Current-and-Voltage">Current and Voltage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Simulation-Model">Simulation Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Battery-States">Battery States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Simulation-Setup">Simulation Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#Json-Input">Json Input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exploreOutput.html#full-set-of-state-variables">full set of state variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../staticspec.html">Cell Specifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../geometryinput.html">Battery Geometries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp2d">BatteryGeneratorP2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp3d">BatteryGeneratorP3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../batteryphysics.html">Battery Physics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runThermalExample.html">Thermal simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-material-properties">Setup of the material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-geometry">Setup of the geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-of-the-Control">Setup of the Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Setup-the-full-input">Setup the full input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-external-heat-transfer-coefficient">Plot of the external heat transfer coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-voltage">Plot of the voltage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-minimum-and-maximum-values-of-the-temperature">Plot of the minimum and maximum values of the temperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#We-change-setup-for-cooling-coefficient">We change setup for cooling coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-temperatures">Plot of temperatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runThermalExample.html#Plot-of-the-temperature-distribution">Plot of the temperature distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runOnlyThermal.html">Comparison between coupled and uncoupled thermal simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#setup-material-property-input">setup material property input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-geometry-input">Setup geometry input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-Control-input">Setup Control input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Modify-input-structure">Modify input structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Run-thermal-simulation">Run thermal simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Plot-mesh">Plot mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Run-iso-thermal-simulation">Run iso-thermal simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-thermal-only-simulation">Setup thermal-only simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-heat-source-term">Setup heat source term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-thermal-only-model">Setup thermal-only model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Setup-the-simulation-schedule">Setup the simulation schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#setup-initial-state">setup initial state</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#run-thermal-only-simulation">run thermal-only simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runOnlyThermal.html#Plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runBolaySEI.html">Simulation with Surface Electrolyte Interface (SEI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Setup-the-properties-of-the-Li-ion-battery-materials-and-of-the-cell-design">Setup the properties of the Li-ion battery materials and of the cell design</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#SEI-thickness">SEI thickness</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#SEI-voltage-drop">SEI voltage drop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Lithium-content">Lithium content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Lithium-total-mass-balance">Lithium total mass balance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runBolaySEI.html#Capacity-loss">Capacity loss</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runSiliconGraphiteBattery.html">Simulation of a composite active material</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Setup-the-properties-of-the-battery">Setup the properties of the battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#We-modify-some-parameters">We modify some parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#We-run-the-simulations">We run the simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#plot-of-the-particle-concentration-distribution-in-the-particle-at-the-end-time">plot of the particle concentration distribution in the particle at the end time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Charge-step">Charge step</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSiliconGraphiteBattery.html#Visualisation">Visualisation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../plating.html">Lithium Plating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSPMplating.html">Run stand-alone active material model with lithium plating</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-simulation-schedule">Setup simulation schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Run-first-simulation,-particle-charge">Run first simulation, particle charge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Setup-discharge-simulation">Setup discharge simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Run-second-simulation,-particle-discharge">Run second simulation, particle discharge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runSPMplating.html#Sum-up">Sum up</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runCellPlating.html">Lithium plating example</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runCellPlating.html#Parameter-setup">Parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runCellPlating.html#Plotting">Plotting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runSwellingExample.html">Silicon Swelling Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Material-properties">Material properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Geometry">Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runSwellingExample.html#Plotting-the-results">Plotting the results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../soliddiffusion.html">Solid Diffusion Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runImpedanceScript.html">Battery impedance computation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="runImpedanceScript.html#Battery-input-parameters">Battery input parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runImpedanceScript.html#Impedance-computation">Impedance computation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../elchemsystems.html">Other Electro-Chemical Systems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html">Alkaline Membrane Electrolyser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../protonicmembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html">Full Cell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../optimisation.html">Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimisation.html#parameter-identification-example">Parameter identification example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimisation.html#optimization-example">Optimization example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.3-Battery-Properties">1.3 Battery Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.4-Operational-Protocols"><strong>1.4 Operational Protocols</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#2.-Modelling-with-BattMo"><strong>2. Modelling with BattMo</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#2.1-P2D/P3D/P4D-Models"><strong>2.1 P2D/P3D/P4D Models</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#2.2-Influence-of-structural-and-material-parameters-on-the-capacity"><strong>2.2 Influence of structural and material parameters on the capacity</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#3.-Summary">3. Summary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#4.-References"><strong>4. References</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-2.-Mass-fraction-of-active-material-and-binder-in-electrode"><strong>Example 2. Mass</strong> fraction of active material and binder in electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-3.-Temperature">Example 3. Temperature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-4.-Saturation-concentration-of-the-material">Example 4. Saturation concentration of the material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-5.-Charge-transfer-coefficient,-anodic-and-cathodic-at-the-surface-of-the-active-particles:-Butler-Volmer-equation"><strong>Example 5.</strong> Charge transfer coefficient, anodic and cathodic at the surface of the active particles: Butler-Volmer equation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-6.-Reaction-rate-constant-at-the-surface-of-the-active-particles:-Butler-Volmer-equation-(exchange-current-density)"><strong>Example 6.</strong> Reaction rate constant at the surface of the active particles: Butler-Volmer equation (exchange current density)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-7.-Reference-diffusion-coefficient-(Solid-diffusion)">Example 7. Reference diffusion coefficient (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-8.-Active-particle-radius-(Solid-diffusion)"><strong>Example 8.</strong> Active particle radius (Solid diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-9.-Electronic-conductivity-of-the-active-material-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 9.</strong> Electronic conductivity of the active material in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-10.-Bruggeman-coefficient-in-the-electrodes-(effective-electronic-conductivity)"><strong>Example 10.</strong> Bruggeman coefficient in the electrodes (effective electronic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-11.-Bruggeman-coefficient-in-the-electrolyte-(effective-ionic-conductivity)">Example 11. Bruggeman coefficient in the electrolyte (effective ionic conductivity)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-12.-Initial-electrolyte-concentration-(electrolyte-diffusion)"><strong>Example 12. Initial e</strong>lectrolyte concentration (electrolyte diffusion)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-13.-Transference-number-(electrolyte-diffusion)"><strong>Example 13.</strong> Transference number (electrolyte diffusion)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../battmointernals.html">BattMo Internals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../architecture.html">BattMo Model Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html">Computational Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-assembly">Model assembly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-explorability">Model explorability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-hierarchy-and-composition">Model hierarchy and composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#basic-example">Basic Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../programminginterfaces.html">Programming Interfaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html">BattMo Julia bridge</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#start-server">Start Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#send-simulation-parameters">Send simulation parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#post-process-the-output">Post process the output</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app.html">BattMoApp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html">Features</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#download-input-data">Download Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#upload-input-data">Upload Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#upload-your-previous-results">Upload your previous results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../app_troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_unnatural_artifacts.html">Unnatural artifacts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_unsuccessful_simulation.html">Unsuccessful simulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../octave.html">Octave</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../seealso.html">See Also</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#mrst">MRST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#visualization">Visualization Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#id2">Grid Factory Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#fair-data">FAIR Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../inputparameters.html">BattMo Input</a></li>
+          <li class="breadcrumb-item"><a href="../controlinput.html">Control models</a></li>
+      <li class="breadcrumb-item active">Example using generic control input with cycles</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/nblinks/runGenericStepControlCycle.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="admonition note" id="rungenericstepcontrolcycle">
+<p class="admonition-title">Note</p>
+<p>This notebook is already available in your BattMo installation. In Matlab, run</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">open</span><span class="w"> </span><span class="n">runGenericStepControlCycle</span>
+</pre></div>
+</div>
+</div>
+<section id="Example-using-generic-control-input-with-cycles">
+<h1>Example using generic control input with cycles<a class="headerlink" href="#Example-using-generic-control-input-with-cycles" title="Link to this heading"></a></h1>
+<p>We use a generic control input, as described in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/GenericControl.schema.json">json schema documentation</a>.</p>
+<section id="Input-setup">
+<h2>Input setup<a class="headerlink" href="#Input-setup" title="Link to this heading"></a></h2>
+<p>We load material parameter input parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                               </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                               </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                               </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<p>We load geometry parameter input parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometryChen.json&#39;</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<p>We load the generic control parameter we want to use</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_control</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;generic_step_control_cycle_example.json&#39;</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<p>We print it to command window</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">viewStruct</span><span class="p">(</span><span class="n">jsonstruct_control</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+  &#34;Control&#34;: {
+    &#34;controlPolicy&#34;: &#34;Generic&#34;,
+    &#34;controlsteps&#34;: [
+      {
+        &#34;controltype&#34;: &#34;cycle&#34;,
+        &#34;numberOfcycles&#34;: 3,
+        &#34;cycleControlSteps&#34;: [
+          {
+            &#34;controltype&#34;: &#34;current&#34;,
+            &#34;value&#34;: 5,
+            &#34;direction&#34;: &#34;discharge&#34;,
+            &#34;termination&#34;: {
+              &#34;quantity&#34;: &#34;voltage&#34;,
+              &#34;value&#34;: 3,
+              &#34;comparison&#34;: &#34;below&#34;
+            },
+            &#34;timeStepSize&#34;: 100
+          },
+          {
+            &#34;controltype&#34;: &#34;voltage&#34;,
+            &#34;value&#34;: 3,
+            &#34;termination&#34;: {
+              &#34;quantity&#34;: &#34;current&#34;,
+              &#34;value&#34;: 0.0001,
+              &#34;comparison&#34;: &#34;absolute value below&#34;
+            },
+            &#34;timeStepSize&#34;: 100
+          },
+          {
+            &#34;controltype&#34;: &#34;current&#34;,
+            &#34;value&#34;: 5,
+            &#34;direction&#34;: &#34;charge&#34;,
+            &#34;termination&#34;: {
+              &#34;quantity&#34;: &#34;voltage&#34;,
+              &#34;value&#34;: 4,
+              &#34;comparison&#34;: &#34;above&#34;
+            },
+            &#34;timeStepSize&#34;: 100
+          }
+        ]
+      },
+      {
+        &#34;controltype&#34;: &#34;rest&#34;,
+        &#34;termination&#34;: {
+          &#34;value&#34;: 1000,
+          &#34;quantity&#34;: &#34;time&#34;
+        },
+        &#34;timeStepSize&#34;: 100
+      }
+    ]
+  }
+}
+</pre></div></div>
+</div>
+<p>We remove the fields that are not relevant for this example. This is done to simplify the input parameters and focus on the relevant aspects of the model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">removeStructFields</span><span class="p">(</span><span class="n">jsonstruct_material</span><span class="w">              </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;DRate&#39;</span><span class="p">}</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;controlPolicy&#39;</span><span class="p">}</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;rampupTime&#39;</span><span class="p">}</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<p>We merge all the input structures</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_geometry</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<p>We do not include thermal effects and the current collectors in this example to simplify the model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">use_thermal</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>We run the simulation</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Plotting">
+<h2>Plotting<a class="headerlink" href="#Plotting" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
+
+
+<span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="n">I</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+
+
+<span class="n">figure</span>
+<span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">E,</span><span class="w"> </span><span class="s">&#39;*-&#39;,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;,</span><span class="w"> </span><span class="s">3)</span><span class="p">;</span>
+<span class="n">grid</span><span class="w"> </span><span class="s">on</span>
+<span class="nb">xlabel</span><span class="w"> </span><span class="s">&#39;time  / h&#39;</span><span class="p">;</span>
+<span class="n">ylabel</span><span class="w"> </span><span class="s">&#39;potential  / V&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<center><img src="data:image/png;base64,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" width="471" alt="figure_0.png"></center></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><br/><br/><span></span><span class="nb">figure</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="n">grid</span><span class="w"> </span><span class="s">on</span>
+<span class="nb">xlabel</span><span class="w"> </span><span class="s">&#39;time  / h&#39;</span><span class="p">;</span>
+<span class="n">ylabel</span><span class="w"> </span><span class="s">&#39;Current  / A&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<center><img src="data:image/png;base64,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" width="471" alt="figure_1.png"></center></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="runGenericStepControlSimple.html" class="btn btn-neutral float-left" title="Example using generic control input" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../parsets.html" class="btn btn-neutral float-right" title="Parameter sets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -31,7 +31,7 @@ You can actually run this illustration example using
 .. code:: matlab
 
    jsonstruct = parseBattmoJson('Examples/Documentation/jsonfiles/Example/simulation.json');
-   output = runBatteryJson(jsonstruct);
+   output = runBattery(jsonstruct);
 
 Battery
 =======

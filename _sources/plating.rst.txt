@@ -5,8 +5,8 @@ Lithium Plating
 .. toctree::
    :hidden:
       
-   runSPMplating.ipynb
-   runCellPlating.ipynb
+   nblinks/runSPMplating.ipynb
+   nblinks/runCellPlating.ipynb
    
 We illustrate in two notebooks the implementation of Lihium Plating. The governing equations are taken from :cite:`Hein_2020`
 

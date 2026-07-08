@@ -5,12 +5,12 @@ Cell Specifications
 For a given battery model, we can compute the mass, the capacity and the nominal energy without running any
 simulation. A :code:`CellSpecificationSummary` object can be instantiated from a model to print all this information
 
-We setup a model using :code:`runBatteryJson` but with the option :code:`runSimulation` set as false to avoid running the simulation.
+We setup a model using :code:`runBattery` but with the option :code:`runSimulation` set as false to avoid running the simulation.
 
 .. code:: matlab
 
    jsonstruct = parseBattmoJson('JsonDataFiles/sample_input.json');
-   model = runBatteryJson(jsonstruct, 'runSimulation', false);
+   model = runBattery(jsonstruct, 'runSimulation', false);
 
    css = CellSpecificationSummary(model);
 

@@ -20,7 +20,7 @@ The keyword :code:`argumentList` is common to all the formats and is used to des
 sent to the function. The argument names given there are independent to the implementation in itself. They indicates the
 meaning of the arguments.
 
-.. note:: After parsing a function can be setup directly using :code:`setupFunction`, see :ref:`Example of the function interface <functionInterfaceExample:Example of the function interface>`
+.. note:: After parsing a function can be setup directly using :code:`setupFunction`, see :ref:`Example of the function interface <nblinks/functionInterfaceExample:Example of the function interface>`
 
 Let us go through each different format separatly. For each format, we start by giving an example.
 
@@ -89,12 +89,12 @@ We can import CSV file. The file is read and a tabulated function is set up
 Example
 =======
 
-:ref:`Example script<functionInterfaceExample:Example of the function interface>`
+:ref:`Example script<nblinks/functionInterfaceExample:Example of the function interface>`
 
 .. toctree::
    :hidden:
 
-   functionInterfaceExample.nblink
+   nblinks/functionInterfaceExample.ipynb
 
 
 

@@ -77,7 +77,7 @@ form the initial data for the parameter identification later on.
 .. code:: matlab
 
 	  json0 = json;
-	  output0 = runBatteryJson(json0, 'validateJson', validateJson);
+	  output0 = runBattery(json0, 'validateJson', validateJson);
 
 	  simSetup = struct('model'   , output0.model   , ...
 			    'schedule', output0.schedule, ...
@@ -154,7 +154,7 @@ problems.
 	    jsonExp = params{ip}.setfun(jsonExp, loc{:}, new);
 	    pExp(ip) = new;
 	  end
-	  outputExp = runBatteryJson(jsonExp, 'validateJson', validateJson);
+	  outputExp = runBattery(jsonExp, 'validateJson', validateJson);
 
 Next we set up the objective function, i.e. the function we seek to
 minimize by varying the parameters `params`. We set this to be a least
@@ -272,7 +272,7 @@ plot the result and display the relative difference between the
 	      jsonOpt = params{ip}.setfun(jsonOpt, loc{:}, pOpt(ip));
 	  end
 
-	  outputOpt = runBatteryJson(jsonOpt, 'validateJson', validateJson);
+	  outputOpt = runBattery(jsonOpt, 'validateJson', validateJson);
 
 	  %%
 	  do_plot = true;
