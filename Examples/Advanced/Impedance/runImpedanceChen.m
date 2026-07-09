@@ -1,6 +1,9 @@
 % clear all
 % close all
 
+
+
+
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -19,7 +22,7 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry});
 
-includeDoubleLayer = false;
+includeDoubleLayer = true;
 
 if includeDoubleLayer
 
@@ -44,23 +47,32 @@ extrastructs.initstate = initstate;
 
 impsolv = ImpedanceSolver(inputparams, options, extrastructs);
 
-%%
+
+
+
+
+
 
 set(0, 'defaultlinelinewidth', 3);
 
-omegas = linspace(-4, 2, 30);
-omegas = 10.^omegas;
-Z = impsolv.computeImpedance(omegas);
+
 
 figure
+
+
+omegas = logspace(-4, 2, 30);
+Z = impsolv.computeImpedance(omegas);
 hold on
 
 plot(real(Z), -imag(Z), 'displayname', 'battmo');
 
+axis equal;
+
+
 docompare = true;
 if docompare
     p = fileparts(mfilename('fullpath'));
-    data = load(fullfile(p, 'utils', 'pybamm_chen_impedances.mat'));
+    data = load('C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\matlab\BattMo\Examples\Advanced\Impedance\utils\pybamm_chen_impedances.mat');
     Zpybamm = data.impedances;
     plot(real(Zpybamm), -imag(Zpybamm), 'displayname', 'pybamm');
 end
