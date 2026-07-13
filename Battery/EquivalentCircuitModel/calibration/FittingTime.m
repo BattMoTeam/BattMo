@@ -8,7 +8,7 @@ classdef FittingTime
         time_vec   % time steps for current_exp and voltage_exp
 
         current_exp  % experimental current values
-        jsontruct  % input structure for P2D model which gives us the the ocv and the experimental data
+        jsonstruct  % input structure for P2D model which gives us the the ocv and the experimental data
         
         %% helpers
         
@@ -28,18 +28,22 @@ classdef FittingTime
             if istable(scales), scales = table2array(scales); end
             if istable(time_vec), time_vec = table2array(time_vec); end
             if istable(current_exp), current_exp = table2array(current_exp); end
-            if istable(voltage_exp), voltage_exp = table2array(voltage_exp); end
-            if istable(ocv_vec), ocv_vec = table2array(ocv_vec); end
+            
+            
+            t_raw = double(time_vec(:));
+            i_raw = double(current_exp(:));
+            
+
+            [V_p2d, ocv_vec, time_sim, I_p2d] = ftime.setupOCP(t_raw, i_raw);
+            
+
+            ftime.time_vec    = time_sim;
+            ftime.current_exp = I_p2d;
+            ftime.voltage_exp = V_p2d;
+            ftime.ocv_vec     = ocv_vec;
             
             ftime.params0     = double(params0(:));
             ftime.scales      = double(scales(:));
-            ftime.time_vec    = double(time_vec(:));
-            ftime.current_exp = double(current_exp(:));
-
-            [V_p2d, ocv_vec] = ftime.setup(ftime.time_vec, ftime.current_exp);
-
-            ftime.voltage_exp = V_p2d;
-            ftime.ocv_vec     = ocv_vec;
             
         end
 
@@ -56,7 +60,7 @@ classdef FittingTime
         end
 
 
-        function [V_p2d, ocv_vec] = setupOCP(ftime, time_vec, current_exp)
+        function [V_p2d, ocv_vec, time_sim, I_p2d] = setupOCP(ftime, time_vec, current_exp)
 
             jsonstruct  = ftime.jsonstruct;
             

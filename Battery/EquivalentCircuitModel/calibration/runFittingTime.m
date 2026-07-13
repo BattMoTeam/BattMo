@@ -10,6 +10,8 @@ current_init(time_init >= 200 & time_init < 400)   = -1.5; % 2. Charge (200 à 4
 current_init(time_init >= 400 & time_init < 700)   = 0.0;  % 3. Repos (400 à 700s)
 current_init(time_init >= 700 & time_init <= 1000) = 3.5;  % 4. Décharge (700 à 1000s)
 
+
+
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
@@ -22,7 +24,7 @@ pmin = params0 / a;
 pmax = params0 * a;
 scales = [pmin, pmax];
 
-ftime = FittingTime(jsonstruct, time_vec, current_exp, params0, scales);
+ftime = FittingTime(jsonstruct, time_init, current_init, params0, scales);
 
 [~, ~, best_params, fitting_error] = ftime.optimizationBFGS();
 
