@@ -1,15 +1,4 @@
-function plotEcmSoc(file_name)
-    % Set default file name if no argument is provided
-    if nargin < 1
-        file_name = 'ecm_map_results_08.mat'; 
-    end
-
-    % Check if the file exists and load it
-    if exist(file_name, 'file')
-        load(file_name, 'ecm_table');
-    else
-        error(['File not found: ', file_name]);
-    end
+function plotEcmSoc(ecm_table)
 
     % Create a clean figure window
     figure('Color', 'w', 'Name', 'ECM Parameters vs SOC', 'Position', [100, 100, 1100, 700]);
@@ -50,6 +39,6 @@ function plotEcmSoc(file_name)
     title('Diffusion Capacitance (C_2)');
 
     % Global title for the entire figure
-    sgtitle(['Fitted ECM Parameters Evolution across SOC Range - File: ', file_name], ...
+    sgtitle('Fitted ECM Parameters Evolution across SOC Range', ...
             'FontSize', 14, 'FontWeight', 'bold', 'Interpreter', 'none');
 end

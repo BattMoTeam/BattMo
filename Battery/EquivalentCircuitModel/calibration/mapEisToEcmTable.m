@@ -1,4 +1,6 @@
 function ecm_table = mapEisToEcmTable(soc_step)
+    % soc_step : soc increment between 0 and 1. Start from soc = 1.
+    
     %% 1. Initialisation
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));

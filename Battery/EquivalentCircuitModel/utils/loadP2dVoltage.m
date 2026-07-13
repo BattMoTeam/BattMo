@@ -1,8 +1,5 @@
-function [time_sim, I_p2d, V_p2d, ocv_vec] = loadP2dVoltage(time_vec, current_exp)
-    
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-    jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+function [time_sim, I_p2d, V_p2d, ocv_vec] = loadP2dVoltage(jsonstruct, time_vec, current_exp)
+    %% Load P2D model and simulate voltage response to experimental current profile
     
     [model, inputparams] = setupModelFromJson(jsonstruct);
     
@@ -24,7 +21,6 @@ function [time_sim, I_p2d, V_p2d, ocv_vec] = loadP2dVoltage(time_vec, current_ex
     schedule_p2d.control.src = @(t, varargin) interp1(time_vec, current_exp, t, 'linear', 0);
     schedule_p2d.control.Control = struct('stopFunction', @(model, state, state0) false);
     
-
     [~, states_p2d, ~] = simulateScheduleAD(state_init, model, schedule_p2d);
     
     N_points_sim = length(states_p2d);
@@ -63,4 +59,5 @@ function [time_sim, I_p2d, V_p2d, ocv_vec] = loadP2dVoltage(time_vec, current_ex
         x_ne = soc_now * (ne_guestStoichiometry100 - ne_guestStoichiometry0) + ne_guestStoichiometry0;
         ocv_vec(idx) = fn_ocp_pe(x_pe) - fn_ocp_ne(x_ne);
     end
+    
 end
