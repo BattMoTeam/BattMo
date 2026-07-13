@@ -1,4 +1,8 @@
 %% ECM Fitting for lithium-ion batteries
+%
+
+%% Impedance computation
+% We setup a P2D model and compute the impedance response
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
@@ -23,23 +27,32 @@ val_cdl = base_cdl * (10^p_doubleLayerCapacitance);
 jsonstruct = jsonstruct_base;
 
 jsonstruct.NegativeElectrode.Coating.ActiveMaterial.SolidDiffusion.referenceDiffusionCoefficient = val_diff_anode;
-jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.reactionRateConstant = val_rate_anode;
-jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.doubleLayerCapacitance = val_cdl;
+jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.reactionRateConstant               = val_rate_anode;
+jsonstruct.NegativeElectrode.Coating.ActiveMaterial.Interface.doubleLayerCapacitance             = val_cdl;
 
-
+%%
+% Setup P2D model from the parameter set |jsonstruct|
 [model, inputparams, ~] = setupModelFromJson(jsonstruct);
+
+%%
+% We use a dedicated function to compute the initial state for the given electrode concentrations.
 initstate = initStateChen2020(model, c_ne, c_pe);
 options = [];
 options.stateInitialization.initializationSetup = 'given state';
 options.stateInitialization.computeSteadyState = false;
 
+%%
+% setup input for |ImpedanceSolver|
 extrastructs = [];
 extrastructs.initstate = initstate;
 
-impsolv = ImpedanceSolver(inputparams, options, extrastructs);
-frequences = logspace(-2, 3, 30); 
 
-Z = impsolv.computeImpedance(frequences);
+%%
+% setup impedance solver and compute the Impedance for a given set of frequencies
+impsolv = ImpedanceSolver(inputparams, options, extrastructs);
+frequencies = logspace(-2, 3, 30); 
+
+Z = impsolv.computeImpedance(frequencies);
 
 figure('Name', 'Nyquist Diagram');
 plot(real(Z), -imag(Z), '-o', 'LineWidth', 2, 'Color', '#0072BD');
@@ -47,8 +60,6 @@ grid on;
 xlabel('Re(Z)');
 ylabel('-Im(Z)');
 title('Interactive Nyquist Diagram');
-
-disp('Calculation succeeded');
 
 
 %% 
@@ -70,8 +81,6 @@ disp('Calculation succeeded');
 % at lower ones.
 
 
-
-
 %% Calibration of ECM parameters
 % Impedance is the opposition to alternating current presented by the combined 
 % effect of resistance and reactance in a circuit. It is obtained with the ratio 
@@ -83,15 +92,12 @@ disp('Calculation succeeded');
 % of the study is to obtain the set of parameters as close as possible to the 
 % real impedance curve with the 2-RC Impedance function $Z = R_0 + \frac{R_1}{1 
 % + j R_1 C_1 \omega} + \frac{R_2}{1 + j R_2 C_2 \omega}$.
-% 
-% We chose unitBoxBFGS as optimization algorithm, which allows other constraints. 
-% As the two RC parallel cells are symetric, we imposed $C_1 > 2*C_2$ to ensure 
-% robustness and injectivity of the optimization. Thanks this criteria, a particular 
-% battery state always lead to the same equivalent circuit.
-% 
-% UnitBoxBFGS needs to work in a box between 0 and 1. We chose to work between 
-% two vectors pmax and pmin, framing initial values, and to normalize them so 
-% that pmin becomes 0 and pmax becomes 1.
+
+%% Calibration using pertubed initial data
+% We compute the impedance response of the ECM model for a given set of parameters and use it as an input in our
+% calibration algorithm. We choose a initial guess for the parameters that is perturbed from the true values. The
+% optimization algorithm should be able to recover the true parameters.
+
 
 omega = logspace(-4, 2, 50);
 params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
@@ -108,19 +114,25 @@ scales = [pmin, pmax];
 feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
 [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
+
+%%
+% plot the results
+
 feis.plotresults_thevenin(best_params, fitting_error);
 
 %% Calibration from experimental data
 % We use data from the Ank's paper (http://dx.doi.org/10.1149/1945-7111/ad14d0) to calibrate the ECM parameters.
+%
 
 filename = fullfile(battmoDir(), 'Battery', 'EquivalentCircuitModel', 'calibration', 'utils', 'ank_data.csv');
 data = readmatrix(filename);
+
 omega    = data(:, 1);
 Z_re_exp = data(:, 2);
 Z_im_exp = data(:, 3);
 
 %%
-% Initial data
+% We choose the following Initial guess
 
 params0 = [3.84e-03,...
            2.71e-03,...
@@ -141,7 +153,8 @@ feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 feis.plotresults_thevenin(best_params, fitting_error);
 
 %% Synthetic data from P2D model
-% We use impedance data generated from the P2d model with Chen et al's paper (http://dx.doi.org/10.1149/1945-7111/ab9050) parameters
+% We use impedance data generated from the P2d model with Chen et al's paper
+% (http://dx.doi.org/10.1149/1945-7111/ab9050) parameters
 
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
 params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
