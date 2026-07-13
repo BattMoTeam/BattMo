@@ -1,5 +1,4 @@
-function param_dependency()
-    mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
+function param_dependency(jsonstruct)
     
     % 1. Chargement des données (Conservez votre méthode de chargement ici)
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
@@ -18,8 +17,6 @@ function param_dependency()
         jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 0.2;
     
     end
-    
-  
 
     c_ne = 29.866*mol/litre; 
     c_pe = 17.038*mol/litre; 
@@ -103,11 +100,26 @@ function updatePlot(ax, lbl, jsonstruct, c_ne, c_pe, sld1, sld2, sld3)
     
     try
         % 4. Exécution de BattMo
+
         [model, inputparams, ~] = setupModelFromJson(jsonstruct);
+
+        %%
+        % We use a dedicated function to compute the initial state for the given electrode concentrations.
         initstate = initStateChen2020(model, c_ne, c_pe);
-        
-        impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
-    
+        options = [];
+        options.stateInitialization.initializationSetup = 'given state';
+        options.stateInitialization.computeSteadyState = false;
+
+        %%
+        % setup input for |ImpedanceSolver|
+        extrastructs = [];
+        extrastructs.initstate = initstate;
+
+
+        %%
+        % setup impedance solver and compute the Impedance for a given set of frequencies
+        impsolv = ImpedanceSolver(inputparams, options, extrastructs);
+
         frequences = logspace(-2, 3, 30); 
         Z = impsolv.computeImpedance(frequences);
         
