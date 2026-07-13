@@ -11,8 +11,6 @@ classdef EquivalentCircuitModel < BaseModel
         R2
         C2
         initSOC
-        initOverpotential2
-        lowerVoltageCutoff
 
         I
         totalTime
@@ -25,6 +23,7 @@ classdef EquivalentCircuitModel < BaseModel
         C1func
         R2func
         C2func
+        
     end
 
     methods
@@ -43,8 +42,6 @@ classdef EquivalentCircuitModel < BaseModel
                        'R2'                 , ...
                        'C2'                 , ...
                        'initSOC'            , ...
-                       'initOverpotential2' , ...
-                       'lowerVoltageCutoff' , ...
                        'I'                  , ...
                        'totalTime'};
 
@@ -52,11 +49,11 @@ classdef EquivalentCircuitModel < BaseModel
 
             model.OCPfunc = setupFunction(model.OCP);
             model.Ifunc   = setupFunction(model.I);
-            model.R0func   = setupFunction(model.R0);
-            model.R1func   = setupFunction(model.R1);
-            model.C1func   = setupFunction(model.C1);
-            model.R2func   = setupFunction(model.R2);
-            model.C2func   = setupFunction(model.C2);
+            model.R0func  = setupFunction(model.R0);
+            model.R1func  = setupFunction(model.R1);
+            model.C1func  = setupFunction(model.C1);
+            model.R2func  = setupFunction(model.R2);
+            model.C2func  = setupFunction(model.C2);
             
         end
 
@@ -72,7 +69,7 @@ classdef EquivalentCircuitModel < BaseModel
             %
             varnames{end + 1} = 'U';
             
-            varnames{end + 1} = 'UR';            
+            varnames{end + 1} = 'U0';            
             varnames{end + 1} = 'U1';
             varnames{end + 1} = 'U2';
             varnames{end + 1} = 'SOC';
@@ -83,9 +80,9 @@ classdef EquivalentCircuitModel < BaseModel
 
             model = model.registerVarNames(varnames);
 
-            fn = @EquivalentCircuitModel.updateUR;
+            fn = @EquivalentCircuitModel.updateU0;
             inputnames = {'I'};
-            model = model.registerPropFunction({'UR', fn, inputnames});
+            model = model.registerPropFunction({'U0', fn, inputnames});
 
             fn = @EquivalentCircuitModel.updatedU1dt;
             inputnames = {'U1', 'I'};
@@ -100,14 +97,18 @@ classdef EquivalentCircuitModel < BaseModel
             model = model.registerPropFunction({'dSOCdt', fn, inputnames});
 
             fn = @EquivalentCircuitModel.updateU;            
-            inputnames = {'SOC', 'U1', 'U2', 'UR'};
-            model = model.registerPropFunction({'U', fn, inputnames});            
+            inputnames = {'OCP', 'U1', 'U2', 'U0'};
+            model = model.registerPropFunction({'U', fn, inputnames});
+
+            fn = @EquivalentCircuitModel.updateOCP;            
+            inputnames = {'SOC'};
+            model = model.registerPropFunction({'OCP', fn, inputnames});
 
         end
 
-        function state = updateUR(model, state)
+        function state = updateU0(model, state)
 
-            state.UR = model.R0func(state.SOC)*state.I;
+            state.U0 = model.R0func(state.SOC)*state.I;
             
         end
         
@@ -133,11 +134,16 @@ classdef EquivalentCircuitModel < BaseModel
         
         function state = updateU(model, state)
 
-            OCP = model.OCPfunc(state.SOC);
-            state.U = OCP - (state.U1 + state.U2 + state.UR);
+            state.U = state.OCP - (state.U1 + state.U2 + state.U0);
             
         end
 
+        function state = updateOCP(model, state)
+            
+            state.OCP = model.OCPfunc(state.SOC);
+            
+        end
+        
         function state0 = setupInitialCondition(model, SOC0)
 
             state0.U1  = 0;
