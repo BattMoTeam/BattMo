@@ -9,10 +9,6 @@ jsonstruct_base.NegativeElectrode.Coating.ActiveMaterial.Interface.useDoubleLaye
 c_ne = 29.866*mol/litre; 
 c_pe = 17.038*mol/litre; 
 
-
-%% 
-% This slider allows logarithmic changes: new_val = val_init * 10^p.
-
 p_diffusion              = 0;
 p_reactionRate           = 0;
 p_doubleLayerCapacitance = 0;
@@ -125,6 +121,7 @@ Z_im_exp = data(:, 3);
 
 %%
 % Initial data
+
 params0 = [3.84e-03,...
            2.71e-03,...
            6.00e+03,...
@@ -143,8 +140,8 @@ feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
 
 feis.plotresults_thevenin(best_params, fitting_error);
 
-%% 
-% We use data from the P2d model using Chen's paper (http://dx.doi.org/10.1149/1945-7111/ab9050) data
+%% Synthetic data from P2D model
+% We use impedance data generated from the P2d model with Chen et al's paper (http://dx.doi.org/10.1149/1945-7111/ab9050) parameters
 
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
 params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
