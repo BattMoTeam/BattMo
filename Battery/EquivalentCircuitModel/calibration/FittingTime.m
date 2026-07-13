@@ -148,7 +148,7 @@ classdef FittingTime
                 % 2. Erreur instantanée
                 err = ftime.voltage_exp(k) - V_ecm(k);
                 
-                % 3. Si le gradient est demandé (nargout > 1)
+
                 if nargout > 1
                     % Dérivées partielles de V_ecm par rapport à chaque paramètre
                     dV_dR0 = -I;
@@ -291,6 +291,91 @@ classdef FittingTime
             fprintf('C1 : %.4e Farads\n', C1);
             fprintf('R2 : %.4e Ohms\n', R2);
             fprintf('C2 : %.4e Farads\n', C2);
+        end
+
+
+        function plottest(ftime, best_params)
+            % 1. Recalculate the final voltage trajectory using best_params
+            p_safe = max(best_params, 1e-8);
+            R0 = p_safe(1);
+            R1 = p_safe(2);
+            C1 = p_safe(3);
+            R2 = p_safe(4);
+            C2 = p_safe(5);
+            
+            % Get original training time grid as a column vector
+            time_vec = ftime.time_vec(:); 
+            
+            % Define the 3-pulse test current profile
+            current_test = ones(size(time_vec));
+            current_test(time_vec >= 0   & time_vec < 200)  = -5;  
+            current_test(time_vec >= 200 & time_vec < 400)  = 5;
+            current_test(time_vec >= 400 & time_vec < 700)  = -5;  
+            current_test(time_vec >= 700 & time_vec <= 1000) = 0;  
+            
+            
+            [time_test, current_test_p2d, voltage_test, ocv_test] = loadP2dVoltage(time_vec, current_test);
+            
+            % Force all outputs to be column vectors to avoid any plot orientation errors
+            time_test        = time_test(:);
+            current_test_p2d = current_test_p2d(:);
+            voltage_test     = voltage_test(:);
+            ocv_test         = ocv_test(:);
+            
+            % Synchronize the simulation length with the actual P2D points (e.g., 99)
+            N_points = length(time_test);
+            
+            % Initialize ECM state variables
+            V_ecm = zeros(N_points, 1);
+            Uc1 = 0; 
+            Uc2 = 0;
+            
+
+            for k = 1:N_points
+                if k == 1
+                    dt = time_test(1);
+                else
+                    dt = time_test(k) - time_test(k-1);
+                end
+                I = current_test_p2d(k); % Use the actual simulated current from BattMo
+                V_ocv = ocv_test(k);     % Use the profile-specific OCV from BattMo
+                
+                V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
+                
+                Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
+                Uc2 = Uc2 + (-Uc2 / (R2 * C2) + I / C2) * dt;
+            end
+            
+            % 2. Generate time-domain plots using the synchronized time_test grid
+            figure('Name', 'ECM Time Domain Validation Results', 'NumberTitle', 'off');
+            
+            % Subplot 1: Applied Current Profile
+            subplot(3,1,1);
+            plot(time_test, current_test_p2d, 'k', 'LineWidth', 1.5);
+            grid on;
+            title('Applied Current Profile (P2D Simulated Range)');
+            xlabel('Time (s)');
+            ylabel('Current (A)');
+            
+            % Subplot 2: Voltage Comparison (P2D vs ECM)
+            subplot(3,1,2);
+            plot(time_test, voltage_test, 'r-', 'LineWidth', 1.5); 
+            hold on;
+            plot(time_test, V_ecm, 'b--', 'LineWidth', 1.5);        
+            grid on;
+            legend('Ground Truth: P2D Model', 'Validated ECM', 'Location', 'best');
+            title('Cell Voltage Validation');
+            xlabel('Time (s)');
+            ylabel('Voltage (V)'); 
+            
+            % Subplot 3: Instantaneous Residual Error (V_p2d - V_ecm)
+            subplot(3,1,3);
+            error_vec = voltage_test - V_ecm; 
+            plot(time_test, error_vec, 'g', 'LineWidth', 1.2);
+            grid on;
+            title('Residual Error (V_{p2d} - V_{ecm})');
+            xlabel('Time (s)');
+            ylabel('Error (V)');
         end
     end
 

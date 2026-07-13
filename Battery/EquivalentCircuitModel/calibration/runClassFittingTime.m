@@ -30,7 +30,9 @@ function p = runClassFittingTime(pr)
     if nargin == 4 || nargin == 1
     ftime.plotresults_thevenin(best_params, fitting_error);
     
-    ftime.printResults(best_params, fitting_error);          % to be changed btw Warburg and Thevenin
+    ftime.printResults(best_params, fitting_error);          
+    
+    ftime.plottest(best_params)
     end
 
 end

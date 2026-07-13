@@ -6,7 +6,7 @@ function validateEcmTime(file_name)
     
     % Set default file name if no argument is provided
     if nargin < 1
-        file_name = 'ecm_map_results_10.mat'; 
+        file_name = 'ecm_map_results_08.mat'; 
     end
 
     % Check if the file exists and load it

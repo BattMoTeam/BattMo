@@ -24,13 +24,13 @@ function [time_sim, I_p2d, V_p2d, ocv_vec] = loadP2dVoltage(time_vec, current_ex
     schedule_p2d.control.src = @(t, varargin) interp1(time_vec, current_exp, t, 'linear', 0);
     schedule_p2d.control.Control = struct('stopFunction', @(model, state, state0) false);
     
-    fprintf('Simulation of the P2D physical model (BattMo) in progress...\n');
+
     [~, states_p2d, ~] = simulateScheduleAD(state_init, model, schedule_p2d);
     
     N_points_sim = length(states_p2d);
     V_p2d    = zeros(N_points_sim, 1);
     I_p2d    = zeros(N_points_sim, 1);
-    time_sim = zeros(N_points_sim, 1); % On le nomme distinctement
+    time_sim = zeros(N_points_sim, 1);
     
     pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
     pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
