@@ -210,6 +210,7 @@ classdef EquivalentCircuitModel < BaseModel
             SOC = zeros(length(t_out), 1);
             U = zeros(length(t_out), 1);
             I = zeros(length(t_out), 1);                        %gagne du temps en allouant déjà la mémoire
+
             for i = 1:length(t_out)
                 
                 state = model.setupStateFromY(y_out(i, :));
