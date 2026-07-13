@@ -1,6 +1,6 @@
 function jsonstruct = createParametersECM()
 
-    % create example data set for ECM
+    % create example data set for the ECM model
     
     jsonstruct.nominalcellcapacity = 63.7;
     jsonstruct.initSOC             = 1.0;
