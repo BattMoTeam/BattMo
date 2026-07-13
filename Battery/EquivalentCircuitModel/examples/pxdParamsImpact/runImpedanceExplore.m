@@ -17,5 +17,7 @@ end
 
 impexp = ImpedanceExplore(jsonstruct);
 
-close all
+% delete(findall(0, 'Type', 'Figure'));
+% impexp.parameters{1}{1} = 'PositiveElectrode';
+% impexp.setupDefaultParameterLegendNames();
 impexp.start();

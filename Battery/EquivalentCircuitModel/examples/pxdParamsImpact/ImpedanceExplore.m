@@ -3,7 +3,6 @@ classdef ImpedanceExplore < handle
     properties (SetAccess = private)
 
         jsonstruct
-        baseValues
         
     end
     
@@ -24,7 +23,6 @@ classdef ImpedanceExplore < handle
 
             impexp.jsonstruct = jsonstruct;
             impexp.setupDefaultParameters()
-            impexp.baseValues = impexp.getParameterValues();
             
         end
 
@@ -51,6 +49,15 @@ classdef ImpedanceExplore < handle
                                            'Negative Electrode Reaction Rate Constant', ...
                                            'Negative Electrode Double Layer Capacitance'};
 
+        end
+
+        function setupDefaultParameterLegendNames(impexp)
+
+            params = impexp.parameters;
+            for iparam = 1 : numel(params)
+                impexp.parameterLegendNames{iparam} = strjoin(params{iparam});
+            end
+            
         end
         
         function updateImpedance(impexp)
@@ -120,7 +127,7 @@ classdef ImpedanceExplore < handle
             sliders = {};
 
             pnames = impexp.parameterLegendNames;
-            vals   = impexp.baseValues;
+            vals   = impexp.getParameterValues();
             % TODO : setup logic to get y positions based on number of parameters
             yposs  = [240, 150, 60];
             
@@ -151,7 +158,7 @@ classdef ImpedanceExplore < handle
 
             try
 
-                baseValues = impexp.baseValues;
+                baseValues = impexp.getParameterValues();
                 
                 for ival = 1 : numel(baseValues)
                     vals(ival) = baseValues(ival)*(10^(sliders{ival}.Value));
