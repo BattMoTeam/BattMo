@@ -13,6 +13,7 @@
    output
    geometryinput
    batteryphysics
+   ecm
    elchemsystems
    optimisation
    modeling
