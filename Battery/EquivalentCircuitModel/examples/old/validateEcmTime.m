@@ -17,7 +17,6 @@ function validateEcmTime(file_name)
     end
     
     
-    
     %  Generation of the "Ground Truth": Continuous P2D discharge (BattMo)
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
@@ -57,7 +56,6 @@ function validateEcmTime(file_name)
     time_vec = zeros(N_points, 1);
     V_p2d = zeros(N_points, 1);
     I_p2d = zeros(N_points, 1);
-
 
     pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
     pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;

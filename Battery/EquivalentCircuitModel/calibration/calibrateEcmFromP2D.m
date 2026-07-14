@@ -1,15 +1,10 @@
-function ecm_table = mapEisToEcmTable(soc_step)
+function jsonstruct_ecm = calibrateEcmFromP2D(jsonstruct_p2d, soc_step)
+
     % soc_step : soc increment between 0 and 1. Start from soc = 1.
     
     %% 1. Initialisation
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-    jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-    
-    jsonstruct = mergeJsonStructs({jsonstruct_material, ...
-                                   jsonstruct_geometry});
-   
-    
-    [model, inputparams] = setupModelFromJson(jsonstruct);
+
+    [model, inputparams] = setupModelFromJson(jsonstruct_p2d);
     state_current = setupInitialState(model);
     if nargin < 1
         soc_step = 0.1; 
@@ -32,7 +27,6 @@ function ecm_table = mapEisToEcmTable(soc_step)
         
         %% extraction de l'EIS par computeImpedance()
         options = struct();
-
         options.stateInitialization.computeSteadyState = false;
 
         options.stateInitialization.initializationSetup = 'given state'; 
@@ -42,7 +36,6 @@ function ecm_table = mapEisToEcmTable(soc_step)
         
         fprintf('Linearisation...\n');
         Z = impsolv.computeImpedance(freq);
-        
 
         Z_re = real(Z)';
         Z_im = imag(Z)';
@@ -50,7 +43,7 @@ function ecm_table = mapEisToEcmTable(soc_step)
         omega = (2*pi).*freq;
 
         %% extraction des paramètres ECM
-        p = runClassFitting(Z_re, Z_im, omega); 
+        p = runFitting(Z_re, Z_im, omega); 
         
         % Stockage dans la matrice de résultats
         results_matrix(i, 1) = current_soc;
@@ -61,7 +54,7 @@ function ecm_table = mapEisToEcmTable(soc_step)
             fprintf(' %02d %% discharge...\n', soc_step);
             inputparams.Control.controlPolicy = 'CCDischarge';
             inputparams.Control.DRate = C_rate;
-            jsonstruct.TimeStepping.tmax = t_xpercent;
+            jsonstruct_p2d.TimeStepping.tmax = t_xpercent;
             
             model.Control = model.setupControl(inputparams.Control);
             
