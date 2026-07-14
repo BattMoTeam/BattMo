@@ -21,7 +21,7 @@ classdef ImpedanceExplore < handle
 
         function impexp = ImpedanceExplore(jsonstruct)
 
-            [model, inputparams, jsonstruct] = setupModelFromJson(jsonstruct);
+            model = setupModelFromJson(jsonstruct);
             impexp.jsonstruct = jsonstruct;
             impexp.model      = model;
             

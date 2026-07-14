@@ -17,7 +17,14 @@ end
 
 impexp = ImpedanceExplore(jsonstruct);
 
-% delete(findall(0, 'Type', 'Figure'));
-% impexp.parameters{1}{1} = 'PositiveElectrode';
-% impexp.setupDefaultParameterLegendNames();
+erase_previous_figure = true;
+if erase_previous_figure
+    delete(findall(0, 'Type', 'Figure'));
+end
+
+change_a_parameter = true;
+if change_a_parameter
+    impexp.parameters{1} ={'PositiveElectrode', 'Coating', 'ActiveMaterial', 'Interface', 'volumetricSurfaceArea'};
+end
+
 impexp.start();
