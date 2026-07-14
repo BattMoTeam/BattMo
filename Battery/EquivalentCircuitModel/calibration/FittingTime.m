@@ -399,18 +399,19 @@ classdef FittingTime
             C2 = p_safe(5);
             
             % Get original training time grid as a column vector
-            time_vec = ftime.time_vec(:); 
+            time_test = ftime.time_vec(:); 
+            current_test = current_test(:);
             
-            [voltage_test, ocv_test] = ftime.setupOCP(time_vec, current_test);
-            
+            [voltage_test, ocv_test, time_test_sim, current_test_sim] = ftime.setupOCP(time_test, current_test);
+    
             % Force all outputs to be column vectors to avoid any plot orientation errors
-            time_test        = time_test(:);
-            current_test_p2d = current_test_p2d(:);
             voltage_test     = voltage_test(:);
             ocv_test         = ocv_test(:);
+            time_test_sim    = time_test_sim(:);
+            current_test_sim = current_test_sim(:);
             
             % Synchronize the simulation length with the actual P2D points (e.g., 99)
-            N_points = length(time_test);
+            N_points = length(time_test_sim);
             
             % Initialize ECM state variables
             V_ecm = zeros(N_points, 1);
@@ -419,13 +420,12 @@ classdef FittingTime
 
             for k = 1:N_points
                 if k == 1
-                    dt = time_test(1);
+                    dt = time_test_sim(1);
                 else
-                    dt = time_test(k) - time_test(k-1);
+                    dt = time_test_sim(k) - time_test_sim(k-1);
                 end
-                I = current_test_p2d(k); % Use the actual simulated current from BattMo
-                V_ocv = ocv_test(k);     % Use the profile-specific OCV from BattMo
-                
+                I = current_test_sim(k); % Courant réel synchronisé simulé par BattMo
+                V_ocv = ocv_test(k);     % OCV réel synchronisé simulé par BattMo
                 V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
                 
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
@@ -437,7 +437,7 @@ classdef FittingTime
             
             % Subplot 1: Applied Current Profile
             subplot(3,1,1);
-            plot(time_test, current_test_p2d, 'k', 'LineWidth', 1.5);
+            plot(time_test_sim, current_test_sim, 'k', 'LineWidth', 1.5);
             grid on;
             title('Applied Current Profile (P2D Simulated Range)');
             xlabel('Time (s)');
@@ -445,9 +445,9 @@ classdef FittingTime
             
             % Subplot 2: Voltage Comparison (P2D vs ECM)
             subplot(3,1,2);
-            plot(time_test, voltage_test, 'r-', 'LineWidth', 1.5); 
+            plot(time_test_sim, voltage_test, 'r-', 'LineWidth', 1.5); 
             hold on;
-            plot(time_test, V_ecm, 'b--', 'LineWidth', 1.5);        
+            plot(time_test_sim, V_ecm, 'b--', 'LineWidth', 1.5);        
             grid on;
             legend('Ground Truth: P2D Model', 'Validated ECM', 'Location', 'best');
             title('Cell Voltage Validation');
@@ -457,7 +457,7 @@ classdef FittingTime
             % Subplot 3: Instantaneous Residual Error (V_p2d - V_ecm)
             subplot(3,1,3);
             error_vec = voltage_test - V_ecm; 
-            plot(time_test, error_vec, 'g', 'LineWidth', 1.2);
+            plot(time_test_sim, error_vec, 'g', 'LineWidth', 1.2);
             grid on;
             title('Residual Error (V_{p2d} - V_{ecm})');
             xlabel('Time (s)');
