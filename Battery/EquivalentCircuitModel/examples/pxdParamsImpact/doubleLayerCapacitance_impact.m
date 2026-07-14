@@ -28,9 +28,9 @@ c_pe = 17.038*mol/litre; % initial concentration at positive electrode
 
 initstate = initStateChen2020(model, c_ne, c_pe);
 
-b = logspace(-2, 2, 20);                        %change here
+b = logspace(-2, 2, 5);                        %change here
 
-frequences = logspace(-2, 4, 30); 
+frequences = logspace(-4, 4, 200); 
 
 
 figure;
@@ -44,7 +44,15 @@ for i = 1:length(b)
     [model, inputparams, ~] = setupModelFromJson(jsonstruct);
 
     % inputparams.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);
-    impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
+
+    options = [];
+    options.stateInitialization.initializationSetup = 'given state';
+    options.stateInitialization.computeSteadyState = false;
+
+    extrastructs = [];
+    extrastructs.initstate = initstate;
+    
+    impsolv = ImpedanceSolver(inputparams, options, extrastructs);
     
     Z = impsolv.computeImpedance(frequences);
 

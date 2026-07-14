@@ -49,6 +49,7 @@ extrastructs.initstate = initstate;
 
 %%
 % setup impedance solver and compute the Impedance for a given set of frequencies
+
 impsolv = ImpedanceSolver(inputparams, options, extrastructs);
 frequencies = logspace(-2, 3, 30); 
 
@@ -99,26 +100,26 @@ title('Interactive Nyquist Diagram');
 % optimization algorithm should be able to recover the true parameters.
 
 
+%%
+% fetch data
 omega = logspace(-4, 2, 50);
-params = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];
 [Z_re_exp, Z_im_exp] = load_nyquist(params, omega);
 
-params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
+eisdata = struct('omega', omega, ...
+                 'Z_re_exp', Z_re_exp, ...
+                 'Z_im_exp', Z_im_exp);
 
-a = 1000;
+%%
+% Initial parameters for the calibration
+params0 = [0.05052; 1.12673; 59119.9; 0.03155; 11054.0];  % initial condition: C1>2*C2
 
-pmin = params0 / a;
-pmax = params0 * a;
-scales = [pmin, pmax];
-
-feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
-
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
+feis = FittingEIS(eisdata, params0);
+[best_params, fitting_error] = feis.run();
 
 %%
 % plot the results
 
-feis.plotresults_thevenin(best_params, fitting_error);
+feis.plotResults(best_params, fitting_error);
 
 %% Calibration from experimental data
 % We use data from the Ank's paper (http://dx.doi.org/10.1149/1945-7111/ad14d0) to calibrate the ECM parameters.
@@ -127,46 +128,43 @@ feis.plotresults_thevenin(best_params, fitting_error);
 filename = fullfile(battmoDir(), 'Battery', 'EquivalentCircuitModel', 'calibration', 'utils', 'ank_data.csv');
 data = readmatrix(filename);
 
-omega    = data(:, 1);
-Z_re_exp = data(:, 2);
-Z_im_exp = data(:, 3);
+eisdata.omega    = data(:, 1);
+eisdata.Z_re_exp = data(:, 2);
+eisdata.Z_im_exp = data(:, 3);
 
 %%
 % We choose the following Initial guess
 
-params0 = [3.84e-03,...
-           2.71e-03,...
-           6.00e+03,...
-           9.48e-04,...
-           1.11e+01];              % initial condition: C1>2*C2
+params0 = [3.84e-03; ...
+           2.71e-03; ...
+           6.00e+03; ...
+           9.48e-04; ...
+           1.11e+01]; % initial condition: C1>2*C2
 
-a = 1000;
 
-pmin = params0 / a;
-pmax = params0 * a;
-scales = [pmin, pmax];
+feis = FittingEIS(eisdata, params0);
 
-feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
-
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
-
-feis.plotresults_thevenin(best_params, fitting_error);
+[best_params, fitting_error] = feis.run();
+feis.plotResults(best_params, fitting_error);
+feis.printResults(best_params, fitting_error);
 
 %% Synthetic data from P2D model
 % We use impedance data generated from the P2d model with Chen et al's paper
 % (http://dx.doi.org/10.1149/1945-7111/ab9050) parameters
 
+%%
+% fetch Chen data
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
-params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
+eisdata = struct('omega', omega, ...
+                 'Z_re_exp', Z_re_exp, ...
+                 'Z_im_exp', Z_im_exp);
 
-a = 1000;
+%%
+% initial parameters
+params0 = [0.05052; 1.12673; 59119.9; 0.03155; 11054.0];  % initial condition: C1>2*C2
 
-pmin = params0 / a;
-pmax = params0 * a;
-scales = [pmin, pmax];
+feis = FittingEIS(eisdata, params0);
 
-feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
-
-[~, ~, best_params, fitting_error] = feis.optimizationBFGS();
-feis.plotresults_thevenin(best_params, fitting_error);
-
+[best_params, fitting_error] = feis.run();
+feis.plotResults(best_params, fitting_error);
+feis.printResults(best_params, fitting_error);
