@@ -1,8 +1,9 @@
 classdef ImpedanceExplore < handle
 
-    properties (SetAccess = private)
+    properties (SetAccess = immutable)
 
         jsonstruct
+        model
         
     end
     
@@ -13,7 +14,6 @@ classdef ImpedanceExplore < handle
         soc = 1
         
         parameters
-        parameterLegendNames
         
     end
     
@@ -21,11 +21,22 @@ classdef ImpedanceExplore < handle
 
         function impexp = ImpedanceExplore(jsonstruct)
 
+            [model, inputparams, jsonstruct] = setupModelFromJson(jsonstruct);
             impexp.jsonstruct = jsonstruct;
+            impexp.model      = model;
+            
             impexp.setupDefaultParameters()
             
         end
 
+        function viewOptions(impexp)
+
+            fjv = flattenJsonStruct(impexp.jsonstruct, 'doprint', false);
+            fprintf('\n\n*** List of all the scalar parameters in the model ***\n');
+            fjv.print('filter', {'value', @(val) (isnumeric(val) && isscalar(val))});
+            
+        end
+            
         function setupDefaultParameters(impexp)
 
             elyte   = 'Electrolyte';
@@ -42,28 +53,18 @@ classdef ImpedanceExplore < handle
             impexp.parameters = {{ne, co, am, sd,  'referenceDiffusionCoefficient'}, ...
                                  {ne, co, am, itf, 'reactionRateConstant'}, ...
                                  {ne, co, am, itf, 'doubleLayerCapacitance'}};
-            
-            %%
-            % TODO : setup default way to get legend
-            impexp.parameterLegendNames = {'Negative Electrode Solid Diffusion Coefficient', ...
-                                           'Negative Electrode Reaction Rate Constant', ...
-                                           'Negative Electrode Double Layer Capacitance'};
 
         end
 
-        function setupDefaultParameterLegendNames(impexp)
+        function pnames = setupParameterLegendNames(impexp)
 
             params = impexp.parameters;
             for iparam = 1 : numel(params)
-                impexp.parameterLegendNames{iparam} = strjoin(params{iparam});
+                pnames{iparam} = strjoin(params{iparam});
             end
             
         end
         
-        function updateImpedance(impexp)
-            
-        end
-
         function sld = setupSlider(imexp, fig, ypos, txt)
             
             uilabel(fig                                 , ...
@@ -126,7 +127,7 @@ classdef ImpedanceExplore < handle
 
             sliders = {};
 
-            pnames = impexp.parameterLegendNames;
+            pnames = impexp.setupParameterLegendNames();
             vals   = impexp.getParameterValues();
             % TODO : setup logic to get y positions based on number of parameters
             yposs  = [240, 150, 60];
