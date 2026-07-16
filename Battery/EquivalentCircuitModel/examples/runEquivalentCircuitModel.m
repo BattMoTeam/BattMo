@@ -59,7 +59,7 @@ ylabel('C2 / Ohm');
 % The input current has been passed to the model
 
 figure
-totalTime = model.totalTime
+totalTime = model.totalTime;
 t = linspace(0, totalTime, 200); 
 plot(t/hour, model.Ifunc(t), 'o-');
 title('Input current')
