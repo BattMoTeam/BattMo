@@ -1,3 +1,13 @@
+
+%% Example of variation of one parameter: double layer capacitance
+% We offer an example of variations of the EIS spectrum of the P2D model
+% when the double layer capacitance changes. 
+
+
+%%
+% First we take the original model developped by Chen et al. in 2020
+
+
 mrstModule add ad-core mrst-gui mpfa agmg linearsolvers
     
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
@@ -28,22 +38,26 @@ c_pe = 17.038*mol/litre; % initial concentration at positive electrode
 
 initstate = initStateChen2020(model, c_ne, c_pe);
 
-b = logspace(-2, 2, 5);                        %change here
+%%
+% Then we chose a range of value we evaluate the double layer capacitance
+b = logspace(-2, 2, 5);                        
 
 frequences = logspace(-4, 4, 200); 
 
 
+%%
+% Finally we plot the comparative results on one chart.
 figure;
 hold on;
+
+
 for i = 1:length(b)
     
-    fprintf('compute impedance for doubleLayerCapacitance = %.2e ... ', b(i));  %change here
+    fprintf('compute impedance for doubleLayerCapacitance = %.2e ... ', b(i));
 
     tic
-    jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);        %change here
+    jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);      
     [model, inputparams, ~] = setupModelFromJson(jsonstruct);
-
-    % inputparams.(ne).(co).(am).(itf).doubleLayerCapacitance = b(i);
 
     options = [];
     options.stateInitialization.initializationSetup = 'given state';
