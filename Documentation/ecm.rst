@@ -15,19 +15,15 @@ ECM fitting for lithium-ion batteries
 Abstract
 ^^^^^^^^
 
-Batteries become a central piece of electrification of our energy consumption,
-especially for transports. To improve their performances, innovation is getting
-faster and research is very active. But before building a battery, it is
-important to have an idea of how it will react in different conditions, and
-modeling appears useful. It is necessary to work on complex models that fit the
-best reality, but also to have powerful models that are a lot simpler. This
-model could give important information such as State of Charge or State of
-Health, without spending a lot of time, with the minimum complexity.
+The simulations tools that are used to monitor battery performances include varying degree of physical
+complexity. On one side, we have P2D models based on the Doyle-Fuller-Newman approach but it can be very
+computationally demanding and with many parameters difficult to parameterize. On the other side, we have the
+Equivalent Circuit Models (ECM) which are used for real-time Battery Management Systems (BMS) due to
+their low computational cost.
 
-We present a work on Equivalent Circuit Model to simulate a complete battery
-through only a few parameters. The battery management system needs the value of
-those parameters to be efficient. ECM are now the most used model for battery
-management systems.
+In this work, we aim at bridging the two models, that is developing a methodology which allows us to
+transfer the parameters between the models. We present an automated calibration workflow in BattMo to extract
+2-RC Thevenin parameters from synthetic (P2D) and experimental Electrochemical Impedance Spectroscopy (EIS) data.
 
 Getting the impedance from PXD Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

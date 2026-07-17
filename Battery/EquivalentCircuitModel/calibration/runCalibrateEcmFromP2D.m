@@ -17,12 +17,12 @@ jsonstruct = calibrateEcmFromP2D(jsonstruct_p2d, soc_step);
 
 %% 
 % plot the results
-
+soc = linspace(0.1, 1.0, 100);
 figure
 tiledlayout(2, 3, 'tileindexing', 'columnmajor');
 
 nexttile
-%%
+
 % the function |setupFunction| creates a function handle from the battmo function input format.
 fn = setupFunction(jsonstruct.OCP)
 plot(soc, fn(soc))
