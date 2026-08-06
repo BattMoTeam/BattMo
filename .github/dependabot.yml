@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Group to a single PR
+    groups:
+      actions:
+        patterns:
+          - "*"
+    # Wait 7 days for newly published broken or compromised releases
+    cooldown:
+      default-days: 7
+
+  # Update Python packages in Documentation/requirements.txt
+  - package-ecosystem: "pip"
+    directory: "/Documentation"
+    schedule:
+      interval: "weekly"
+    groups:
+      documentation-python:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
