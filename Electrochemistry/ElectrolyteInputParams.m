@@ -16,6 +16,7 @@ classdef ElectrolyteInputParams < ComponentInputParams
         % Region support for bruggeman coefficient
         useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
                                        % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
+        bgfactor % Constant multiplicative factor applied to each region Bruggeman coefficient
         regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
                                     % - NegativeElectrode 
                                     % - PositiveElectrode 
@@ -43,6 +44,7 @@ classdef ElectrolyteInputParams < ComponentInputParams
         function inputparams = ElectrolyteInputParams(jsonstruct)
 
             jsonstruct = setDefaultStructField(jsonstruct, 'useRegionBruggemanCoefficients', false);
+            jsonstruct = setDefaultStructField(jsonstruct, 'bgfactor', 1);
             jsonstruct = setDefaultStructField(jsonstruct, {'species', 'chargeNumber'}, 1);
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);

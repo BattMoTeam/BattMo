@@ -20,6 +20,7 @@ classdef Electrolyte < BaseModel
         %
         useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
                                        % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
+        bgfactor % Constant multiplicative factor applied to each region Bruggeman coefficient
         regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
                                     % - NegativeElectrode 
                                     % - PositiveElectrode 
@@ -65,6 +66,7 @@ classdef Electrolyte < BaseModel
                        'diffusionCoefficient'                 , ...
                        'bruggemanCoefficient'                 , ...
                        'useRegionBruggemanCoefficients'       , ... 
+                       'bgfactor'                             , ...
                        'regionBruggemanCoefficients'          , ... 
                        'regionTags'                           , ... 
                        'thermalConductivity'                  , ...
@@ -84,9 +86,9 @@ classdef Electrolyte < BaseModel
                 bvals = model.regionBruggemanCoefficients;
 
                 b = NaN(nc, 1);
-                b(tags == 1) = bvals.NegativeElectrode;
-                b(tags == 2) = bvals.PositiveElectrode;
-                b(tags == 3) = bvals.Separator;
+                b(tags == 1) = model.bgfactor.*bvals.NegativeElectrode;
+                b(tags == 2) = model.bgfactor.*bvals.PositiveElectrode;
+                b(tags == 3) = model.bgfactor.*bvals.Separator;
 
                 model.bruggemanCoefficient = b;
             end

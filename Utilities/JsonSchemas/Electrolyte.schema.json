@@ -60,6 +60,10 @@
     "useRegionBruggemanCoefficients" : {
       "type" : "boolean",
       "description" : "Set to true if the electrolye region for each component should get a specific Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false"},
+    "bgfactor" : {
+      "type" : "number",
+      "default" : 1,
+      "description" : "Constant dimensionless multiplier applied to each regional Bruggeman coefficient when useRegionBruggemanCoefficients is true"},
     "regionBruggemanCoefficients" : {
       "type" : "object",
       "description" : "Bruggeman coefficients for each region",
