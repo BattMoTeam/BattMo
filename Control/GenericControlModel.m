@@ -94,7 +94,79 @@ classdef GenericControlModel < ControlModel
         
         function schedule = setupSchedule(model, jsonstruct)
 
-            schedule.is_used = false;
+            if nargin > 1 && isfield(jsonstruct, 'TimeStepping')
+                timeSteppingParams = jsonstruct.TimeStepping;
+            else
+                timeSteppingParams = [];
+            end
+
+            step    = model.setupScheduleStep(timeSteppingParams);
+            control = model.setupScheduleControl();
+
+            schedule = struct('step', step, ...
+                              'control', control);
+
+        end
+
+        function step = setupScheduleStep(model, timeSteppingParams)
+
+            if nargin > 1
+                params = timeSteppingParams;
+            else
+                params = [];
+            end
+
+            controlsteps = model.controlsteps;
+            dts = cellfun(@(ctrlstep) ctrlstep.timeStepSize, controlsteps);
+
+            if isAssigned(params, {'totalTime'})
+                totalTime = params.totalTime;
+                dt = min(dts);
+                nsteps = ceil(totalTime/dt);
+                vals = repmat(dt, nsteps, 1);
+                vals(end) = totalTime - sum(vals(1:end-1));
+            else
+                vals = [];
+                for ictrl = 1 : numel(controlsteps)
+                    ctrlstep = controlsteps{ictrl};
+                    dt = ctrlstep.timeStepSize;
+                    termination = ctrlstep.termination;
+                    if strcmp(termination.quantity, 'time')
+                        nsteps = ceil(termination.value/dt);
+                        ctrlvals = repmat(dt, nsteps, 1);
+                        ctrlvals(end) = termination.value - sum(ctrlvals(1:end-1));
+                    else
+                        nsteps = 1000;
+                        ctrlvals = repmat(dt, nsteps, 1);
+                    end
+                    vals = [vals; ctrlvals]; %#ok<AGROW>
+                end
+            end
+
+            step = struct('val', vals, 'control', ones(numel(vals), 1));
+
+        end
+
+        function control = setupScheduleControl(model)
+
+            stopFunction = model.setupStopFunction();
+
+            control.stopFunction         = stopFunction;
+            control.Control.stopFunction = stopFunction;
+            control.src                  = [];
+
+        end
+
+        function func = setupStopFunction(model)
+
+            ctrlmodel = model;
+            func = @(model, state, state_prev) (ctrlmodel.triggerSimulationEnd(state.Control, state_prev.Control, []));
+
+        end
+
+        function state = prepareStepControl(model, state, state0, dt)
+
+            state = model.updateValueFromControl(state);
 
         end
         
