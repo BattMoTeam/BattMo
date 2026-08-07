@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Model overview &mdash; BattMo  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
       <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
       <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c92655ae" />
@@ -18,12 +18,12 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/design-tabs.js?v=f930bc37"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -476,7 +476,7 @@
              
   <section id="model-overview">
 <h1>Model overview<a class="headerlink" href="#model-overview" title="Link to this heading"></a></h1>
-<p>We consider the model of a mixed proton and electron conducting membrane, as described in <span id="id1">[<a class="reference internal" href="../bibliography.html#id6" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> from 2019.</p>
+<p>We consider the model of a mixed proton and electron conducting membrane, as described in <span class="bibtex-citation" id="id1">[<a class="reference internal" href="../bibliography.html#id6" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> from 2019.</p>
 <section id="governing-equations">
 <h2>Governing equations<a class="headerlink" href="#governing-equations" title="Link to this heading"></a></h2>
 <p>In the membrane, we have three components or <em>species</em> given by the proton (<span class="math notranslate nohighlight">\(H^+\)</span>), and the <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(n\)</span>
@@ -529,7 +529,7 @@ equations</p>
 <div class="math notranslate nohighlight">
 \[\eta_\text{elde} = \pi_\text{elde} - \phi_\text{elde} - \text{OCP}_\text{elde}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\text{OCP}_\text{elde}\)</span> is the open-circuit potential for the given electrode. The value of the
-OCP at each electrode depend on the composition at the electrode (see <span id="id2">[<a class="reference internal" href="../bibliography.html#id6" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> for the expressions).</p>
+OCP at each electrode depend on the composition at the electrode (see <span class="bibtex-citation" id="id2">[<a class="reference internal" href="../bibliography.html#id6" title="Einar Vøllestad, Ragnar Strandbakke, Mateusz Tarach, David Catalán-Martínez, Marie-Laure Fontaine, Dustin Beeaff, Daniel R. Clark, Jose M. Serra, and Truls Norby. Mixed proton and electron conducting double perovskite anodes for stable and efficient tubular proton ceramic electrolysers. Nature Materials, 18(7):752–759, June 2019. doi:10.1038/s41563-019-0388-2.">VST+19</a>]</span> for the expressions).</p>
 <p>At the anode, we imposte that the proton current  is given through the following Buttler-Volmer type expression</p>
 <div class="math notranslate nohighlight">
 \[i_{H^+, \text{an}} = -i_0\frac{e^{-\beta\frac{ z F \eta_{\text{an}}}{RT}} - e^{( 1- \beta)\frac{ z F \eta_{\text{an}}}{RT}}}{ 1+ \frac{i_0}{i_{l,c}}e^{-\beta\frac{ z F \eta_{\text{an}}}{RT}} -  \frac{i_0}{i_{l,a}}e^{( 1- \beta)\frac{ z F \eta_{\text{an}}}{RT}}}\]</div>
