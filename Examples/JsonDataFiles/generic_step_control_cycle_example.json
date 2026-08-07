@@ -2,7 +2,7 @@
  { "controlPolicy": "Generic",
    "controlsteps" : [
     {"controltype" : "cycle",
-     "numberOfcycles" : 3,
+     "numberOfCycles" : 3,
      "cycleControlSteps" : [
        {"controltype" : "current",
         "value" : 5,
