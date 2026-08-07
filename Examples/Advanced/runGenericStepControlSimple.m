@@ -4,6 +4,9 @@
 % <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonSchemas/GenericControl.schema.json json schema
 % documentation>.
 
+clear all
+close all
+
 %% Input setup
 %
 
@@ -43,7 +46,7 @@ jsonstruct_material = removeStructFields(jsonstruct_material              , ...
 
 %%
 % We merge all the input structures
-% 
+%
 jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
@@ -61,7 +64,7 @@ jsonstruct.include_current_collectors = false;
 output = runBattery(jsonstruct);
 
 %% Plotting
-% 
+%
 
 states = output.states;
 
