@@ -1,10 +1,10 @@
 import BattMo
 
-function run_from_matlab(init::BattMo.AbstractInputParams; 
-                                 kwargs...)
+function run_from_matlab(init::BattMo.BattMoFormattedInput;
+                         kwargs...)
 
     output = BattMo.run_battery(init; kwargs...)
-    
+
     # create output
     ret = Dict("states"             => output[:states],
                "cellSpecifications" => output[:cellSpecifications],
@@ -13,8 +13,7 @@ function run_from_matlab(init::BattMo.AbstractInputParams;
                "matlab states"      => convert_state_Matlab(output[:states],
                                                             output[:extra][:model],
                                                             output[:extra][:timesteps]))
-    
-    return ret
-    
-end
 
+    return ret
+
+end
