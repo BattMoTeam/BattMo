@@ -20,7 +20,7 @@ classdef Electrolyte < BaseModel
         %
         useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
                                        % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
-        bgfactor % Constant multiplicative factor applied to each region Bruggeman coefficient
+        bgfactor % Constant multiplicative factor applied to effective ionic conductivity and diffusivity
         regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
                                     % - NegativeElectrode 
                                     % - PositiveElectrode 
@@ -86,9 +86,9 @@ classdef Electrolyte < BaseModel
                 bvals = model.regionBruggemanCoefficients;
 
                 b = NaN(nc, 1);
-                b(tags == 1) = model.bgfactor.*bvals.NegativeElectrode;
-                b(tags == 2) = model.bgfactor.*bvals.PositiveElectrode;
-                b(tags == 3) = model.bgfactor.*bvals.Separator;
+                b(tags == 1) = bvals.NegativeElectrode;
+                b(tags == 2) = bvals.PositiveElectrode;
+                b(tags == 3) = bvals.Separator;
 
                 model.bruggemanCoefficient = b;
             end
@@ -317,7 +317,7 @@ classdef Electrolyte < BaseModel
             T = state.T;
 
             kappa = model.computeConductivity(c, T);
-            state.conductivity = kappa.*model.volumeFraction.^brcoef;
+            state.conductivity = model.bgfactor.*kappa.*model.volumeFraction.^brcoef;
 
         end
 
@@ -353,7 +353,7 @@ classdef Electrolyte < BaseModel
             D = model.computeDiffusionCoefficient(c, T);
 
             % set effective coefficient
-            state.D = D .* model.volumeFraction .^ brcoef;
+            state.D = model.bgfactor .* D .* model.volumeFraction .^ brcoef;
 
         end
 
