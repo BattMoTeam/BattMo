@@ -25,6 +25,9 @@ model = model.equipModelForComputation('shortNames', shortNames);
 
 cgit = model.cgit;
 
+close all
+cgit.plot
+
 return
 %%
 

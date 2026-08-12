@@ -24,44 +24,36 @@ classdef CO2captureChannelBoundary < BaseModel
             
             varnames = {};
             %  fluxes [mol/s] (positive sign for outer fluxes)
-            varnames{end + 1} = VarName({}, 'fluxes', nGas);
+            varnames{end + 1} = VarName({}, 'rates', nGas);
             %  mol fractions
             varnames{end + 1} = VarName({}, 'molFractions', nGas);
             %  total pressure [pascal]
             varnames{end + 1} = 'pressure';
             %  total flux
-            varnames{end + 1} = 'flux';
+            varnames{end + 1} = 'totalRate';
+            %  total rate equation
+            varnames{end + 1} = 'totalRateEquation';
+            %  mol fraction equation (sum of mol fraction should be equal to one)
+            varnames{end + 1} = 'molFractionConstraintEq';
+            %  mol fraction equations. Provides the mol fraction at the boundary either from control value or from upwinding
+            varnames{end + 1} = VarName({}, 'molFractionEquations', nGas);
+            %  control equation, sets either the prescribed rate or pressure values
+            varnames{end + 1} = 'controlEquation';
             
             model = model.registerVarNames(varnames);
 
+            fn = @CO2captureChannelBoundary.totalRateEquation;
+            inputvarnames = {VarName({}, 'rates', nGas), ...
+                             'totalRate'};
+            model = model.registerPropFunction({'totalRateEquation', fn, inputvarnames});
 
-            for igas = 1 : nGas
-                fn = @CO2captureChannelBoundary.updateFluxes;
-                inputvarnames = {VarName({}, 'molFractions', nGas, igas), ...
-                                 'flux'};
-                outputvarname = VarName({}, 'fluxes', nGas, igas);
-                model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-            end
+            fn = @CO2captureChannelBoundary.totalRateEquation;
+            inputvarnames = {VarName({}, 'molFractions', nGas)};
+            model = model.registerPropFunction({'molFractionConstraintEq', fn, inputvarnames});            
             
         end
 
 
-        function state = updateFluxes(model, state)
-
-            nGas = model.nGas;
-
-            f = state.flux;
-            
-            for igas = 1 : nGas
-
-                mf = state.molFractions{igas};
-                fs{igas} = mf.*f;
-            end
-
-            state.fluxes = fs;
-            
-        end
-        
     end
     
 end

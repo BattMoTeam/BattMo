@@ -64,31 +64,23 @@ classdef CO2captureChannel < BaseModel
             %  mol fractions
             varnames{end + 1} = VarName({}, 'molFractions', nGas);
             %  mol fractions constraint
-            varnames{end + 1} = 'molFractionConstraint';
+            varnames{end + 1} = 'molFractionConstraintEq';
             %  pressures [pascal]
             varnames{end + 1} = VarName({}, 'pressures', nGas);
             %  total pressure [pascal]
             varnames{end + 1} = 'pressure';
             %  boundary sources [mol/s]
             varnames{end + 1} = VarName({}, 'bcSources', nGas);
-            
             %  mass source term [mol/s]
             varnames{end + 1} = VarName({}, 'massSources', nGas);
-            
             % mass conservation equations
             varnames{end + 1} = VarName({}, 'massConses', nGas);
             
-            % Boundary mol fraction equation setup
-            varnames{end + 1} = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas);
-            
-            % Boundary flux definition
-            varnames{end + 1} = {'Boundary', 'bcFluxDefinition'};
-            
-            % Control 
-            varnames{end + 1} = VarName({'Boundary'}, 'control');
-            
             model = model.registerVarNames(varnames);
 
+            model = model.setAsExtraVarName(VarName({}, 'pressures', nGas));
+
+            
             for igas = 1 : nGas
                 
                 fn = @CO2captureChannel.updateFluxes;
@@ -102,7 +94,7 @@ classdef CO2captureChannel < BaseModel
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
                 fn = @CO2captureChannel.updateBoundarySources;
-                inputvarnames = {VarName({'Boundary'}, 'fluxes', nGas, igas)};
+                inputvarnames = {VarName({'Boundary'}, 'rates', nGas, igas)};
                 outputvarname = VarName({}, 'bcSources', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
@@ -111,7 +103,7 @@ classdef CO2captureChannel < BaseModel
                                  VarName({}, 'molFractions', nGas, igas)          , ...
                                  'pressure'                                       , ...
                                  {'Boundary', 'pressure'}};
-                outputvarname = VarName({'Boundary'}, 'bcMolFractionDefinitions', nGas, igas);
+                outputvarname = VarName({'Boundary'}, 'molFractionEquations', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
                 fn = @CO2captureChannel.updateMassConses;
@@ -121,7 +113,6 @@ classdef CO2captureChannel < BaseModel
                                  VarName({}, 'massSources', nGas, igas)};
                 outputvarname = VarName({}, 'massConses', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-
 
                 if model.isRootSimulationModel
 
@@ -135,21 +126,22 @@ classdef CO2captureChannel < BaseModel
             end
 
             fn = @CO2captureChannel.updateMolFractionConstraint;
-            intputvarnames = {VarName({}, 'fluxes', nGas)};
-            outputvarname = 'molFractionConstraint';
-            model = model.registerPropFunction({outputvarname, fn, inputvarnames});            
+            inputvarnames = {VarName({}, 'molFractions', nGas)};
+            outputvarname = 'molFractionConstraintEq';
+            model = model.registerPropFunction({outputvarname, fn, inputvarnames});           
             
-            fn = @CO2captureChannel.updateBcFluxDefinition;
-            inputvarnames = {{'Boundary', 'flux'}    , ...
+            fn = @CO2captureChannel.updateBcRates;
+            inputvarnames = {VarName({'Boundary'}, 'molFractions', nGas), ...
                              {'Boundary', 'pressure'}, ...
+                             VarName({}, 'molFractions', nGas), ...
                              'pressure'};
-            outputvarname = {'Boundary', 'bcFluxDefinition'};
+            outputvarname = {'Boundary', 'rates'};
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn = @CO2captureChannel.updateControl;
-            inputvarnames = {VarName({'Boundary'}, 'flux'), ...
+            inputvarnames = {VarName({'Boundary'}, 'totalRate'), ...
                              VarName({'Boundary'}, 'pressure')};
-            outputvarname = VarName({'Boundary'}, 'control');
+            outputvarname = VarName({'Boundary'}, 'controlEquation');
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
                 
             if model.isRootSimulationModel
@@ -306,12 +298,14 @@ classdef CO2captureChannel < BaseModel
                 eq = eq - state.molFractions{igas};
             end
 
-            state.molFractionConstraint = eq;
+            state.molFractionConstraintEq = eq;
             
         end
         
         function state = updateBcFluxDefinition(model, state)
 
+            error('changed setup. to be updated')
+            
             nGas    = model.nGas;
             pcoef   = model.poiseuilleCoefficient;
             Tbc     = model.boundaryHelper.transmissibilities;
