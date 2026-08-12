@@ -10,9 +10,9 @@
         "type": "string"
       }
     },
-    "permeability" : {
+    "rateCoefficient" : {
       "type" : "number"
-      "description" : "Determine total flux from pressure gradient, the unit is mol/(m^3*s*Pa)"
+      "description" : "Determine total flux from pressure gradient and area, the unit is mol/(m^3*s*Pa)"
     },
     "area" : {
       "type" : "number",
