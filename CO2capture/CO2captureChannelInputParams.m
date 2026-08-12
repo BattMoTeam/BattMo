@@ -2,21 +2,15 @@ classdef CO2captureChannelInputParams < ComponentInputParams
 
     properties
 
-        Boundary
+        Control
         
-        couplingTerms
+        gasSpecies
 
-        viscosity   % viscosity
-        temperature % temperature
-        diameter    % tube parameter
+        rateCoefficient
         
-        % Advanced parameter
-        poiseuilleCoefficient
+        area
+        length
         
-        control % Structure with fields
-                % - pressure
-                % - rate
-                % - composition
 
     end
 

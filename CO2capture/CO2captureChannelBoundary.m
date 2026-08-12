@@ -2,8 +2,6 @@ classdef CO2captureChannelBoundary < BaseModel
     
     properties
 
-        constants
-        
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
@@ -12,12 +10,10 @@ classdef CO2captureChannelBoundary < BaseModel
     
     methods
         
-        function model = CO2captureChannelBoundary(inputparams)
+        function model = CO2captureChannelBoundary(gasSpecies)
             
-            model.constants = PhysicalConstants();
-
-            model = CO2capture.setupGasStructures(model);
-
+            model = CO2capture.setupGasStructures(model, gasSpecies);
+            
         end
         
         function model = registerVarAndPropfuncNames(model)

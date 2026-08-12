@@ -1,7 +1,7 @@
 
 %% prepare input for co2membrane
 
-filename = 'CO2capture/co2membrane.json';
+filename = 'CO2capture/CO2capture.json';
 jsonstruct = parseBattmoJson(filename);
 
 inputparams = CO2captureInputParams(jsonstruct);
@@ -23,8 +23,10 @@ model = model.equipModelForComputation('shortNames', shortNames);
 
 %%
 
-cgp = model.cgp;
-cgt = model.cgt;
+cgit = model.cgit;
+
+return
+%%
 
 % cgt.printRootVariables;
 % cgt.printTailVariables;

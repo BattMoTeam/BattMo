@@ -93,7 +93,7 @@ classdef CO2captureGridGenerator
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
-            inputparams.couplingTerms{end + 1} = coupTerm;
+            % inputparams.couplingTerms{end + 1} = coupTerm;
             
         end
 
@@ -122,7 +122,7 @@ classdef CO2captureGridGenerator
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
-            inputparams.couplingTerms{end + 1} = coupTerm;
+            % inputparams.couplingTerms{end + 1} = coupTerm;
             
         end
 

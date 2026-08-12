@@ -10,7 +10,7 @@ classdef CO2capture < BaseModel
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
-        permeabilities % structure with permability for each gas
+        permeances % structure with permability for each gas
         thickness
 
     end
@@ -225,13 +225,11 @@ classdef CO2capture < BaseModel
 
     methods (Static)
 
-        function model = setupGasStructures(model)
-
-            gasInd.CO2 = 1;
-            gasInd.O2  = 2;
-            gasInd.N2  = 3;
-            gasInd.H2O = 4;
-            gasInd.Ar  = 5;
+        function model = setupGasStructures(model, gasSpecies)
+            
+            for igas = 1 : numel(gasSpecies)
+                gasInd.(gasSpecies{igas}) = igas;
+            end
 
             nGas = numel(fieldnames(gasInd));
 

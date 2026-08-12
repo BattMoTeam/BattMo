@@ -3,27 +3,19 @@ classdef CO2captureChannel < BaseModel
     properties
 
         Boundary
+        Control
 
-        couplingTerms
+        gasSpecies
+
+        rateCoefficient
         
-        constants
+        area
+        length
         
-        nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
-        gasInd % Structure whose fieldname give index number of the corresponding gas component.
-
-        viscosity   % viscosity
-        temperature % temperature
-        diameter    % tube parameter
-
-        control % Structure with fields
-                % - pressure
-                % - rate
-                % - composition
-        
-        % Advanced parameter
-        poiseuilleCoefficient
-
         %% Helpers
+
+        gasInd % gasInds is a structure which is created at startup and used to recover each gas index from its names
+        nGas % number of gases, setup at startup.
         
         boundaryHelper % control stucture with fields
                        % - transmissibilities
@@ -44,29 +36,19 @@ classdef CO2captureChannel < BaseModel
             
             model = model@BaseModel();
 
-            fdnames = {'G'           , ...
-                       'couplingTerms', ...
-                       'viscosity'   , ...
-                       'temperature' , ...
-                       'diameter'    , ...
-                       'control'     , ...
-                       'poiseuilleCoefficient'};
+            fdnames = {'G'              , ...
+                       'gasSpecies'     , ...
+                       'rateCoefficient', ...
+                       'area'           , ...
+                       'length'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.constants = PhysicalConstants();
-
-            model.Boundary = CO2captureChannelBoundary([]);
+            model.Boundary = CO2captureChannelBoundary(model.gasSpecies);
             
-            model = CO2capture.setupGasStructures(model);
+            model = CO2capture.setupGasStructures(model, model.gasSpecies);
             
-            model = model.setupHelpers();
-            
-            if isempty(model.poiseuilleCoefficient)
-                % setup function to update it
-                error('not yet implemented');
-            end
-
+            % model = model.setupHelpers();
             
         end
 
