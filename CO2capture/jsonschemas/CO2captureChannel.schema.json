@@ -1,0 +1,79 @@
+{
+  "$id": "file://./CO2captureChannel.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input description for channel",
+  "type": "object",
+  "properties" : {
+    "gasSpecies" : {
+      "type" : "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "permeability" : {
+      "type" : "number"
+      "description" : "Determine total flux from pressure gradient, the unit is mol/(m^3*s*Pa)"
+    },
+    "area" : {
+      "type" : "number",
+      "description" : "cross section area of the channel"
+    }
+    "length" : {
+      "type" : "number",
+      "description" : "length of the channel"
+    }
+    "permeances" : {
+      "type" : "array"
+      "items" : {
+        "type" : "number"
+      }
+      "description" : "permeance values. One value for each specie. The order is given by the gasSpecies property. The unit is mol/(m*s*Pa)"
+    }
+    "Control" : {
+      "type" : "object",
+      "properties" : {
+        "Left" : {
+          "$ref": "#/$defs/control"},
+        "Right" : {
+          "$ref": "#/$defs/control"}}}},
+  "$defs": {
+    "control" : {
+      "ctrltype" : {
+        "type": "string",
+        "enum": [
+          "rate",
+          "pressure",
+          "close"
+        ],
+        "description" : "Control type, either rate control, pressure control or a close side (equivalent to rate equal to zero)" 
+      },
+      "composition" : {
+        "type" : "array"
+        "items" : "number",
+        "description" : "composition at the control location in mol fractions. One value per gas species. The order is given by the gasSpecies string array, see channel properties. If the values do not sum up to one. The composition will be computed by considering the values as weights, mol fraction y_i = w_i/sum(w_j). Note that the composition is not necesserily satisfied, for example at outlets"
+      },
+      "oneOf" : [
+        {
+          "properties" : {
+            "ctrltype" : {
+              "const" : "rate"
+            },
+            "rate" : {
+              "type" : "number",
+              "descrition" : "prescribed total rate value in mol/s"}
+          }
+        },
+        {
+          "properties" : {
+            "ctrltype" : {
+              "const" : "pressure"
+            },
+            "rate" : {
+              "type" : "number",
+              "descrition" : "prescribed total pressure in Pascal"}
+          }
+        }
+      ]
+    }
+  }
+}

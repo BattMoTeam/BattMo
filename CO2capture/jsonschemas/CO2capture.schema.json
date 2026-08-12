@@ -1,0 +1,23 @@
+{
+  "$id": "file://./CO2capture.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Input description for a CO2 capture model in BattMo",
+  "type": "object",
+  "properties" : {
+    "gasSpecies" : {
+      "type" : "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Feed" : {
+      "$ref": "CO2captureChannel.schema.json",
+      "description": "Feed channel parameters"
+    },
+    "Permeate" : {
+      "$ref": "CO2captureChannel.schema.json",
+      "description": "Feed channel parameters"
+    },    
+    "Control" : {}
+  }
+}
