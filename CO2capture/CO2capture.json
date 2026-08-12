@@ -1,39 +1,35 @@
 {
+  "gasSpecies" : ["CO2", "N2", "O2", "H2O", "Ar"],
+  "permeances" : [1, 1, 1, 1, 1],
+  "temperature": 278,
+  "length" : 1,
+  "Control" : {
+    "timeSteps" : 10
+  },
   "Feed": {
-    "poiseuilleCoefficient": 1,
-    "control": {
-      "pressure": 1,
-      "rate": 1,
-      "composition": {
-        "CO2": 0.096,
-        "N2": 0.787,
-        "O2": 0.099,
-        "H2O": 0.045,
-        "Ar": 0
-      }
-    }
-  },
+    "rateCoefficient": 1,
+    "area" : 1,
+    "Control": {
+      "Left" : {
+        "ctrltype" : "rate",
+        "rate": 1,
+        "composition": [0.096, 0.787, 0.099, 0.045, 0]
+      },
+      "Right" : {
+        "ctrltype" : "close"
+      }      
+    }},
   "Permeate": {
-    "poiseuilleCoefficient": 1,
-    "control": {
-      "pressure": 1,
-      "rate": 1,
-      "composition": {
-        "CO2": 0,
-        "N2": 0,
-        "O2": 0,
-        "H2O": 0,
-        "Ar": 1
-      }
-    }
-  },
-  "permeabilities": {
-    "CO2": 10,
-    "O2": 0.1,
-    "N2": 0.1,
-    "H2O": 0.1,
-    "Ar": 0.01
-  },
-  "thickness": 1,
-  "temperature": 278
-}
+    "rateCoefficient": 1,
+    "area" : 2,
+    "Control": {
+      "Left" : {
+        "ctrltype" : "pressure",
+        "pressure": 10000,
+        "composition": [0.096, 0.787, 0.099, 0.045, 0]
+      },
+      "Right" : {
+        "ctrltype" : "close"
+      }      
+    }    
+  }}
