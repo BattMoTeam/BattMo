@@ -10,6 +10,17 @@
         "type": "string"
       }
     },
+    "permeances" : {
+      "type" : "array"
+      "items" : {
+        "type" : "number"
+      }
+      "description" : "permeance values. One value for each specie. The order is given by the gasSpecies property. The unit is mol/(m*s*Pa)"
+    },
+    "length" : {
+      "type" : "number",
+      "description" : "length of the device. The unit is meter"
+    }
     "Feed" : {
       "$ref": "CO2captureChannel.schema.json",
       "description": "Feed channel parameters"
