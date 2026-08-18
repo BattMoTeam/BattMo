@@ -255,7 +255,7 @@ Now we load and parse the LFP material parameters from the |battmo| library and 
 
 .. code:: matlab
 
-   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP.json');
+   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP_Xu2015.json');
    jsonstruct_lfp.PositiveElectrode.Coating.ActiveMaterial.Interface = lfp;
 
 To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeStructs`.
