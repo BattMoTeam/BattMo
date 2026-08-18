@@ -38,7 +38,7 @@ or
 followed by
 
 ``git lfs install``
-t
+
 BattMo is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
 generic MATLAB automatic differentiation tools and Newton solvers. The MRST source code wil be installed directly via
 **git submodules**. To install BattMo, you have therefore to clone this repository with the submodule option
