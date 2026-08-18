@@ -48,7 +48,7 @@ classdef CcCvControlModelInputParams < ControlModelInputParams
 
             jsonstruct = setDefaultStructField(jsonstruct, {'switchTolerances', 'CC_discharge1'}, 1e-2);
             jsonstruct = setDefaultStructField(jsonstruct, {'switchTolerances', 'CC_discharge2'}, 0.9);
-            jsonstruct = setDefaultStructField(jsonstruct, {'switchTolerances', 'CC_charge1'}, 1e-2);
+            jsonstruct = setDefaultStructField(jsonstruct, {'switchTolerances', 'CC_charge1'}, 1e-3);
             jsonstruct = setDefaultStructField(jsonstruct, {'switchTolerances', 'CV_charge2'}, 0.9);
             
             inputparams = inputparams@ControlModelInputParams(jsonstruct);
