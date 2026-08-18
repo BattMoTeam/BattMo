@@ -4,8 +4,8 @@ function style = setFigureStyle(varargin)
 
 
 %% Parse inputs
-defaultTheme        = 'light';
-expectedTheme       = {'dark', 'light', 'blue', 'offwhite'};
+defaultTheme        = 'none';
+expectedTheme       = {'dark', 'light', 'blue', 'offwhite', 'none'};
 defaultSize         = 'A4';
 expectedSize        = {'A4', 'square', 'wide'};
 defaultOrientation  = 'landscape';
@@ -29,6 +29,19 @@ if strcmpi(p.Results.quantity,'all')
     n = length(h);
 else
     n = 1;
+end
+
+if strcmpi(p.Results.theme,'none')
+
+    style = struct('fontSize', 12, ...
+                   'fontName', 'Helvetica', ...
+                   'lineWidth', 1., ...
+                   'backgroundColor', 'w', ...
+                   'fontColor', 'k', ...
+                   'width', 15, ...
+                   'height', 10);
+    return;
+
 end
 
 for fig = 1 : n

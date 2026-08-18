@@ -8,9 +8,9 @@ classdef OxideMembraneControlInputParams < InputParams
     
     methods
         
-        function paramobj = OxideMembraneControlInputParams(jsonstruct)
+        function inputparams = OxideMembraneControlInputParams(jsonstruct)
             
-            paramobj = paramobj@InputParams(jsonstruct);
+            inputparams = inputparams@InputParams(jsonstruct);
             
         end
         

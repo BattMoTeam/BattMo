@@ -20,7 +20,8 @@ classdef IonomerMembrane < ElectronicComponent
           % for assembly, and also for activity computation)
 
         tortuosity
-
+        conductivity % membrane conductivity
+        
     end
 
     methods
@@ -33,8 +34,9 @@ classdef IonomerMembrane < ElectronicComponent
             fdnames = {'volumeFraction', ...
                        'H2O'           , ...
                        'OH'            , ...
-                       'molarVolume'             , ...
-                       'tortuosity'};
+                       'molarVolume'   , ...
+                       'tortuosity'    , ...
+                       'conductivity'};
             model = dispatchParams(model, inputparams, fdnames);
 
             cT = inputparams.totalChargedGroupConcentration;
@@ -198,9 +200,10 @@ classdef IonomerMembrane < ElectronicComponent
 
         function state = updateConductivity(model, state)
 
-            vf  = model.volumeFraction;
-            tau = model.tortuosity;
-
+            vf    = model.volumeFraction;
+            tau   = model.tortuosity;
+            kappa = model.conductivity;
+            
             T = state.T;
             a = state.H2Oa;
 
@@ -219,7 +222,7 @@ classdef IonomerMembrane < ElectronicComponent
 
             else
 
-                kappa = 10 + 0*a;
+                % do nothing, use given value
 
             end
 

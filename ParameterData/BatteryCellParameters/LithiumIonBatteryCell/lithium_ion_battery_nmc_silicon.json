@@ -1,0 +1,108 @@
+{
+  "G": null,
+  "SOC": 1,
+  "initT": 298.15,
+  "use_thermal": false,
+  "include_current_collectors": false,
+  "NegativeElectrode": {
+    "coatingModelSetup" : {
+      "swelling": true},
+    "Coating" : {
+      "effectiveDensity": 1900,
+      "bruggemanCoefficient": 1.5,
+      "molarMass": 28.0855e-3,
+      "referenceFillInLevel" : 1,
+      "include_hydrostatic_stress" : true,
+      "youngModulus" : 1e11,
+      "poissonRatio" : 0.27,
+      "solutePartialMolarVolume" : 4.25e-6,
+      "description" : "The mechanical values are taken from paper Effects of stress dependent electrochemical reaction on voltage hysteresis of lithium ion batteries, from Li, Song, Lu, Zhang",
+      "ActiveMaterial": {
+        "massFraction": 1.0,
+        "density": 2240,
+        "Comment on the sources" : "electronicConductivity is from Analysis of the Lithium-Ion Insertion Silicon Composite Electrode/Separator/Lithium Foil Cell Rajeswari Chandrasekarana, and Thomas F. Fuller",
+        "specificHeatCapacity": 710,
+        "thermalConductivity": 149,
+        "InterDiffusionCoefficient": 1e-14,
+        "electronicConductivity": 33,
+        "BruggemanCoefficient": 1.5,
+        "Interface": {
+          "isFile": true,
+          "filename": "ParameterData/MaterialProperties/Silicon/silicon.json"
+        },
+        "SolidDiffusion" : {
+          "Sources" : "D0 and rp are from Analysis of Lithium Insertion/Deinsertion in a Silicon Electrode Particle at Room Temperature, Rajeswari Chandrasekaran, Alexandre Magasinski,Gleb Yushin, Thomas F. Fuller",
+          "activationEnergyOfDiffusion": 5000,
+          "referenceDiffusionCoefficient": 1e-18,
+          "particleRadius": 30e-9,
+          "referenceFillInLevel": 0,
+          "Remark on rp" : "Corresponds to the volume of the fully unlithiated particle, not necessarily the initial radius, table 1 from source",
+          "N": 10
+        }
+      },
+      "Binder": {
+        "density": {
+          "value": 1.1,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.0,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      },
+      "ConductingAdditive": {
+        "density": {
+          "value": 1.95,
+          "unit": "gram/((centi*meter)^3)"
+        },
+        "massFraction": 0.0,
+        "electronicConductivity": 100,
+        "specificHeatCapacity": 632.0,
+        "thermalConductivity": 1.04
+      }
+    },
+    "CurrentCollector": {
+      "isFile": true,
+      "filename": "ParameterData/MaterialProperties/Copper/copper.json"
+    }
+  },
+  "PositiveElectrode": {
+    "Coating": {
+      "effectiveDensity": 3500,
+      "bruggemanCoefficient": 1.5,
+      "ActiveMaterial": {
+        "MergeInputs": {
+          "Inputs" :
+          [
+          {
+            "isFile" : true,
+            "filename": "ParameterData/MaterialProperties/LCO/lco_Ramadass2004.json"
+          },
+          {
+            "electronicConductivity": 100,
+            "BruggemanCoefficient": 1.5,
+            "isSwellingMaterial": 1,
+            "massFraction": 0.95,
+            "density": 4650,
+            "specificHeatCapacity": 700.0,
+            "thermalConductivity": 2.1,
+            "diffusionModelType": "full",
+            "SolidDiffusion": {
+              "N": 10
+            }
+          }]}        
+      },
+      "CurrentCollector": {
+        "isFile": true,
+        "filename": "ParameterData/MaterialProperties/Aluminium/aluminium.json"
+      }
+    }},
+  "Electrolyte": {
+    "filename": "ParameterData/MaterialProperties/OrganicLiPF6Solutions/orgLiPF6.json",
+    "isFile": true
+  },
+  "Separator": {
+    "filename": "ParameterData/BatteryComponentParameters/celgard2500.json",
+    "isFile": true
+  }
+}

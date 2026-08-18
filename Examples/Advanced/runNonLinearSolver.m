@@ -13,7 +13,7 @@ jsonfilename = fullfile('ParameterData'        , ...
                         'lithium_ion_battery_nmc_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
-jsonstruct_material = removeJsonStructFields(jsonstruct_material           , ...
+jsonstruct_material = removeStructFields(jsonstruct_material           , ...
                                              {'include_current_collectors'}, ...
                                              {'ThermalModel', 'externalHeatTransferCoefficient'});
 
@@ -28,7 +28,7 @@ jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
 
-jsonstruct = mergeJsonStructs({jsonstruct_nonlinear_solver, ...
+jsonstruct = mergeStructs({jsonstruct_nonlinear_solver, ...
                                jsonstruct_geometry        , ...
                                jsonstruct_material        , ...
                                jsonstruct_control});
@@ -36,7 +36,7 @@ jsonstruct = mergeJsonStructs({jsonstruct_nonlinear_solver, ...
 
 %% Run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% plot voltage
 
@@ -78,7 +78,7 @@ legend show
 jsonstruct.ThermalModel.externalHeatTransferCoefficientTab = 100;
 jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot the minimum and maximum values of the temperature
 

@@ -57,7 +57,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
         end
 
         % Merge
-        jsonstruct = mergeJsonStructs(jsonstructs);
+        jsonstruct = mergeStructs(jsonstructs);
 
     else
         error('Cannot parse input variable jsonfiles. It should either be a character array ('''') or a cell array of one or more character arrays {'''', '''', ...}.');
@@ -65,7 +65,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
 
     % Run battery simulation with function that takes json input
     % NB: the output is a struct with many fields.
-    output = runBatteryJson(jsonstruct);
+    output = runBattery(jsonstruct);
 
     %%
 

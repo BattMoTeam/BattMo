@@ -52,10 +52,22 @@ def validate(battmoDir, jsonfile, schemaFilename="Simulation.schema.json"):
     if VERBOSE:
         print("Validate input file", jsonfile)
     jsonstruct = rjson.loadJsonBattmo(battmoDir, jsonfile)
+
+    # We first collect the errors and print them, then we call validate to raise an exception if there are errors. This
+    # way we can print all errors instead of just the first one.
+    errors = sorted(validator.iter_errors(jsonstruct), key=lambda e: e.path)
+    if not errors:
+        print("Validation successful, no errors found.")
+    else:
+        for error in errors:
+            for suberror in sorted(error.context, key=lambda e: e.schema_path):
+                print(list(suberror.schema_path), suberror.message, sep=", ")
+
+    # We run again validation again, just to preserve overall function behavior. We could have improved that by some
+    # try-catch mechanism
     validator.validate(jsonstruct)
 
     return True
-
 
 if __name__ == "__main__":
     # Allow for command line call

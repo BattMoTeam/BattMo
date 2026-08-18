@@ -19,9 +19,9 @@ classdef OxideMembraneElectrolyteInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = OxideMembraneElectrolyteInputParams(jsonstruct)
+        function inputparams = OxideMembraneElectrolyteInputParams(jsonstruct)
             
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
         end
         

@@ -1,4 +1,4 @@
-function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getObjective, varargin)
+function [sens, lambdas] = computeSensitivitiesAdjointADBattmo(setup, states, params, getObjective, varargin)
 % Compute parameter sensitivities using adjoint simulation
 %
 % SYNOPSIS:
@@ -94,6 +94,10 @@ function sens = computeSensitivitiesAdjointADBattmo(setup, states, params, getOb
 
         % Compute Lagrange multipliers for the adjoint formulation
         [lambda, lambdaVec]= setup.model.solveAdjoint(linsolve, getState, getObjectiveState, setup.schedule, lambdaVec, step);
+
+        if nargout > 1
+            lambdas{step} = lambda;
+        end
 
         % Compute derivatives of the residual equations with respect to the parameters
         [eqdth, objth] = partialWRTparam(modelParam, getState, scheduleParam, step, getObjectiveModel, params);

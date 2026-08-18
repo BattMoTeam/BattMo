@@ -42,7 +42,7 @@ jsonstruct_output = parseBattmoJson(jsonfilename);
 %%
 % We merge the json structures. The function issues a warning if a parameter is set with different values in the given
 % structures. The rule is that the first value takes precedence.
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control  , ...
                                jsonstruct_output   , ...
@@ -60,9 +60,9 @@ css = css.updatePackingMass(10*gram);
 css.printSpecifications();
 
 %% We start the simulation
-% We use the function :code:`runBatteryJson` to run the simulation with json input structure
+% We use the function :code:`runBattery` to run the simulation with json input structure
 warning off
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plotting
 

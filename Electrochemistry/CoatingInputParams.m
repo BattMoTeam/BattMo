@@ -28,7 +28,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                                  %                 "none" (default)
                                  %                 "Safari"
                                  %                 "Bolay"
-
+                                 % - 'swelling' : boolean (default is false)
+        
         %% Advanced parameters
 
         volumeFractions
@@ -49,36 +50,41 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         function inputparams = CoatingInputParams(jsonstruct)
 
             
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
-            
-            [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+            jsonstruct = setDefaultStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
+
+            jsonstruct = equalizeStructField(jsonstruct, ...
+                                                 {'activeMaterialModelSetup', 'swelling'}, ...
+                                                 {'diffusionModelType', 'swelling'});
+                        
+            [jsonstruct, bothUnAssigned] = equalizeStructField(jsonstruct                              , ...
                                                                    {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                    {'ActiveMaterial', 'SEImodel'});
 
             if bothUnAssigned
                 % We set up the default value for SEI model, which is 'none'
-                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
-                [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+                jsonstruct = setStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
+                [jsonstruct, bothUnAssigned] = equalizeStructField(jsonstruct                              , ...
                                                                        {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                        {'ActiveMaterial', 'SEImodel'});
 
             end
 
-            isComposite = getJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'});
+            isComposite = getStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'});
             
             if isComposite
                 % if active material is composite, we do not support SEI for the moment
                 errorMessage = 'For a composite material, we do no support SEI layer';
-                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
-                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
-                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
             end
             
             inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             
             pick = @(fd) pickField(jsonstruct, fd);
             
-            if jsonstruct.activeMaterialModelSetup.composite
+            if isComposite
                 
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
@@ -86,7 +92,7 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                 inputparams.(am2) = ActiveMaterialInputParams(jsonstruct.(am2));
 
             else
-                
+
                 am = 'ActiveMaterial';
 
                 switch jsonstruct.activeMaterialModelSetup.SEImodel
@@ -104,6 +110,8 @@ classdef CoatingInputParams < ElectronicComponentInputParams
                     error('active material modelSEI layer model not recognized');
                     
                 end
+
+                
             end
             
             inputparams.Binder             = BinderInputParams(pick('Binder'));

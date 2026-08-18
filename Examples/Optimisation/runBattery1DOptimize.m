@@ -16,7 +16,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
 jsonstruct_control = parseBattmoJson(jsonfilename);
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control});
 
@@ -39,7 +39,7 @@ jsonstruct.(pe).(am).diffusionModelType = 'simple';
 
 jsonstruct.(ctrl).useCVswitch = true;
 
-output = runBatteryJson(jsonstruct, 'runSimulation', false);
+output = runBattery(jsonstruct, 'runSimulation', false);
 
 simsetup = output.simsetup;
 
@@ -58,7 +58,7 @@ simsetup.NonLinearSolver = nls;
 simsetup.model.nonlinearTolerance = 1e-3*simsetup.model.Control.Imax;
 
 % Set verbosity
-simstup.model.verbose = false;
+simsetup.model.verbose = false;
 
 states = simsetup.run;
 

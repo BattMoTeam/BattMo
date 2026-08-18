@@ -6,7 +6,7 @@
 Composite electrode json input file
 ===================================
 
-Here is json input for the composite electrode part, in :ref:`runSiliconGraphiteBattery`
+Here is json input for the composite electrode part, in :ref:`Composite Material <runSiliconGraphiteBattery>`
 
 .. literalinclude:: ../ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json
    :language: json

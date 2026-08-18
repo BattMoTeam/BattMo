@@ -34,7 +34,7 @@ function output = runBolaySEIfunction(input, varargin)
     jsonfilename = fullfile('ParameterData', 'ParameterSets', 'Bolay2022', 'bolay_sei_interface.json');
     jsonstruct_bolay = parseBattmoJson(jsonfilename);
 
-    jsonstruct.(ne).(co).(am) = mergeJsonStructs({jsonstruct.(ne).(co).(am), ...
+    jsonstruct.(ne).(co).(am) = mergeStructs({jsonstruct.(ne).(co).(am), ...
                                                   jsonstruct_bolay});
 
     jsonstruct.(ne).(co).(am).SEImodel = 'Bolay';

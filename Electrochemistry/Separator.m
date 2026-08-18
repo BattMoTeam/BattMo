@@ -2,7 +2,6 @@ classdef Separator < BaseModel
 
     properties
 
-
         %% Input parameters
 
         % Standard parameters

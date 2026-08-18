@@ -1,19 +1,9 @@
-%%
-
-clear all
-close all
-
-doplot.illustration1D  = false;
+doplot.illustration1D  = true;
 doplot.illustration3D  = true;
 doplot.jellyroll       = true;
 doplot.coincell        = true;
 doplot.multilayerpouch = true;
 
-dosave = true;
-savedir = fullfile(battmoDir, 'Documentation', 'JOSS', 'figs');
-fsz = 24;
-
-%%
 if doplot.illustration1D
 
     % We fake a 1D model
@@ -30,10 +20,9 @@ if doplot.illustration1D
     model = Battery(inputparams);
 
     plotBatteryGrid(model);
-
+    
 end
 
-%%
 if doplot.illustration3D
 
     % We fake a 1D model
@@ -44,162 +33,58 @@ if doplot.illustration3D
     inputparams = BatteryInputParams(jsonstruct_material);
 
     gen = BatteryGeneratorP4D();
-    gen.zlength = 10 * gen.zlength;
 
     inputparams = gen.updateBatteryInputParams(inputparams);
 
     model = Battery(inputparams);
 
-    h = plotBatteryGrid(model, 'setstyle', false, 'legendlocation', 'east');
-
-    axis equal tight
-    view(3)
-
-    % xlabel('x / mm')
-    % ylabel('y / mm')
-    % zlabel('z / mm')
-
-    % scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
-
-    axis off
-
-    % Set font size of legend and axes
-    ax = gca;
-    hl = get(ax, 'Legend');
-    set(hl, 'FontSize', fsz);
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'illustration3Dgeometry.pdf'), 'Resolution', 300);
-    end
-
+    plotBatteryGrid(model);
+    
 end
 
-%%
+
 
 if doplot.jellyroll
-
-    %%
+    
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-    jsonstruct_material.include_current_collectors = true;
-
+    jsonstruct_material.include_current_collectors = true;    
+    
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
+    
+    jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
-    jsonstruct_geometry.Geometry.exteriorNegativeElectrodeLayer = true;
-    jsonstruct_geometry.Geometry.nas = 30;
-    jsonstruct_geometry.Geometry.nL = 10;
+    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
-    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
-
-    model = setupModelFromJson(jsonstruct);
-
-    fig1 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig1);
-
-    axis equal tight off
-    camlight left
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_overview.pdf'), 'Resolution', 300);
-    end
-
-    %% Zoom inner
-
-    fig2 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig2);
-    axis equal tight off
-
-    cam = SetupCamera(model.grid);
-    rInner = jsonstruct_geometry.Geometry.rInner;
-    cam.cameraTarget   = [rInner; 0; cam.z];
-    cam.viewAngle      = 1.5;
-    cam.azimuthalAngle = 50;
-    cam.polarAngle     = 130;
-    cam.do();
-    camlight left
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoominner.pdf'), 'Resolution', 300);
-    end
-
-    %% Zoom outer
-
-    fig3 = figure;
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false, 'figure', fig3);
-    axis equal tight off
-
-    cam = SetupCamera(model.grid);
-    rOuter = jsonstruct_geometry.Geometry.rOuter;
-    cam.cameraTarget   = [rOuter; 0; cam.z];
-    cam.viewAngle      = 3;
-    cam.azimuthalAngle = 50;
-    cam.polarAngle     = 130;
-    cam.do();
-    camlight left
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'jellyroll_zoomouter.pdf'), 'Resolution', 300);
-    end
-
-    %%
-
+    figure
+    plotGrid(model.grid, 'edgealpha', 0.1);
+    
 end
-
-
-%%
 
 if doplot.multilayerpouch
 
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-    jsonstruct_material.include_current_collectors = true;
-
+    jsonstruct_material.include_current_collectors = true;    
+    
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
-
-    jsonstruct_geometry.Geometry.nLayers = 30;
-
-    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+    
+    jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false);
-
-    axis tight
-
-    scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
-    xlabel('x / mm')
-    ylabel('y / mm')
-    zlabel('z / mm')
-
-    % Set font size of axes
-    ax = gca;
-    set(ax, 'FontSize', fsz);
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'multilayerpouch_geometry.pdf'), 'Resolution', 300);
-    end
-
+    plotBatteryGrid(model);
+    
 end
 
-%%
 
 if doplot.coincell
-
-    % Coin cell
+    
+    %% Coin cell
 
     mrstModule add ad-core mrst-gui mpfa upr
 
-    % Define some shorthand names for simplicity.
+    %% Define some shorthand names for simplicity.
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';
     co      = 'Coating';
@@ -210,14 +95,14 @@ if doplot.coincell
     am      = 'ActiveMaterial';
     sep     = 'Separator';
 
-    % Setup the properties of Li-ion battery materials and cell design
+    %% Setup the properties of Li-ion battery materials and cell design
     jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
     jsonstruct.use_thermal = false;
     jsonstruct.include_current_collectors = true;
 
     inputparams = BatteryInputParams(jsonstruct);
 
-    % Setup the geometry and grid for the components
+    %% Setup the geometry and grid for the components
     CRdiameter = 20*milli*meter;
     CRthickness = 1.6*milli*meter;
 
@@ -228,7 +113,7 @@ if doplot.coincell
                                   'PositiveCurrentCollector'});
     numComponents = numel(compDims.Row);
 
-    % Thickness
+    %% Thickness
     compDims.thickness = zeros(numComponents, 1);
 
     compDims{'PositiveCoating', 'thickness'} = 67*micro*meter;
@@ -238,7 +123,7 @@ if doplot.coincell
     currentcollectors = {'PositiveCurrentCollector', 'NegativeCurrentCollector'};
     compDims{currentcollectors, 'thickness'} = 0.5*(CRthickness - sum(compDims.thickness));
 
-    % Diameters
+    %% Diameters
     compDims.diameter = zeros(numComponents, 1);
 
     compDims{'PositiveCurrentCollector', 'diameter'} = 1;
@@ -248,7 +133,7 @@ if doplot.coincell
     compDims{'NegativeCurrentCollector', 'diameter'} = 1;
     compDims.diameter = compDims.diameter * CRdiameter;
 
-    % Construct grid
+    %% Construct grid
     numRadial = 7;
     numAngular = 30;
     hz = min(compDims.thickness);
@@ -266,29 +151,12 @@ if doplot.coincell
     % Now, we update the inputparams with the properties of the grid.
     inputparams = gen.updateBatteryInputParams(inputparams, params);
 
-    %  Initialize the battery model.
+    %%  Initialize the battery model.
     % The battery model is initialized by sending inputparams to the Battery class
     % constructor. see :class:`Battery <Battery.Battery>`.
     model = Battery(inputparams);
 
-    plotBatteryGrid(model, 'setstyle', false, 'legend', false);
-
-    axis tight
-
-    xlabel('x / mm')
-    ylabel('y / mm')
-    zlabel('z / mm')
-
-    scaleAxisTicks({'X', 'Y', 'Z'}, 1e3);
-
-    % Set font size of axes
-    ax = gca;
-    set(ax, 'FontSize', fsz);
-
-    drawnow
-
-    if dosave
-        exportgraphics(gcf, fullfile(savedir, 'coincell_geometry.pdf'), 'Resolution', 300);
-    end
+    plotBatteryGrid(model)
 
 end
+

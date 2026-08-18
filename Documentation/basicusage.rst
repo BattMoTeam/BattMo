@@ -1,9 +1,6 @@
-===========
-Basic Usage
-===========
-
-.. note::
-  This section is still under development.
+==================
+Your First Example
+==================
 
 Here we introduce the basic usage of |battmo| by showing some simple workflows and highlighting important functions.
 
@@ -51,7 +48,7 @@ We can run the simulation with the command:
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct)
+   output = runBattery(jsonstruct)
 
 Show the Dashboard
 ------------------
@@ -196,7 +193,7 @@ in the jsonstruct and re-run the simulation.
    figure()
    for i = 1 : numel(CRates)
        jsonstruct.Control.CRate = CRates(i);
-       output = runBatteryJson(jsonstruct);
+       output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
@@ -227,7 +224,7 @@ For example, we could simulate the cell considering different thickness values f
    figure()
    for i = 1 : numel(thickness)
        jsonstruct.NegativeElectrode.Coating.thickness = thickness(i);
-       output = runBatteryJson(jsonstruct);
+       output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
@@ -261,11 +258,11 @@ Now we load and parse the LFP material parameters from the |battmo| library and 
    lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP.json');
    jsonstruct_lfp.PositiveElectrode.Coating.ActiveMaterial.Interface = lfp;
 
-To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeJsonStructs`.
+To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeStructs`.
 
 .. code:: matlab
 
-   jsonstruct = mergeJsonStructs({jsonstruct_lfp, ...
+   jsonstruct = mergeStructs({jsonstruct_lfp, ...
                                  jsonstruct});
 
 We need to be sure that the parameters are consistent across the hierarchy:
@@ -280,7 +277,7 @@ And now, we can run the simulation and plot the discharge curve:
 
 .. code:: matlab
 
-   output = runBatteryJson(jsonstruct);
+   output = runBattery(jsonstruct);
 
    states = output.states;
    model  = output.model;
@@ -289,55 +286,6 @@ And now, we can run the simulation and plot the discharge curve:
    time = cellfun(@(state) state.time, states);
 
    plot(time, E)
-
-Notebooks
-=========
-
-We have written and published matlab notebooks in the `Live Code File Format
-<https://se.mathworks.com/help/matlab/matlab_prog/live-script-file-format.html>`_ (:code:`.mlx`) .
-
-They basically go through the material described above in the interactive manner.
-
-The notebooks can be found in the :battmofile:`Examples/Notebooks` directory or downloaded from here.
-
-.. list-table::
-
-   * - Tutorial 1
-     - **Your first BattMo model**
-     - `view <_static/notebooks/tutorial_1_a_simple_p2d_model_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_1_a_simple_p2d_model_live.mlx>`
-   * - Tutorial 2
-     - **Change the Control Protocol**
-     - `view <_static/notebooks/tutorial_2_changing_control_protocol_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_2_changing_control_protocol_live.mlx>`
-   * - Tutorial 3
-     - **Modify Structural Parameters**
-     - `view <_static/notebooks/tutorial_3_modify_structural_parameters_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_3_modify_structural_parameters_live.mlx>`
-   * - Tutorial 4
-     - **Modify Material Parameters**
-     - `view <_static/notebooks/tutorial_4_modify_material_parameters_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_4_modify_material_parameters_live.mlx>`
-   * - Tutorial 5
-     - **Simulate CC-CV cycling**
-     - `view <_static/notebooks/tutorial_5_simulate_CCCV_cycling_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_5_simulate_CCCV_cycling_live.mlx>`
-   * - Tutorial 6
-     - **Simulate Thermal Performance**
-     - `view <_static/notebooks/tutorial_6_simulate_thermal_performance_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_6_simulate_thermal_performance_live.mlx>`
-   * - Tutorial 7
-     - **A Simple P4D Simulation**
-     - `view <_static/notebooks/tutorial_7_a_simple_p4d_model_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_7_a_simple_p4d_model_live.mlx>`
-   * - Tutorial 8
-     - **Simulate a Multi-Layer Pouch cell**
-     - `view <_static/notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.mlx>`
-   * - Tutorial 9
-     - **Simulate a Cylindrical Cell**
-     - `view <_static/notebooks/tutorial_9_simulate_a_cylindrical_cell_live.html>`__
-     - :battmorawfile:`download <Examples/Notebooks/tutorial_9_simulate_a_cylindrical_cell_live.mlx>`
 
 
 Next Steps

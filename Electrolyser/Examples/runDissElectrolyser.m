@@ -8,7 +8,7 @@ jsonstruct_base = parseBattmoJson(jsonfilename);
 jsonfilename = fullfile('Electrolyser','Parameters','dissolution.json');
 jsonstruct_diss = parseBattmoJson(jsonfilename);
 
-jsonstruct = mergeJsonStructs({jsonstruct_base, ...
+jsonstruct = mergeStructs({jsonstruct_base, ...
                                jsonstruct_diss});
 
 inputparams = ElectrolyserInputParams(jsonstruct);

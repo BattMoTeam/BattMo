@@ -17,9 +17,9 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
             error('bilinear interpolate function not supported yet');
             
           otherwise
-            
-            error('the given number of arguments is not supported');
-        end   
+
+            error('the given number of arguments %d is not supported', numberOfArguments);
+        end
 
         fn_handler = @(x) fn.eval(x);
 
@@ -62,8 +62,8 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
         
       otherwise
 
-        error('function format not recognized');
-        
+        error('function format %s not recognized', jsonstruct.functionFormat);
+
     end
         
 end

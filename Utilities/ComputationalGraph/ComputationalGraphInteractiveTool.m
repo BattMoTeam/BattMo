@@ -112,6 +112,9 @@ classdef ComputationalGraphInteractiveTool < handle
             
             [varnames, varnameinds, propfuncinds, distance] = cg.getDependencyList(varname, direction);
 
+            [distance, inds] = sort(distance, 'descend');
+            varnameinds = varnameinds(inds);
+            
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
                 fprintf('%s (%d)\n', cg.nodenames{varnameind}, distance(ivar));
@@ -235,8 +238,8 @@ classdef ComputationalGraphInteractiveTool < handle
             catch ME
                 fprintf('%s\n', fncallstr);
                 stack = ME.stack;
-                file = stack.file;
-                lineNum = stack.line;
+                file = stack(end - 1).file;
+                lineNum = stack(end - 1).line;
                 editor = settings().matlab.editor.OtherEditor.ActiveValue;
                 if contains(editor, 'emacs')
                     cmd = sprintf('%s +%d %s &', editor, lineNum, file);

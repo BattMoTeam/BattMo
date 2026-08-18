@@ -3,7 +3,7 @@ close all
 jsonstruct      = parseBattmoJson('Examples/LNMO/SiGrLnmo.json');
 jsonstruct_cccv = parseBattmoJson('Examples/JsonDataFiles/cccv_control.json');
 
-jsonstruct = removeJsonStructFields(jsonstruct, ...
+jsonstruct = removeStructFields(jsonstruct, ...
                                     {'Control', 'DRate'}        , ...
                                     {'Control', 'controlPolicy'}, ...
                                     {'Control', 'dEdtLimit'}    , ...
@@ -11,7 +11,7 @@ jsonstruct = removeJsonStructFields(jsonstruct, ...
                                     {'Control', 'rampupTime'}   , ...
                                     {'Control', 'useCVswitch'});
 
-jsonstruct = mergeJsonStructs({jsonstruct, jsonstruct_cccv});
+jsonstruct = mergeStructs({jsonstruct, jsonstruct_cccv});
 
 jsonstruct.TimeStepping.numberOfTimeSteps = 100;
 
@@ -27,7 +27,7 @@ jsonstruct.NegativeElectrode.Coating.ActiveMaterial2.massFraction = 0.04;
 jsonstruct.NegativeElectrode.Coating.ActiveMaterial1.massFraction = 0.96;
 jsonstruct.Control.numberOfCycles = 1;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 states = output.states;
 model  = output.model;

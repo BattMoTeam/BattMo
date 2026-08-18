@@ -1,34 +1,47 @@
 classdef LithiumPlatingLatzInputParams < InputParams
 %
-% Input parameter class 
-% 
+% Input parameter class for lithium platting. Reference:
+% @article{hein2020electrochemical,
+%   title     = {An electrochemical model of lithium plating and stripping in lithium ion batteries},
+%   author    = {Hein, Simon and Danner, Timo and Latz, Arnulf},
+%   journal   = {ACS Applied Energy Materials},
+%   volume    = {3},
+%   number    = {9},
+%   pages     = {8519--8531},
+%   year      = {2020},
+%   publisher = {ACS Publications}
+% }
+
     properties
 
-        alphaPl   
-        alphaStr  
-        alphaChInt
+        symmetryFactorPlating               % Symmetry factor for lithium plating/stripping reaction (typically ≈ 0.3)
+        symmetryFactorStripping             % Symmetry factor for stripping (may be 1-symmetryFactorPlating)
+        symmetryFactorChemicalIntercalation % Symmetry factor for charge-neutral chemical intercalation of plated lithium
 
-        kPl   
-        kChInt
-        kInter
+        reactionRatePlating                 % Reaction rate constant for lithium plating (N⁰₀ Plating)
+        reactionRateChemicalIntercalation   % Reaction rate constant for chemical intercalation of plated lithium
+        reactionRateDirectIntercalation     % Reaction rate constant for direct lithium-ion intercalation into graphite
 
-        nPl0
-        nPlLimit
-        platedConcentrationRef
-        
-        SEIFraction
-        MSEI       
-        rhoSEI     
-        deltaSEI0  
-        sigmaSEI   
+        thresholdParameter                  % Phenomenological parameter: minimum lithium amount needed to activate metal activity (see eqn (8))
+        limitAmount                         % Limit amount of plated lithium corresponding to one monolayer on graphite surface (see eqn (26))
+        platedReferenceConcentration        % Reference concentration for plated lithium [mol/m^3]. The value is used in
+                                            % the computation for normalization. If not given, a default one will be
+                                            % computed
 
-        platedLiMonolayerThickness
+        platedLiMonolayerThickness          % Thickness of one monolayer of plated lithium around a particle [m]. See equation (S-3)
 
-        useSEI
-        
-        volumetricSurfaceArea
-        particleRadius
-        volumeFraction
+        volumetricSurfaceArea               % Interfacial surface area between graphite and electrolyte per unit volume [m²/m³]
+        particleRadius                      % Radius of graphite particles, used in solid-state diffusion modeling
+        volumeFraction                      % Porositywrite
+
+        % Following parameters are not supported
+        %
+        % useSEI
+        % SEIFraction
+        % SEImolarMass       
+        % SEIdensity     
+        % SEIinitialThickness  
+        % SEIconductivity   
 
     end
 

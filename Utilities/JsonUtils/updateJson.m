@@ -18,7 +18,7 @@ function json = updateJson(json, params, varargin)
     end
 
     if opt.validate
-        validateJsonStruct(json);
+        validateStruct(json);
     end
 
 end

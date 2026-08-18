@@ -20,7 +20,8 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
         molarVolume % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not for assembly)
 
         tortuosity % cell-valued coefficient
-        
+
+        conductivity % membrane conductivity
     end
     
     methods

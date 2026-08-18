@@ -154,11 +154,11 @@ classdef Electrolyte < BaseModel
             varnames{end + 1} = 'massAccum';
             % Residual of the mass conservation equation
             varnames{end + 1} = 'massCons';
-            % Diffusion coefficient
+            % Diffusion effective coefficient
             varnames{end + 1} = 'D';
             % Derivative of the chemical potential with respect to the concentrations
             varnames{end + 1} = VarName({}, 'dmudcs', 2);
-            % ionic conductivity
+            % ionic effective conductivity
             varnames{end + 1} = 'conductivity';
             % diffusion fluzes
             varnames{end + 1} = 'diffFlux';
@@ -308,11 +308,14 @@ classdef Electrolyte < BaseModel
         end
 
         function state = updateConductivity(model, state)
-
+            
+            brcoef = model.bruggemanCoefficient;
+            
             c = state.c;
             T = state.T;
 
-            state.conductivity = model.computeConductivity(c, T);
+            kappa = model.computeConductivity(c, T);
+            state.conductivity = kappa.*model.volumeFraction.^brcoef;
 
         end
 
@@ -373,14 +376,10 @@ classdef Electrolyte < BaseModel
             c            = state.c;
             conductivity = state.conductivity;
 
-            % Compute effective ionic conductivity in porous media
-            conductivityeff = conductivity.*volfrac.^bg;
-
-            state.conductivityeff = conductivityeff;
-            j = assembleFlux(model, phi, conductivityeff);
+            j = assembleFlux(model, phi, conductivity);
 
             sum_dmudc = dmudcs{1} + dmudcs{2};
-            coef = (1/con.F)*(1 - t)*conductivityeff.*sum_dmudc;
+            coef = (1/con.F)*(1 - t)*conductivity.*sum_dmudc;
             jchem = assembleFlux(model, c, coef);
 
             j = j - jchem;

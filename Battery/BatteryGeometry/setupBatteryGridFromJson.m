@@ -100,11 +100,11 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         gen = BatteryGeneratorP4D();
 
         zlength = gen.zlength;
-        zlength(1) = jsonstruct.NegativeElectrode.Coating.thickness;
+        zlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.thickness;
         zlength(2) = jsonstruct.NegativeElectrode.Coating.thickness;
         zlength(3) = jsonstruct.Separator.thickness;
         zlength(4) = jsonstruct.PositiveElectrode.Coating.thickness;
-        zlength(5) = jsonstruct.PositiveElectrode.Coating.thickness;
+        zlength(5) = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
         gen.zlength = zlength;
 
         gen.sep_nz   = jsonstruct.Separator.N;
@@ -164,23 +164,16 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                    widthDict('Separator')];
         dr = sum(nwidths);
 
-        rOuter = jsonstruct.Geometry.rOuter;
-        rInner = jsonstruct.Geometry.rInner;
-        L      = jsonstruct.Geometry.L;
-        nL     = jsonstruct.Geometry.nL;
-        nas    = jsonstruct.Geometry.nas;
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsVertical'}, 4);
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsAngular'}, 6);
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'verticalRefinementParameter'}, []);
 
-        if isfield(jsonstruct.Geometry, 'refLcoef')
-            refLcoef = jsonstruct.Geometry.refLcoef;
-        else
-            refLcoef = [];
-        end
-
-        if isfield(jsonstruct.Geometry, 'exteriorNegativeElectrodeLayer')
-            exteriorNegativeElectrodeLayer = jsonstruct.Geometry.exteriorNegativeElectrodeLayer;
-        else
-            exteriorNegativeElectrodeLayer = false;
-        end
+        rOuter   = jsonstruct.Geometry.outerRadius;
+        rInner   = jsonstruct.Geometry.innerRadius;
+        L        = jsonstruct.Geometry.height;
+        nL       = jsonstruct.Geometry.numberOfDiscretizationCellsVertical;
+        nas      = jsonstruct.Geometry.numberOfDiscretizationCellsAngular;
+        refLcoef = jsonstruct.Geometry.verticalRefinementParameter;
         
         nrDict = containers.Map();
         nrDict('Separator')                = jsonstruct.Separator.N;
@@ -203,15 +196,14 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         % Computed number of windings
         nwindings = ceil(dR/dr);
 
-        params = struct('nwindings' , nwindings, ...
-                        'rInner'    , rInner   , ...
-                        'widthDict' , widthDict, ...
-                        'nrDict'    , nrDict   , ...
-                        'nas'       , nas      , ...
-                        'L'         , L        , ...
-                        'nL'        , nL       , ...
-                        'refLcoef'  , refLcoef , ...
-                        'exteriorNegativeElectrodeLayer', exteriorNegativeElectrodeLayer );
+        params = struct('nwindings', nwindings, ...
+                        'rInner'   , rInner   , ...
+                        'widthDict', widthDict, ...
+                        'nrDict'   , nrDict   , ...
+                        'nas'      , nas      , ...
+                        'L'        , L        , ...
+                        'nL'       , nL       , ...
+                        'refLcoef' , refLcoef);
 
         switch jsonstruct.Geometry.case
 

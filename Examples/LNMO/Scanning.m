@@ -27,7 +27,7 @@ classdef Scanning < handle
             jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
             jsonstruct_geometry.Geometry.nLayers = 50;
             
-            jsonstruct = mergeJsonStructs({jsonstruct_geometry, ...
+            jsonstruct = mergeStructs({jsonstruct_geometry, ...
                                            jsonstruct});
 
             ne  = 'NegativeElectrode';

@@ -13,6 +13,11 @@ classdef ElectrodeInputParams < ComponentInputParams
 
         couplingTerm
 
+        %% coating model setup structure
+
+        coatingModelSetup % structure that determines the type of coating with field
+                          % - swelling : boolean, true if swelling coating is used. default is false
+
         %% Parameters assigned at setup
 
         include_current_collectors
@@ -26,27 +31,41 @@ classdef ElectrodeInputParams < ComponentInputParams
         function inputparams = ElectrodeInputParams(jsonstruct)
 
             co = 'Coating';
+            am = 'ActiveMaterial';
             cc = 'CurrentCollector';
 
-            jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
+            jsonstruct = equalizeStructField(jsonstruct, {'use_thermal'}, {co, 'use_thermal'});
 
-            include_current_collectors = getJsonStructField(jsonstruct, 'include_current_collectors');
+            include_current_collectors = getStructField(jsonstruct, 'include_current_collectors');
 
             if isAssigned(include_current_collectors) && include_current_collectors
-                jsonstruct = equalizeJsonStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
+                jsonstruct = equalizeStructField(jsonstruct, {'use_thermal'}, {cc, 'use_thermal'});
             end
 
             if include_current_collectors
-                jsonstruct = setDefaultJsonStructField(jsonstruct, {'use_normed_current_collector'}, false);
+                jsonstruct = setDefaultStructField(jsonstruct, {'use_normed_current_collector'}, false);
             end
+
+            jsonstruct = setDefaultStructField(jsonstruct, {'coatingModelSetup', 'swelling'}, false);
             
+            jsonstruct = equalizeStructField(jsonstruct, ...
+                                                 {'coatingModelSetup', 'swelling'}, ...
+                                                 {'Coating', 'activeMaterialModelSetup', 'swelling'});
+            
+            is_swelling = getStructField(jsonstruct, {'coatingModelSetup', 'swelling'});
+
             inputparams = inputparams@ComponentInputParams(jsonstruct);
 
             pick = @(fd) pickField(jsonstruct, fd);
 
-            inputparams.(co) = CoatingInputParams(pick(co));
+            if is_swelling
+                inputparams.(co) = SwellingCoatingInputParams(pick(co));
+            else
+                inputparams.(co) = CoatingInputParams(pick(co));
+            end
+            
             if include_current_collectors
-                if getJsonStructField(jsonstruct, 'use_normed_current_collector')
+                if getStructField(jsonstruct, 'use_normed_current_collector')
                     inputparams.(cc) = NormedCurrentCollectorInputParams(pick(cc));
                 else
                     inputparams.(cc) = CurrentCollectorInputParams(pick(cc));

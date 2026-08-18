@@ -3,7 +3,7 @@ function output = setupSimulationForJuliaBridge(jsonstruct, varargin)
     opt = struct('runSimulation', false);
     opt = merge_options(opt, varargin{:});
     
-    output = runBatteryJson(jsonstruct, 'runSimulation', opt.runSimulation);
+    output = runBattery(jsonstruct, 'runSimulation', opt.runSimulation);
 
     model     = output.model;
     schedule  = output.schedule;

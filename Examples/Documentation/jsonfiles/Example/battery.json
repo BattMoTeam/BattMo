@@ -1,23 +1,23 @@
 {
   "NegativeElectrode": {
     "isFile": true,
-    "filename": "negativeElectrode.json"
+    "filename": "Examples/Documentation/jsonfiles/Example/negativeElectrode.json"
   },
   "PositiveElectrode": {
     "isFile": true,
-    "filename": "positiveElectrode.json"
+    "filename": "Examples/Documentation/jsonfiles/Example/positiveElectrode.json"
   },
   "Electrolyte": {
     "isFile": true,
-    "filename": "electrolyte.json"
+    "filename": "Examples/Documentation/jsonfiles/Example/electrolyte.json"
   },
   "Separator": {
     "isFile": true,
-    "filename": "separator.json"
+    "filename": "Examples/Documentation/jsonfiles/Example/separator.json"
   },
   "ThermalModel": {
     "isFile": true,
-    "filename": "thermalComponent.json"
+    "filename": "Examples/Documentation/jsonfiles/Example/thermalComponent.json"
   },
   "SOC": 0.9900,
   "initT": 298.1500,

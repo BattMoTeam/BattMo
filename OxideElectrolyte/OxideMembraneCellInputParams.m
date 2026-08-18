@@ -18,9 +18,9 @@ classdef OxideMembraneCellInputParams < ComponentInputParams
     
     methods
         
-        function paramobj = OxideMembraneCellInputParams(jsonstruct)
+        function inputparams = OxideMembraneCellInputParams(jsonstruct)
             
-            paramobj = paramobj@ComponentInputParams(jsonstruct);
+            inputparams = inputparams@ComponentInputParams(jsonstruct);
             
             an    = 'Anode';
             ct    = 'Cathode';
@@ -28,26 +28,26 @@ classdef OxideMembraneCellInputParams < ComponentInputParams
             ctrl  = 'Control';
     
             pick = @(fd) pickField(jsonstruct, fd);
-            paramobj.(an)    = OxideMembraneElectrodeInputParams(pick(an));
-            paramobj.(ct)    = OxideMembraneElectrodeInputParams(pick(ct));
-            paramobj.(elyte) = OxideMembraneElectrolyteInputParams(pick(elyte));
-            paramobj.(ctrl)  = OxideMembraneControlInputParams(pick(ctrl));
+            inputparams.(an)    = OxideMembraneElectrodeInputParams(pick(an));
+            inputparams.(ct)    = OxideMembraneElectrodeInputParams(pick(ct));
+            inputparams.(elyte) = OxideMembraneElectrolyteInputParams(pick(elyte));
+            inputparams.(ctrl)  = OxideMembraneControlInputParams(pick(ctrl));
 
-            paramobj = mergeParameters(paramobj, {{'T'}       , ...
+            inputparams = mergeParameters(inputparams, {{'T'}       , ...
                                                   {elyte, 'T'}, ...
                                                   {an, 'T'}   , ...
                                                   {ct, 'T'}});
             
-            paramobj = mergeParameters(paramobj, {{elyte, 'muEl0'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'muEl0'}, ...
                                                   {ct, 'muEl0'}   , ...
                                                   {an, 'muEl0'}});
 
-            paramobj = mergeParameters(paramobj, {{elyte, 'Keh'}, ...
+            inputparams = mergeParameters(inputparams, {{elyte, 'Keh'}, ...
                                                   {ct, 'Keh'}   , ...
                                                   {an, 'Keh'}});
 
 
-            paramobj.couplingTerms = {};
+            inputparams.couplingTerms = {};
             
         end
         

@@ -9,7 +9,8 @@
             "chargeNumber" : -1,
             "transference" : 1},
     "molarVolume" : 7.6e-4,
-    "totalChargedGroupConcentration" : 1315
+    "totalChargedGroupConcentration" : 1315,
+    "conductivity" : 13
   },
   "HydrogenEvolutionElectrode": {
     "porousTransportLayerType" : "Hydrogen",

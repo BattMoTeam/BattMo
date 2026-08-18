@@ -82,13 +82,13 @@ classdef CCcontrolModel < ControlModel
                 error('model not recognized')
             end
 
-            if ~isempty(params.totalTime)
+            if isAssigned(params, {'totalTime'})
                 totalTime = params.totalTime;
             else
                 totalTime = 1.4*(1*hour/rate);
             end
 
-            if ~isempty(params.timeStepDuration)
+            if isAssigned(params, {'timeStepDuration'})
                 dt = params.timeStepDuration;
             else
                 n  = params.numberOfTimeSteps;

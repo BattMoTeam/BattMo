@@ -4,15 +4,15 @@ Tutorials
 .. toctree::
    :hidden:
 
-   pynbnotebooks/tutorial_1_a_simple_p2d_model_live.ipynb
-   pynbnotebooks/tutorial_2_changing_control_protocol_live.ipynb
-   pynbnotebooks/tutorial_3_modify_structural_parameters_live.ipynb
-   pynbnotebooks/tutorial_4_modify_material_parameters_live.ipynb
-   pynbnotebooks/tutorial_5_simulate_CCCV_cycling_live.ipynb
-   pynbnotebooks/tutorial_6_simulate_thermal_performance_live.ipynb
-   pynbnotebooks/tutorial_7_a_simple_p4d_model_live.ipynb
-   pynbnotebooks/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb
-   pynbnotebooks/tutorial_9_simulate_a_cylindrical_cell_live.ipynb
+   tutorials/tutorial_1_a_simple_p2d_model_live.ipynb
+   tutorials/tutorial_2_changing_control_protocol_live.ipynb
+   tutorials/tutorial_3_modify_structural_parameters_live.ipynb
+   tutorials/tutorial_4_modify_material_parameters_live.ipynb
+   tutorials/tutorial_5_simulate_CCCV_cycling_live.ipynb
+   tutorials/tutorial_6_simulate_thermal_performance_live.ipynb
+   tutorials/tutorial_7_a_simple_p4d_model_live.ipynb
+   tutorials/tutorial_8_simulate_a_multilayer_pouch_cell_live.ipynb
+   tutorials/tutorial_9_simulate_a_cylindrical_cell_live.ipynb
 
 .. grid:: 1
 

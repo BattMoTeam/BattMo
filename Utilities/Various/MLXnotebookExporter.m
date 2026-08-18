@@ -50,22 +50,6 @@ classdef MLXnotebookExporter
 
         end
 
-        function convertMlxToM(mne)
-        % Convert all the registered mlx notebooks to m script
-            
-            inputdir  = mne.inputdir;
-
-            for inote = 1 : numel(mne.notebooknames)
-                
-                notebookname = mne.notebooknames{inote};
-                inputfilename  = fullfile(inputdir, [notebookname, '.mlx']);
-                outputfilename = fullfile(inputdir, [notebookname, '.m']);
-                export(inputfilename, outputfilename, 'format', 'm');
-                
-            end
-            
-        end
-
         function setupMfromMlx(mne, filename, varargin)
         % Setup M file from mlx
 
