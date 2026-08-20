@@ -98,7 +98,19 @@ function [objValue, varargout] = evalObjectiveBattmo(pvec, objFunc, setup, param
         setupNew = parameters{k}.setParameter(setupNew, pval{k});
     end
 
-    states = setupNew.run();
+    [states, ~, reports] = setupNew.run();
+
+    % The discrete adjoint must use the same time discretization as the
+    % forward solve. When ministeps are output, replace this evaluation's
+    % schedule with the accepted forward ministeps before evaluating the
+    % objective and running the adjoint.
+    if setupNew.OutputMinisteps
+        setupNew.schedule = convertReportToSchedule(reports, setupNew.schedule);
+
+        assert(numelData(states) == numel(setupNew.schedule.step.val), ...
+               ['The number of accepted forward states does not match ', ...
+                'the number of timesteps in the adjoint schedule.']);
+    end
     
     failure = false;
     try
