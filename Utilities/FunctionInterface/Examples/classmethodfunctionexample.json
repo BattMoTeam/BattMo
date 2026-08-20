@@ -1,0 +1,27 @@
+{"func1" : {
+  "functionFormat" : "class method",
+  "className" : "ClassMethodFunctionExample",
+  "methodName" : "method1",
+  "parameters" : [
+    {"name" : "param1",
+     "value" : 1}],
+  "argumentList" : ["myargument"]},
+ "func2" : {
+  "functionFormat" : "class method",
+  "className" : "ClassMethodFunctionExample",
+  "methodName" : "method2",
+  "parameters" : [
+    {"name" : "param2",
+     "value" : 2}],
+   "argumentList" : ["myfirstargument", "mysecondargument"]},
+ "func3" : {
+   "functionFormat" : "class method",
+   "className" : "ClassMethodFunctionExample",
+   "methodName" : "method3",
+   "argumentList" : ["myargument"]},
+ "func4" : {
+   "functionFormat" : "class method",
+   "className" : "ClassMethodFunctionExample",
+   "methodName" : "method4",
+   "argumentList" : ["myargument"]}}
+ 
