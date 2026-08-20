@@ -38,6 +38,13 @@ function [fn_handler, fn] = setupFunction(jsonstruct)
         fn_handler = @(varargin) fn.eval(varargin{:});
 
         return
+
+      case 'class method'
+
+        fn = ClassMethodFunction(jsonstruct);
+        fn_handler = @(varargin) fn.eval(varargin{:});
+
+        return
         
       case 'constant'
 

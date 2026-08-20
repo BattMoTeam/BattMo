@@ -9,6 +9,7 @@
         "tabulated",
         "string expression",
         "named function",
+        "class method",
         "constant",
         "csv"
       ],
@@ -65,6 +66,29 @@
       "functionName": {
         "type": "string",
         "description": "The name of the function file without the matlab suffix (.m)" }}},
+    {"properties" : {
+      "functionFormat" : {
+        "const" : "class method",
+        "description" : "The function is given by a class method. The class must be available in the path so that it can be called directly. An object for the class is instantiated and given the parameter list. This setup is still in an experimental phase."},
+      "className": {
+        "type": "string",
+        "description": "name of the class" },
+      "methodName" : {
+        "type" : "string",
+        "description" : "name of the method in the class"},
+      "parameters" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "description" : "name of the parameter"},
+            "value" : {
+              "type" : "number"
+              "description" : "value of the parameter. For the moment, we consider only scalar value"}
+          }}
+      }},
     {"properties" : {
       "functionFormat" : {
         "const" : "string expression",
