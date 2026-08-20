@@ -13,7 +13,6 @@ classdef ClassMethodFunction < Function
         %% helper
         %
         functionHandler
-        isstatic
         
     end
 
@@ -57,7 +56,7 @@ classdef ClassMethodFunction < Function
                 if ~isStatic
                     fn.obj = feval(fn.className);
                 else
-                    fn.obj [];
+                    fn.obj = [];
                 end
                 
             end
