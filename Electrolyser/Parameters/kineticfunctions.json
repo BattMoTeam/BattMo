@@ -1,0 +1,44 @@
+{"computeIonomerRate" : {
+  "functionFormat" : "class method",
+  "className" : "KineticFunctions",
+  "methodName" : "computeIonomerRate",
+  "argumentList" : ["eta", "H2Oa", "cOH", "T"],
+  "parameters" : [
+    {"name" : "k1p",
+     "value" : 5e-10},
+    {"name" : "k1m",
+     "value" : 6e-9},
+    {"name" : "k2p",
+     "value" : 1.5e-11},
+    {"name" : "k2m",
+     "value" : 4.2e-12},
+    {"name" : "k3p",
+     "value" : 3e-10},
+    {"name" : "k3m",
+     "value" : 6.2e-12},
+    {"name" : "chargeTransferCoefficient",
+     "value": 0.5}
+  ]
+},
+ "computeElyteRate" : {
+   "functionFormat" : "class method",
+   "className" : "KineticFunctions",
+   "methodName" : "computeElyteRate",
+   "argumentList" : ["eta", "H2Oa", "cOH", "T"],
+   "parameters" : [
+     {"name" : "k1p",
+      "value" : 5e-10},
+     {"name" : "k1m",
+      "value" : 6e-9},
+     {"name" : "k2p",
+      "value" : 1.5e-11},
+     {"name" : "k2m",
+      "value" : 4.2e-12},
+     {"name" : "k3p",
+      "value" : 3e-10},
+     {"name" : "k3m",
+      "value" : 6.2e-12},
+     {"name" : "chargeTransferCoefficient",
+      "value": 0.5}]}}
+
+ 
