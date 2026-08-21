@@ -21,12 +21,22 @@ classdef CatalystLayer < BaseModel
 
         numberOfElectronsTransferred % Number of electron transfer
         
-        chargeTransferCoefficient % coefficient in the exponent in Butler-Volmer equation [-]
-        ionomerFractionArea       % Fraction of specific area that is coversed with ionomer [-]
-        referenceVolumetricSurfaceArea    % Volumetric surface area [m^ -1]
+        chargeTransferCoefficient      % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea            % Fraction of specific area that is coversed with ionomer [-]
+        referenceVolumetricSurfaceArea % Volumetric surface area [m^ -1]
 
+        genericRateFunctions % structure which described the rate functions
+        
         tortuosity % Tortuosity [-]
 
+        %% helpers
+        % these properties are instantiated when the model is set up
+        %
+        useGenericRateFunction
+
+        computeIonomerRate % Function handler
+        computeElyteRate   % Function handler
+        
         include_dissolution
         DissolutionModel
         
@@ -49,6 +59,7 @@ classdef CatalystLayer < BaseModel
                         'ionomerFractionArea'            , ...
                         'referenceVolumetricSurfaceArea' , ...
                         'include_dissolution'            , ...
+                        'genericRateFunctions', ...
                         'tortuosity'};
             
             model = dispatchParams(model, inputparams, fdnames);
@@ -57,6 +68,14 @@ classdef CatalystLayer < BaseModel
                 model.DissolutionModel = DissolutionModel(inputparams.DissolutionModel);
             else
                 model.subModelNameList = {};
+            end
+
+            if ~isempty(model.genericRateFunctions)
+                model.useGenericRateFunction = true;
+                model.computeIonomerRate = setupFunction(model.genericRateFunctions.computeIonomerRate);
+                model.computeElyteRate   = setupFunction(model.genericRateFunctions.computeElyteRate);
+            else
+                model.useGenericRateFunction = false;
             end
             
             model.E0eff = model.standardEquilibriumPotential - model.referencePotential;
@@ -121,6 +140,10 @@ classdef CatalystLayer < BaseModel
             
             model = model.registerVarNames(varnames);
 
+            if model.useGenericRateFunction
+                model = model.removeVarNames({'elyteReactionRateConstant', 'inmrReactionRateConstant'});
+            end
+            
             % Assemble equilibrium Potential for electrolyte
             fn = @() CatalystLayer.updateEelyte;
             inputnames = {'T', 'cOHelyte', 'pressureActiveGas', 'H2OaElyte'};
@@ -138,15 +161,17 @@ classdef CatalystLayer < BaseModel
             model = model.registerPropFunction({'etaInmr', fn, inputnames});
 
             % Assemble the reaction rates
-            fn = @() CatalystLayer.updateReactionRates;
-            inputnames = {'volumetricSurfaceArea'    , ...
-                          'elyteReactionRateConstant', ...
-                          'etaElyte'                 , ...
-                          'inmrReactionRateConstant' , ...
-                          'etaInmr'};
-            model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
-            model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
-
+            if ~model.useGenericRateFunction
+                fn = @() CatalystLayer.updateReactionRates;
+                inputnames = {'volumetricSurfaceArea'    , ...
+                              'elyteReactionRateConstant', ...
+                              'etaElyte'                 , ...
+                              'inmrReactionRateConstant' , ...
+                              'etaInmr'};
+                model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
+                model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});            
+            end
+            
             fn = @() CatalystLayer.updateChargeCons;
             inputnames = {'I', 'eSource'};
             model = model.registerPropFunction({'chargeCons', fn, inputnames});
@@ -227,7 +252,13 @@ classdef CatalystLayer < BaseModel
             error('implemented in derived class')
             
         end
+
+        function state = genericUpdateReactionRates(model, state)
             
+            error('implemented in derived class');
+            
+        end
+        
         function state = updateReactionRates(model, state)
 
             Xinmr = model.ionomerFractionArea;

@@ -2,10 +2,10 @@ classdef CatalystLayerInputParams < ComponentInputParams
     
     properties
 
-        referenceExchangeCurrentDensity    % Exchange current density
+        referenceExchangeCurrentDensity % Exchange current density
         standardEquilibriumPotential    % Standard equilibrium potential
-        referencePotential  % Reference potential
-        referencePressure % reference pressure
+        referencePotential              % Reference potential
+        referencePressure               % reference pressure
         
         species % species struct with field
         % - OH.chargeNumber  : Charge number
@@ -13,12 +13,14 @@ classdef CatalystLayerInputParams < ComponentInputParams
 
         numberOfElectronsTransferred % Number of electron transfer
         
-        chargeTransferCoefficient                  % coefficient in the exponent in Butler-Volmer equation [-]
-        ionomerFractionArea                  % Fraction of specific area that is coversed with ionomer [-]
+        chargeTransferCoefficient      % coefficient in the exponent in Butler-Volmer equation [-]
+        ionomerFractionArea            % Fraction of specific area that is coversed with ionomer [-]
         referenceVolumetricSurfaceArea % Volumetric surface area [m^ -1]
 
         tortuosity % Tortuosity [-]
 
+        genericRateFunctions
+        
         include_dissolution % True if dissolution model is included (if not given, it is set to false)
 
         DissolutionModel

@@ -17,11 +17,18 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             model = registerVarAndPropfuncNames@CatalystLayer(model);
 
             % Assemble the reaction rate constants
-            fn = @() PlatiniumCatalystLayer.updateReactionRateConstants;
-            inputnames = {'cOHelyte', 'H2OaElyte', 'cOHinmr'};
-            model = model.registerPropFunction({'elyteReactionRateConstant', fn, inputnames});
-            model = model.registerPropFunction({'inmrReactionRateConstant', fn, inputnames});
-
+            if model.useGenericRateFunction
+                fn = @() CatalystLayer.genericUpdateReactionRates;
+                inputnames = {'volumetricSurfaceArea', 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr', 'etaElyte', 'etaInmr', 'T'};
+                model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
+                model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});
+            else
+                fn = @() PlatiniumCatalystLayer.updateReactionRateConstants;
+                inputnames = {'cOHelyte', 'H2OaElyte', 'cOHinmr'};
+                model = model.registerPropFunction({'elyteReactionRateConstant', fn, inputnames});
+                model = model.registerPropFunction({'inmrReactionRateConstant', fn, inputnames});
+            end
+            
             % Assemble equilibrium Potential for electrolyte
             fn = @() PlatiniumCatalystLayer.updateEelyte;
             inputnames = {'T', 'cOHelyte', 'pressureActiveGas', 'H2OaElyte'};
@@ -44,6 +51,25 @@ classdef PlatiniumCatalystLayer < CatalystLayer
 
         end
 
+        function state = genericUpdateReactionRates(model, state)
+
+
+            Xinmr = model.ionomerFractionArea;
+            
+            vsa       = state.volumetricSurfaceArea;
+            etaElyte  = state.etaElyte;
+            cOHelyte  = state.cOHelyte;
+            H2OaElyte = state.H2OaElyte;
+            etaInmr   = state.etaInmr;
+            cOHinmr   = state.cOHinmr;
+            H2OaInmr  = state.H2OaInmr;
+            T         = state.T;
+            
+            state.elyteReactionRate = (1 - Xinmr).*vsa.*model.computeElyteRate(etaElyte, H2OaElyte, cOHelyte, T);
+            state.inmrReactionRate  = Xinmr.*vsa.*model.computeIonomerRate(etaInmr, H2OaInmr, cOHinmr, T);
+            
+        end
+        
         function state = updateReactionRateConstants(model, state)
             
             j0   = model.referenceExchangeCurrentDensity;
