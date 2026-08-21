@@ -47,13 +47,6 @@ classdef PlatiniumKineticFunctions
             rate = -F*(k1p_actif.*(1 - lambda) - k1m_actif.*lambda + ...
                       k2p_actif.*lambda - k2m_actif.*(1 - lambda));
 
-            r = rate;
-            if isa(r, 'ADI')
-                r = combineEquations(r);
-                if any(isnan(r.val)) || nnz(any(isnan(r.jac{1}))) > 0
-                    % keyboard
-                end
-            end
         end
         
         function rate = computeIonomerRate(kf, eta, aH2O, cOH, T)
