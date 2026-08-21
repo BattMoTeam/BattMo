@@ -1,6 +1,6 @@
 {"computeIonomerRate" : {
   "functionFormat" : "class method",
-  "className" : "KineticFunctions",
+  "className" : "PlatiniumKineticFunctions",
   "methodName" : "computeIonomerRate",
   "argumentList" : ["eta", "H2Oa", "cOH", "T"],
   "parameters" : [
@@ -22,7 +22,7 @@
 },
  "computeElyteRate" : {
    "functionFormat" : "class method",
-   "className" : "KineticFunctions",
+   "className" : "PlatiniumKineticFunctions",
    "methodName" : "computeElyteRate",
    "argumentList" : ["eta", "H2Oa", "cOH", "T"],
    "parameters" : [

@@ -24,7 +24,7 @@ ctl = 'CatalystLayer';
 % We add the kinetic functions to the json structure. The kinetic functions are defined in a separate json file
 % :battmofile:`kineticfunctions.json<Electrolyser/Parameters/kineticfunctions.json>`
 
-jsonstruct_kinetics  = parseBattmoJson('Electrolyser/Parameters/kineticfunctions.json');
+jsonstruct_kinetics  = parseBattmoJson('Electrolyser/Parameters/platiniumkineticfunctions.json');
 
 jsonstruct.(her).(ctl).genericRateFunctions = jsonstruct_kinetics;
 

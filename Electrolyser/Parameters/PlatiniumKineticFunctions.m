@@ -1,4 +1,4 @@
-classdef KineticFunctions
+classdef PlatiniumKineticFunctions
 
     properties
 
@@ -15,7 +15,7 @@ classdef KineticFunctions
     
     methods
 
-        function kf = KineticFunctions(parameters)
+        function kf = PlatiniumKineticFunctions(parameters)
             
             kf = setupParameters(kf, parameters);
             
