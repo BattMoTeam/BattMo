@@ -31,7 +31,7 @@ classdef PlatiniumKineticFunctions
             beta = kf.chargeTransferCoefficient;
             
             fp = exp(-beta.*F.*eta./(R.*T));
-            fm = exp(-(1 - beta).*F.*eta./(R.*T));
+            fm = exp((1 - beta).*F.*eta./(R.*T));
 
             k1p_actif = kf.k1p.*aH2O.*fp;
             k1m_actif = kf.k1m.*(cOH/1000).*fm;
