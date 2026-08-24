@@ -2,7 +2,9 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonLintFile = arrayfun(@(s) fullfile(s.folder, s.name), dir(fullfile(battmoDir(), '**', '*.json')), 'uniformoutput', false);
+        jsonLintFile = TestJsonFiles.findJsonFiles('*.json');
+
+        jsonSchemaFile = TestJsonFiles.findJsonFiles('*.schema.json');
 
         jsonDataSet = {
             fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell'      , 'lithium_ion_battery_nmc_graphite.json'), ...
@@ -37,6 +39,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
         excludeJsonDataFile = {};
 
         lintModule = 'checkLint';
+        resolveModule = 'resolveFileInputJson';
         validateModule = 'validateJsonFiles';
         isPySetup;
 
@@ -50,8 +53,12 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 setupPythonExecutable();
                 setupPythonPath();
 
-                modulenames = {test.lintModule, test.validateModule};
+                modulenames = {test.lintModule, test.resolveModule, test.validateModule};
                 loadModule(modulenames, 'setupPython', false);
+                for imod = 1 : numel(modulenames)
+                    pymodule = py.importlib.import_module(modulenames{imod});
+                    py.importlib.reload(pymodule);
+                end
                 test.isPySetup = true;
 
             catch
@@ -72,6 +79,19 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 dispif(mrstVerbose, 'Linting %s\n', jsonLintFile);
                 test.assumeFalse(contains(jsonLintFile, test.excludeJsonLintFile));
                 ok = py.(test.lintModule).check(jsonLintFile);
+            end
+
+            assert(ok);
+
+        end
+
+        function testJsonSchema(test, jsonSchemaFile)
+
+            ok = false;
+
+            if test.isPySetup
+                dispif(mrstVerbose, 'Validating JSON schema %s\n', jsonSchemaFile);
+                ok = py.(test.validateModule).checkSchema(jsonSchemaFile);
             end
 
             assert(ok);
@@ -106,6 +126,31 @@ classdef TestJsonFiles < matlab.unittest.TestCase
             end
 
             assert(ok);
+
+        end
+
+    end
+
+    methods (Static)
+
+        function filenames = findJsonFiles(pattern)
+
+            rootdir = getCanonicalPath(battmoDir());
+            files = dir(fullfile(rootdir, '**', pattern));
+            folders = {files.folder};
+
+            excludedRoots = {fullfile(rootdir, 'Externals'), ...
+                             fullfile(rootdir, '.git'), ...
+                             fullfile(rootdir, 'Documentation', '.venv')};
+
+            include = true(1, numel(files));
+            for iroot = 1 : numel(excludedRoots)
+                root = [excludedRoots{iroot}, filesep];
+                include = include & ~startsWith(folders, root);
+            end
+
+            files = files(include);
+            filenames = arrayfun(@(s) fullfile(s.folder, s.name), files, 'uniformoutput', false);
 
         end
 
