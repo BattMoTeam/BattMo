@@ -18,8 +18,8 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 % We change some parameters to get a smaller model and simulation time.
 
 jsonstruct_geometry.Geometry.outerRadius = jsonstruct_geometry.Geometry.innerRadius + 4*milli*meter;
-jsonstruct_geometry.Geometry.numberOfDiscretizationCellsVertical = 2;
-jsonstruct_geometry.Geometry.numberOfDiscretizationCellsAngular  = 20;
+jsonstruct_geometry.Geometry.numberOfDiscreteCellsVertical = 2;
+jsonstruct_geometry.Geometry.numberOfDiscreteCellsAngular  = 20;
 %% 
 % We use <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/FlatStructViewer.m 
 % FlatStructViewer.m> to flatten the json structure and print it to screen.

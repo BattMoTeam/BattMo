@@ -54,7 +54,7 @@
           "openCircuitPotential": {
             "functionFormat": "named function",
             "functionName": "computeOCP_Graphite_SiOx_Chen2020",
-            "argumentList": ["stoichiometry"],
+            "argumentList": ["stoichiometry"]
           },
           "reactionRateConstant": 6.716e-12,
           "saturationConcentration": 33133,
@@ -87,7 +87,7 @@
         "electronicConductivity": 100,
         "massFraction": 0.03
       },
-      "N": 300,
+      "numberOfDiscreteCells": 300,
       "bruggemanCoefficient": 1.5,
       "effectiveDensity": 1427.2111504281352,
       "effectiveElectronicConductivity": 109.54067227961187,
@@ -159,7 +159,7 @@
         "electronicConductivity": 100,
         "massFraction": 0.025
       },
-      "N": 300,
+      "numberOfDiscreteCells": 300,
       "bruggemanCoefficient": 1.5,
       "effectiveDensity": 2735.5399127858072,
       "effectiveElectronicConductivity": 6.260344855082977,
@@ -178,7 +178,7 @@
   },
   "SOC": 0.99,
   "Separator": {
-    "N": 200,
+    "numberOfDiscreteCells": 200,
     "bruggemanCoefficient": 1.5,
     "density": 946,
     "porosity": 0.48,

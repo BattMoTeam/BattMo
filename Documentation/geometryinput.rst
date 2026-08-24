@@ -213,63 +213,66 @@ An illustration with different scalings for each axes which shows the different 
 :battmo:`SpiralBatteryGenerator`
 --------------------------------
 
-A geometry model for jelly rolls. Here, we have used parameters corresponding to th 4680 model.
+A geometry model for jelly rolls. Here, we have used parameters corresponding to the 4680 model.
 
-.. image:: img/jellyrollmodel.png
-           :width: 80%
+.. image:: img/jellyrollcombine.png
+           :width: 100%
 
-.. list-table:: Thickness and discretization number (**N**) are passed through the dictionaries :code:`widthDict` and :code:`nrDict`, with values used in plot above.
+.. list-table:: Thickness and :code:`numberOfDiscreteCells` for each layer, with values used in the plot above.
    :header-rows: 1
 
    * - Component
-     - Key name
-     - Length 
-     - N
+     - JSON path
+     - :code:`thickness`
+     - :code:`numberOfDiscreteCells`
    * - Separator
      - :code:`Separator`
-     - 50 μm
+     - 10 μm
      - 3
    * - Negative Electrode Coating
-     - :code:`NegativeCoating`
+     - :code:`NegativeElectrode.Coating`
      - 94 μm
      - 3
    * - Negative Electrode Current Collector
-     - :code:`NegativeCurrentCollector`
+     - :code:`NegativeElectrode.CurrentCollector`
      - 25 μm
      - 3
    * - Positive Electrode Coating
-     - :code:`PositiveCoating`
+     - :code:`PositiveElectrode.Coating`
      - 84 μm
      - 3
    * - Positive Electrode Current Collector
-     - :code:`PositiveCurrentCollector`
+     - :code:`PositiveElectrode.CurrentCollector`
      - 10 μm
      - 3
           
-.. list-table:: Other parameters, with values used in plot above.
+.. list-table:: Other parameters, with values used in the plot above.
    :header-rows: 1
                  
    * - Parameter
      - Name
      - Value
-   * - number of windings in the spiral
+   * - Computed number of windings in the spiral
      - :code:`nwindings`
      - 52
-   * - Inner Radius correspoding to the empty space in the middle
-     - :code:`rInner`
+   * - Inner radius corresponding to the empty space in the middle
+     - :code:`innerRadius`
      - 2 mm
+   * - Outer radius of the battery
+     - :code:`outerRadius`
+     - 23 mm
    * - Height of the battery
-     - :code:`L`
+     - :code:`height`
      - 70 mm
-   * - number of cells in the angular direction
-     - :code:`nas`
+   * - Number of discrete cells in the angular direction
+     - :code:`numberOfDiscreteCellsAngular`
      - 20
-   * - number of discretization cells in the longitudonal
-     - :code:`nL`
+   * - Number of discrete cells in the vertical direction
+     - :code:`numberOfDiscreteCellsVertical`
      - 10
 
-There are parameters for the tabs that we do not detail here, see :battmofile:`json
-schema<Utilities/JsonSchemas/Geometry.schema.json#242>`. The json source is available
+There are parameters for the tabs that we do not detail here, see :battmofile:`JSON
+schema<Utilities/JsonSchemas/Geometry.schema.json#249>`. The JSON source is available
 :battmofile:`here<Examples/Documentation/jsonfiles/4680-geometry.json>`.
 
 .. _coincell:

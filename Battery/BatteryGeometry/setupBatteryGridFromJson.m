@@ -28,15 +28,15 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
 
         gen.xlength = xlength;
 
-        gen.sepnx  = jsonstruct.Separator.N;
-        gen.nenx   = jsonstruct.NegativeElectrode.Coating.N;
-        gen.penx   = jsonstruct.PositiveElectrode.Coating.N;
+        gen.sepnx  = jsonstruct.Separator.numberOfDiscreteCells;
+        gen.nenx   = jsonstruct.NegativeElectrode.Coating.numberOfDiscreteCells;
+        gen.penx   = jsonstruct.PositiveElectrode.Coating.numberOfDiscreteCells;
 
         if inputparams.NegativeElectrode.include_current_collectors
-            gen.ccnenx = jsonstruct.NegativeElectrode.CurrentCollector.N;
+            gen.ccnenx = jsonstruct.NegativeElectrode.CurrentCollector.numberOfDiscreteCells;
         end
         if inputparams.PositiveElectrode.include_current_collectors
-            gen.ccpenx = jsonstruct.PositiveElectrode.CurrentCollector.N;
+            gen.ccpenx = jsonstruct.PositiveElectrode.CurrentCollector.numberOfDiscreteCells;
         end
 
         if isfield(jsonstruct.Geometry, 'faceArea')
@@ -66,11 +66,11 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                                    jsonstruct.(pe).(co).thickness ; ...
                                    jsonstruct.(pe).(cc).thickness];
 
-        gen.sep_nz   = jsonstruct.(sep).N;
-        gen.ne_co_nz = jsonstruct.(ne).(co).N;
-        gen.pe_co_nz = jsonstruct.(pe).(co).N;
-        gen.ne_cc_nz = jsonstruct.(ne).(cc).N;
-        gen.pe_cc_nz = jsonstruct.(pe).(cc).N;
+        gen.sep_nz   = jsonstruct.(sep).numberOfDiscreteCells;
+        gen.ne_co_nz = jsonstruct.(ne).(co).numberOfDiscreteCells;
+        gen.pe_co_nz = jsonstruct.(pe).(co).numberOfDiscreteCells;
+        gen.ne_cc_nz = jsonstruct.(ne).(cc).numberOfDiscreteCells;
+        gen.pe_cc_nz = jsonstruct.(pe).(cc).numberOfDiscreteCells;
 
 
         gen.tab_width     = jsonstruct.(geom).tab.width;
@@ -107,11 +107,11 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
         zlength(5) = jsonstruct.PositiveElectrode.CurrentCollector.thickness;
         gen.zlength = zlength;
 
-        gen.sep_nz   = jsonstruct.Separator.N;
-        gen.ne_co_nz = jsonstruct.NegativeElectrode.Coating.N;
-        gen.pe_co_nz = jsonstruct.PositiveElectrode.Coating.N;
-        gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.N;
-        gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.N;
+        gen.sep_nz   = jsonstruct.Separator.numberOfDiscreteCells;
+        gen.ne_co_nz = jsonstruct.NegativeElectrode.Coating.numberOfDiscreteCells;
+        gen.pe_co_nz = jsonstruct.PositiveElectrode.Coating.numberOfDiscreteCells;
+        gen.ne_cc_nz = jsonstruct.NegativeElectrode.CurrentCollector.numberOfDiscreteCells;
+        gen.pe_cc_nz = jsonstruct.PositiveElectrode.CurrentCollector.numberOfDiscreteCells;
 
         xlength = gen.xlength;
         xlength(1) = jsonstruct.NegativeElectrode.CurrentCollector.tab.width;
@@ -164,23 +164,24 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
                    widthDict('Separator')];
         dr = sum(nwidths);
 
-        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsVertical'}, 4);
-        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscretizationCellsAngular'}, 6);
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscreteCellsVertical'}, 4);
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'numberOfDiscreteCellsAngular'}, 6);
         jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'verticalRefinementParameter'}, []);
+        jsonstruct = setDefaultStructField(jsonstruct, {'Geometry', 'exteriorNegativeElectrodeLayer'}, true);
 
         rOuter   = jsonstruct.Geometry.outerRadius;
         rInner   = jsonstruct.Geometry.innerRadius;
         L        = jsonstruct.Geometry.height;
-        nL       = jsonstruct.Geometry.numberOfDiscretizationCellsVertical;
-        nas      = jsonstruct.Geometry.numberOfDiscretizationCellsAngular;
+        nL       = jsonstruct.Geometry.numberOfDiscreteCellsVertical;
+        nas      = jsonstruct.Geometry.numberOfDiscreteCellsAngular;
         refLcoef = jsonstruct.Geometry.verticalRefinementParameter;
         
         nrDict = containers.Map();
-        nrDict('Separator')                = jsonstruct.Separator.N;
-        nrDict('NegativeCoating')          = jsonstruct.NegativeElectrode.Coating.N;
-        nrDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.N;
-        nrDict('PositiveCoating')          = jsonstruct.PositiveElectrode.Coating.N;
-        nrDict('PositiveCurrentCollector') = jsonstruct.PositiveElectrode.CurrentCollector.N;
+        nrDict('Separator')                = jsonstruct.Separator.numberOfDiscreteCells;
+        nrDict('NegativeCoating')          = jsonstruct.NegativeElectrode.Coating.numberOfDiscreteCells;
+        nrDict('NegativeCurrentCollector') = jsonstruct.NegativeElectrode.CurrentCollector.numberOfDiscreteCells;
+        nrDict('PositiveCoating')          = jsonstruct.PositiveElectrode.Coating.numberOfDiscreteCells;
+        nrDict('PositiveCurrentCollector') = jsonstruct.PositiveElectrode.CurrentCollector.numberOfDiscreteCells;
 
         % compute numbers of winding (this is input for spiralGrid) from outer and inner radius
         nwidths = [widthDict('PositiveCoating')          ; ...
@@ -213,6 +214,7 @@ function [inputparams, gridGenerator] = setupBatteryGridFromJson(inputparams, js
             tabparams.PositiveElectrode = jsonstruct.(pe).(cc).tabparams;
             params.tabparams = tabparams;
             params.angleuniform = true;
+            params.exteriorNegativeElectrodeLayer = jsonstruct.Geometry.exteriorNegativeElectrodeLayer;
 
             gen = SpiralBatteryGenerator();
 

@@ -185,13 +185,14 @@
                   "const" : "full"}}}}]}}},
 
     "jellyRoll" : {
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}],
       "properties" : {
         "Geometry" : {
           "properties" : {
             "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "innerRadius"  : {
+            "innerRadius" : {
               "type" : "number",
               "description" : "inner radius"},
             "height" : {
@@ -203,32 +204,33 @@
             "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
               "description" : "discretisation parameter giving the number of angular sectors of the grid in the horizontal plane"},
+            "verticalRefinementParameter" : {
+              "type" : "number",
+              "description" : "coefficient used to refine the grid near the top and bottom"},
             "exteriorNegativeElectrodeLayer" : {
               "type" : "boolean",
-              "description" : "if true, both outer layers are made of negative electrode material, otherwise it is only the outer one"}},
+              "default" : true,
+              "description" : "if true, both outer layers are made of negative electrode material, otherwise it is only the outer one"}}},
         "NegativeElectrode" : {
           "properties" : {
             "CurrentCollector" : {
-              "properties": {
-                "tabparams" : {"$ref" : "#/$defs/tabparams"}
-              }}}},
+              "properties" : {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}}}}},
         "PositiveElectrode" : {
           "properties" : {
             "CurrentCollector" : {
-              "properties": {
-                "tabparams" : {"$ref" : "#/$defs/tabparams"}
-              }}}}
-      },
-      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+              "properties" : {
+                "tabparams" : {"$ref" : "#/$defs/tabparams"}}}}}}},
 
     "sectorModel" : {
+      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}],
       "properties" : {
         "Geometry" : {
           "properties" : {
             "outerRadius" : {
               "type" : "number",
               "description" : "outer radius"},
-            "innerRadius"  : {
+            "innerRadius" : {
               "type" : "number",
               "description" : "inner radius"},
             "height" : {
@@ -239,8 +241,10 @@
               "description" : "discretization parameter giving the number of grid cells in the vertical direction"},
             "numberOfDiscreteCellsAngular" : {
               "type" : "integer",
-              "description" : "the angle of the sector is computed as 2*pi/nas"}}}},
-      "allOf" : [{"$ref" : "#/$defs/layerSpecs"}]},
+              "description" : "the angle of the sector is computed as 2*pi divided by numberOfDiscreteCellsAngular"},
+            "verticalRefinementParameter" : {
+              "type" : "number",
+              "description" : "coefficient used to refine the grid near the top and bottom"}}}}},
 
     "tabparams" : {
       "type" : "object",

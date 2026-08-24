@@ -57,11 +57,11 @@ classdef Scanning < handle
 
             % We do not need fine discretization, set it to minimum
 
-            jsonstruct.(ne).(co).N = 1;
-            jsonstruct.(pe).(co).N = 1;
-            jsonstruct.(ne).(cc).N = 1;
-            jsonstruct.(pe).(cc).N = 1;
-            jsonstruct.(sep).N = 1;
+            jsonstruct.(ne).(co).numberOfDiscreteCells = 1;
+            jsonstruct.(pe).(co).numberOfDiscreteCells = 1;
+            jsonstruct.(ne).(cc).numberOfDiscreteCells = 1;
+            jsonstruct.(pe).(cc).numberOfDiscreteCells = 1;
+            jsonstruct.(sep).numberOfDiscreteCells = 1;
             
             sc.jsonstruct = jsonstruct;
             
@@ -114,4 +114,3 @@ classdef Scanning < handle
 
     
 end
-
