@@ -61,13 +61,15 @@ if doplot.jellyroll
 
     model = setupModelFromJson(jsonstruct);
 
+    cwdir = fullfile(battmoDir(), 'Examples', 'Documentation');
+
     fig1 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
                     'figure', fig1);
     axis equal tight off;
     camlight left;
     drawnow
-    exportgraphics(fig1, 'jellyroll1.pdf', 'Resolution', 300);
+    exportgraphics(fig1, fullfile(cwdir, 'jellyroll1.pdf'), 'Resolution', 300);
 
     fig2 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', true, ...
@@ -81,7 +83,7 @@ if doplot.jellyroll
     cam.do();
     camlight left;
     drawnow
-    exportgraphics(fig2, 'jellyroll2.pdf', 'Resolution', 300);
+    exportgraphics(fig2, fullfile(cwdir, 'jellyroll2.pdf'), 'Resolution', 300);
 
     fig3 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
@@ -95,11 +97,17 @@ if doplot.jellyroll
     cam.do();
     camlight left;
     drawnow
-    exportgraphics(fig3, 'jellyroll3.pdf', 'Resolution', 300);
+    exportgraphics(fig3, fullfile(cwdir, 'jellyroll3.pdf'), 'Resolution', 300);
 
-    system('pdflatex jellyrollcombine.tex');
-    system('convert -density 300 jellyrollcombine.pdf jellyrollmodel.png');
-    system(sprintf('mv jellyrollmodel.png %s', fullfile(battmoDir(), 'Documentation', 'img')));
+    currentDir = pwd();
+    cd(cwdir);
+    st = system('pdflatex jellyrollcombine.tex');
+    cd(currentDir);
+    assert(st == 0, 'pdflatex failed to compile jellyrollcombine.tex');
+    st = system(sprintf('convert -density 300 %s %s', fullfile(cwdir, 'jellyrollcombine.pdf'), fullfile(cwdir, 'jellyrollmodel.png')));
+    assert(st == 0, 'convert failed to convert jellyrollcombine.pdf to png');
+    st = system(sprintf('mv %s %s', fullfile(cwdir, 'jellyrollcombine.png'), fullfile(battmoDir(), 'Documentation', 'img')));
+    assert(st == 0, 'mv failed to move the figure jellyrollcombine.png');
 
 end
 
