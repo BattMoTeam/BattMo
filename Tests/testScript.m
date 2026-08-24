@@ -67,8 +67,6 @@ if doTestJsonFiles
     import matlab.unittest.plugins.StopOnFailuresPlugin
     runner.addPlugin(StopOnFailuresPlugin)
     results = runner.run(suite);
-
-    %results = runner.runInParallel(suite);
 end
 
 doTestChen2020 = true;
