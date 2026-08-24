@@ -81,6 +81,15 @@ if doTestChen2020
 
 end
 
+doTestPython = false;
+if doTestPython
+    suite = testsuite('TestPython');
+    runner = testrunner('textoutput');
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+end
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
