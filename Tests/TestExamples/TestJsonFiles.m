@@ -81,7 +81,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 ok = py.(test.lintModule).check(jsonLintFile);
             end
 
-            assert(ok);
+            assert(ok, 'JSON linting failed for %s', jsonLintFile);
 
         end
 
@@ -94,7 +94,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 ok = py.(test.validateModule).checkSchema(jsonSchemaFile);
             end
 
-            assert(ok);
+            assert(ok, 'JSON schema validation failed for %s', jsonSchemaFile);
 
         end
 
@@ -108,24 +108,23 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
             end
 
-            assert(ok);
+            assert(ok, 'JSON dataset validation failed for %s', jsonDataSet);
 
         end
 
         function testJsonDataFile(test, jsonDataFile)
 
             ok = false;
+            jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
+            schemafile = [jsonDataFile{2}, '.schema.json'];
 
             if test.isPySetup
-                jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
-                schemafile = [jsonDataFile{2}, '.schema.json'];
-
                 dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
                 test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
                 ok = py.(test.validateModule).validate(battmoDir(), jsonfile, schemafile);
             end
 
-            assert(ok);
+            assert(ok, 'JSON validation failed for %s against %s', jsonfile, schemafile);
 
         end
 
