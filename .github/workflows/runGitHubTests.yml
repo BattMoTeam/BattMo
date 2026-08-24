@@ -3,11 +3,15 @@ name: Running runGitHubTests
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events
+  # Run after pushes to main
   push:
-    branches: [ main, dev ]
+    branches: [main]
+
+  # Run for PRs unless all changes are under Documentation/**
   pull_request:
-    
+    paths-ignore:
+      - 'Documentation/**'
+
 jobs:
   # This workflow contains a single job called "build"
   build:

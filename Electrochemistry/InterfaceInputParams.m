@@ -48,7 +48,8 @@ classdef InterfaceInputParams < InputParams
         
         %% Double layer capacity
         useDoubleLayerCapacity % if true, add double layer capacity (default is false)
-        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2      
+        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2
+        
     end
     
     methods
