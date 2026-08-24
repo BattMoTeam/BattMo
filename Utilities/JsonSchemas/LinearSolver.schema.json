@@ -19,20 +19,20 @@
 
     "reduction" : {
       "type" : "object",
+      "description" : "The reduction of Control.I and Control.E is done conditionally",
       "properties" : {
         "doReduction": {"type" : "boolean"},
-        "description" : "The reduction of Control.I and Control.E is done conditionally",
         "variables" : {
           "type" : "array",
           "description" : "list of the variables that will be eliminated before inverting the linear system",
           "items" : {
             "type" : "object",
+            "description" : "If special is true, it reminds us that some variables such as Control.I and Control.E can be reduced or not depending on the type of control that is active",
             "properties" : {
               "name" : {"$ref" : "#/$defs/variable"},
               "order" : {"type" : "integer",
                          "description" : "gives order in which reduction should be done"},
-              "special" : {"type" : "boolean"},
-              "description" : "If special is true, it reminds us that some variables such as Control.I and Control.E can be reduced or not depending on the type of control that is active"}
+              "special" : {"type" : "boolean"}}
           }
         }
       }
@@ -48,16 +48,16 @@
           "method" : {"const": "direct"}}
         },
 
-        {"properties" : {
+        {"description" : "we run gmres on the whole system with one preconditioner",
+         "properties" : {
           "method" : {"const" : "grouped-gmres"},
-          "description" : "we run gmres on the whole system with one preconditioner",
           "gmres_options" : {"$ref" : "#/$defs/matlab_gmres_options"},
           "preconditioner" : {"$ref" : "#"}}
         },
 
-        {"properties" : {
+        {"description" : "We use separate preconditioner for chosen variables",
+         "properties" : {
           "method" : {"const" : "separate-variable-gmres"},
-          "description" : "We use separate preconditioner for chosen variables",
           "options" : {"type" : "object",
                        "properties" : {"type" : {"type" : "string",
                                                  "enum" : ["jacobi", "gauss-seidel"]}},
@@ -86,18 +86,20 @@
 
      "oneOf": [
 
-       {"properties" : {
-         "method" : {"const": "standard"},
-         "description": "solve until convergence. This is the default method"}
+       {"description": "solve until convergence. This is the default method",
+        "properties" : {
+         "method" : {"const": "standard"}
+         }
        },
 
-       {"properties" : {
-         "method" : {"const": "amg"},
-         "description" : "only one iteration"}},
+       {"description" : "only one iteration",
+        "properties" : {
+         "method" : {"const": "amg"}
+         }},
 
-       {"properties" : {
+       {"description" : "We use separate preconditioner for chosen variables",
+        "properties" : {
          "method" : {"const" : "separate-variable-gmres"},
-         "description" : "We use separate preconditioner for chosen variables",
          "preconditioners" : {"$ref": "#/$defs/separate_variable_preconditioners"}}}
      ]
 

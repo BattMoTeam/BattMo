@@ -61,7 +61,7 @@
     "doubleLayerCapacitance" : {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "double layer capacitance"
-    }    
+    },
     "openCircuitPotential": {
       "allOf": [
         {"$ref": "Function.schema.json"},

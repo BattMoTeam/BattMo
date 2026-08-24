@@ -27,7 +27,7 @@
     {"properties" : {
       "functionFormat" : {
         "const" : "tabulated",
-        "description" : "The function is provided as tabulated data.  We give arrays for the input and output values. The output value for an arbitrary argument value is obtained by linear interpolation using the tabulated value"},
+        "description" : "The function is provided as tabulated data.  We give arrays for the input and output values. The output value for an arbitrary argument value is obtained by linear interpolation using the tabulated value"}},
       "oneOf" : [
         {"properties" : {
           "argumentList" : {
@@ -56,8 +56,8 @@
           "dataY" : {
             "type" : "array",
             "items" : {"type" : "array",
-                       "items" : "number"},
-            "description" : "matrix (array of array) of size N1 x N2"}}}]}},
+                       "items" : {"type" : "number"}},
+            "description" : "matrix (array of array) of size N1 x N2"}}}]},
     {"properties" : {
       "functionFormat" : {
         "const" : "named function",
@@ -105,5 +105,4 @@
     }
   }
 }
-
 
