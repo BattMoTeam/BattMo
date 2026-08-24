@@ -1,8 +1,10 @@
-doplot.illustration1D  = true;
-doplot.illustration3D  = true;
-doplot.jellyroll       = true;
-doplot.coincell        = true;
-doplot.multilayerpouch = true;
+if ~exist('doplot', 'var')
+    doplot.illustration1D  = true;
+    doplot.illustration3D  = true;
+    doplot.jellyroll       = true;
+    doplot.coincell        = true;
+    doplot.multilayerpouch = true;
+end
 
 if doplot.illustration1D
 
@@ -20,7 +22,7 @@ if doplot.illustration1D
     model = Battery(inputparams);
 
     plotBatteryGrid(model);
-    
+
 end
 
 if doplot.illustration3D
@@ -39,47 +41,86 @@ if doplot.illustration3D
     model = Battery(inputparams);
 
     plotBatteryGrid(model);
-    
+
 end
 
 
 
 if doplot.jellyroll
-    
+
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-    jsonstruct_material.include_current_collectors = true;    
-    
+    jsonstruct_material.include_current_collectors = true;
+
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/4680-geometry.json');
-    
+    jsonstruct_geometry.Geometry.exteriorNegativeElectrodeLayer = true;
+    jsonstruct_geometry.Geometry.numberOfDiscreteCellsAngular = 30;
+    jsonstruct_geometry.Geometry.numberOfDiscreteCellsVertical = 10;
+
     jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
-    [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
+    model = setupModelFromJson(jsonstruct);
 
-    figure
-    plotGrid(model.grid, 'edgealpha', 0.1);
-    
+    fig1 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
+                    'figure', fig1);
+    axis equal tight off;
+    camlight left;
+    drawnow
+    exportgraphics(fig1, 'jellyroll1.pdf', 'Resolution', 300);
+
+    fig2 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', true, ...
+                    'figure', fig2);
+    axis equal tight off;
+    cam = SetupCamera(model.grid);
+    cam.cameraTarget = [jsonstruct_geometry.Geometry.innerRadius; 0; cam.z];
+    cam.viewAngle = 1.5;
+    cam.azimuthalAngle = 50;
+    cam.polarAngle = 130;
+    cam.do();
+    camlight left;
+    drawnow
+    exportgraphics(fig2, 'jellyroll2.pdf', 'Resolution', 300);
+
+    fig3 = figure;
+    plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
+                    'figure', fig3);
+    axis equal tight off;
+    cam = SetupCamera(model.grid);
+    cam.cameraTarget = [jsonstruct_geometry.Geometry.outerRadius; 0; cam.z];
+    cam.viewAngle = 3;
+    cam.azimuthalAngle = 50;
+    cam.polarAngle = 130;
+    cam.do();
+    camlight left;
+    drawnow
+    exportgraphics(fig3, 'jellyroll3.pdf', 'Resolution', 300);
+
+    system('pdflatex jellyrollcombine.tex');
+    system('convert -density 300 jellyrollcombine.pdf jellyrollmodel.png');
+    system(sprintf('mv jellyrollmodel.png %s', fullfile(battmoDir(), 'Documentation', 'img')));
+
 end
 
 if doplot.multilayerpouch
 
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
-    jsonstruct_material.include_current_collectors = true;    
-    
+    jsonstruct_material.include_current_collectors = true;
+
     % load json struct for geometry
     jsonstruct_geometry = parseBattmoJson('Examples/JsonDataFiles/geometryMultiLayerPouch.json');
-    
+
     jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
     [model, inputparams, jsonstruct, gridGenerator] = setupModelFromJson(jsonstruct);
 
     plotBatteryGrid(model);
-    
+
 end
 
-
 if doplot.coincell
-    
+
     %% Coin cell
 
     mrstModule add ad-core mrst-gui mpfa upr
@@ -159,4 +200,3 @@ if doplot.coincell
     plotBatteryGrid(model)
 
 end
-
