@@ -26,6 +26,8 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         refLcoef     % coefficient use in refinement at top/bottom
         angleuniform
 
+        exteriorNegativeElectrodeLayer % boolean, true if we want to have negative electrode on all outer layers.
+        
         tag     % cell-valued vector giving component number (indexing is given by tagdict)
         tagdict % dictionary giving the component number
 
@@ -75,7 +77,9 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             gen.refLcoef     = params.refLcoef;
             gen.tabparams    = params.tabparams;
             gen.angleuniform = params.angleuniform;
-
+            
+            gen.exteriorNegativeElectrodeLayer = params.exteriorNegativeElectrodeLayer;
+            
             gen.use_thermal = inputparams.use_thermal;
 
             [inputparams, gen] = gen.setupBatteryInputParams(inputparams, []);
@@ -113,9 +117,16 @@ classdef SpiralBatteryGenerator < BatteryGenerator
         end
 
 
-        function UGrids = setupUnRolledGrids(gen, inputparams)
+        function UGrids = setupUnRolledGrids(gen, inputparams, varargin)
 
-            G            = gen.G;
+        % Allow for setting the size of the unrolled grid
+            opt = struct('setX', [], ...
+                         'setY', [], ...
+                         'setZ', []);
+            opt = merge_options(opt, varargin{:});
+
+            G            = inputparams.G;
+
             widthLayer   = gen.widthLayer;
             nWidthLayer  = gen.nWidthLayer;
             heightLayer  = gen.heightLayer;
@@ -130,11 +141,11 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             vecttbl.vect = (1 : cartG.griddim)';
             vecttbl = IndexArray(vecttbl)';
 
-            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.getNumberOfCells())');
+            [indi, indj, indk] = ind2sub([nas*nwindings, sum(nWidthLayer), nL], (1 : cartG.cells.num)');
             cartcelltbl.indi = indi;
             cartcelltbl.indj = indj;
             cartcelltbl.indk = indk;
-            cartcelltbl.cells = (1 : cartG.getNumberOfCells())';
+            cartcelltbl.cells = (1 : cartG.cells.num)';
             cartcelltbl = IndexArray(cartcelltbl);
 
             cellindjtbl.indj = (1 : sum(nWidthLayer))';
@@ -225,6 +236,18 @@ classdef SpiralBatteryGenerator < BatteryGenerator
 
             znode = map.eval(znode);
 
+            if ~isempty(opt.setX)
+                assert(abs(min(xnode)) < eps);
+                assert(abs(max(xnode)) > eps);
+                xnode = xnode / max(xnode) * opt.setX;
+            end
+            if ~isempty(opt.setY)
+                error('Not implemented');
+            end
+            if ~isempty(opt.setZ)
+                error('Not implemented');
+            end
+
             cartG.nodes.coords = [xnode, ynode, znode];
             cartG = computeGeometry(cartG);
 
@@ -242,12 +265,15 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             tag     = gen.tag;
 
             clear celltbl
-            celltbl.cartcells = (1 : cartG.getNumberOfCells())';
+            celltbl.cartcells = (1 : cartG.cells.num)';
             celltbl.cells = cartInd;
             celltbl = IndexArray(celltbl);
 
             UGrids.G = cartG;
             UGrids.G.mappings.ind = cartInd;
+
+            % Convert to Grid()
+            cartG = Grid(cartG);
 
             compG = inputparams.(pe).(cc).G;
             comptag = tagdict('PositiveCurrentCollector');
@@ -271,7 +297,7 @@ classdef SpiralBatteryGenerator < BatteryGenerator
             Gs.CurrentCollector = compCartG;
 
             compG = inputparams.(ne).(co).G;
-            comptag = tagdict('NegativeActiveMaterial');
+            comptag = tagdict('NegativeCoating');
             compCartG = genSubGrid(cartG, find(tag(cartInd) == comptag));
             compCartG = setupCompCartGrid(gen, compG, compCartG, celltbl);
             Gs.Coating = compCartG;
