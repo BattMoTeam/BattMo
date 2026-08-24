@@ -77,18 +77,8 @@
         "type" : "string",
         "description" : "name of the method in the class"},
       "parameters" : {
-        "type" : "array",
-        "items" : {
-          "type" : "object",
-          "properties" : {
-            "name" : {
-              "type" : "string",
-              "description" : "name of the parameter"},
-            "value" : {
-              "type" : "number"
-              "description" : "value of the parameter. For the moment, we consider only scalar value"}
-          }}
-      }},
+        "type" : "object",
+        "description" : "parameters to be passed to the class constructor. The parameters are given as a dictionary of name-value pairs. The names must match the names of the parameters in the class constructor"}}},
     {"properties" : {
       "functionFormat" : {
         "const" : "string expression",
