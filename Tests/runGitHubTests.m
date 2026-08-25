@@ -42,7 +42,7 @@ import matlab.unittest.TestRunner
 % Setup
 mrstVerbose 'off';
 stopOnError        = false;
-runTestsInParallel = true;
+runTestsInParallel = false; % Keep this false for github runners
 doAssertSuccess    = true;
 
 % Define which test cases to run (these are run in order)
