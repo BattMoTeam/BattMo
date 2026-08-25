@@ -1,18 +1,35 @@
-%% Calibrate ECM model from P2D model
+%% Calibration ECM model from P2D model
+%
+% We calibrate the ECM model parameters from the EIS response of a P2D model. The calibration is
+% done for a set of state of charge. 
 %
 
-soc_step = 0.5;
+%% P2D reference model 
+% We load the data of the P2D model. The input is the same as for the P2D simulation
+%
+%%
+% We load first the material parameters
+filename = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json');
+jsonstruct_material = parseBattmoJson(filename);
+%%
+% Then, the geometrical parameters
+filename = fullfile('Examples', 'JsonDataFiles', 'geometryChen.json');
+jsonstruct_geometry = parseBattmoJson(filename);
+%%
+% We merge the two
+jsonstruct_p2d = mergeStructs({jsonstruct_material, ...
+                               jsonstruct_geometry});
 
 %%
-% The results of the calibration is given in a struct where the fields are functions in battmo table format
+% The calibration is done at different state of charge. To dei
 
-jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
-jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
+soc_values = [0.1; 0.5; 1];
 
-jsonstruct_p2d = mergeStructs({jsonstruct_material, ...
-                                   jsonstruct_geometry});
+%%
+% The results of the calibration is given in a struct where the fields are functions given in the
+% battmo table format (see below)
    
-jsonstruct = calibrateEcmFromP2D(jsonstruct_p2d, soc_step);
+jsonstruct = calibrateEcmFromP2D(jsonstruct_p2d, soc_values);
 
 %% 
 % plot the results
