@@ -61,15 +61,12 @@ if doplot.jellyroll
 
     model = setupModelFromJson(jsonstruct);
 
-    cwdir = fullfile(battmoDir(), 'Examples', 'Documentation');
-
     fig1 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
                     'figure', fig1);
     axis equal tight off;
     camlight left;
     drawnow
-    exportgraphics(fig1, fullfile(cwdir, 'jellyroll1.pdf'), 'Resolution', 300);
 
     fig2 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', true, ...
@@ -83,7 +80,6 @@ if doplot.jellyroll
     cam.do();
     camlight left;
     drawnow
-    exportgraphics(fig2, fullfile(cwdir, 'jellyroll2.pdf'), 'Resolution', 300);
 
     fig3 = figure;
     plotBatteryGrid(model, 'setstyle', false, 'legend', false, ...
@@ -97,17 +93,25 @@ if doplot.jellyroll
     cam.do();
     camlight left;
     drawnow
-    exportgraphics(fig3, fullfile(cwdir, 'jellyroll3.pdf'), 'Resolution', 300);
 
-    currentDir = pwd();
-    cd(cwdir);
-    st = system('pdflatex jellyrollmodel.tex');
-    cd(currentDir);
-    assert(st == 0, 'pdflatex failed to compile jellyrollmodel.tex');
-    st = system(sprintf('convert -density 300 %s %s', fullfile(cwdir, 'jellyrollmodel.pdf'), fullfile(cwdir, 'jellyrollmodel.png')));
-    assert(st == 0, 'convert failed to convert jellyrollmodel.pdf to png');
-    st = system(sprintf('mv %s %s', fullfile(cwdir, 'jellyrollmodel.png'), fullfile(battmoDir(), 'Documentation', 'img')));
-    assert(st == 0, 'mv failed to move the figure jellyrollmodel.png');
+    createFig = false;
+    if createFig
+        cwdir = fullfile(battmoDir(), 'Examples', 'Documentation');
+
+        exportgraphics(fig1, fullfile(cwdir, 'jellyroll1.pdf'), 'Resolution', 300);
+        exportgraphics(fig2, fullfile(cwdir, 'jellyroll2.pdf'), 'Resolution', 300);
+        exportgraphics(fig3, fullfile(cwdir, 'jellyroll3.pdf'), 'Resolution', 300);
+
+        currentDir = pwd();
+        cd(cwdir);
+        st = system('pdflatex jellyrollmodel.tex');
+        cd(currentDir);
+        assert(st == 0, 'pdflatex failed to compile jellyrollmodel.tex');
+        st = system(sprintf('convert -density 300 %s %s', fullfile(cwdir, 'jellyrollmodel.pdf'), fullfile(cwdir, 'jellyrollmodel.png')));
+        assert(st == 0, 'convert failed to convert jellyrollmodel.pdf to png');
+        st = system(sprintf('mv %s %s', fullfile(cwdir, 'jellyrollmodel.png'), fullfile(battmoDir(), 'Documentation', 'img')));
+        assert(st == 0, 'mv failed to move the figure jellyrollmodel.png');
+    end
 
 end
 
