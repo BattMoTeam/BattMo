@@ -135,8 +135,9 @@ Scripts
 .. toctree::
    :hidden:
 
-   nblinks/runEquivalentCircuitModel.nblink
    nblinks/runImpedanceScript.nblink
+   nblinks/runImpedanceExplorer.nblink
+   nblinks/runEquivalentCircuitModel.nblink
    nblinks/runCalibration.nblink
    
 .. grid:: 2
@@ -144,13 +145,18 @@ Scripts
    .. grid-item-card::
       :padding: 2
 
-      :ref:`ECM simulation <runEquivalentCircuitModel>`
-                     
+      :ref:`Impedance Computation <runImpedanceScript>`
+           
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Impedance Computation <runImpedanceScript>`
-           
+      :ref:`Interactive EIS parameter exploration <runImpedanceExplorer>`
+
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`ECM simulation <runEquivalentCircuitModel>`
+              
    .. grid-item-card::
       :padding: 2
 

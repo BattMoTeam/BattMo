@@ -1,4 +1,5 @@
-%% Exploring the impact of the P2D parameters on EIS output
+%% Exploring interactively the impact of the P2D parameters on EIS output
+%
 
 %%
 % We load the raw BattMo JSON parameter files for chemistry (Chen2020) and geometry.
@@ -30,6 +31,7 @@ end
 %%
 % Instantiating the Impedance Explorer application handle with our custom JSON structure.
 %
+
 impexp = ImpedanceExplorer(jsonstruct);
 
 %%
