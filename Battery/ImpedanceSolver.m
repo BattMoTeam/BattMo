@@ -71,21 +71,21 @@ classdef ImpedanceSolver < handle
             
         end
 
-        function Z = computeImpedance(impsolv, omegas)
+        function Z = computeImpedance(impsolv, freqs)
             
             DM    = impsolv.DM;
             DA    = impsolv.DA;
             b     = impsolv.b;
             indUs = impsolv.indUs;
 
-            for iomega = 1 : numel(omegas)
+            for ifreq = 1 : numel(freqs)
 
-                omega = omegas(iomega);
+                freq = freqs(ifreq);
 
-                A = (i*2*pi*omega*DM + DA);
+                A = (i*2*pi*freq*DM + DA);
                 x = A\b;
 
-                Z(iomega) = x(indUs(1) : indUs(2));
+                Z(ifreq) = x(indUs(1) : indUs(2));
                 
             end
             

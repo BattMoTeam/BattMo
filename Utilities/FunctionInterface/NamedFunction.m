@@ -20,7 +20,6 @@ classdef NamedFunction < Function
             fdnames = {'functionName'};
 
             fn = dispatchParams(fn, jsonstruct, fdnames);
-
             fn.functionHandler = str2func(fn.functionName);
             
         end

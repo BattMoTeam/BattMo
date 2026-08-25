@@ -1,6 +1,9 @@
 % clear all
 % close all
 
+
+
+
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
@@ -44,18 +47,27 @@ extrastructs.initstate = initstate;
 
 impsolv = ImpedanceSolver(inputparams, options, extrastructs);
 
-%%
+
+
+
+
+
 
 set(0, 'defaultlinelinewidth', 3);
 
-omegas = linspace(-4, 2, 30);
-omegas = 10.^omegas;
-Z = impsolv.computeImpedance(omegas);
+
 
 figure
+
+
+omegas = logspace(-4, 2, 30);
+Z = impsolv.computeImpedance(omegas);
 hold on
 
 plot(real(Z), -imag(Z), 'displayname', 'battmo');
+
+axis equal;
+
 
 docompare = true;
 if docompare
