@@ -23,7 +23,7 @@ The geometrical model is 1D. Here, for the sake of the illustration, we plot a c
 
 .. image:: img/1dmodel.png
            :width: 80%
-                   
+
 
 .. list-table:: Parameters with values used in plot above
    :header-rows: 1
@@ -66,7 +66,7 @@ The geometrical model is 1D. Here, for the sake of the illustration, we plot a c
      - 3 cm^2
 
 .. _2dgeometry:
-         
+
 :battmo:`BatteryGeneratorP3D`
 -----------------------------
 
@@ -74,7 +74,7 @@ The geometrical model is 2D.
 
 .. image:: img/runbattery2d.png
            :width: 80%
-                   
+
 
 .. list-table:: Parameters with values used in plot above
    :header-rows: 1
@@ -117,11 +117,11 @@ The geometrical model is 2D.
      - 10
    * - discretization number in y direction
      - :code:`ny`
-     - 10   
+     - 10
 
-                   
+
 .. _3dgeometry:
-      
+
 :battmo:`BatteryGeneratorP4D`
 -----------------------------
 
@@ -134,7 +134,7 @@ An illustration with different scalings for each axes which shows the different 
 
 .. image:: img/3dmodel.png
            :width: 80%
-                   
+
 .. list-table:: Parameters with values used in plot above
    :header-rows: 1
 
@@ -158,7 +158,7 @@ An illustration with different scalings for each axes which shows the different 
      - 2 cm
    * - y-length of last tab
      - :code:`y(3)`
-     - 1 mm        
+     - 1 mm
    * - length of negative current collector
      - :code:`z(1)`
      - 10 μm
@@ -176,40 +176,40 @@ An illustration with different scalings for each axes which shows the different 
      - 10 μm
    * - discretization number in z-direction for separator
      - :code:`sep_nz`
-     - 3 
+     - 3
    * - discretization number in z-direction for positive active material
      - :code:`ne_am_nz`
-     - 3 
+     - 3
    * - discretization number in z-direction for negative active material
      - :code:`pe_am_nz`
-     - 3 
+     - 3
    * - discretization number in z-direction for negative current collector
      - :code:`ne_cc_nz`
-     - 2 
+     - 2
    * - discretization number in z-direction for positive current collector
      - :code:`pe_cc_nz`
-     - 2 
+     - 2
    * - discretization number in x-direction interior region
      - :code:`int_elyte_nx`
-     - 3 
+     - 3
    * - discretization number in x-direction negative tab region
      - :code:`ne_cc_nx`
-     - 3 
+     - 3
    * - discretization number in x-direction positive tab region
      - :code:`pe_cc_nx`
-     - 3 
+     - 3
    * - discretization number in y-direction interior region
      - :code:`elyte_ny`
-     - 4 
+     - 4
    * - discretization number in y-direction negative tab region
      - :code:`ne_cc_ny`
-     - 2 
+     - 2
    * - discretization number in y-direction positive tab region
      - :code:`pe_cc_ny`
-     - 2 
-                   
+     - 2
+
 .. _jellyroll:
-      
+
 :battmo:`SpiralBatteryGenerator`
 --------------------------------
 
@@ -245,10 +245,10 @@ A geometry model for jelly rolls. Here, we have used parameters corresponding to
      - :code:`PositiveElectrode.CurrentCollector`
      - 10 μm
      - 3
-          
+
 .. list-table:: Other parameters, with values used in the plot above.
    :header-rows: 1
-                 
+
    * - Parameter
      - Name
      - Value
@@ -273,10 +273,10 @@ A geometry model for jelly rolls. Here, we have used parameters corresponding to
 
 There are parameters for the tabs that we do not detail here, see :battmofile:`JSON
 schema<Utilities/JsonSchemas/Geometry.schema.json#249>`. The JSON source is available
-:battmofile:`here<Examples/Documentation/jsonfiles/4680-geometry.json>`.
+:battmofile:`here<Examples/JsonDataFiles/4680-geometry.json>`.
 
 .. _coincell:
-      
+
 :battmo:`CoinCellBatteryGenerator`
 ----------------------------------
 
@@ -288,7 +288,7 @@ A geometrical model for a coin cell.
 
 .. list-table:: Parameters for each component : thickness, diameter, number of cell layers (Nl), with the values used in the plot above (a CR 2016 coin cell)
    :header-rows: 1
-                 
+
    * - Component
      - Key name
      - Thickness
@@ -319,10 +319,10 @@ A geometrical model for a coin cell.
      - 0.73 mm
      - 20 mm
      - 9
-   
+
 .. list-table:: Other parameters, with values used in plot above
    :header-rows: 1
-                 
+
    * - Parameter
      - Name
      - Value
@@ -345,7 +345,7 @@ A geometrical model for a multi-layer pouch cell.
 
 .. list-table:: Parameters for each component : thickness and number of cell (Nl) for a layer, with the values used in the plot above
    :header-rows: 1
-                 
+
    * - Component
      - Name
      - Thickness
@@ -370,10 +370,10 @@ A geometrical model for a multi-layer pouch cell.
      - :code:`PositiveCurrentCollector`
      - 10 µm
      - 2
-   
+
 .. list-table:: Other parameters, with values used in plot above
    :header-rows: 1
-                 
+
    * - Parameter
      - Name
      - Value
@@ -385,7 +385,7 @@ A geometrical model for a multi-layer pouch cell.
      - 10 cm
    * - Length of the cell
      - :code:`length`
-     - 10 cm       
+     - 10 cm
    * - Discretization number for width
      - :code:`Electrolyte.Nx`
      - 2
@@ -394,7 +394,7 @@ A geometrical model for a multi-layer pouch cell.
      - 2
    * - Tabs width (same for negative and positive)
      - :code:`tab.width`
-     - 5 cm       
+     - 5 cm
    * - Tabs discretization number
      - :code:`tab.Nx`
      - 3
@@ -403,7 +403,7 @@ A geometrical model for a multi-layer pouch cell.
      - 4 cm
    * - Tab length of positive electrode
      - :code:`tab.PositiveElectrode.length`
-     - 2 cm       
+     - 2 cm
 
 
 See :battmofile:`json source file<Examples/JsonDataFiles/geometryMultiLayerPouch.json>` for this example.
