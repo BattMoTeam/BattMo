@@ -71,7 +71,7 @@ classdef ImpedanceExplorer < handle
             if nargin < 7, initVal = 0; end
             
             uilabel(fig, ...
-                    'Position', [50, ypos + 20, 500, 40], ...
+                    'Position', [50, ypos + 10, 500, 40], ...
                     'WordWrap', 'on', ...
                     'Text', txt);
             
@@ -116,6 +116,7 @@ classdef ImpedanceExplorer < handle
         end
         
         function start(impexp)
+            
             % Computes sizes and runs the App Designer UI Window
             pnames = impexp.setupParameterLegendNames();
             vals   = impexp.getParameterValues();
@@ -147,14 +148,16 @@ classdef ImpedanceExplorer < handle
             % Create parameter sliders
             sliders = cell(1, numParams);
             for iparam = 1 : numParams
-                txt = sprintf('%d. %s * 10^x (initial: %g)', iparam, pnames{iparam}, vals(iparam));
-                ypos = bottomOffset + iparam * sliderSpacing; 
+                txt = sprintf('%d) %s * 10^x (initial: %g)', iparam, pnames{iparam}, vals(iparam));
+                ypos = bottomOffset + (numParams - iparam + 1)*sliderSpacing; 
                 sliders{iparam} = impexp.setupSlider(fig, ypos, txt);
             end
             
             % Create SoC slider (at the absolute bottom)
-            socTxt = sprintf('State of Charge (SoC) - Current: %g', impexp.soc);
+            socTxt = sprintf('State of Charge (SoC)');
             socSlider = impexp.setupSlider(fig, bottomOffset, socTxt, [0, 1], 0:0.1:1, impexp.soc);
+
+            impexp.updatePlot(ax, lbl, sliders, socSlider);
             
             % Wire slider events to the updatePlot method
             callback_fcn = @(src, event) impexp.updatePlot(ax, lbl, sliders, socSlider);
@@ -162,6 +165,7 @@ classdef ImpedanceExplorer < handle
                 sliders{islider}.ValueChangedFcn = callback_fcn;
             end
             socSlider.ValueChangedFcn = callback_fcn;
+            
         end
         
         function updatePlot(impexp, ax, lbl, sliders, socSlider)
@@ -197,10 +201,13 @@ classdef ImpedanceExplorer < handle
                 
                 lbl.Text = 'Done';
                 lbl.FontColor = '#77AC30';
+                
             catch ME
+                
                 lbl.Text = 'Calculation failed.';
                 lbl.FontColor = '#A2142F';
                 fprintf('\n--- BATTMO CALCULATION ERROR ---\n%s\n', ME.message);
+                
             end
         end
     end
