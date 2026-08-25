@@ -129,8 +129,8 @@ charge-transfer resistance, and low frequencies reflect mass transport and
 diffusion processes, providing insight into the migration rate of lithium ions
 through the solid electrode particles.
 
-Scripts
-=======
+Notebooks
+=========
 
 .. toctree::
    :hidden:
