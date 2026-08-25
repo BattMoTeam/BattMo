@@ -47,13 +47,13 @@ function eisdata = load_chen_data()
     
     impsolv = ImpedanceSolver(inputparams, options, extrastructs);
     
-    omegas = logspace(-4, 2, 50);
+    omegas = logspace(-4, 2, 50)';
     Z = impsolv.computeImpedance(omegas);
 
     Z_real = real(Z);
     Z_imag = imag(Z);
 
-    eisdata = struct('Z_re_exp', Z_real, ...
-                     'Z_im_exp', Z_imag, ...
+    eisdata = struct('Z_re_exp', Z_real', ...
+                     'Z_im_exp', Z_imag', ...
                      'omega'   , omegas);
 end
