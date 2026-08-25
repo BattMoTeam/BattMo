@@ -11,7 +11,16 @@ import jsonschema
 from referencing import Registry, Resource
 import resolveFileInputJson as rjson
 
-VERBOSE = True
+VERBOSE = False
+
+
+def checkSchema(schemafile):
+    """Validate a JSON Schema document against its declared meta-schema."""
+    with open(schemafile) as fid:
+        schema = json.load(fid)
+    validator_class = jsonschema.validators.validator_for(schema)
+    validator_class.check_schema(schema)
+    return True
 
 
 def addSchema(schemaFolder, registry, schemaFilename):

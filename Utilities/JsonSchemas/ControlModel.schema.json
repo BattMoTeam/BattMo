@@ -13,7 +13,7 @@
                    "CCCV",
                    "powerControl",
                    "generic",
-		           "timeControl"]}}
+		   "timeControl"]}}
     }},
     "allOf": [
       {"if": {

@@ -1,21 +1,23 @@
-{"include_current_collectors" : true,
- "Geometry" : {
-   "case" : "jellyRoll",
-   "innerRadius" : 2e-3,
-   "outerRadius" : 23e-3,
-   "height" : 70e-3,
-   "numberOfDiscretizationCellsVertical" : 3,
-   "numberOfDiscretizationCellsAngular"  : 10
- },
+{
+  "include_current_collectors": true,
+  "Geometry" : {
+  "case" : "jellyRoll",
+  "innerRadius" : 2e-3,
+  "outerRadius" : 23e-3,
+  "height" : 70e-3,
+  "verticalRefinementParameter" : 3,
+  "numberOfDiscreteCellsAngular" : 10,
+  "numberOfDiscreteCellsVertical" : 10,
+  "exteriorNegativeElectrodeLayer" : true},
  "NegativeElectrode": {
    "Coating": {
      "thickness" : 94e-6,
-     "N" : 3,
+     "numberOfDiscreteCells" : 3,
      "SolidDiffusion" : {"N" : 5}
    },
    "CurrentCollector": {
      "thickness" : 25e-6,
-     "N" : 3,
+     "numberOfDiscreteCells" : 3,
      "tabparams" : {
        "usetab" : true,
        "width" : 3.5e-3,
@@ -23,17 +25,17 @@
  "PositiveElectrode": {
    "Coating": {
      "thickness" : 84e-6,
-     "N" : 3,
+     "numberOfDiscreteCells" : 3,
      "SolidDiffusion" : {"N" : 5}
    },
    "CurrentCollector": {
      "thickness" : 10e-6,
-     "N" : 3,
+     "numberOfDiscreteCells" : 3,
      "tabparams" : {
        "usetab" : true,
        "width" : 3.5e-3,
        "fractions" : [0.01, 0.1, 0.366, 0.544, 0.722, 0.9]}}},
  "Separator" : {
    "thickness" : 10e-6,
-   "N" : 3}
+   "numberOfDiscreteCells" : 3}
 }
