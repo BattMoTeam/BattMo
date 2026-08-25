@@ -9,10 +9,12 @@ disp(version)
 
 %% Display git commit ids and other stats
 testdir = pwd;
-[~, res] = system('git rev-parse --short HEAD');
+[st, res] = system('git rev-parse --short HEAD');
+assert(st == 0, 'Failed to get git commit id of BattMo');
 fprintf('%s %s', pwd, res);
 cd('../Externals/mrst');
-[~, res] = system('git rev-parse --short HEAD');
+[st, res] = system('git rev-parse --short HEAD');
+assert(st == 0, 'Failed to get git commit id of MRST');
 fprintf('%s', res);
 cd(testdir)
 
