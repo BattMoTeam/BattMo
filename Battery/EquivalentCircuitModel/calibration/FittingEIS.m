@@ -11,7 +11,7 @@ classdef FittingEIS < handle
 %     omega      - vector of angular frequencies (rad/s)
 %     Z_re_exp   - measured real part of impedance
 %     Z_im_exp   - measured imaginary part of impedance
-%     params0    - initial guess for [R0,R1,C1,R2,C2]
+%     params0    - initial guess for [R0, R1, C1, R2, C2]
 %     scales     - [pmin; pmax] used to map parameters to unit box
 %
 %   Key methods
@@ -70,6 +70,8 @@ classdef FittingEIS < handle
             
             if nargin < 3 || isempty(scales)
                 feis.setupDefaultScales();
+            else
+                feis.scales = scales;
             end
 
         end
