@@ -8,7 +8,7 @@
   "NegativeElectrode": {
     "Coating": {
       "thickness": 6.4e-05,
-      "N": 10,
+      "numberOfDiscreteCells": 10,
       "effectiveDensity": 1900,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
@@ -63,7 +63,7 @@
     },
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 10,
+      "numberOfDiscreteCells": 10,
       "electronicConductivity": 59600000.0,
       "thermalConductivity": 398,
       "specificHeatCapacity": 385,
@@ -73,7 +73,7 @@
   "PositiveElectrode": {
     "Coating": {
       "thickness": 5.7e-05,
-      "N": 10,
+      "numberOfDiscreteCells": 10,
       "effectiveDensity": 3500,
       "bruggemanCoefficient": 1.5,
       "ActiveMaterial": {
@@ -129,7 +129,7 @@
     },
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 10,
+      "numberOfDiscreteCells": 10,
       "electronicConductivity": 35500000.0,
       "thermalConductivity": 170,
       "specificHeatCapacity": 875.0,
@@ -138,7 +138,7 @@
   },
   "Separator": {
     "thickness": 1.5e-05,
-    "N": 10,
+    "numberOfDiscreteCells": 10,
     "porosity": 0.55,
     "specificHeatCapacity": 1978,
     "thermalConductivity": 0.334,

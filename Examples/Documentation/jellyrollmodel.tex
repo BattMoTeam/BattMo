@@ -1,0 +1,33 @@
+\documentclass[tikz,border=0pt]{standalone}
+
+\usepackage{graphicx}
+
+% Adjust these values to move or resize the individual panels.  Positions
+% are measured from the lower-left corner of the combined figure.
+\newcommand{\figOneX}{0cm}
+\newcommand{\figOneY}{0cm}
+\newcommand{\figOneWidth}{8cm}
+
+\newcommand{\figTwoX}{8.15cm}
+\newcommand{\figTwoY}{0cm}
+\newcommand{\figTwoWidth}{8cm}
+
+\newcommand{\figThreeX}{16.30cm}
+\newcommand{\figThreeY}{0cm}
+\newcommand{\figThreeWidth}{8cm}
+
+\begin{document}
+
+\begin{tikzpicture}[inner sep=0pt, outer sep=0pt]
+  \node[anchor=south west] at (\figOneX,\figOneY) {%
+    \includegraphics[width=\figOneWidth]{./jellyroll1.pdf}%
+  };
+  \node[anchor=south west] at (\figTwoX,\figTwoY) {%
+    \includegraphics[width=\figTwoWidth]{./jellyroll2.pdf}%
+  };
+  \node[anchor=south west] at (\figThreeX,\figThreeY) {%
+    \includegraphics[width=\figThreeWidth]{./jellyroll3.pdf}%
+  };
+\end{tikzpicture}
+
+\end{document}

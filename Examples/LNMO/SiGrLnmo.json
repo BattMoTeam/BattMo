@@ -128,7 +128,7 @@
         "specificHeatCapacity": 632,
         "thermalConductivity": 1.04
       },
-      "N": 300,
+      "numberOfDiscreteCells": 300,
       "activeMaterialModelSetup": {
         "composite": true
       },
@@ -140,7 +140,7 @@
       "use_thermal": false
     },
     "CurrentCollector": {
-      "N": 5,
+      "numberOfDiscreteCells": 5,
       "density": 8960,
       "electronicConductivity": 59600000.0,
       "specificHeatCapacity": 385,
@@ -197,7 +197,7 @@
         "electronicConductivity": 100,
         "massFraction": 0.025
       },
-      "N": 300,
+      "numberOfDiscreteCells": 300,
       "bruggemanCoefficient": 1.5,
       "effectiveDensity": 2735.5399127858072,
       "effectiveElectronicConductivity": 6.260344855082977,
@@ -214,7 +214,7 @@
   },
   "SOC": 0.99,
   "Separator": {
-    "N": 10,
+    "numberOfDiscreteCells": 10,
     "bruggemanCoefficient": 1.5,
     "density": 946,
     "porosity": 0.55,

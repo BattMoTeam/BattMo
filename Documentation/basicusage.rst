@@ -189,16 +189,16 @@ in the jsonstruct and re-run the simulation.
 
 .. code:: matlab
 
-   CRates = [0.5, 1, 2];
+   DRates = [0.8, 1, 2];
    figure()
-   for i = 1 : numel(CRates)
-       jsonstruct.Control.CRate = CRates(i);
+   for i = 1 : numel(DRates)
+       jsonstruct.Control.DRate = DRates(i);
        output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
        voltage = cellfun(@(state) state.Control.E, states);
-       plot((time/hour), voltage, '-', 'linewidth', 3)
+       plot(time/hour, voltage, '-', 'linewidth', 3)
        hold on
    end
    hold off
@@ -255,7 +255,7 @@ Now we load and parse the LFP material parameters from the |battmo| library and 
 
 .. code:: matlab
 
-   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP.json');
+   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP_Xu2015.json');
    jsonstruct_lfp.PositiveElectrode.Coating.ActiveMaterial.Interface = lfp;
 
 To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeStructs`.

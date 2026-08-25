@@ -12,8 +12,8 @@
       "type": "boolean",
       "description": "include thermal effects. Default is false"
     },
-    "PositiveElectrode" : {"$ref" : "#/$def/Electrode"},
-    "NegativeElectrode" : {"$ref" : "#/$def/Electrode"}
+    "PositiveElectrode" : {"$ref" : "#/$defs/Electrode"},
+    "NegativeElectrode" : {"$ref" : "#/$defs/Electrode"}
   },
   "$defs" : {
     "Electrode" : {

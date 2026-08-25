@@ -9,13 +9,13 @@
   "NegativeElectrode": {
     "Coating": {
       "thickness": 0.0001,
-      "N": 3,
+      "numberOfDiscreteCells": 3,
       "ActiveMaterial": {
         "SolidDiffusion": {
           "N": 10 }}},
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 2,
+      "numberOfDiscreteCells": 2,
       "tab": {
         "width": 0.004,
         "height": 0.001,
@@ -24,14 +24,14 @@
   "PositiveElectrode": {
     "Coating": {
       "thickness": 8e-05,
-      "N": 3,
+      "numberOfDiscreteCells": 3,
       "ActiveMaterial": {
         "SolidDiffusion": {
           "N": 10
         }}},
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 2,
+      "numberOfDiscreteCells": 2,
       "tab": {
         "width": 0.004,
         "height": 0.001,
@@ -39,7 +39,7 @@
         "Nh": 3}}},
   "Separator": {
     "thickness": 5e-05,
-    "N": 3 },
+    "numberOfDiscreteCells": 3 },
   "ThermalModel": {
     "externalHeatTransferCoefficientTab": 1000,
     "externalHeatTransferCoefficient": 100

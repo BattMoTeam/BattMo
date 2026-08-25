@@ -1,10 +1,13 @@
 #+TITLE: Documentation generation for BattMo
+
 * Requirements
+
 ** Installation
    Run from the Documentation directory where the ~requirements.txt~ file is
-   #+begin_src 
+   #+begin_src
      pip install -r requirements.txt
    #+end_src
+
 ** Overview of the package used in sphinx
 *** sphinx
     installation instruction described [[https://www.sphinx-doc.org/en/master/usage/installation.html][here]]
@@ -32,12 +35,12 @@
 *** collapse
     #+begin_src shell
       python -m pip install sphinx_collapse
-    #+end_src   
+    #+end_src
 *** autosectionlabel
     - part of default distribution
     - We use ~autosectionlabel_prefix_document = True~ which means that the internal link must be prefixed by the file
       name and a semi-column, see [[https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html][here]].
-   
+
 * Workflow for editing
 
   In the ~Documentation~ directory, run from terminal
@@ -45,7 +48,15 @@
   make html
   #+END_SRC
 
-  The command generates all the files for a static website and writes them in ~Documentation/_build/html~
+  The command generates all the files for a static website and writes
+  them in ~Documentation/_build/html~. Some features such as embedding
+  youtube videos may not be seen when viewing the documentation from
+  file. In such cases, it may be useful to look at a web version using
+  for example
+  #+BEGIN_SRC sh
+  python -m http.server 8000 -d _build/html
+  #+END_SRC
+  and open http://localhost:8000
 
   When the changes are pushed, the documentation is also automatically compiled on github using github actions
 
@@ -57,7 +68,7 @@
   https://battmoteam.github.io/BattMo/
 
 * Workflow for notebooks written in mlx format
-  
+
 ** Compilation
    We use the ~export~ function from matlab to export the notebook to ~ipynb~ format. An help exporter class is provided
    [[https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/MLXnotebookExporter.m][here]]. The following [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/utils/exportMLXnotebooks.m][script]] gives example on how it can be used. I have noticed problems with older Matlab
@@ -72,7 +83,7 @@
     - insert link in index, see example ~runThermalExample.nblink~ in [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/intermediate.rst?plain=1#16][here]] (line 16)
 ** Include in the index or in pages
    See example to the tutorial pages [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/tutorials.rst][here]]
-   
+
 * Special workflow for example scripts
 ** Compilation
    - run ~publishExamplesXML~ in ~utils~ directory (see documentation there) : It creates XML outputs
@@ -85,7 +96,7 @@
    - To make sure that a comment you include in matlab example file appears as a comment in rST output (and not at a
      comment in the matlab code formatting), start a cell with eventually no title. Include only *one* white-space
      betwen ~%~ sign and text (otherwise ~publish~ routine exports differently).
-   - The directive ~.. automodule::~ makes sure a directory is parsed. 
+   - The directive ~.. automodule::~ makes sure a directory is parsed.
 
 * Interesting Manuals
 ** sphinx manual
