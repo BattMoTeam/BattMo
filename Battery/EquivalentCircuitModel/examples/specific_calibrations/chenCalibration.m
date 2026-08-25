@@ -1,5 +1,5 @@
 [Z_re_exp, Z_im_exp, omega] = load_chen_data();
-params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
+params0 = [0.05052; 1.12673; 59119.9; 0.03155; 11054.0];  
 
 a = 1000;
 

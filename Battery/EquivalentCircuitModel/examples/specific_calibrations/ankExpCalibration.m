@@ -1,12 +1,12 @@
-filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
-% filename = '/home/xavier/Matlab/Projects/battmo/Data/131-828_EIS_01_MB_CD8.txt';
-[Z_re_exp, Z_im_exp, omega] = load_experimental_data(filename)
+filename = '/home/xavier/Matlab/Projects/battmo/Battery/EquivalentCircuitModel/calibration/utils/ank_data.csv';
+eisdata = readtable(filename);
 
 params0 = [3.84e-03,...
-2.71e-03,...
-6.00e+03,...
-9.48e-04,...
-1.11e+01];              % initial condition: C1>2*C2
+           2.71e-03,...
+           6.00e+03,...
+           9.48e-04,...
+           1.11e+01];              % initial condition: C1>2*C2
+params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
 
 a = 1000;
 
@@ -18,7 +18,7 @@ set(0, 'defaultlinelinewidth', 3);
 set(0, 'DefaultAxesFontSize', 16);
 set(0, 'defaulttextfontsize', 18);
 
-feis = FittingEIS(params0, scales, Z_re_exp, Z_im_exp, omega);
+feis = FittingEIS(eisdata, params0);
 
 [~, ~, best_params, fitting_error] = feis.optimizationBFGS();
 
