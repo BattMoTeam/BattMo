@@ -27,7 +27,17 @@ The documentation is found at the `documentation webpage <https://battmoteam.git
 Installation
 ------------
 
-Before cloning this reposity you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation.
+Before cloning this reposity you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation. Typically it's
+
+``apt install git-lfs``
+
+or
+
+``brew install git-lfs``
+
+followed by
+
+``git lfs install``
 
 BattMo is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
 generic MATLAB automatic differentiation tools and Newton solvers. The MRST source code wil be installed directly via
@@ -73,5 +83,5 @@ BattMo has received funding from the European Union’s Horizon 2020 innovation 
 * 875527 HYDRA
 * 957189 BIG-MAP
 * 101104013 BATMAX
-* 101103997 DigiBatt 
+* 101103997 DigiBatt
 * 101069765 IntelLiGent

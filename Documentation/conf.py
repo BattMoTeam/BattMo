@@ -47,7 +47,7 @@ nbsphinx_prolog = r"""
 {% for d in env.found_docs %}
   {% if extra_rst in d %}{% set ns.found = True %}{% break %}{% endif %}
 {% endfor %}
-{% if ns.found %} 
+{% if ns.found %}
 {% set extra_rst = extra_rst ~ '.rst' %}
 .. include:: {{ extra_rst }}
 {% endif %}
@@ -71,7 +71,8 @@ extensions = ['nbsphinx',
               'sphinx.ext.mathjax',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
-              'sphinx_design']
+              'sphinx_design',
+              'sphinx_copybutton']
 
 bibtex_bibfiles = ['refs.bib']
 
@@ -109,7 +110,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BattMo'
-copyright = '2021-2024'
+copyright = '2021-2026'
 author = 'Simon Clark'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -417,7 +418,7 @@ class BattMoRole(ReferenceRole):
 
 roles.register_local_role('battmo', BattMoRole())
 
-    
+
 class BattMoFileRole(ReferenceRole):
 
     def run(self):

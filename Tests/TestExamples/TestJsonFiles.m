@@ -2,7 +2,9 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonLintFile = arrayfun(@(s) fullfile(s.folder, s.name), dir(fullfile(battmoDir(), '**', '*.json')), 'uniformoutput', false);
+        jsonLintFile = TestJsonFiles.findJsonFiles('*.json');
+
+        jsonSchemaFile = TestJsonFiles.findJsonFiles('*.schema.json');
 
         jsonDataSet = {
             fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell'      , 'lithium_ion_battery_nmc_graphite.json'), ...
@@ -37,6 +39,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
         excludeJsonDataFile = {};
 
         lintModule = 'checkLint';
+        resolveModule = 'resolveFileInputJson';
         validateModule = 'validateJsonFiles';
         isPySetup;
 
@@ -50,8 +53,12 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 setupPythonExecutable();
                 setupPythonPath();
 
-                modulenames = {test.lintModule, test.validateModule};
+                modulenames = {test.lintModule, test.resolveModule, test.validateModule};
                 loadModule(modulenames, 'setupPython', false);
+                for imod = 1 : numel(modulenames)
+                    pymodule = py.importlib.import_module(modulenames{imod});
+                    py.importlib.reload(pymodule);
+                end
                 test.isPySetup = true;
 
             catch
@@ -74,7 +81,20 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 ok = py.(test.lintModule).check(jsonLintFile);
             end
 
-            assert(ok);
+            assert(ok, 'JSON linting failed for %s', jsonLintFile);
+
+        end
+
+        function testJsonSchema(test, jsonSchemaFile)
+
+            ok = false;
+
+            if test.isPySetup
+                dispif(mrstVerbose, 'Validating JSON schema %s\n', jsonSchemaFile);
+                ok = py.(test.validateModule).checkSchema(jsonSchemaFile);
+            end
+
+            assert(ok, 'JSON schema validation failed for %s', jsonSchemaFile);
 
         end
 
@@ -88,24 +108,48 @@ classdef TestJsonFiles < matlab.unittest.TestCase
                 ok = py.(test.validateModule).validate(battmoDir(), jsonDataSet);
             end
 
-            assert(ok);
+            assert(ok, 'JSON dataset validation failed for %s', jsonDataSet);
 
         end
 
         function testJsonDataFile(test, jsonDataFile)
 
             ok = false;
+            jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
+            schemafile = [jsonDataFile{2}, '.schema.json'];
 
             if test.isPySetup
-                jsonfile = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', jsonDataFile{1});
-                schemafile = [jsonDataFile{2}, '.schema.json'];
-
                 dispif(mrstVerbose, 'Validating %s against %s\n', jsonfile, schemafile);
                 test.assumeFalse(contains(jsonfile, test.excludeJsonDataFile));
                 ok = py.(test.validateModule).validate(battmoDir(), jsonfile, schemafile);
             end
 
-            assert(ok);
+            assert(ok, 'JSON validation failed for %s against %s', jsonfile, schemafile);
+
+        end
+
+    end
+
+    methods (Static)
+
+        function filenames = findJsonFiles(pattern)
+
+            rootdir = getCanonicalPath(battmoDir());
+            files = dir(fullfile(rootdir, '**', pattern));
+            folders = {files.folder};
+
+            excludedRoots = {fullfile(rootdir, 'Externals'), ...
+                             fullfile(rootdir, '.git'), ...
+                             fullfile(rootdir, 'Documentation', '.venv')};
+
+            include = true(1, numel(files));
+            for iroot = 1 : numel(excludedRoots)
+                root = [excludedRoots{iroot}, filesep];
+                include = include & ~startsWith(folders, root);
+            end
+
+            files = files(include);
+            filenames = arrayfun(@(s) fullfile(s.folder, s.name), files, 'uniformoutput', false);
 
         end
 

@@ -40,16 +40,19 @@ function output = spiralGrid(params)
     %    - nHeightLayer
     %    - celltbl
 
-    nwindings = params.nwindings;
-    rInner    = params.rInner;
-    widthDict = params.widthDict ;
-    nrDict    = params.nrDict;
-    nas       = params.nas;
-    L         = params.L;
-    nL        = params.nL;
-    unifang   = params.angleuniform;
-    tabparams = params.tabparams;
+    nwindings  = params.nwindings;
+    rInner     = params.rInner;
+    widthDict  = params.widthDict ;
+    nrDict     = params.nrDict;
+    nas        = params.nas;
+    L          = params.L;
+    nL         = params.nL;
+    unifang    = params.angleuniform;
+    tabparams  = params.tabparams;
 
+    exteriorNegativeElectrodeLayer = params.exteriorNegativeElectrodeLayer; % boolean
+
+    
     %% component names
 
     compnames = {'PositiveCoating1'        , ...
@@ -115,9 +118,9 @@ function output = spiralGrid(params)
     nx = nas;
     ny = sum(nrs);
 
-    celltbl.cells = (1 : cartG.cells.num)';
-    celltbl.indi = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
-    celltbl.indj = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
+    celltbl.cells    = (1 : cartG.cells.num)';
+    celltbl.indi     = repmat((1 : nas)', [sum(nrs)*nwindings, 1]);
+    celltbl.indj     = rldecode((1 : sum(nrs)*nwindings)', nas*ones(sum(nrs)*nwindings, 1));
     celltbl.curvindi = celltbl.indi + nas*floor((celltbl.indj - 1)./ny);
     celltbl.curvindj = repmat(rldecode((1 : ny)', nx*ones(ny, 1)), nwindings, 1);
     celltbl = IndexArray(celltbl);
@@ -570,6 +573,52 @@ function output = spiralGrid(params)
         end
     end
 
+    if exteriorNegativeElectrodeLayer
+
+        sel_indj_tbl.indj = ((sum(nrs(1 : 4)) + 1) : sum(nrs)*nwindings)';
+        sel_indj_tbl = IndexArray(sel_indj_tbl);
+
+        celltbl = crossIndexArray(celltbl, sel_indj_tbl, {'indj'});
+
+        c = celltbl.get('cells');
+
+        [G, cellmap, facemap, nodemap] =  extractSubgrid(G, c);
+
+        % map cell
+        oldnewcelltbl.oldcells = cellmap;
+        oldnewcelltbl.newcells = (1 : G.cells.num)';
+        oldnewcelltbl = IndexArray(oldnewcelltbl);
+
+        gen = CrossIndexArrayGenerator();
+        gen.tbl1        = celltbl;
+        gen.tbl2        = oldnewcelltbl;
+        gen.replacefds1 = {{'cells', 'oldcells'}};
+        gen.replacefds2 = {{'newcells', 'cells'}};
+        gen.mergefds    = {'oldcells'};
+
+        celltbl = gen.eval();
+        celltbl = celltbl.removeInd({'oldcells'});
+        
+        tag = tag(cellmap);
+
+        % map faces
+        newoldfacetbl.newfaces = (1 : G.faces.num)';
+        newoldfacetbl.oldfaces = facemap;
+        newoldfacetbl = IndexArray(newoldfacetbl);
+
+        positiveExtCurrentFaces = mapToNewFaces(positiveExtCurrentFaces, newoldfacetbl);
+        negativeExtCurrentFaces = mapToNewFaces(negativeExtCurrentFaces, newoldfacetbl);
+        
+        thexch_face_tbl.oldfaces = thermalExchangeFaces;
+        thexch_face_tbl = IndexArray(thexch_face_tbl);
+
+        [thexch_face_tbl, indstruct] = crossIndexArray(thexch_face_tbl, newoldfacetbl, {'oldfaces'});
+        
+        thermalExchangeFaces = thexch_face_tbl.get('newfaces');
+        thermalExchangeFacesTag = thermalExchangeFacesTag(indstruct{1}.inds);
+        
+    end
+    
     %% setup output structure
     output.G                       = G;
     output.tag                     = tag;
@@ -592,6 +641,17 @@ function output = spiralGrid(params)
 
 end
 
+function newfaces = mapToNewFaces(oldfaces, newoldfacetbl)
+    
+    selfacetbl.oldfaces = oldfaces;
+    selfacetbl = IndexArray(selfacetbl);
+    selfacetbl = crossIndexArray(selfacetbl, newoldfacetbl, {'oldfaces'});
+    
+    newfaces = selfacetbl.get('newfaces');
+    
+end
+    
+    
 
 function tabcelltbl = getTabCellTbl(cccelltbl, cclinewidth, indj0, tabparams, windingnumbers, data)
 

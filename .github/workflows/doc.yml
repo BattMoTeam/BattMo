@@ -1,26 +1,36 @@
-name: Deploy Sphinx documentation to Pages
+name: Build and deploy Sphinx documentation to Pages
 
 on:
+  # Build and deploy documentation after changes are merged to main
   push:
-    branches: [main] # branch to trigger deployment
+    branches: [main]
+
+  # Build documentation for PRs that touch Documentation/**
+  pull_request:
+    paths:
+      - 'Documentation/**'
 
 jobs:
   pages:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Install Pandoc
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y pandoc      
-    - id: deployment
-      uses: sphinx-notes/pages@v3
-      with:
-        publish: false
-        documentation_path: ./Documentation
-        requirements_path: ./Documentation/requirements.txt
-    - uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ${{ steps.deployment.outputs.artifact }}    
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
 
+      - id: deployment
+        name: Build documentation
+        uses: sphinx-notes/pages@v3
+        with:
+          publish: false
+          documentation_path: ./Documentation
+          requirements_path: ./Documentation/requirements.txt
 
+      - name: Deploy documentation
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.deployment.outputs.artifact }}
