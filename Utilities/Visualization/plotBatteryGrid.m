@@ -30,7 +30,7 @@ function handlers = plotBatteryGrid(model, varargin)
     end
 
     handlers.figure = fig;
-    
+
     hold on
 
     legtext = {};
@@ -80,7 +80,9 @@ function handlers = plotBatteryGrid(model, varargin)
     end
 
     if opt.legend
-        legend(legtext, 'location', opt.legendLocation);
+        handlers.legend = legend(legtext, 'location', opt.legendLocation);
+    else
+        handlers.legend = [];
     end
     axis tight;
 
