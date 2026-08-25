@@ -1,9 +1,13 @@
-%% Example script for EquivalentCircuitModel
+%% Time Simulation of an ECM model
+%
 
 %%
-% The function createParametersECM setup an example data set for the ECM model. See below
+% The function :battmo:`createParametersECM` setups an data set for the ECM model. The structure
+% |jsonstruct| contains values of the ECM parameters (resistances, capicaties, ...) that depend on
+% the frequency. See below for the plot of the values
 % 
 jsonstruct = createParametersECM();
+
 
 %%
 % Setup the ECM model
