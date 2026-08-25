@@ -101,13 +101,13 @@ if doplot.jellyroll
 
     currentDir = pwd();
     cd(cwdir);
-    st = system('pdflatex jellyrollcombine.tex');
+    st = system('pdflatex jellyrollmodel.tex');
     cd(currentDir);
-    assert(st == 0, 'pdflatex failed to compile jellyrollcombine.tex');
-    st = system(sprintf('convert -density 300 %s %s', fullfile(cwdir, 'jellyrollcombine.pdf'), fullfile(cwdir, 'jellyrollmodel.png')));
-    assert(st == 0, 'convert failed to convert jellyrollcombine.pdf to png');
-    st = system(sprintf('mv %s %s', fullfile(cwdir, 'jellyrollcombine.png'), fullfile(battmoDir(), 'Documentation', 'img')));
-    assert(st == 0, 'mv failed to move the figure jellyrollcombine.png');
+    assert(st == 0, 'pdflatex failed to compile jellyrollmodel.tex');
+    st = system(sprintf('convert -density 300 %s %s', fullfile(cwdir, 'jellyrollmodel.pdf'), fullfile(cwdir, 'jellyrollmodel.png')));
+    assert(st == 0, 'convert failed to convert jellyrollmodel.pdf to png');
+    st = system(sprintf('mv %s %s', fullfile(cwdir, 'jellyrollmodel.png'), fullfile(battmoDir(), 'Documentation', 'img')));
+    assert(st == 0, 'mv failed to move the figure jellyrollmodel.png');
 
 end
 
