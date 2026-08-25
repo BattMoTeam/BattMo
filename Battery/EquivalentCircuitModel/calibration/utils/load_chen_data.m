@@ -18,7 +18,7 @@ function [Z_real, Z_imag, omegas] = load_chen_data()
     jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
     
-    jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+    jsonstruct = mergeStructs({jsonstruct_material, ...
                                    jsonstruct_geometry});
 
 

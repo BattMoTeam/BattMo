@@ -6,7 +6,7 @@
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-jsonstruct_base     = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+jsonstruct_base     = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
 jsonstruct_base.NegativeElectrode.Coating.ActiveMaterial.Interface.useDoubleLayerCapacity = true;
 

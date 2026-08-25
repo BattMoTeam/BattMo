@@ -10,7 +10,7 @@ soc_step = 0.5;
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 
-jsonstruct_p2d = mergeJsonStructs({jsonstruct_material, ...
+jsonstruct_p2d = mergeStructs({jsonstruct_material, ...
                                    jsonstruct_geometry});
    
 jsonstruct = calibrateEcmFromP2D(jsonstruct_p2d, soc_step);

@@ -12,7 +12,7 @@ current_init(time_init >= 700 & time_init <= 1000) = 3.5;  % 4. DÃ©charge (700 Ã
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
 params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
 

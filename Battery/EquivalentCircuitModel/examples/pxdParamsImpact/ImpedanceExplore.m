@@ -17,7 +17,7 @@ classdef ImpedanceExplore < handle
                 try
                     jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Chen2020', 'chen2020_lithium_ion_battery.json'));
                     jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
-                    jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+                    jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
                     
                     % Safe default fallback for capacitance
                     ne = 'NegativeElectrode'; co = 'Coating'; am = 'ActiveMaterial'; itf = 'Interface';
@@ -37,7 +37,7 @@ classdef ImpedanceExplore < handle
         
         function viewOptions(impexp)
             % Helper to print all available scalar properties in the model JSON
-            fjv = flattenJsonStruct(impexp.jsonstruct, 'doprint', false);
+            fjv = flattenStruct(impexp.jsonstruct, 'doprint', false);
             fprintf('\n\n*** List of all the scalar parameters in the model ***\n');
             fjv.print('filter', {'value', @(val) (isnumeric(val) && isscalar(val))});
         end
@@ -91,7 +91,7 @@ classdef ImpedanceExplore < handle
             parameters = impexp.parameters;
             vals = zeros(1, numel(parameters)); 
             for iparam = 1 : numel(parameters)
-                val = getJsonStructField(jsonstruct, parameters{iparam});
+                val = getStructField(jsonstruct, parameters{iparam});
                 if ~isnumeric(val) || ~isscalar(val)
                     pathStr = strjoin(parameters{iparam}, '.');
                     error('ImpedanceExplore:ParameterNotFound', ...
@@ -111,7 +111,7 @@ classdef ImpedanceExplore < handle
             
             parameters = impexp.parameters;
             for iparam = 1 : numel(parameters)
-                jsonstruct = setJsonStructField(jsonstruct, parameters{iparam}, vals(iparam), 'handleMisMatch', 'quiet');
+                jsonstruct = setStructField(jsonstruct, parameters{iparam}, vals(iparam), 'handleMisMatch', 'quiet');
             end
         end
         
