@@ -44,8 +44,11 @@ import matlab.unittest.TestRunner
 % Setup
 mrstVerbose 'off';
 stopOnError        = false;
-runTestsInParallel = false; % Keep this false for github runners
 doAssertSuccess    = true;
+runTestsInParallel = true; % Always run serial for github runner
+if strcmpi(getenv('GITHUB_ACTIONS'), true)
+    runTestsInParallel = false;
+end
 
 % Define which test cases to run (these are run in order)
 testCases = {
