@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Simulation of an ECM model &mdash; BattMo  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c92655ae" />
+
+  
+    <link rel="shortcut icon" href="../_static/battmologo.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"loader": {"load": ["[tex]/mhchem"]}, "tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "packages": {"[+]": ["mhchem"]}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Calibrate ECM model from P2D model" href="runCalibrateEcmFromP2D.html" />
+    <link rel="prev" title="Exploring interactively the impact of the P2D parameters on EIS output" href="runImpedanceExplorer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BattMo
+              <img src="../_static/battmologo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#release-installation">Release installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#installation-from-git">Installation from git</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#update-existing-installation">Update existing installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../basicusage.html">Your First Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#a-first-battmo-model">A First <strong>BattMo</strong> Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#show-the-dashboard">Show the Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-output">Explore the Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-grid">Explore the Grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#explore-the-states">Explore the States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../basicusage.html#plot-a-result">Plot a Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-control-parameters">Change Control Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-structural-parameters">Change Structural Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#change-material-parameters">Change Material Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../basicusage.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../inputparameters.html">BattMo Input</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../inputparameters.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../jsonexample.html">My First Json Input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#simulation">Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#battery">Battery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#negative-electrode">Negative Electrode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#coating">Coating</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#active-material">Active Material</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#interface">Interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#binder">Binder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#current-collector">Current Collector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#separator">Separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#thermal-model">Thermal Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#geometry">Geometry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#control">Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#model-specification">Model Specification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#state-initialization">State Initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../jsonexample.html#time-stepping">Time Stepping</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../json.html">JSON input specification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#simulation-schema">Simulation Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#material-parameters">Material Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrolyte">Electrolyte</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#electrode">Electrode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#coating">Coating</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#active-material">Active Material</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#interface">Interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#solid-diffusion">Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#full-solid-diffusion">Full Solid Diffusion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#binder">Binder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#conducting-additive">Conducting Additive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#current-collector">Current Collector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#separator">Separator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../json.html#thermal-model">Thermal Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#geometry-setup">Geometry Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#control-parameters">Control Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#time-stepping-parameters">Time Stepping Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#solver-parameters">Solver Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../json.html#output-parameters">Output Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../mergestruct.html">Merging parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mergestruct.html#setup-a-p4d-model-using-mergestructs">Setup a P4D Model using <code class="code docutils literal notranslate"><span class="pre">mergeStructs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#define-parameters">Define Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#run-simulation">Run Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mergestruct.html#visualize-results">Visualize Results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mergestruct.html#file-links-and-insertions-with-parsebattmojson">File links and insertions with <code class="code docutils literal notranslate"><span class="pre">parseBattmoJson</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../jsonfiles.html">List of Json File Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functioninterface.html">Functional parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#function-name">Function name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#function-formula">Function formula</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#tabulated-function">Tabulated function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#csv-file">CSV file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../functioninterface.html#example">Example</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../controlinput.html">Control models</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../parsets.html">Parameter sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../units.html">Units</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#converting-units-in-battmo">Converting units in BattMo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../units.html#units-and-json-input">Units and JSON input</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../output.html">BattMo output</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../staticspec.html">Cell Specifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../geometryinput.html">Battery Geometries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp2d">BatteryGeneratorP2D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp3d">BatteryGeneratorP3D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratorp4d">BatteryGeneratorP4D</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#spiralbatterygenerator">SpiralBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#coincellbatterygenerator">CoinCellBatteryGenerator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geometryinput.html#batterygeneratormultilayerpouch">BatteryGeneratorMultilayerPouch</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../batteryphysics.html">Battery Physics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../plating.html">Lithium Plating</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../soliddiffusion.html">Solid Diffusion Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../equivalentcircuitmodels.html">EIS and Equivalent Circuit Models</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../equivalentcircuitmodels.html#abstract">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../equivalentcircuitmodels.html#objective">Objective</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../equivalentcircuitmodels.html#theory">Theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../equivalentcircuitmodels.html#physical-meaning-of-ecm-components-analog-devices-2021">Physical Meaning of ECM components (Analog Devices, 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../equivalentcircuitmodels.html#impact-on-impedance-of-physical-parameters-from-pxd-model">Impact on Impedance of physical parameters from PXD model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../equivalentcircuitmodels.html#notebooks">Notebooks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="runImpedanceScript.html">Battery impedance computation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runImpedanceScript.html#Battery-input-parameters">Battery input parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="runImpedanceScript.html#Impedance-computation">Impedance computation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="runImpedanceExplorer.html">Exploring interactively the impact of the P2D parameters on EIS output</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Time Simulation of an ECM model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runCalibrateEcmFromP2D.html">Calibrate ECM model from P2D model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../elchemsystems.html">Other Electro-Chemical Systems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../publishedExamples/runElectrolyser.html">Alkaline Membrane Electrolyser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-input">Setup input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-model">Setup model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-initial-condition">Setup the initial condition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-schedule-with-the-time-discretization">Setup the schedule with the time discretization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#setup-the-non-linear-solver">Setup the non-linear solver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#visualize-the-results">Visualize the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runElectrolyser.html#ph-distribution-plot">pH distribution plot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../protonicmembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html">Proton Ceramic Membrane</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#load-and-parse-input-from-given-json-files">Load and parse input from given json files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#input-structure-setup">Input structure setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#initial-state-setup">Initial state setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#schedule">Schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#plotting">Plotting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicMembrane.html#evolution-of-the-faradic-efficiency">Evolution of the Faradic efficiency</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runGasSupply.html">Gas Supply</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-overview">Model overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#model-plot">Model Plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#schedule-setup">Schedule setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#simulation">Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runGasSupply.html#result-plots">Result plots</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../publishedExamples/runProtonicCell.html">Full Cell</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-coupling">Model coupling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#json-input-data">json input data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#input-parameter-setup">Input parameter setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#model-setup">Model setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#grid-plots">Grid plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-initial-state">Setup initial state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-schedule">Setup schedule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#setup-nonlinear-solver">Setup nonlinear solver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#start-simulation">Start simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#plotting-setup">plotting setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#electrolyte-results">Electrolyte results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#gas-layer-results">Gas Layer results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../publishedExamples/runProtonicCell.html#interface-results">Interface results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../optimisation.html">Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimisation.html#parameter-identification-example">Parameter identification example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimisation.html#optimization-example">Optimization example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../battmointernals.html">BattMo Internals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../architecture.html">BattMo Model Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../computationalGraph/graphdoc.html">Computational Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-assembly">Model assembly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-explorability">Model explorability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#model-hierarchy-and-composition">Model hierarchy and composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#basic-example">Basic Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../computationalGraph/graphdoc.html#graph-setup-and-implementation">Graph Setup and Implementation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../programminginterfaces.html">Programming Interfaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../juliabridge.html">BattMo Julia bridge</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#start-server">Start Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#send-simulation-parameters">Send simulation parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#run-the-simulation">Run the simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../juliabridge.html#post-process-the-output">Post process the output</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../app.html">BattMoApp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../app_features.html">Features</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#utilize-default-materials">Utilize Default Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#customize-with-your-own-materials">Customize with Your Own Materials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#visualize-your-battery-geometry">Visualize Your Battery Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#download-input-data">Download Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#upload-input-data">Upload Input Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#visualize-and-download-results">Visualize and Download Results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_features.html#upload-your-previous-results">Upload your previous results</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../app_troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../app_unnatural_artifacts.html">Unnatural artifacts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../app_unsuccessful_simulation.html">Unsuccessful simulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../octave.html">Octave</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../seealso.html">See Also</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#mrst">MRST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#visualization">Visualization Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../seealso.html#id2">Grid Factory Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../seealso.html#fair-data">FAIR Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BattMo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../equivalentcircuitmodels.html">EIS and Equivalent Circuit Models</a></li>
+      <li class="breadcrumb-item active">Time Simulation of an ECM model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/nblinks/runEquivalentCircuitModel.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="admonition note" id="runequivalentcircuitmodel">
+<p class="admonition-title">Note</p>
+<p>This notebook is already available in your BattMo installation. In Matlab, run</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">open</span><span class="w"> </span><span class="n">runEquivalentCircuitModel</span>
+</pre></div>
+</div>
+</div>
+<section id="Time-Simulation-of-an-ECM-model">
+<h1>Time Simulation of an ECM model<a class="headerlink" href="#Time-Simulation-of-an-ECM-model" title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">clear</span><span class="w"> </span><span class="nb">all</span>
+</pre></div>
+</div>
+</div>
+<p>The function <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/EquivalentCircuitModel/utils/createParametersECM.m">createParametersECM</a> setups an data set for the ECM model. The structure <cite>jsonstruct</cite> contains values of the ECM parameters (resistances, capicaties, …) that depend on the frequency. See below for the plot of the values</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">createParametersECM</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<p>Setup the ECM model</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputparams</span><span class="w"> </span><span class="p">=</span><span class="w">  </span><span class="n">EquivalentCircuitModelInputParams</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w">  </span><span class="n">EquivalentCircuitModel</span><span class="p">(</span><span class="n">inputparams</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Review of the model parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">soc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+
+
+<span class="n">figure</span>
+<span class="s">tiledlayout(2,</span><span class="w"> </span><span class="s">3,</span><span class="w"> </span><span class="s">&#39;tileindexing&#39;,</span><span class="w"> </span><span class="s">&#39;columnmajor&#39;)</span><span class="p">;</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.OCPfunc(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;OCP / V&#39;</span><span class="p">);</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R0func(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R0&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R0 / Ohm&#39;</span><span class="p">);</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R1func(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R1&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R1 / Ohm&#39;</span><span class="p">);</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.C1func(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C1&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C1 / Ohm&#39;</span><span class="p">);</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R2func(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R2&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R2 / Ohm&#39;</span><span class="p">);</span>
+
+
+<span class="n">nexttile</span>
+<span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.C2func(soc))</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C2&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C2 / Ohm&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The input current has been passed to the model</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
+<span class="n">totalTime</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">totalTime</span><span class="p">;</span>
+<span class="n">t</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">totalTime</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Ifunc</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;o-&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Input current&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / hour&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;I / A&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Solve the model</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">U</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">SOC</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">solve</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
+<span class="nb">tiledlayout</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">nexttile</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Current / A&#39;</span><span class="p">);</span>
+<span class="n">nexttile</span>
+<span class="s">plot(t/hour,</span><span class="w"> </span><span class="s">U)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
+<span class="n">nexttile</span>
+<span class="s">plot(t/hour,</span><span class="w"> </span><span class="s">SOC)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SOC&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="runImpedanceExplorer.html" class="btn btn-neutral float-left" title="Exploring interactively the impact of the P2D parameters on EIS output" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="runCalibrateEcmFromP2D.html" class="btn btn-neutral float-right" title="Calibrate ECM model from P2D model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2026.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
