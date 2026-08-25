@@ -42,13 +42,13 @@ import matlab.unittest.TestRunner
 % Setup
 mrstVerbose 'off';
 stopOnError        = false;
-runTestsInParallel = false;
+runTestsInParallel = true;
 doAssertSuccess    = true;
 
-% Define which test cases to run
+% Define which test cases to run (these are run in order)
 testCases = {
+    'TestJsonFiles'  , ... % Run this serial to avoid unecessary parallel python problems
     'TestChen2020'   , ...
-    'TestJsonFiles'  , ...
     'TestRunExamples', ...
     'TestMagnesium'};
 
@@ -80,7 +80,9 @@ for itestcase = 1 : numel(testCases)
 
 end
 
-suite = horzcat(suites{:});
+serialTest = strcmp(testCases, 'TestJsonFiles');
+suite0 = horzcat(suites{serialTest});
+suite1 = horzcat(suites{~serialTest});
 
 runner = testrunner('textoutput');
 
@@ -92,10 +94,13 @@ end
 % Run tests
 
 if runTestsInParallel
-    results = runner.runInParallel(suite);
+    serialResults   = runner.run(suite0);
+    parallelResults = runner.runInParallel(suite1);
+    results = [serialResults, parallelResults];
 else
-    results = runner.run(suite);
+    results = runner.run([suite0, suite1]);
 end
+
 
 t = table(results);
 disp(t);
@@ -106,21 +111,21 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
-and SINTEF Digital, Mathematics & Cybernetics.
+  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  and SINTEF Digital, Mathematics & Cybernetics.
 
-This file is part of The Battery Modeling Toolbox BattMo
+  This file is part of The Battery Modeling Toolbox BattMo
 
-BattMo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  BattMo is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-BattMo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  BattMo is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}
