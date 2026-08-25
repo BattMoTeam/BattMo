@@ -215,7 +215,7 @@ An illustration with different scalings for each axes which shows the different 
 
 A geometry model for jelly rolls. Here, we have used parameters corresponding to the 4680 model.
 
-.. image:: img/jellyrollcombine.png
+.. image:: img/jellyrollmodel.png
            :width: 100%
 
 .. list-table:: Thickness and :code:`numberOfDiscreteCells` for each layer, with values used in the plot above.
