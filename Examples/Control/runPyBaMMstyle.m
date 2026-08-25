@@ -15,25 +15,25 @@ jsonstruct = convertPyBaMMtoJson(experiment);
 
 printer(jsonstruct);
 
-writeJsonStruct(jsonstruct, 'test.json');
+writeStruct(jsonstruct, 'test.json');
 
 jsonstruct_control = jsonstruct;
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 
-jsonstruct_material = removeJsonStructFields(jsonstruct_material              , ...
+jsonstruct_material = removeStructFields(jsonstruct_material              , ...
                                              {'Control', 'DRate'}             , ...
                                              {'Control', 'controlPolicy'}     , ...
                                              {'Control', 'upperCutoffVoltage'}, ...
                                              {'Control', 'rampupTime'}        , ...
                                              {'Control', 'lowerCutoffVoltage'});
 
-jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Process output and recover the output voltage and current from the output states.
 

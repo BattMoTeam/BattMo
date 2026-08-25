@@ -31,7 +31,7 @@ You can actually run this illustration example using
 .. code:: matlab
 
    jsonstruct = parseBattmoJson('Examples/Documentation/jsonfiles/Example/simulation.json');
-   output = runBatteryJson(jsonstruct);
+   output = runBattery(jsonstruct);
 
 Battery
 =======
@@ -202,4 +202,4 @@ Time Stepping
 .. literalinclude:: ../Examples/Documentation/jsonfiles/Example/timeStepping.json
    :language: json
 
-This information is used by the simulator to setup the time stepping. Default values are also provided, see :ref:`Time Stepping Parameters <jsonexample:Time Stepping Parameters>`.
+This information is used by the simulator to setup the time stepping. Default values are also provided, see :ref:`Time Stepping Parameters <json:Time Stepping Parameters>`.

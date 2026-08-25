@@ -13,7 +13,7 @@ function export = setupMatlabModel(casename, jsonfolder, generate_reference_solu
     
     %% To run the simulation, you need to install matlab battmo
 
-    output = runBatteryJson(jsonstruct, 'runSimulation', generate_reference_solution);
+    output = runBattery(jsonstruct, 'runSimulation', generate_reference_solution);
 
     %% Save solution as a matlab struct that can be imported in Julia
 

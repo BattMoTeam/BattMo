@@ -37,33 +37,33 @@ classdef BatteryInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_current_collectors', false);
+            jsonstruct = setDefaultStructField(jsonstruct, 'include_current_collectors', false);
 
-            jsonstruct = equalizeJsonStructFields(jsonstruct, {'include_current_collectors'      , ...
+            jsonstruct = equalizeStructFields(jsonstruct, {'include_current_collectors'      , ...
                                                                {ne, 'include_current_collectors'}, ...
                                                                {pe, 'include_current_collectors'}});
 
-            if getJsonStructField(jsonstruct,  {pe, 'include_current_collectors'})
-                jsonstruct = setDefaultJsonStructField(jsonstruct, {pe, 'use_normed_current_collector'}, true);
+            if getStructField(jsonstruct,  {pe, 'include_current_collectors'})
+                jsonstruct = setDefaultStructField(jsonstruct, {pe, 'use_normed_current_collector'}, true);
             end
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'use_thermal', false);
+            jsonstruct = setDefaultStructField(jsonstruct, 'use_thermal', false);
 
-            jsonstruct = equalizeJsonStructFields(jsonstruct, {{'use_thermal'}       , ...
+            jsonstruct = equalizeStructFields(jsonstruct, {{'use_thermal'}       , ...
                                                                {ne, 'use_thermal'}   , ...
                                                                {pe, 'use_thermal'}   , ...
                                                                {elyte, 'use_thermal'}, ...
                                                                {sep, 'use_thermal'}});
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'}, false);
 
-            use_thermal = getJsonStructField(jsonstruct, 'use_thermal');
+            use_thermal = getStructField(jsonstruct, 'use_thermal');
 
             if use_thermal
 
-                iscomp1 = getJsonStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'});
-                iscomp2 = getJsonStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'});
+                iscomp1 = getStructField(jsonstruct, {ne, co, 'activeMaterialModelSetup', 'composite'});
+                iscomp2 = getStructField(jsonstruct, {pe, co, 'activeMaterialModelSetup', 'composite'});
                 assert(~iscomp1 && ~iscomp2, 'We do not support for the moment thermal simulation for composite materials');
 
             end

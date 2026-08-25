@@ -19,8 +19,8 @@ classdef SwellingCoatingInputParams < CoatingInputParams
             sd  = 'SolidDiffusion';
             am  = 'ActiveMaterial';
             
-            jsonstruct = setJsonStructField(jsonstruct, {am, 'diffusionModelType'}, 'swelling');
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'include_hydrostatic_stress', false);
+            jsonstruct = setStructField(jsonstruct, {am, 'diffusionModelType'}, 'swelling');
+            jsonstruct = setDefaultStructField(jsonstruct, 'include_hydrostatic_stress', false);
             
             inputparams = inputparams@CoatingInputParams(jsonstruct);
 

@@ -55,24 +55,24 @@ classdef ActiveMaterialInputParams < ComponentInputParams
             itf = 'Interface';
             lp  = 'LithiumPlating';
             
-            jsonstruct = equalizeJsonStructField(jsonstruct, 'density', {itf, 'density'});
+            jsonstruct = equalizeStructField(jsonstruct, 'density', {itf, 'density'});
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct,  'useLithiumPlating', false);
+            jsonstruct = setDefaultStructField(jsonstruct,  'useLithiumPlating', false);
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct,  'diffusionModelType', 'full');
-            diffusionModelType = getJsonStructField(jsonstruct, 'diffusionModelType');
+            jsonstruct = setDefaultStructField(jsonstruct,  'diffusionModelType', 'full');
+            diffusionModelType = getStructField(jsonstruct, 'diffusionModelType');
 
             switch diffusionModelType
                 
               case 'simple'
                 
-                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
                 
               case {'full', 'swelling'}
                 
-                jsonstruct = equalizeJsonStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeStructField(jsonstruct, {itf, 'volumetricSurfaceArea'}, {sd, 'volumetricSurfaceArea'});
 
-                diffusionCoefficient = getJsonStructField(jsonstruct, {sd, 'diffusionCoefficient'});
+                diffusionCoefficient = getStructField(jsonstruct, {sd, 'diffusionCoefficient'});
                 
                 if isAssigned(diffusionCoefficient)
                     % we impose that cmax in the solid diffusion model and the interface are consistent
@@ -81,13 +81,13 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                                   'guestStoichiometry0'};
                     for iparam = 1 : numel(paramnames)
                         paramname = paramnames{iparam};
-                        jsonstruct = equalizeJsonStructField(jsonstruct, {sd, paramname}, {itf, paramname});
+                        jsonstruct = equalizeStructField(jsonstruct, {sd, paramname}, {itf, paramname});
                     end
                     
                 end
 
                 if strcmp(diffusionModelType, 'swelling')
-                    jsonstruct = equalizeJsonStructField(jsonstruct, {sd, 'saturationConcentration'}, {itf, 'saturationConcentration'});
+                    jsonstruct = equalizeStructField(jsonstruct, {sd, 'saturationConcentration'}, {itf, 'saturationConcentration'});
                 end
 
               otherwise
@@ -96,19 +96,19 @@ classdef ActiveMaterialInputParams < ComponentInputParams
                 
             end
 
-            isRootSimulationModel = getJsonStructField(jsonstruct, 'isRootSimulationModel');
+            isRootSimulationModel = getStructField(jsonstruct, 'isRootSimulationModel');
 
             if isAssigned(isRootSimulationModel) && isRootSimulationModel 
                 % only one particle in the stand-alone model
-                jsonstruct = setJsonStructField(jsonstruct, {sd, 'np'}, 1);
+                jsonstruct = setStructField(jsonstruct, {sd, 'np'}, 1);
                 % For the standalone model, we set the volume fraction to one (no other component is present)
-                jsonstruct = setJsonStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
+                jsonstruct = setStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
 
             if jsonstruct.useLithiumPlating
-                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
-                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'volumeFraction'}, {sd, 'volumeFraction'});
-                jsonstruct = equalizeJsonStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
+                jsonstruct = equalizeStructField(jsonstruct, {lp, 'volumetricSurfaceArea'}, {itf, 'volumetricSurfaceArea'});
+                jsonstruct = equalizeStructField(jsonstruct, {lp, 'volumeFraction'}, {sd, 'volumeFraction'});
+                jsonstruct = equalizeStructField(jsonstruct, {lp, 'particleRadius'}, {sd, 'particleRadius'});
             end
             
             inputparams = inputparams@ComponentInputParams(jsonstruct);

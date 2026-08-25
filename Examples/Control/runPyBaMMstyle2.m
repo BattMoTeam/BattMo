@@ -14,7 +14,7 @@ experiment = {
 jsonstruct = convertPyBaMMtoJson(experiment);
 printer(jsonstruct);
 
-writeJsonStruct(jsonstruct, 'test.json');
+writeStruct(jsonstruct, 'test.json');
 
 schema = fullfile(battmoDir, 'Utilities', 'JsonSchemas', 'GenericControl.schema.json');
-validateJsonStruct(jsonstruct, 'useTmpFile', false, 'schema', schema);
+validateStruct(jsonstruct, 'useTmpFile', false, 'schema', schema);

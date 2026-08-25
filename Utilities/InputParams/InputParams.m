@@ -51,7 +51,7 @@ classdef InputParams
             end
         end
 
-        function jsonstruct = buildJsonStruct(inputparams);
+        function jsonstruct = buildStruct(inputparams);
 
             jsonstruct = inputparams.jsonstruct;
             
@@ -62,21 +62,21 @@ classdef InputParams
                 fd = inputparamsFds{ind};
 
                 if isa(inputparams.(fd), 'InputParams')
-                    subjsonstruct_fd = inputparams.(fd).buildJsonStruct();
+                    subjsonstruct_fd = inputparams.(fd).buildStruct();
                     clear subjsonstruct;
                     subjsonstruct.(fd) = subjsonstruct_fd;
-                    jsonstruct = mergeJsonStructs({subjsonstruct, jsonstruct}, 'warn', false);
+                    jsonstruct = mergeStructs({subjsonstruct, jsonstruct}, 'warn', false);
                 end
 
             end
 
         end
 
-        function printJsonStruct(inputparams)
+        function printStruct(inputparams)
             
-            jsonstruct = inputparams.buildJsonStruct();
-            fjv = flattenJsonStruct(jsonstruct);
-            fjv.print();
+            jsonstruct = inputparams.buildStruct();
+            fsv = flattenStruct(jsonstruct);
+            fsv.print();
             
         end
         

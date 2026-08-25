@@ -34,26 +34,26 @@ classdef ImpedanceSolver < handle
             end
 
             % reference dt used to compute jacobians
-            options = setDefaultJsonStructField(options, {'dt'}, 1e3);
+            options = setDefaultStructField(options, {'dt'}, 1e3);
             
             % other choice for state initializaztion is 'given state'
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
+            options = setDefaultStructField(options, {'stateInitialization', 'initializationSetup'}, 'soc');  
                                                                                                                              
             % default soc value
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'soc'}, 1);
+            options = setDefaultStructField(options, {'stateInitialization', 'soc'}, 1);
 
-            switch getJsonStructField(options, {'stateInitialization', 'initializationSetup'})
+            switch getStructField(options, {'stateInitialization', 'initializationSetup'})
               case 'soc'
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
+                options = setDefaultStructField(options, {'stateInitialization', 'computeSteadyState'}, false);
               case 'given state'
-                options = setDefaultJsonStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
+                options = setDefaultStructField(options, {'stateInitialization', 'computeSteadyState'}, true);
               otherwise
                 error('initializationSetup not recognized');
             end
             
             % options used if computing steady state
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
-            options = setDefaultJsonStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
+            options = setDefaultStructField(options, {'stateInitialization', 'numberOfRampupSteps'}, 3); 
+            options = setDefaultStructField(options, {'stateInitialization', 'numberOfTimeSteps'}  , 10);
             
             impsolv.options = options;
 
@@ -179,7 +179,7 @@ classdef ImpedanceSolver < handle
             inputparams.(ctrl) = CCDischargeControlModelInputParams([]);;
             inputparams.(ctrl).lowerCutoffVoltage = 3; % not used but needed for proper initialization
 
-            initsetup = getJsonStructField(options, {'stateInitialization', 'initializationSetup'});
+            initsetup = getStructField(options, {'stateInitialization', 'initializationSetup'});
 
             switch initsetup
 
@@ -200,13 +200,13 @@ classdef ImpedanceSolver < handle
                 
             end
 
-            if getJsonStructField(options, {'stateInitialization', 'computeSteadyState'});
+            if getStructField(options, {'stateInitialization', 'computeSteadyState'});
                 
                 state.(ctrl).I = 0;
                 
-                N         = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
+                N         = getStructField(impsolv.options, {'stateInitialization', 'numberOfTimeSteps'});
                 totalTime = 10*hour;
-                nr        = getJsonStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
+                nr        = getStructField(impsolv.options, {'stateInitialization', 'numberOfRampupSteps'});
                 
                 dt = rampupTimesteps(totalTime, totalTime/N, nr);
 

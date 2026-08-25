@@ -4,8 +4,8 @@ Modeling with BattMo
 .. toctree::
    :hidden:
 
-   Part1 <pynbnotebooks/part_1_battery_modeling_guide>
-   Part2 <pynbnotebooks/part_2_battery_modeling_guide>
+   Part1 <modelingGuide/part_1_battery_modeling_guide>
+   Part2 <modelingGuide/part_2_battery_modeling_guide>
       
 In these notebooks, we present a short introduction to battery modeling using BattMo. The notebooks are available in
 your BattMo installation

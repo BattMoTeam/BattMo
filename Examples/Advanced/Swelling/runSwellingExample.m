@@ -50,12 +50,12 @@ jsonstruct_control = parseBattmoJson(jsonfilename);
 %% 
 % We merge the json structure inputs an run the simulation
 
-jsonstruct = mergeJsonStructs({jsonstruct_material, ...
+jsonstruct = mergeStructs({jsonstruct_material, ...
                                jsonstruct_geometry, ...
                                jsonstruct_control});
 
 
-output = runBatteryJson(jsonstruct, 'runSimulation', true);
+output = runBattery(jsonstruct, 'runSimulation', true);
 
 model  = output.model;
 states = output.states;

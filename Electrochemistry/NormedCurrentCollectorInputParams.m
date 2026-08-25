@@ -11,7 +11,7 @@ classdef NormedCurrentCollectorInputParams < CurrentCollectorInputParams
 
         function inputparams = NormedCurrentCollectorInputParams(jsonstruct)
 
-            jsonstruct = setDefaultJsonStructField(jsonstruct, 'potentialDifferenceScaling', 1);
+            jsonstruct = setDefaultStructField(jsonstruct, 'potentialDifferenceScaling', 1);
             inputparams = inputparams@CurrentCollectorInputParams(jsonstruct);
             
         end

@@ -19,6 +19,6 @@ BattMo Internals
    .. grid-item-card::
       :padding: 2
       
-      :ref:`Computational Graph<computationalGraph/graphdoc:Computation Graph Model Design ang Assembly>`
+      :ref:`Computational Graph<computationalGraph/graphdoc:Computation Graph Model Design And Assembly>`
                                 
 

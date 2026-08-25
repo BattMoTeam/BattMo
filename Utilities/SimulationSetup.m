@@ -147,7 +147,7 @@ classdef SimulationSetup
 
             if isUnAssigned(simInput, 'initstate')
                 if ismethod(model, 'setupInitialState')
-                    simInput = setJsonStructField(simInput, 'initstate', model.setupInitialState());
+                    simInput = setStructField(simInput, 'initstate', model.setupInitialState());
                 end
             end
             
@@ -155,7 +155,7 @@ classdef SimulationSetup
             
             if isUnAssigned(simInput, 'schedule')
                 if isAssigned(model, 'Control') && ismethod(model.Control, 'setupSchedule')
-                    simInput = setJsonStructField(simInput, 'schedule', model.Control.setupSchedule());
+                    simInput = setStructField(simInput, 'schedule', model.Control.setupSchedule());
                 end
             end
             
@@ -165,12 +165,12 @@ classdef SimulationSetup
             nls.errorOnFailure    = false;
             nls.continueOnFailure = false;
 
-            simInput = setDefaultJsonStructField(simInput, 'NonLinearSolver', nls);
+            simInput = setDefaultStructField(simInput, 'NonLinearSolver', nls);
 
-            simsetup.schedule        = getJsonStructField(simInput, 'schedule');
-            simsetup.initstate       = getJsonStructField(simInput, 'initstate');
-            simsetup.NonLinearSolver = getJsonStructField(simInput, 'NonLinearSolver');
-            simsetup.OutputMinisteps = getJsonStructField(simInput, 'OutputMinisteps', true);
+            simsetup.schedule        = getStructField(simInput, 'schedule');
+            simsetup.initstate       = getStructField(simInput, 'initstate');
+            simsetup.NonLinearSolver = getStructField(simInput, 'NonLinearSolver');
+            simsetup.OutputMinisteps = getStructField(simInput, 'OutputMinisteps', true);
             
         end
 

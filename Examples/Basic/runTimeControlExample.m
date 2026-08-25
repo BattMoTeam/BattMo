@@ -57,7 +57,7 @@ jsonstruct.SOC = 0.5;
 %%%
 % we run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%
 % We plot the results
@@ -93,7 +93,7 @@ jsonstruct_control.value = struct('functionFormat', 'tabulated', ...
 
 jsonstruct.Control = jsonstruct_control;
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%%
 % We plot the results

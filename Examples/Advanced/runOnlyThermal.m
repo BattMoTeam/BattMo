@@ -31,7 +31,7 @@ jsonstruct_control = parseBattmoJson(jsonfilename);
 %% 
 % We merge the structures into a single input structure
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control}, 'warn', false);
 %% Modify input structure
@@ -54,8 +54,8 @@ locations = {{'NegativeElectrode', 'CurrentCollector', 'specificHeatCapacity'}, 
 
 for iloc = 1 : numel(locations)
     loc = locations{iloc};
-    val = getJsonStructField(jsonstruct, loc);
-    jsonstruct = setJsonStructField(jsonstruct, loc, coef*val, 'handleMisMatch', 'quiet');
+    val = getStructField(jsonstruct, loc);
+    jsonstruct = setStructField(jsonstruct, loc, coef*val, 'handleMisMatch', 'quiet');
 end
 %% 
 % We change the lower cutoff voltage
@@ -63,7 +63,7 @@ end
 jsonstruct.Control.lowerCutoffVoltage = 3.6;
 %% Run thermal simulation
 
-output_fullycoupled = runBatteryJson(jsonstruct);
+output_fullycoupled = runBattery(jsonstruct);
 %% Plot mesh
 % Now the model is setup, we can plot the grid mesh
 
@@ -71,11 +71,11 @@ plotBatteryGrid(output_fullycoupled.model, 'shortLegendText', true, 'figure', 1)
 %% Run iso-thermal simulation
 % We modify the input structure and switch to iso-thermal
 
-jsonstruct_isothermal = setJsonStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
+jsonstruct_isothermal = setStructField(jsonstruct, 'use_thermal', false, 'handleMisMatch', 'quiet');
 %% 
 % We run the iso-thermal simulation
 
-output_isothermal = runBatteryJson(jsonstruct_isothermal);
+output_isothermal = runBattery(jsonstruct_isothermal);
 %% Setup thermal-only simulation
 % We compute the source terms from the output states obtained from the isothermal 
 % simulation. The source terms depends on the norm of the charge and mass fluxes 

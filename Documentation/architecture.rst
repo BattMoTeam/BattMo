@@ -15,7 +15,7 @@ following sub-models:
 * Electrolyte model :ref:`(schema) <json:Electrolyte>`
 * Separator model :ref:`(schema) <json:Separator>`
 * ThermalModel model :ref:`(schema) <json:Thermal Model>`
-* Control model :ref:`(schema) <json:Simulation Control Parameters>`
+* Control model :ref:`(schema) <json:Control Parameters>`
 
 .. figure:: img/cutbatterygraph.png
    :target: _images/cutbatterygraph.png
@@ -68,10 +68,10 @@ In the interface model, the function and variables that enter the reaction are d
 diffusion model contains the functions to model and solve the diffusion equation in the solid. We have implemented two
 solid diffusion model, see :ref:`here <soliddiffusion:Solid Diffusion Models>`.
 
-The **Control** :ref:`(schema) <json:Simulation Control Parameters>`, **Separator** :ref:`(schema) <json:Separator>` and
+The **Control** :ref:`(schema) <json:Control Parameters>`, **Separator** :ref:`(schema) <json:Separator>` and
 **Thermal** :ref:`(schema) <json:Thermal Model>` models do not have sub-models. The control model is described in more
 details :ref:`here<controlinput:Control models>`. A example of a fully coupled thermal simulation is presented
-:ref:`here<thermal:Thermal Simulation>`.
+:ref:`here<runThermalExample>`.
            
 
 

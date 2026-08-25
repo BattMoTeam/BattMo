@@ -54,6 +54,14 @@
       "description": "the mass density of the active material",
       "symbol": "rho"
     },
+    "useDoubleLayerCapacity" : {
+      "type" : "boolean",
+      "description" : "set to true if we include the double layer capacity in the Butler-Volmer equation. The default is false."
+    },
+    "doubleLayerCapacitance" : {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "double layer capacitance"
+    }    
     "openCircuitPotential": {
       "allOf": [
         {"$ref": "Function.schema.json"},

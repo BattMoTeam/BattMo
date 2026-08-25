@@ -13,13 +13,13 @@ function jsonstruct = resolveMergeInputJson(jsonstruct)
 
         if numel(jsonstruct) == 1
 
-            mergeInputs = getJsonStructField(jsonstruct, 'MergeInputs');
+            mergeInputs = getStructField(jsonstruct, 'MergeInputs');
 
             if isAssigned(mergeInputs)
 
-                merge_order       = getJsonStructField(mergeInputs, 'merge_order', 'ascending');
-                conflict_handling = getJsonStructField(mergeInputs, 'conflict_handling', 'warn');
-                inputs            = getJsonStructField(mergeInputs, 'Inputs');
+                merge_order       = getStructField(mergeInputs, 'merge_order', 'ascending');
+                conflict_handling = getStructField(mergeInputs, 'conflict_handling', 'warn');
+                inputs            = getStructField(mergeInputs, 'Inputs');
 
                 for iinput = 1 : numel(inputs)
                     jsonstructs{iinput} = resolveMergeInputJson(inputs{iinput});
@@ -30,7 +30,7 @@ function jsonstruct = resolveMergeInputJson(jsonstruct)
                 end
 
                 warn = strcmp(conflict_handling, 'warn');
-                jsonstruct = mergeJsonStructs(jsonstructs, 'warn', warn);
+                jsonstruct = mergeStructs(jsonstructs, 'warn', warn);
                 
             else
                 

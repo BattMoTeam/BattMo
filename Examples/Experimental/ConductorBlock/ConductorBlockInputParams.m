@@ -24,7 +24,7 @@ classdef ConductorBlockInputParams < InputParams
             thermal = 'ThermalModel';
             ctrl    = 'Control';
             
-            jsonstruct = equalizeJsonStructField(jsonstruct, 'use_thermal', {el, 'use_thermal'});
+            jsonstruct = equalizeStructField(jsonstruct, 'use_thermal', {el, 'use_thermal'});
 
             inputparams = inputparams@InputParams(jsonstruct);
 

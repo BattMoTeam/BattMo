@@ -24,10 +24,10 @@ classdef FormulaFunction < Function
 
             if isfield(jsonstruct, 'expression')
 
-                jsonstruct = setDefaultJsonStructField(jsonstruct, {'expression', 'language'}, 'matlab');
-                jsonstruct = setDefaultJsonStructField(jsonstruct, {'expression', 'variableNames'}, jsonstruct.argumentList);
+                jsonstruct = setDefaultStructField(jsonstruct, {'expression', 'language'}, 'matlab');
+                jsonstruct = setDefaultStructField(jsonstruct, {'expression', 'variableNames'}, jsonstruct.argumentList);
                 
-                assert(isEqualJsonStructField(jsonstruct, {'expression', 'language'}, 'matlab'), 'The language should be matlab');
+                assert(isEqualStructField(jsonstruct, {'expression', 'language'}, 'matlab'), 'The language should be matlab');
 
                 fn.formula       = jsonstruct.expression.formula;
                 fn.variableNames = jsonstruct.expression.variableNames;
@@ -51,7 +51,7 @@ classdef FormulaFunction < Function
                     if strcmp(expr.language, 'matlab')
 
                         found = true;
-                        expr = setDefaultJsonStructField(expr, {'variableNames'}, jsonstruct.argumentList);
+                        expr = setDefaultStructField(expr, {'variableNames'}, jsonstruct.argumentList);
 
                         fn.formula       = expr.formula;
                         fn.variableNames = expr.variableNames;

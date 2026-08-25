@@ -1,5 +1,5 @@
 ===========================================
-Computation Graph Model Design ang Assembly
+Computation Graph Model Design And Assembly
 ===========================================
 
 BattMo simulators are implemented using an approach based on variable dependency graph. The general ideas behind the
@@ -16,7 +16,7 @@ introduces **variables** and **equations**. Some of the variables are *state* va
 fully describe the state of system. We call those variables **primary variables**. Other variables are defined through
 **explicit** dependencies from the primary variables. We call those variables **secondary variables**. The equations are
 then formulated as functions of the primary and/or secondary variables whose values should be equal to zero. As such, an
-equation, or more precisely the left-hand side of it, is a secondary variable, the right-hand side of the equatio being
+equation, or more precisely the left-hand side of it, is a secondary variable, the right-hand side of the equation being
 zero. We call the left-hand side of an equation, its **residuals**.
 
 In the setting we are interested in, that is numerical simulation, the primary variables are the unknown which we want
@@ -55,7 +55,7 @@ with the equations
    f_2(y_1, y_2, x_2) &= 0\\
    f_3(x_1, x_3)      &= 0
 
-This information is completly contained in the following graph
+This information is completely contained in the following graph
    
 .. figure:: img/genericexample.png
    :target: _images/genericexample.png
@@ -66,7 +66,7 @@ This information is completly contained in the following graph
 Given a mathematical model, we can therefore create a **computational graph** by collecting the variable names and
 encoding the variable dependencies in edges, as the one presented above.
 
-We observe that a computational graph offers a very usefull synthetic overview of a model. This observation will be
+We observe that a computational graph offers a very useful synthetic overview of a model. This observation will be
 hopefully confirmed by the example below.
 
 Model assembly
@@ -86,10 +86,10 @@ The order of the update sequence is not unique. For the example above, a possibl
 
    y_2, f_3, y_1, f_2 \text{, and finally } f_1
 
-It is usefull to have a solver where the decleration of the computational graph can be done before implementing the
+It is useful to have a solver where the declaration of the computational graph can be done before implementing the
 update functions. In this way, we **break the complexity** in the implementation of a model. The first step is the
 design of the graphs, which can be done using interactive tools (see below), where we also declare all the update
-functions. Those are however implemented in a second step. Then, we can focus on them at the apriopriate scope level
+functions. Those are however implemented in a second step. Then, we can focus on them at the appropriate scope level
 (see model hierarchy) not distracted by the overall architecture. The solver can then automatically generate from the
 sequence of function calls that will be used to update all the residuals.
    
@@ -115,16 +115,16 @@ rest, it is easier to understand.
 Model hierarchy and composition
 ===============================
 
-As model developper, we want to reuse as much as possible existing models.
+As model developer, we want to reuse as much as possible existing models.
 
 Model explorability is important to inspect the already available models, understand their structure and figure out how
 they can be modified to our need.
 
-The computational graph provides a very synthetic representation on the model an in a first step, the model developper
+The computational graph provides a very synthetic representation on the model an in a first step, the model developer
 should only focus on getting the computational graph that corresponds to his/her model.
 
 In the code of a given, there is a method where the computational graph is defined, see the example below. The
-developper gets there the possibility to edit the computational graph. The actions available are
+developer gets there the possibility to edit the computational graph. The actions available are
 
   1. Add new variables to the model (meaning adding nodes to the computational graph).
   2. Add functional dependencies (meaning adding directed edges from the *function input variables* nodes to the *function output variable* node).
@@ -157,11 +157,75 @@ definitions of the functions the defines the variables.
 Basic Example
 =============
 
-by existing models, and reuse the variable update functions that are been defined there. Looking at the graph, we
-can understand the dependency easily and identify the part that should be changed in the model. In some cases,
-the dependency graph may not changed, only a different function should be called to update a variable. For
-example, the exchange current density function :math:`j` rarely obeys the ideal case presented above but is a
-given tabulated function,
+Let us consider the example of a reaction model. The reaction rate :math:`R` is given
+by a standard Buttler-Volmer model.
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   R &= j\left(e^{-\alpha\frac{\eta}{RT}} + e^{(1-\alpha)\frac{\eta}{RT}}\right)\\
+   j&= k c_s(1 - c_e)^{\frac12}c_e^\frac12\\
+   \eta &= \phi_s - \phi_e - \text{OCP}\\
+   \text{OCP} &= \hat{\text{OCP}}(c_s)
+   \end{align*}
+
+We have seven variables :math:`R,\ j, \eta, \text{OCP}, \phi_s, \phi_e, c_s, c_e`. The dependency graph we
+obtain from the equations above is
+
+.. figure:: img/reacmodelgraph.png
+   :target: _images/reacmodelgraph.png
+   :name: reacmodelgraph
+   :width: 100%
+   :align: center
+
+   Reaction model graph
+
+This graph has been obtained in BattMo after we implemented the model. We will explain later how this can be
+done.
+
+The graph is a `directed acyclic graph <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_, meaning that
+it has no loop. We can thus identify *root* and *tail* variables. In the case above, the root variables are
+:math:`\phi_s, \phi_e, c_s, c_e` and there only one tail variable, :math:`R`. Given values for the root
+variables, we can traverse the graph and evaluate all the intermediate variables to compute the tail
+variables. To evaluate variables, the functions we will implement will always need parameters (the opposite
+case where a function can be defined without any external parameters is expected to be rare in a physical
+context). Then, we can describe our model with
+
+* A set of parameters (scalar variables, but maybe also functions)
+* A computational graph
+* A set of functions associated to each node (i.e. variable) which as an incoming edge in the computational
+  graph
+
+For each of the function in the set above, we know the input and output arguments. They are given by the nodes
+connected by the edge.
+
+The motivation for introducing such graph representation is **expressivity**. It provides a synthetic overview
+of the model. Of course, the precise expression of the functions, which is not visible in the graph, is an
+essential part. All the physics is encoded there. But, the graph gives us access to the dependency between the
+variables and the variables have been chosen by the user in the model because of their specific physical
+meaning. The user has chosen them from a physical insight, that we want to preserve. Especially when we expand
+the models.
+
+ +--------------+--------------------------------------+
+ | R            | Reaction Rate                        |
+ +--------------+--------------------------------------+
+ | j            | Exchange Current Density             |
+ +--------------+--------------------------------------+
+ | eta          | Over-potential                       |
+ +--------------+--------------------------------------+
+ | OCP          | Open Circuit Potential               |
+ +--------------+--------------------------------------+
+ | phi_s, phi_e | Solid and Electrolyte potentials     |
+ +--------------+--------------------------------------+
+ | c_s, c_e     | Solid and Electrolyte concentrations |
+ +--------------+--------------------------------------+
+
+A user can inspect a given model first by looking at the graph and recognize the variables that are named here. Looking
+at the graph, we can understand the dependency easily and identify the part that should be changed in the model. In some
+cases, the dependency graph may not changed, only a different function should be called to update a variable. For
+example, the exchange current density function :math:`j` rarely obeys the ideal case presented above but is a given
+tabulated function,
 
 .. math::
 
@@ -177,7 +241,7 @@ Continuing with the same example, we may introduce a temperature dependency in t
 
    \text{OCP} = \hat{\text{OCP}}(c_s, T)
 
-Then, we have to introduce a new node (i.e. variable) in our graph, the temperature :code:`T`.
+Then, we have to introduce a new variable, that is a node in our graph, the temperature :code:`T`.
 
 .. figure:: img/reacmodelgraph2.png
    :target: _images/reacmodelgraph2.png
@@ -187,16 +251,16 @@ Then, we have to introduce a new node (i.e. variable) in our graph, the temperat
 
    Reaction model graph with added temperature
 
-Let us introduce an other model, at least its computational graph. We consider a simple heat equation
+Let us introduce an other model through its computational graph. We consider the standard heat equation
 
 .. math::
 
    \alpha T_t = \nabla\cdot(\lambda \nabla T) + q
 
 
-We introduce in addition to the temperature :code:`T` the following variable names (nodes) and, in the right
-column, we write the definition they will take after discretization. The operators :code:`div` and
-:code:`grad` denotes the discrete differential operators used in the assembly.
+We introduce in addition to the temperature :code:`T` the following variable names as new nodes. In the right column, we
+write the definition they will take after discretization, where the operators :code:`div` and :code:`grad` denotes the
+discrete differential operators used in the assembly.
 
  +------------+--------------------------------------------------------------------+
  | accumTerm  | :math:`\alpha\frac{T - T^0}{\Delta t}`                             |
@@ -218,11 +282,10 @@ The computational for the temperature model is given by
 
    Temperature model graph
              
-Having now two models, we can illustrate how we can combine the corresponding computational graph to obtain a
-coupled model. Let us couple the two models in two ways. We include a heat source produced by the chemical
-reaction, as some function of the reaction rate. The effect of the temperature on the chemical reaction is
-included, as we presented earlier, as a additional temperature dependence of the open circuit potential
-:code:`OCP`. We obtain the following computational graph
+Having now two models, we can illustrate how we can combine the computational graphs to obtain a coupled model. Let us
+couple the two models in two ways. We include a heat source produced by the chemical reaction, as some function of the
+reaction rate. The effect of the temperature on the chemical reaction is included, as we presented earlier, as a
+additional temperature dependence of the open circuit potential :code:`OCP`. We obtain the following computational graph
 
 .. figure:: img/tempreacgraph.png
    :target: _images/tempreacgraph.png
@@ -236,7 +299,7 @@ In the node names, we recognize the origin of variable through a model name, eit
 :code:`Thermal`. We will come back later to that.
 
 With this model, we can setup our first simulation. Given the concentrations and potentials, we want to obtain
-the temperature, which can only obtained implicitely by solving the energy equation. Looking at the graph, we
+the temperature, which can only obtained implicitly by solving the energy equation. Looking at the graph, we
 find that the root variables are :code:`Thermal.T`, :code:`Reaction.c_s`, :code:`Reaction.phi_s`,
 :code:`Reaction.c_e`, :code:`Reaction.phi_e`. The tail variable is the energy conservation equation
 :code:`energyCons`. A priori, the system looks well-posed with same number of unknown and equation (one of
@@ -258,7 +321,7 @@ the chemical reaction. We have equations of the form
 where the right-hand side is obtained from the computed reaction rate, following the stoichiometry of the
 chemical reactions.
 
-The computational grap for each of this equation take the generic form
+The computational graph for each of this equation take the generic form
 
 .. figure:: img/concgraph.png
    :target: _images/concgraph.png
@@ -278,7 +341,7 @@ where
  | massCons   | :math:`\frac{c - c^0}{\Delta t} - R` |
  +------------+--------------------------------------+
 
-Let us now combine this model with the first one, which provided us with te computation of the chemical
+Let us now combine this model with the first one, which provided us with the computation of the chemical
 reaction rate. We need two instance of the concentration model. To solve, the issue of **duplicated** variable
 name, we add indices in our notations but this cannot be robustly scaled to large model. Instead, we introduce
 model names and a model hierarchy. This was done already earlier with the :code:`Thermal` and :code:`Reaction`
@@ -294,7 +357,7 @@ graph.
    Coupled reaction-concentration model
 
 We note that it becomes already difficult to read off the graph and it will become harder and harder as model
-grow. We have developped visualization tool that will help us in exploring the model through their graphs.
+grow. We have developed visualization tool that will help us in exploring the model through their graphs.
 
 Given :code:`phi_s` and :code:`phi_e`, we can solve the problem of computing the evolution of the
 concentrations. The *root* nodes are the two concentrations (the potentials are known) and the *tail* nodes are
@@ -341,12 +404,12 @@ models. Once the two steps above are done, a Newton loop in our simulator will c
 .. _assembly steps:
 
 #. Instantiation of the primary variables (the root nodes) as AD (Automatic Differentiation) variables
-#. Evaluation of all the functions in a order that can be infered by the graph, as it gives us the relative
-   dependencie between all the variables
+#. Evaluation of all the functions in a order that can be inferred by the graph, as it gives us the relative
+   dependencies between all the variables
 #. Assembly of the Jacobian obtained form the residual equations (the tail nodes)
 
 The Jacobian matrix with the residuals can be sent to a Newton solver which will return an update of the
-primary variables, until convergence. All these three steps can by **automatised** as we will see later, so
+primary variables, until convergence. All these three steps can by **automatized** as we will see later, so
 that a user which wants to implement a new model can only focus on the two steps mentioned further up.
 
 We need now to provide the user with a framework for computational graph and functionalities to setup graphs
@@ -354,7 +417,7 @@ easily within this framework. Let review the functionalities we want to include.
 
 .. _reusability:
 
-The overall goals are readibility and reusabililty. For code reusability, we want to be able to reuse in an
+The overall goals are readability and reusability. For code reusability, we want to be able to reuse in an
 easy way any function that have been implemented in existing models. For the graph framework it implies that
 graphs can always be modified at any level. A modification of an existing model consists of changing its graph
 and add or replace functions that have to be changed or replace but keeping **all the other functions
@@ -365,11 +428,11 @@ A graph, in general, is determined by the nodes and edges. Typically a graph des
 the nodes and edges are described by a pair of node index. In our case, the indexing is done internally in
 processing of the model. At the setup level for the user, we want to use variable names (string) because they
 are supposed to have a meaning for the user and a model designer is going to choose those carefully in order to
-enhance the readibility of its model. When, we combine graphs we face the issue of shared names by the two
+enhance the readability of its model. When, we combine graphs we face the issue of shared names by the two
 graphs. Since the models have been likely implemented independently, we have to deal with this issue. We solve
 it by using a **name space** mechanism. For a given variable name, indices are frequently needed and should be
 supported. A typical example is a chemical system which brings different species, each of them bringing a
-concencentration variable. To get a generic implementation, it is impractical to deal with the names of each of
+concentration variable. To get a generic implementation, it is impractical to deal with the names of each of
 the species and we rather use indices, over which it is easy to iterate. A map between species name in index
 can be conveniently introduced. We end up with the following structure for a variable name, a class called
 :code:`VarName` see :battmo:`VarName` with the following properties
@@ -421,7 +484,7 @@ model<concreacgraph>`. Namespace is needed to distinguish between those,
 Let us introduce the code functionalities for constructing models. For the moment, we focus on the the nodes
 (variable names). Later, we will look at the edges (functional dependencies). We use the :ref:`temperature
 model<tempgraph>` as an example. The class :battmo:`BaseModel` is, at its name indicates, the base class for
-all models. We will introduce gradually the most usefull methods for this class. For our temperature model, we
+all models. We will introduce gradually the most useful methods for this class. For our temperature model, we
 start with
 
 .. code:: matlab
@@ -462,9 +525,9 @@ the method :code:`registerVarNames` to add a list of nodes in our graph given by
 .. note::
 
    The variable name is given by a single string here and not a instance of :battmo:`VarName`. This is a
-   syntaxic sugar and internally the variable name :code:`T` is converted to :code:`VarName({}, 'T', 1, ':')`
+   syntactic sugar and internally the variable name :code:`T` is converted to :code:`VarName({}, 'T', 1, ':')`
 
-   To lighten the graph setup, we have introduced at several places syntaxic sugar.
+   To lighten the graph setup, we have introduced at several places syntactic sugar.
 
 We can now instantiate the model, setup the computational graph. The graph is given as a
 :battmo:`ComputationalGraphInteractiveTool` class instance. This class provides some computational and inspection methods
@@ -498,7 +561,7 @@ that have been registered.
    flux
    energyCons
 
-Similary, we setup a :ref:`reaction model<reacmodelgraph>` as follows
+Similarly, we setup a :ref:`reaction model<reacmodelgraph>` as follows
 
 .. code:: matlab
 
@@ -647,8 +710,8 @@ We have declared three property function using the method :code:`registerPropFun
 
 .. note::
 
-   The method :code:`registerPropFunction` offers syntaxic sugar, which is very important to keep the
-   implementation concise. If we did not use any syntaxic sugar, the declaration of the :code:`flux` property
+   The method :code:`registerPropFunction` offers syntactic sugar, which is very important to keep the
+   implementation concise. If we did not use any syntactic sugar, the declaration of the :code:`flux` property
    function would be as follows
 
    .. code:: matlab
@@ -682,7 +745,7 @@ We obtain the plot we already presented :ref:`above<tempgraph>`
 
 We can use the :code:`printOrderedFunctionCallList` method of the :battmo:`ComputationalGraphInteractiveTool` class to
 print the sequence of function calls that is used to update all the variables in the model
-:battmo:`ThermalModel`, which examplify how we can automatize the assembly. The order of the function
+:battmo:`ThermalModel`, which exemplify how we can automatize the assembly. The order of the function
 evaluation is computed from the graph structure.
 
 .. code::
@@ -749,10 +812,10 @@ In this case, we obtain the following list of function calls
    state = model.updateThermalSource(state);
    state.Thermal = model.Thermal.updateEnergyCons(state.Thermal);      
 
-From this example, we can understand how we can fullfill the requirement we set :ref:`above<reusability>`,
-where we formulate the goal that we want to call a function without have to modify it at all, whereever in the
+From this example, we can understand how we can fulfill the requirement we set :ref:`above<reusability>`,
+where we formulate the goal that we want to call a function without have to modify it at all, wherever in the
 model hierarchy the variable that will be updated belongs to. For that, we use simple matlab structure
-mechanism. Here, we sse that the values of the thermal variables (:code:`T`, :code:`flux`, ...) are stored in
+mechanism. Here, we see that the values of the thermal variables (:code:`T`, :code:`flux`, ...) are stored in
 the :code:`Thermal` field of the :code:`state` variable, so that when we send the variable
 :code:`state.Thermal` to the function :code:`updateFlux` (for example), the variables coming from the other
 submodel :code:`Reaction` are stripped off. The function :code:`updateFlux` implemented in the
@@ -761,3 +824,14 @@ the model.
 
 
 
+
+..  LocalWords:  BattMo img discretize genericexample explorability reusability nowrap frac OCP reacmodelgraph acyclic
+..  LocalWords:  expressivity electrochemistry nabla cdot discretization accumTerm sourceTerm energyCons tempgraph dt
+..  LocalWords:  tempreacgraph priori stoichiometry concgraph masssAccum massCons Elyte concreacgraph tempconcreacgraph
+..  LocalWords:  tempconcreacgraphmodel Instantiation Jacobian VarName battmo matlab classdef namespace BaseModel cgit
+..  LocalWords:  ThermalModel registerVarAndPropfuncNames varnameList propertyFunctionList varnames registerVarNames fn
+..  LocalWords:  ComputationalGraphInteractiveTool setupComputationalGraph computationalGraph varNameList printVarNames
+..  LocalWords:  ReactionModel Intercalation mol ReactionThermalModel PropFunction varname inputvarnames modelnamespace
+..  LocalWords:  functionCallSetupFn literalinclude registerPropFunction varnname propfunction ComputationalGraphPlot
+..  LocalWords:  cgp tempgraphcopy printOrderedFunctionCallList updateAccumTerm UncoupledReactionThermalModel submodels
+..  LocalWords:  uncoupledreactemp updateOCP updateThermalSource submodel

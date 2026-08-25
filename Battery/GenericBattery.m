@@ -59,7 +59,7 @@ classdef GenericBattery < BaseModel
 
             model = dispatchParams(model, inputparams, fdnames);
 
-            model.jsonstruct = inputparams.buildJsonStruct();
+            model.jsonstruct = inputparams.buildStruct();
 
             model.NegativeElectrode = Electrode(inputparams.NegativeElectrode);
             model.PositiveElectrode = Electrode(inputparams.PositiveElectrode);
@@ -565,10 +565,10 @@ classdef GenericBattery < BaseModel
 
         end
 
-        function printJsonStruct(model)
+        function printStruct(model)
 
-            fjv = flattenJsonStruct(model.jsonstruct);
-            fjv.print();
+            fsv = flattenStruct(model.jsonstruct);
+            fsv.print();
 
         end
 
@@ -1173,7 +1173,7 @@ classdef GenericBattery < BaseModel
                 jsonstruct.(fdname) = model.(fdname);
             end
 
-            jsonstruct = removeJsonStructEmptyField(jsonstruct);
+            jsonstruct = removeStructEmptyField(jsonstruct);
 
         end
 

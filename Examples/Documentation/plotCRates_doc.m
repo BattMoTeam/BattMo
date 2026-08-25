@@ -11,7 +11,7 @@ set(0, 'defaultlinelinewidth', 3);
 DRates = [0.8, 1, 2];
 for i = 1 : numel(DRates)
     jsonstruct.Control.DRate = DRates(i);
-    output = runBatteryJson(jsonstruct);
+    output = runBattery(jsonstruct);
     plotResult(output);
 end
 

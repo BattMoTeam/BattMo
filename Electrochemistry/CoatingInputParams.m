@@ -50,34 +50,34 @@ classdef CoatingInputParams < ElectronicComponentInputParams
         function inputparams = CoatingInputParams(jsonstruct)
 
             
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
-            jsonstruct = setDefaultJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'}, false);
+            jsonstruct = setDefaultStructField(jsonstruct, {'activeMaterialModelSetup', 'swelling'}, false);
 
-            jsonstruct = equalizeJsonStructField(jsonstruct, ...
+            jsonstruct = equalizeStructField(jsonstruct, ...
                                                  {'activeMaterialModelSetup', 'swelling'}, ...
                                                  {'diffusionModelType', 'swelling'});
                         
-            [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+            [jsonstruct, bothUnAssigned] = equalizeStructField(jsonstruct                              , ...
                                                                    {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                    {'ActiveMaterial', 'SEImodel'});
 
             if bothUnAssigned
                 % We set up the default value for SEI model, which is 'none'
-                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
-                [jsonstruct, bothUnAssigned] = equalizeJsonStructField(jsonstruct                              , ...
+                jsonstruct = setStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none');
+                [jsonstruct, bothUnAssigned] = equalizeStructField(jsonstruct                              , ...
                                                                        {'activeMaterialModelSetup', 'SEImodel'}, ...
                                                                        {'ActiveMaterial', 'SEImodel'});
 
             end
 
-            isComposite = getJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'});
+            isComposite = getStructField(jsonstruct, {'activeMaterialModelSetup', 'composite'});
             
             if isComposite
                 % if active material is composite, we do not support SEI for the moment
                 errorMessage = 'For a composite material, we do no support SEI layer';
-                jsonstruct = setJsonStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
-                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
-                jsonstruct = setJsonStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'activeMaterialModelSetup', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'ActiveMaterial1', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
+                jsonstruct = setStructField(jsonstruct, {'ActiveMaterial2', 'SEImodel'}, 'none', 'errorMessage', errorMessage);
             end
             
             inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);

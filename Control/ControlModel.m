@@ -182,7 +182,7 @@ classdef ControlModel < BaseModel
             if (nargin > 0) && ~isempty(params)
                 
                 params = resolveUnitInputJson(params);
-                params = mergeJsonStructs({params, paramsdefault}, 'warn', false);
+                params = mergeStructs({params, paramsdefault}, 'warn', false);
                 
             else
                 

@@ -19,12 +19,12 @@ The main Simulation schema contains schemas for
 .. note::
 
    The different schemas may have common object. In the validation process, each schema is handled parallelly. The
-   function :battmo:`mergeJsonStructs` can be used to compose different json files.
+   function :battmo:`mergeStructs` can be used to compose different json files.
 
 For example a component (say the electolyte) has its geometrical and material properties specified in two separate
 schemas. Having separate schemas clarify the presentation and corresponds also to a convenient way to organize the
 input. We can easily switch between different geometrical models while keeping the same material properties. For that,
-we use the :battmo:`mergeJsonStructs` function, see the example :ref:`here<mergeJsonStructs>`.
+we use the :battmo:`mergeStructs` function, see the example :ref:`here<mergestruct:Merging parameters>`.
 
 Here, we give an :ref:`Example<jsonexample:My first Json Input>`
 
@@ -99,7 +99,7 @@ The electrode input data contains essentially the input data for the coating and
 .. literalinclude:: ../Utilities/JsonSchemas/Electrode.schema.json
    :language: json
 
-See json :ref:`input example<jsonexample:Negative Electrode>` and also :ref:`here<jsonexample:Positive Electrode>`.
+See json :ref:`input example<jsonexample:Negative Electrode>`.
               
 Coating
 -------

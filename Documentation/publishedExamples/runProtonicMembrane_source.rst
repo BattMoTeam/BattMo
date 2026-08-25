@@ -20,7 +20,7 @@ Source code for runProtonicMembrane
   filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', '1d-PM-geometry.json');
   jsonstruct_geometry = parseBattmoJson(filename);
   
-  jsonstruct = mergeJsonStructs({jsonstruct_material, jsonstruct_geometry});
+  jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
   
   %% Input structure setup
   % We setup the input parameter structure which will we be used to instantiate the model

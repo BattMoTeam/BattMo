@@ -27,7 +27,7 @@ jsonstruct_control = parseBattmoJson(jsonfilename);
 %% Setup the full input
 % We merge all the json structures to obtain a complete input
 %
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material , ...
                                jsonstruct_control}, 'warn', false);
 
@@ -91,7 +91,7 @@ colorbar
 
 %% Run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot of the voltage
 %
@@ -152,7 +152,7 @@ jsonstruct.ThermalModel.externalHeatTransferCoefficient = 0;
 %%%
 % We re-run the simulation and obtain higher temperatures.
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %% Plot of temperatures
 %

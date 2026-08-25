@@ -48,7 +48,8 @@ classdef InterfaceInputParams < InputParams
         
         %% Double layer capacity
         useDoubleLayerCapacity % if true, add double layer capacity (default is false)
-        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2      
+        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2
+        
     end
     
     methods
@@ -56,9 +57,9 @@ classdef InterfaceInputParams < InputParams
         function inputparams = InterfaceInputParams(jsonstruct)
 
             if isUnAssigned(jsonstruct, 'entropyChange')
-                jsonstruct = setJsonStructField(jsonstruct, 'includeEntropyChange', false);
+                jsonstruct = setStructField(jsonstruct, 'includeEntropyChange', false);
             else
-                jsonstruct = setDefaultJsonStructField(jsonstruct, 'includeEntropyChange', true);
+                jsonstruct = setDefaultStructField(jsonstruct, 'includeEntropyChange', true);
             end
             
             inputparams = inputparams@InputParams(jsonstruct);

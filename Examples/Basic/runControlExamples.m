@@ -22,7 +22,7 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 %%%
 % We merge the material and geometrical parameters in |jsonstruct|
 
-jsonstruct = mergeJsonStructs({jsonstruct_geometry , ...
+jsonstruct = mergeStructs({jsonstruct_geometry , ...
                                jsonstruct_material
                               });
 
@@ -34,7 +34,7 @@ jsonstruct.Control = struct('controlPolicy'     , 'CCDischarge', ...
                             'DRate'             , 1            , ...
                             'lowerCutoffVoltage', 2.4);
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 %%
 % We plot the results
@@ -73,10 +73,10 @@ jsonstruct.TimeStepping.totalTime = 2*hour;
 %%%
 % We run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 
-%% Plot Results
+%% Plot Results (1)
 %
 
 set(0, 'defaulttextfontsize', 15);
@@ -108,10 +108,10 @@ jsonstruct.Control = struct('controlPolicy'     , 'CCCV'       , ...
 %%%
 % We run the simulation
 
-output = runBatteryJson(jsonstruct);
+output = runBattery(jsonstruct);
 
 
-%% Plot Results
+%% Plot Results (2)
 
 set(0, 'defaulttextfontsize', 15);
 set(0, 'defaultaxesfontsize', 15);

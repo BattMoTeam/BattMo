@@ -7,12 +7,12 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
 
         if numel(jsonstruct) == 1
 
-            isFile = getJsonStructField(jsonstruct, 'isFile');
+            isFile = getStructField(jsonstruct, 'isFile');
 
             if isAssigned(isFile)
                 
-                filename  = getJsonStructField(jsonstruct, 'filename');
-                filenames = getJsonStructField(jsonstruct, 'filenames');
+                filename  = getStructField(jsonstruct, 'filename');
+                filenames = getStructField(jsonstruct, 'filenames');
                 
                 if isAssigned(filename)
                     
@@ -29,8 +29,8 @@ function jsonstruct = resolveFileInputJson(jsonstruct)
                     
                     filenames = jsonstruct.filenames;
 
-                    jsonstruct = removeJsonStructField(jsonstruct, {'isFile'}, 'handleMissing', 'quiet');
-                    jsonstruct = removeJsonStructField(jsonstruct, {'filenames'}, 'handleMissing', 'quiet');
+                    jsonstruct = removeStructField(jsonstruct, {'isFile'}, 'handleMissing', 'quiet');
+                    jsonstruct = removeStructField(jsonstruct, {'filenames'}, 'handleMissing', 'quiet');
                     MergeInputs = struct('merge_order', 'ascending', ...
                                          'conflict_handling', 'warn');
                     Inputs = {};
