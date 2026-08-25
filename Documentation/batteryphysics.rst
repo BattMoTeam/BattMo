@@ -13,7 +13,6 @@ Battery Physics
    plating
    nblinks/runSwellingExample.ipynb
    soliddiffusion
-   nblinks/runImpedanceScript.ipynb
    
 .. grid:: 2
 

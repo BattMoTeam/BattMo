@@ -6,14 +6,8 @@ EIS and Equivalent Circuit Models
    :maxdepth: 2
    :hidden:
 
-   runImpedanceScript.nblink
-   runCalibration.nblink
-
-ECM fitting for lithium-ion batteries
--------------------------------------
-
 Abstract
-^^^^^^^^
+========
 
 The simulations tools that are used to monitor battery performances include varying degree of physical
 complexity. On one side, we have P2D models based on the Doyle-Fuller-Newman approach but it can be very
@@ -25,146 +19,8 @@ In this work, we aim at bridging the two models, that is developing a methodolog
 transfer the parameters between the models. We present an automated calibration workflow in BattMo to extract
 2-RC Thevenin parameters from synthetic (P2D) and experimental Electrochemical Impedance Spectroscopy (EIS) data.
 
-Getting the impedance from PXD Model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-ECM parameterisation from PXD model using automatic differentiation.
-
-Obtaining the impedance is a major part of the work, as we try to fit the
-impedance given by our parameters to the synthetic impedance from the PXD
-model.
-
-We work with the state vector :math:`\mathcal{X}(t, x)` containing all the
-variables from the PXD model:
-
-.. math::
-
-   \mathcal{X}(t, x) =
-   [c_{\mathrm{ne}}(t, x), \phi_{\mathrm{ne}}(t, x),
-   c_{\mathrm{elyte}}(t, x), \phi_{\mathrm{elyte}}(t, x), \ldots]
-
-The generic equation of the system is
-
-.. math::
-
-   \frac{\partial \mathcal{M}(\mathcal{X})}{\partial t} + \mathcal{A}(\mathcal{X}) = 0.
-
-The operators :math:`\mathcal{M}` and :math:`\mathcal{A}` are non-linear, but
-we discretize them and :math:`\mathcal{X}(t, x)` becomes :math:`X(t)`
-belonging to :math:`\mathbb{R}^{N}`.
-
-The equation then becomes a non-linear system of *ordinary differential
-equations*:
-
-.. math::
-
-   \frac{\partial M(X)}{\partial t} + A(X) = I(t)b(X).
-
-Here :math:`I(t)` is the current and :math:`b` is mostly empty. An implicit
-method is then used for the time discretization. One finds :math:`X^{n+1}`
-from :math:`X^{n}` at time step :math:`n` by solving the equation for the
-unknown :math:`X`:
-
-.. math::
-
-   \frac{M(X) - M(X^{n})}{\Delta t} + A(X) = b(X)I(t^{n+1}).
-
-Then the system is linearized around a state given by :math:`X_{0}` with a
-small perturbation :math:`\delta X = X - X_{0}`. The term :math:`A(X)` becomes
-
-.. math::
-
-   A(X) = A(X_{0}) + D_{A}(X_{0})\delta X,
-
-with :math:`D_{A}` the Jacobian of :math:`A`. Applying the same process for
-:math:`M` and :math:`b` (:math:`D_{M}` and :math:`D_{b}` being their
-Jacobians) gives the following linear system of ordinary differential
-equations:
-
-.. math::
-
-   D_{M}\frac{\partial}{\partial t}\delta X + A(X_{0}) + D_{A}\delta X
-   = I(t)b(X_{0}) + I(t)D_{b}\delta X.
-
-:math:`X_{0}` is a solution to the steady-state problem :math:`I(t) = 0`, which
-implies :math:`A(X_{0}) = 0`. Also, :math:`\delta X \ll 1` implies
-:math:`I(t)b(X_{0}) \gg I(t)D_{b}(X_{0})\delta X`, so the last term is
-neglected.
-
-The final equation is
-
-.. math::
-
-   D_{M}\frac{\partial}{\partial t}\delta X + D_{A}\delta X = I(t)b_{0}.
-
-It is possible to obtain :math:`D_M` and :math:`D_A` with the Jacobian. Since
-
-.. math::
-
-   J(\Delta t) = \frac{D_M}{\Delta t} + D_A,
-
-this leads to
-
-.. math::
-
-   D_M = 2\Delta t \left(J(\Delta t) - J(2\Delta t)\right)
-
-and
-
-.. math::
-
-   D_A = 2\left(J(\Delta t) - J(2\Delta t)\right).
-
-The Fourier transform of this equation is
-
-.. math::
-
-   [i\omega D_{M} + D_{A}]\overline{\delta X} = \bar{I}b_{0},
-
-with :math:`I(t) = \bar{I}e^{i\omega t}` and
-:math:`\delta X = \overline{\delta X}e^{i\omega t}`.
-
-So
-
-.. math::
-
-   \overline{\delta X} = \left[i\omega D_{M} + D_{A}\right]^{-1}b_{0}\bar{I}.
-
-There is a certain vector :math:`r` so that :math:`U = r^{t}X`, where
-:math:`U` is the voltage response.
-
-Then
-
-.. math::
-
-   U = r^{t}X_{0} + r^{t}\delta X,
-
-so :math:`U - U_{0} = \bar{U}e^{i\omega t}` with
-:math:`U_{0} = r^{t}X_{0}`.
-
-It follows that
-
-.. math::
-
-   \bar{U} = r^{t}\overline{\delta X}
-
-and therefore
-
-.. math::
-
-   \bar{U} = r^{t}\left[i\omega D_{M} + D_{A}\right]^{-1}b_{0}\bar{I}.
-
-At the end it gives
-
-.. math::
-
-   Z(\omega) = r^{t}\left[i\omega D_{M} + D_{A}\right]^{-1}b_{0}.
-
-ECM Presentation
-^^^^^^^^^^^^^^^^
-
 Objective
-"""""""""
+=========
 
 Effective everyday operation of a battery requires the Battery Management
 System (BMS) to continuously monitor its real-time state (State of Charge,
@@ -179,7 +35,7 @@ parameters. Another one, more accurate, could be to train a neural network to
 develop a strong state-prediction model.
 
 Theory
-""""""
+======
 
 The electrical activity of a battery can be modelled by an Open Circuit Voltage
 (OCV), which is a perfect source of current. This is the simplest way to
@@ -221,7 +77,7 @@ The impedance is :math:`Z = \frac{1}{Q\left(j\omega\right)^{\alpha}}`.
 A 2nd-Order model with CPE used by Santoni
 
 Physical Meaning of ECM components (`Analog Devices <https://www.analog.com/media/en/reference-design-documentation/reference-designs/cn0510.pdf>`_, 2021)
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+==========================================================================================================================================================
 
 ECM are built after Occam's razor principles, where each component has to be
 linked to a physical phenomenon of the battery (`Fletcher <https://link.springer.com/article/10.1007/s10008-013-2328-4>`_, 2013):
@@ -253,7 +109,7 @@ this range.
 Electrochemical processes linked to EIS regions (`Analog Devices <https://www.analog.com/media/en/reference-design-documentation/reference-designs/cn0510.pdf>`_, 2021)
 
 Impact on Impedance of physical parameters from PXD model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================================================
 
 The PXD BattMo model was developed using parameters derived from the study by
 Chen et al. (2020). These parameters were subsequently modified to better
@@ -283,7 +139,7 @@ through the solid electrode particles.
       :padding: 2
 
       :ref:`Battery Impedance Computation <runImpedanceScript>`
-
+           
    .. grid-item-card::
       :padding: 2
 
