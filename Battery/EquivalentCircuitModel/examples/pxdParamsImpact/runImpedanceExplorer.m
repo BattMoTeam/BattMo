@@ -30,7 +30,7 @@ end
 %%
 % Instantiating the Impedance Explorer application handle with our custom JSON structure.
 %
-impexp = ImpedanceExplore(jsonstruct);
+impexp = ImpedanceExplorer(jsonstruct);
 
 %%
 % Cleaning up the MATLAB workspace by closing any previously opened UI figures.

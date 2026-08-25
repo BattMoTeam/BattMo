@@ -1,4 +1,4 @@
-classdef ImpedanceExplore < handle
+classdef ImpedanceExplorer < handle
     properties (SetAccess = immutable)
         jsonstruct % Holds the base P2D model configuration structure
         model      % Initialized BattMo model object
@@ -10,7 +10,7 @@ classdef ImpedanceExplore < handle
     end
     
     methods
-        function impexp = ImpedanceExplore(jsonstruct)
+        function impexp = ImpedanceExplorer(jsonstruct)
             % Constructor: auto-loads Chen2020 P2D model if no structure is provided
             if nargin < 1 || isempty(jsonstruct)
                 fprintf('Initializing default Chen2020 P2D model...\n');
@@ -26,7 +26,7 @@ classdef ImpedanceExplore < handle
                         jsonstruct.(ne).(co).(am).(itf).doubleLayerCapacitance = 0.2;
                     end
                 catch ME
-                    error('ImpedanceExplore:AutoLoadFailed', 'Failed to auto-load default files: %s', ME.message);
+                    error('ImpedanceExplorer:AutoLoadFailed', 'Failed to auto-load default files: %s', ME.message);
                 end
             end
             
@@ -94,7 +94,7 @@ classdef ImpedanceExplore < handle
                 val = getStructField(jsonstruct, parameters{iparam});
                 if ~isnumeric(val) || ~isscalar(val)
                     pathStr = strjoin(parameters{iparam}, '.');
-                    error('ImpedanceExplore:ParameterNotFound', ...
+                    error('ImpedanceExplorer:ParameterNotFound', ...
                         ['\n\n=== PARAMETER NOT FOUND ===\n' ...
                          'Invalid path in BattMo JSON:\n -> "jsonstruct.%s"\n' ...
                          'Check spelling or use app.viewOptions() to debug.\n\n'], pathStr);
