@@ -71,6 +71,13 @@ classdef ImpedanceSolver < handle
             
         end
 
+        function ocp = getOCP(impsolv)
+
+            state = impsolv.state;
+            ocp = state.Control.E;
+            
+        end
+        
         function Z = computeImpedance(impsolv, freqs)
             
             DM    = impsolv.DM;
