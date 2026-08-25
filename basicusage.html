@@ -617,16 +617,16 @@ describes a simple NMC-Graphite cell.</p>
 <p>Once the JSON parameter file has been read into MATLAB as a jsonstruct, its properties can be modified
 programmatically. For example, we can define a vector of different C-Rates and then use a for-loop to replace that value
 in the jsonstruct and re-run the simulation.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">CRates</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">DRates</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
 <span class="nb">figure</span><span class="p">()</span>
-<span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">CRates</span><span class="p">)</span>
-<span class="w">    </span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">CRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CRates</span><span class="p">(</span><span class="nb">i</span><span class="p">);</span>
+<span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">DRates</span><span class="p">)</span>
+<span class="w">    </span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">DRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">DRates</span><span class="p">(</span><span class="nb">i</span><span class="p">);</span>
 <span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 
 <span class="w">    </span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 <span class="w">    </span><span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 <span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 <span class="w">    </span><span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 <span class="k">end</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">off</span>
@@ -672,7 +672,7 @@ in the jsonstruct and re-run the simulation.</p>
 </pre></div>
 </div>
 <p>Now we load and parse the LFP material parameters from the <strong>BattMo</strong> library and move it to the right place in the model hierarchy:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">lfp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/MaterialProperties/LFP/LFP.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">lfp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/MaterialProperties/LFP/LFP_Xu2015.json&#39;</span><span class="p">);</span>
 <span class="n">jsonstruct_lfp</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">Interface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">lfp</span><span class="p">;</span>
 </pre></div>
 </div>
@@ -718,7 +718,7 @@ in the jsonstruct and re-run the simulation.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021-2024.</p>
+    <p>&#169; Copyright 2021-2026.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
