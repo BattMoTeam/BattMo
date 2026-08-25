@@ -37,7 +37,7 @@ jobs:
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v3
         with:
-          release: R2023b
+          release: R2025a
 
       # Execute the tests
       - name: Running some tests
