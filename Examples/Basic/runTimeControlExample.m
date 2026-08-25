@@ -112,3 +112,56 @@ ylabel('Voltage / V')
 yyaxis right
 plot(time/minute, I);
 ylabel('Current / A')
+
+%% Tabulated current time series
+%
+% A measured or otherwise prescribed current time series can be supplied
+% directly as tabulated data. The first column is time and the second is
+% current. The current is linearly interpolated between the sample points.
+% Positive current corresponds to discharge and negative current to charge.
+
+currentTimeSeries = [0.00,  0.0; ...
+                     0.25,  1.0; ...
+                     1.00,  1.0; ...
+                     1.25,  0.0; ...
+                     2.00, -0.5; ...
+                     2.75, -0.5; ...
+                     3.00,  0.0];
+
+currentTimeSeries(:, 1) = currentTimeSeries(:, 1)*minute;
+currentTimeSeries(:, 2) = currentTimeSeries(:, 2)*1e-2*ampere;
+
+jsonstruct_control.type = struct('functionFormat', 'constant', ...
+                                 'argumentList'  , {{'time'}}, ...
+                                 'value'         , 1);
+
+jsonstruct_control.value = struct('functionFormat', 'tabulated', ...
+                                  'argumentList'  , {{'time'}}, ...
+                                  'dataX'         , currentTimeSeries(:, 1), ...
+                                  'dataY'         , currentTimeSeries(:, 2));
+
+jsonstruct.Control                = jsonstruct_control;
+jsonstruct.TimeStepping.totalTime = currentTimeSeries(end, 1);
+
+output = runBattery(jsonstruct);
+
+states = output.states;
+
+time = cellfun(@(state) state.time, states);
+E = cellfun(@(state) state.Control.E, states);
+I = cellfun(@(state) state.Control.I, states);
+
+figure
+yyaxis left
+plot(time/minute, E, 'DisplayName', 'Voltage');
+ylabel('Voltage / V')
+yyaxis right
+plot(time/minute, I, 'DisplayName', 'Simulated current');
+hold on
+plot(currentTimeSeries(:, 1)/minute, ...
+     currentTimeSeries(:, 2)/ampere, 'o', ...
+     'DisplayName', 'Current samples');
+hold off
+ylabel('Current / A')
+xlabel('Time / min')
+legend('Location', 'best')
