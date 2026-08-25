@@ -2,10 +2,6 @@
 EIS and Equivalent Circuit Models
 =================================
 
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
 Abstract
 ========
 
@@ -133,14 +129,34 @@ charge-transfer resistance, and low frequencies reflect mass transport and
 diffusion processes, providing insight into the migration rate of lithium ions
 through the solid electrode particles.
 
+Scripts
+=======
+
+.. toctree::
+   :hidden:
+
+   nblinks/runEquivalentCircuitModel.nblink
+   nblinks/runImpedanceScript.nblink
+   nblinks/runCalibration.nblink
+   
 .. grid:: 2
 
    .. grid-item-card::
       :padding: 2
 
-      :ref:`Battery Impedance Computation <runImpedanceScript>`
+      :ref:`ECM simulation <runEquivalentCircuitModel>`
+                     
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`Impedance Computation <runImpedanceScript>`
            
    .. grid-item-card::
       :padding: 2
 
       :ref:`ECM calibration <runCalibration>`
+
+
+
+
+           
