@@ -1,5 +1,4 @@
-function [Z_real, Z_imag, omegas] = load_chen_data()
-
+function eisdata = load_chen_data()
         
     % We define some shorthand names for simplicity.
     ne      = 'NegativeElectrode';
@@ -53,4 +52,8 @@ function [Z_real, Z_imag, omegas] = load_chen_data()
 
     Z_real = real(Z);
     Z_imag = imag(Z);
+
+    eisdata = struct('Z_re_exp', Z_real, ...
+                     'Z_im_exp', Z_imag, ...
+                     'omega'   , omegas);
 end

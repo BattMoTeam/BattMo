@@ -1,6 +1,5 @@
 %% ROBUSTNESSTEST for FittingEIS  
 
-
 num_runs = 5;
 
 %% PERTURBATION DISTANCE FACTOR 
@@ -11,11 +10,7 @@ num_runs = 5;
 perturbation_factor = 0.20; 
 
 % Load the full experimental dataset
-[Z_re_exp, Z_im_exp, omegas] = load_chen_data();
-
-eisdata = struct('omega', omegas, ...
-                 'Z_re_exp', Z_re_exp, ...
-                 'Z_im_exp', Z_im_exp);
+eisdata = load_chen_data();
 
 %%
 % We define the reference parameters (the center point for our test)
