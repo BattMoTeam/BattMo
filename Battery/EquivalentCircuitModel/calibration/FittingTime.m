@@ -1,5 +1,39 @@
 classdef FittingTime
 
+    % FittingTime - Fit a 2-RC Thevenin ECM to P2D simulated time-domain data
+    %
+    % Usage:
+    %   ftime = FittingTime(jsonstruct, time_vec, current_exp, params0, scales)
+    %
+    % Inputs:
+    %   jsonstruct  - BattMo JSON structure used to setup P2D model and OCV
+    %   time_vec    - vector of time instants (s) for experimental current
+    %   current_exp - experimental current vector (A) or experimental voltage
+    %                 matched to time_vec (used to generate P2D reference)
+    %   params0     - initial guess [R0; R1; C1; R2; C2]
+    %   scales      - normalization bounds vector: [pmin(1:5); pmax(1:5)]
+    %
+    % Main methods:
+    %   optimizationBFGS(ftime)       - run BFGS optimization in unit box
+    %   optifunc(ftime, p)            - objective and gradient for params p
+    %   plotresults_thevenin(...)     - plot fitted vs reference voltages
+    %   printResults(...)             - print numeric results and diagnostics
+    %   plottest(...)                 - validate ECM on a new current profile
+    %
+    % Notes:
+    %   - The class simulates a BattMo P2D model to produce reference OCV,
+    %     voltage and current traces which are used as the 'experimental'
+    %     data for fitting the equivalent-circuit model parameters.
+    %   - Parameter vector is [R0, R1, C1, R2, C2]. Scales specify lower and
+    %     upper bounds used for normalization between 0 and 1.
+    %
+    % Example:
+    %   ftime = FittingTime(jsonstruct, t, Iexp, params0, scales);
+    %   [v, hist, best, err] = ftime.optimizationBFGS();
+    %   ftime.plotresults_thevenin(best, err);
+
+
+
     properties
         
         params0     % initial guess for the parameters to be fitted

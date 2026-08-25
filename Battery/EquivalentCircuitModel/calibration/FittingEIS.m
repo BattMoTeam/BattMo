@@ -1,4 +1,45 @@
 classdef FittingEIS < handle
+% FittingEIS  Fit EIS (Nyquist) data to a two‑RC Thevenin equivalent circuit
+%
+%   feis = FittingEIS(eisdata, params0, scales) constructs an object for
+%   fitting complex impedance data (Z_re_exp, Z_im_exp) measured at
+%   frequencies 'omega'. The class fits a 2-RC Thevenin model
+%   (parameters: R0, R1, C1, R2, C2) by minimizing normalized residuals
+%   between measured and modelled real and imaginary impedance.
+%
+%   Properties
+%     omega      - vector of angular frequencies (rad/s)
+%     Z_re_exp   - measured real part of impedance
+%     Z_im_exp   - measured imaginary part of impedance
+%     params0    - initial guess for [R0,R1,C1,R2,C2]
+%     scales     - [pmin; pmax] used to map parameters to unit box
+%
+%   Key methods
+%     run()                 - run the optimization and return optimal params
+%     optimizationBFGS()    - internal BFGS optimizer wrapper (unitBoxBFGS)
+%     optifunc(p)           - cost and (optionally) gradient for parameter p
+%     plotResults(...)      - plot fitted vs measured EIS and Nyquist
+%     printResults(...)     - print fitted parameter values and score
+%
+%   Notes
+%     - The optimizer operates in a normalized unit-box; use scales to
+%       provide lower/upper bounds. If 'scales' is omitted, sensible
+%       defaults are created from params0 (factor 1e-3..1e+3).
+%     - optifunc provides analytic gradients to accelerate optimization.
+%     - The function load_nyquist(p, omega) must be available and return
+%       modelled Z_re and Z_im for the current parameters.
+%
+%   Example
+%     eisdata.omega = omega_vec;
+%     eisdata.Z_re_exp = Zre_meas;
+%     eisdata.Z_im_exp = Zim_meas;
+%     feis = FittingEIS(eisdata, params0);
+%     [opt, ferr] = feis.run();
+%     feis.plotResults(opt, ferr);
+%
+%   See also unitBoxBFGS, load_nyquist
+
+
 
     properties
 
