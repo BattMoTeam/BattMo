@@ -138,7 +138,7 @@ Notebooks
    nblinks/runImpedanceScript.nblink
    nblinks/runImpedanceExplorer.nblink
    nblinks/runEquivalentCircuitModel.nblink
-   nblinks/runCalibration.nblink
+   nblinks/runCalibrateEcmFromP2D.nblink
    
 .. grid:: 2
 
@@ -160,7 +160,7 @@ Notebooks
    .. grid-item-card::
       :padding: 2
 
-      :ref:`ECM calibration <runCalibration>`
+      :ref:`ECM calibration <runCalibrateEcmFromP2D>`
 
 
 

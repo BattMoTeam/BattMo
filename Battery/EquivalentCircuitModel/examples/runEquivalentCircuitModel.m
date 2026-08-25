@@ -1,7 +1,11 @@
 %% Time Simulation of an ECM model
 %
+%
+
+clear all
 
 %%
+%
 % The function :battmo:`createParametersECM` setups an data set for the ECM model. The structure
 % |jsonstruct| contains values of the ECM parameters (resistances, capicaties, ...) that depend on
 % the frequency. See below for the plot of the values
