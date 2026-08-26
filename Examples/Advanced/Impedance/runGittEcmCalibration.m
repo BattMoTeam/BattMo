@@ -3,20 +3,13 @@
 % OCV curves from current-off relaxation, fits local 2-RC pulse models, and
 % assembles separate charge and discharge BattMo ECM input structures.
 
-exampleDirectory = fileparts(mfilename('fullpath'));
-if exist('calibrateEcmFromGitt', 'file') ~= 2
-    repositoryDirectory = fileparts(fileparts(fileparts(exampleDirectory)));
-    run(fullfile(repositoryDirectory, 'startupBattMo.m'));
-end
+clear all
+close all
 
 dataFile = fullfile(exampleDirectory, 'data', 'gitt', ...
                     'gitt_measurements.csv');
 
-if ~exist('runFullCalibration', 'var')
-    runFullCalibration = false;
-end
-
-options = struct('runFullCalibration', runFullCalibration);
+runFullCalibration = false;
 if ~runFullCalibration
     % A deterministic representative fit suitable for an interactive run.
     options.maximumOcvIterations = 1;
@@ -32,10 +25,8 @@ disp(gittCalibration.finalFits(:, ...
     {'Direction', 'SOC', 'R0_Ohm', 'R1_Ohm', 'Tau1_s', ...
      'R2_Ohm', 'Tau2_s', 'RMSE_V'}));
 
-if ~isempty(gittCalibration.validation)
-    disp('Held-out, non-uniform-time-weighted validation scores:');
-    disp(gittCalibration.validation);
-end
+disp('Held-out, non-uniform-time-weighted validation scores:');
+disp(gittCalibration.validation);
 
 plotGittEcmCalibration(gittCalibration);
 
