@@ -23,7 +23,7 @@ jsonstruct_p2d = mergeStructs({jsonstruct_material, ...
 %%
 % The calibration is done at different state of charge. To dei
 
-soc_values = [0.1; 0.5; 1];
+soc_values = linspace(0, 1, 5);
 
 %%
 % The results of the calibration is given in a struct where the fields are functions given in the
@@ -33,7 +33,8 @@ jsonstruct = calibrateEcmFromP2D(jsonstruct_p2d, soc_values);
 
 %% 
 % plot the results
-soc = linspace(0.1, 1.0, 100);
+soc = sort(soc_values);
+
 figure
 tiledlayout(2, 3, 'tileindexing', 'columnmajor');
 
@@ -41,45 +42,45 @@ nexttile
 
 % the function |setupFunction| creates a function handle from the battmo function input format.
 fn = setupFunction(jsonstruct.OCP);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('OCP')
 xlabel('SOC / -')
 ylabel('OCP / V');
 
 nexttile
 fn = setupFunction(jsonstruct.R0);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('R0')
 xlabel('SOC / -')
-ylabel('R0 / Ohm');
+ylabel('R0 / \Omega');
 
 nexttile
 fn = setupFunction(jsonstruct.R1);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('R1')
 xlabel('SOC / -')
-ylabel('R1 / Ohm');
+ylabel('R1 / \Omega');
 
 nexttile
 fn = setupFunction(jsonstruct.C1);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('C1')
 xlabel('SOC / -')
-ylabel('C1 / Ohm');
+ylabel('C1 / F');
 
 nexttile
 fn = setupFunction(jsonstruct.R2);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('R2')
 xlabel('SOC / -')
-ylabel('R2 / Ohm');
+ylabel('R2 / \Omega');
 
 nexttile
 fn = setupFunction(jsonstruct.C2);
-plot(soc, fn(soc))
+plot(soc, fn(soc), '*-')
 title('C2')
 xlabel('SOC / -')
-ylabel('C2 / Ohm');
+ylabel('C2 / F');
 
 
 
