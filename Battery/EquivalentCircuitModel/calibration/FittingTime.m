@@ -34,131 +34,141 @@ classdef FittingTime
 
 
 
-    properties
-        
-        params0     % initial guess for the parameters to be fitted
-        scales      % scaling for the unit box optimization
-        
-        time_vec   % time steps for current_exp and voltage_exp
+    properties(SetAccess = immutable)
 
+        inputs
+        
+    end
+    
+    properties
+
+        %% experimental value
+        time_vec     % time steps for current_exp and voltage_exp
         current_exp  % experimental current values
+        voltage_exp  % experimental voltage values
+        initialSOC   % soc at start of experiment
+        capacity     % battery capacity, needed to compute soc
+        
+        %% OCV values
+        ocvFunction % open circuit voltage as a function of soc
+
+        %% P2D model parameters
         jsonstruct  % input structure for P2D model which gives us the the ocv and the experimental data
         
-        %% helpers
-        
-        voltage_exp  % experimental voltage values
-        ocv_vec      % open circuit voltage values computed from jsonstruct
+        %% optimization parameters
+        params0     % initial guess for the parameters to be fitted
+        scales      % scaling for the unit box optimization
+
+        %%
+        options
 
     end
 
     methods        
     
-        function ftime = FittingTime(jsonstruct, time_vec, current_exp, params0, scales)
-           
+        function ftime = FittingTime(params0, inputs, options)
 
-            ftime.jsonstruct = jsonstruct;
+            if nargin < 3
+                options = [];
+            end
+
+            ftime.inputs = inputs;
+
+            options = setDefaultStructField(options, 'useDefaultScales', true);
+            options = setDefaultStructField(options, 'useP2Dmodel', false);
+            options = setDefaultStructField(options, 'scaleFactor', 1000);
+            options = setDefaultStructField(options, 'useSimulationOutput', false);
             
-            if istable(params0), params0 = table2array(params0); end
-            if istable(scales), scales = table2array(scales); end
-            if istable(time_vec), time_vec = table2array(time_vec); end
-            if istable(current_exp), current_exp = table2array(current_exp); end
+            ftime.options = options;
+
+            ftime.params0 = params0;
             
-            
-            t_raw = double(time_vec(:));
-            i_raw = double(current_exp(:));
+            if ftime.options.useP2Dmodel
+                ftime.jsonstruct = inputs.jsonstruct;
+                ftime = ftime.setupFromP2D();
+            else
+                ftime.time_vec    = inputs.time_vec;
+                ftime.current_exp = inputs.current_exp;
+                ftime.voltage_exp = inputs.voltage_exp;
+                ftime.initialSOC  = inputs.initialSOC;
+                ftime.ocvFunction = inputs.ocvFunction;
+            end
+
+            if ftime.options.useDefaultScales
+                ftime = ftime.setupDefaultScales(options.scaleFactor);
+            else
+                ftime.scales = inputs.scales;
+            end
             
 
-            [V_p2d, ocv_vec, time_sim, I_p2d] = ftime.setupOCP(t_raw, i_raw);
-            
-
-            ftime.time_vec    = time_sim;
-            ftime.current_exp = I_p2d;
-            ftime.voltage_exp = V_p2d;
-            ftime.ocv_vec     = ocv_vec;
-            
-            ftime.params0     = double(params0(:));
-            ftime.scales      = double(scales(:));
-            
         end
 
+        function ftime = setupDefaultScales(ftime, factor)
+
+            params0 = ftime.params0;
+            
+            pmin = params0 / factor;
+            pmax = params0 * factor;
+            scales = [pmin; pmax];
+
+            ftime.scales = scales;
+            
+        end
+        
         function p_norm = unscaled2scaled(ftime, p)
+            
             pmin = ftime.scales(1:5);
             pmax = ftime.scales(6:10);
             p_norm = (p-pmin)./(pmax-pmin);
+            
         end
 
         function p = scaled2unscaled(ftime, p_norm)
+            
             pmin = ftime.scales(1:5);
             pmax = ftime.scales(6:10);
             p = (pmax-pmin).*p_norm +pmin;
+            
         end
 
-
-        function [V_p2d, ocv_vec, time_sim, I_p2d] = setupOCP(ftime, time_vec, current_exp)
+        function ftime = setupFromP2D(ftime)
 
             jsonstruct  = ftime.jsonstruct;
-            
-            [model, inputparams] = setupModelFromJson(jsonstruct);
-            
-            inputparams.Control.controlPolicy = 'CCDischarge'; 
-            model.Control = model.setupControl(inputparams.Control);
-            
-            state_init = setupInitialState(model);
-            
-            time_vec    = double(time_vec(:));
-            current_exp = double(current_exp(:));
-            
-            dt_steps = diff(time_vec); 
-            N_sim_steps = length(dt_steps);
-            
-            schedule_p2d = struct();
-            schedule_p2d.step.val = dt_steps;
-            schedule_p2d.step.control = ones(N_sim_steps, 1);
-            
-            schedule_p2d.control.src = @(t, varargin) interp1(time_vec, current_exp, t, 'linear', 0);
-            schedule_p2d.control.Control = struct('stopFunction', @(model, state, state0) false);
-            
-            [~, states_p2d, ~] = simulateScheduleAD(state_init, model, schedule_p2d);
-            
-            N_points_sim = length(states_p2d);
-            V_p2d    = zeros(N_points_sim, 1);
-            I_p2d    = zeros(N_points_sim, 1);
-            time_sim = zeros(N_points_sim, 1);
-            
-            pe_guestStoichiometry0   = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
-            pe_guestStoichiometry100 = model.PositiveElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
-            ne_guestStoichiometry0   = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry0;
-            ne_guestStoichiometry100 = model.NegativeElectrode.Coating.ActiveMaterial.Interface.guestStoichiometry100;
-            
-            for k = 1:N_points_sim
-                time_sim(k) = states_p2d{k}.time;
-                V_p2d(k)    = states_p2d{k}.Control.E;
-                I_p2d(k)    = states_p2d{k}.Control.I;
+
+            if ftime.options.useSimulationOutput
+                output = ftime.inputs.output;
+            else
+                output = runBattery(jsonstruct);
             end
             
-            [Q_nominal, ~] = computeCellCapacity(model); 
+            model = output.model;
+
+            ftime.time_vec      = cellfun(@(state) state.time, output.states);
+            ftime.current_exp   = cellfun(@(state) state.Control.I, output.states);
+            ftime.voltage_exp   = cellfun(@(state) state.Control.E, output.states);
+
+            ftime.initialSOC = model.SOC;
             
-            soc_p2d = 1 - cumtrapz(time_sim, I_p2d) / Q_nominal;
-            soc_p2d = max(0, min(1, soc_p2d));
+            ne  = 'NegativeElectrode';
+            pe  = 'PositiveElectrode';
+            co  = 'Coating';
+            am  = 'ActiveMaterial';
+            itf = 'Interface';
             
-            json_pe_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_positive_electrode_interface.json');
-            json_pe = parseBattmoJson(json_pe_path);
-            [fn_ocp_pe, ~] = setupFunction(json_pe.openCircuitPotential);
+            ne_ocp = model.(ne).(co).(am).(itf).computeOCP;
+            ne_100 = model.(ne).(co).(am).(itf).guestStoichiometry100;
+            ne_0   = model.(ne).(co).(am).(itf).guestStoichiometry0;
+            pe_ocp = model.(pe).(co).(am).(itf).computeOCP;
+            pe_100 = model.(pe).(co).(am).(itf).guestStoichiometry100;
+            pe_0   = model.(pe).(co).(am).(itf).guestStoichiometry0;
             
-            json_ne_path = fullfile('ParameterData','ParameterSets','Chen2020','chen2020_negative_electrode_interface.json');
-            json_ne = parseBattmoJson(json_ne_path);
-            [fn_ocp_ne, ~] = setupFunction(json_ne.openCircuitPotential);
+            ftime.ocvFunction = @(soc) (pe_ocp(soc*(pe_100 - pe_0) + pe_0) - ...
+                                        ne_ocp(soc* (ne_100 - ne_0) + ne_0));
             
-            ocv_vec = zeros(N_points_sim, 1);
-            
-            for idx = 1:N_points_sim
-                soc_now = soc_p2d(idx);
-                x_pe = soc_now * (pe_guestStoichiometry100 - pe_guestStoichiometry0) + pe_guestStoichiometry0;              
-                x_ne = soc_now * (ne_guestStoichiometry100 - ne_guestStoichiometry0) + ne_guestStoichiometry0;
-                ocv_vec(idx) = fn_ocp_pe(x_pe) - fn_ocp_ne(x_ne);
-            end
+            ftime.capacity = computeCellCapacity(model);
             
         end
+        
         function [min_value, history, best_params, fitting_error] = optimizationBFGS(ftime)
             
 
@@ -182,17 +192,16 @@ classdef FittingTime
             tol_obj = 1e-15;
             tol_grad = 1e-5;
 
-            [min_value, best_params_norm, history] = unitBoxBFGS(...
-                params0_norm, ...                             
-                f_opt, ...           
-                'maximize', false, ...      
-                'linIneq', struct('A', A_custom, 'b', b_custom),  ...   %A*u<=b
-                'enforceFeasible', true, ...     
-                'maxIt', max_iter, ...               
-                'objChangeTol', tol_obj, ...       
-                'gradTol', tol_grad, ...
-                'lineSearchMaxIt', 100 ...
-                                                                );
+            [min_value, best_params_norm, history] = unitBoxBFGS(params0_norm               , ...                             
+                                                                 f_opt                      , ...           
+                                                                 'maximize'       , false   , ...      
+                                                                 'linIneq'        , struct('A', A_custom, 'b', b_custom),  ...   %A*u<=b
+                                                                 'enforceFeasible', true    , ...     
+                                                                 'maxIt'          , max_iter, ...               
+                                                                 'objChangeTol'   , tol_obj , ...       
+                                                                 'gradTol'        , tol_grad, ...
+                                                                 'lineSearchMaxIt', 100);
+            
             best_params = scaled2unscaled(ftime, best_params_norm(:) );
 
             % explications of why it stopped
@@ -233,8 +242,11 @@ classdef FittingTime
             R2 = p_safe(4);
             C2 = p_safe(5);
 
-            N_points = length(ftime.time_vec);
+            soc = ftime.initialSOC;
+            Q   = ftime.capacity;
             
+            N_points = length(ftime.time_vec);
+
             V_ecm = zeros(N_points, 1);
 
             Uc1 = 0; 
@@ -250,7 +262,7 @@ classdef FittingTime
             
             g_true = zeros(5, 1);
             
-            for k = 1:N_points
+            for k = 1 : N_points
                 
                 if k == 1
                     dt = ftime.time_vec(1);
@@ -258,9 +270,8 @@ classdef FittingTime
                     dt = ftime.time_vec(k) - ftime.time_vec(k-1);
                 end
                 
-                I = ftime.current_exp(k);           
-
-                V_ocv = ftime.ocv_vec(k); 
+                I     = ftime.current_exp(k);           
+                V_ocv = ftime.ocvFunction(soc); 
                 
                 % 1. Tension du modèle au pas k
                 V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
@@ -295,12 +306,12 @@ classdef FittingTime
                 % 4. Mise à jour des variables d'état électriques pour le pas suivant
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
                 Uc2 = Uc2 + (-Uc2 / (R2 * C2) + I / C2) * dt;
+                soc = soc + Q*I*dt;
                 
             end
             
             % Valeur de la fonction objectif (Erreur quadratique totale)
             v = sum((ftime.voltage_exp - V_ecm).^2);
-            
 
             if isnan(v) || isinf(v) || (nargout > 1 && (any(isnan(g_true)) || any(isinf(g_true))))
                 v = 1e10; % Assigne un coût massif pour rejeter le point instable
@@ -322,6 +333,7 @@ classdef FittingTime
 
         
         function plotresults_thevenin(ftime, best_params, fitting_error)
+
             % 1. Recalculate the final voltage trajectory using best_params
             p_safe = max(best_params, 1e-8);
             R0 = p_safe(1);

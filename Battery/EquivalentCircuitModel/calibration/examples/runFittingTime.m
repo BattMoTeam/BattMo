@@ -1,28 +1,75 @@
 %% Time fitting
-
+%
 
 %% Setup current input
 time_init = (0:10:1000)';
 current_init = ones(size(time_init));
 
-current_init(time_init >= 0   & time_init < 200)   = 2.5;  % 1. Décharge (0 à 200s)
-current_init(time_init >= 200 & time_init < 400)   = -1.5; % 2. Charge (200 à 400s)
-current_init(time_init >= 400 & time_init < 700)   = 0.0;  % 3. Repos (400 à 700s)
-current_init(time_init >= 700 & time_init <= 1000) = 3.5;  % 4. Décharge (700 à 1000s)
+clear jsonstruct_control
+jsonstruct_control.controlPolicy = "timeControl";
+
+vals = [0 2.5;
+        199  2.5;
+        200  -1.5;
+        399  -1.5;
+        400   0;
+        699   0;
+        700   3.5;
+        1000  3.5];
+
+clear jsonstruct;
+jsonstruct.argumentList = {"time"};
+jsonstruct.functionFormat = "tabulated";
+jsonstruct.dataX = vals(:, 1);
+jsonstruct.dataY = vals(:, 2);
+
+jsonstruct_control.value = jsonstruct;
+
+clear jsonstruct;
+jsonstruct.argumentList = {"time"};
+jsonstruct.functionFormat = "constant";
+jsonstruct.value = 1;
+
+jsonstruct_control.type = jsonstruct;
 
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData','ParameterSets','Chen2020','chen2020_lithium_ion_battery.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
-params0 = [0.05052, 1.12673, 59119.9, 0.03155, 11054.0];  % initial condition: C1>2*C2
+jsonstruct.Control = jsonstruct_control;
+jsonstruct.TimeStepping = struct('totalTime', 1000, ...
+                                 "numberOfTimeSteps", 200);
 
-a = 1000;
+% output = runBattery(jsonstruct);
 
-pmin = params0 / a;
-pmax = params0 * a;
-scales = [pmin, pmax];
+figure
+tiledlayout(1, 2);
 
-ftime = FittingTime(jsonstruct, time_init, current_init, params0, scales);
+nexttile
+plot(output.time, output.E)
+title('Voltage')
+xlabel('time / s')
+ylabel('E / V');
+
+nexttile
+plot(output.time, output.I)
+title('Current')
+xlabel('time / s')
+ylabel('I / V');
+
+params0 = [0.05052; 1.12673; 59119.9; 0.03155; 11054.0];  % initial condition: C1>2*C2
+
+clear inputs
+inputs.jsonstruct = jsonstruct;
+inputs.output     = output;
+
+clear options
+options.useP2Dmodel = true;
+options.useSimulationOutput = true;
+
+ftime = FittingTime(params0, inputs, options);
+
+return
 
 [~, ~, best_params, fitting_error] = ftime.optimizationBFGS();
 
