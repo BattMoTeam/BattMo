@@ -76,6 +76,11 @@ Tutorials
 
 Tutorials are presented in `documentation <https://BattMoTeam.github.io/BattMo/>`_.
 
+Contributing
+------------
+
+If you are interested in how to contribute to BattMo, please read `here <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst>`_.
+
 Acknowledgements
 -----------------
 BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
