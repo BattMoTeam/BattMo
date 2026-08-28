@@ -2,20 +2,18 @@
 %
 
 %% Setup current input
-time_init = (0:10:1000)';
-current_init = ones(size(time_init));
 
 clear jsonstruct_control
 jsonstruct_control.controlPolicy = "timeControl";
 
-vals = [0 2.5;
-        199  2.5;
-        200  -1.5;
-        399  -1.5;
-        400   0;
-        699   0;
-        700   3.5;
-        1000  3.5];
+vals = [    0     2.5;
+          799   2.5;
+          800   -1.5;
+         1599   -1.5;
+         1600    0;
+         2799    0;
+         2800    3.5;
+         4000   3.5];
 
 clear jsonstruct;
 jsonstruct.argumentList = {"time"};
@@ -37,10 +35,10 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geo
 jsonstruct = mergeStructs({jsonstruct_material, jsonstruct_geometry});
 
 jsonstruct.Control = jsonstruct_control;
-jsonstruct.TimeStepping = struct('totalTime', 1000, ...
+jsonstruct.TimeStepping = struct('totalTime', vals(end, 1), ...
                                  "numberOfTimeSteps", 200);
 
-% output = runBattery(jsonstruct);
+output = runBattery(jsonstruct);
 
 figure
 tiledlayout(1, 2);
@@ -57,7 +55,10 @@ title('Current')
 xlabel('time / s')
 ylabel('I / V');
 
-params0 = [0.05052; 1.12673; 59119.9; 0.03155; 11054.0];  % initial condition: C1>2*C2
+%%
+%
+
+params0 = [5e-2; 1e-1; 6e5; 3e-3; 1e5];  
 
 clear inputs
 inputs.jsonstruct = jsonstruct;
@@ -66,33 +67,21 @@ inputs.output     = output;
 clear options
 options.useP2Dmodel = true;
 options.useSimulationOutput = true;
-
+options.scaleFactor = 1e2;
 ftime = FittingTime(params0, inputs, options);
 
-return
 
 [~, ~, best_params, fitting_error] = ftime.optimizationBFGS();
 
 p = best_params;
 
-
 %% Printing results
+
 doprint = true;
 if doprint
     
     ftime.plotresults_thevenin(best_params, fitting_error);
-    
     ftime.printResults(best_params, fitting_error);          
-
-    % Define the 3-pulse test current profile
-    time_vec = ftime.time_vec(:); 
-    current_test = ones(size(time_vec));
-    current_test(time_vec >= 0   & time_vec < 200)   = -5;  
-    current_test(time_vec >= 200 & time_vec < 400)   = 5;
-    current_test(time_vec >= 400 & time_vec < 700)   = -5;  
-    current_test(time_vec >= 700 & time_vec <= 1000) = 0;
-    
-    ftime.plottest(best_params, current_test)
     
 end
 

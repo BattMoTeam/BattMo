@@ -306,8 +306,8 @@ classdef FittingTime
                 % 4. Mise à jour des variables d'état électriques pour le pas suivant
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
                 Uc2 = Uc2 + (-Uc2 / (R2 * C2) + I / C2) * dt;
-                soc = soc + Q*I*dt;
-                
+                soc = soc - I*dt/Q;
+
             end
             
             % Valeur de la fonction objectif (Erreur quadratique totale)
@@ -346,20 +346,28 @@ classdef FittingTime
             V_ecm = zeros(N_points, 1);
             Uc1 = 0; 
             Uc2 = 0;
+
+            soc = ftime.initialSOC;
+            Q   = ftime.capacity;
             
-            for k = 1:N_points
+            for k = 1 : N_points
+                
                 if k == 1
                     dt = ftime.time_vec(1);
                 else
                     dt = ftime.time_vec(k) - ftime.time_vec(k-1);
                 end
-                I = ftime.current_exp(k);           
-                V_ocv = ftime.ocv_vec(k); 
+                I = ftime.current_exp(k);
+                
+                V_ocv = ftime.ocvFunction(soc);
                 
                 V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
                 
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
                 Uc2 = Uc2 + (-Uc2 / (R2 * C2) + I / C2) * dt;
+
+                soc = soc - I*dt/Q;
+                
             end
             
             % 2. Generate time-domain plots
