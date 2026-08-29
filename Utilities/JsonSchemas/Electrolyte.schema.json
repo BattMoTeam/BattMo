@@ -63,7 +63,13 @@
     "bgfactor" : {
       "type" : "number",
       "default" : 1,
-      "description" : "Constant dimensionless multiplier applied to each regional Bruggeman coefficient when useRegionBruggemanCoefficients is true"},
+      "description" : "Default dimensionless multiplier applied to effective electrolyte ionic conductivity and diffusivity"},
+    "bgfactorKappa" : {
+      "type" : "number",
+      "description" : "Optional dimensionless multiplier applied to effective electrolyte ionic conductivity; overrides bgfactor for conductivity"},
+    "bgfactorD" : {
+      "type" : "number",
+      "description" : "Optional dimensionless multiplier applied to effective electrolyte diffusivity; overrides bgfactor for diffusivity"},
     "regionBruggemanCoefficients" : {
       "type" : "object",
       "description" : "Bruggeman coefficients for each region",

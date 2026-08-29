@@ -16,7 +16,9 @@ classdef ElectrolyteInputParams < ComponentInputParams
         % Region support for bruggeman coefficient
         useRegionBruggemanCoefficients % Set to true if the electrolye region for each component should get a specific
                                        % Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false
-        bgfactor % Constant multiplicative factor applied to each region Bruggeman coefficient
+        bgfactor      % Default multiplicative factor applied to effective ionic conductivity and diffusivity
+        bgfactorKappa % Optional multiplicative factor applied only to effective ionic conductivity
+        bgfactorD     % Optional multiplicative factor applied only to effective diffusivity
         regionBruggemanCoefficients % Bruggeman coefficients for each region, given as a structure with fields
                                     % - NegativeElectrode 
                                     % - PositiveElectrode 
