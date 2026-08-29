@@ -843,10 +843,10 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
                         initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
                       case {'full'}
-                        initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
+                        initstate.(elde).(co).(amc).(sd).cSurface = c.*ones(nc, 1);
                         N = model.(elde).(co).(amc).(sd).N;
                         np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
-                        initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sd).c = c.*ones(N*np, 1);
                       case  'swelling'
                         % theta is interpretated as a fill-in level
                         compmodel = model.(elde).(co);
