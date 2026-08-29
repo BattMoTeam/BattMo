@@ -6,26 +6,54 @@
   "properties": {
     "ionicConductivity": {
       "allOf": [
-        {"$ref": "Function.schema.json"},
-        { "properties" : {
-          "argumentList": {"type" : "array",
-                           "prefixItems": [{"const": "concentration"},
-                                           {"const": "temperature"}]
-                          },
-          "symbol": {"const" : "kappa"}}}
-        ],
+        {
+          "$ref": "Function.schema.json"
+        },
+        {
+          "properties": {
+            "argumentList": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "concentration"
+                },
+                {
+                  "const": "temperature"
+                }
+              ]
+            },
+            "symbol": {
+              "const": "kappa"
+            }
+          }
+        }
+      ],
       "description": "a function to determine the ionic conductivity of the electrolyte under given conditions"
     },
     "diffusionCoefficient": {
       "allOf": [
-        {"$ref": "Function.schema.json"},
-        { "properties" : {
-          "argumentList": {"type" : "array",
-                           "prefixItems": [{"const": "concentration"},
-                                           {"const": "temperature"}]
-                          },
-          "symbol": {"const" : "D"}}}
-        ],
+        {
+          "$ref": "Function.schema.json"
+        },
+        {
+          "properties": {
+            "argumentList": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "concentration"
+                },
+                {
+                  "const": "temperature"
+                }
+              ]
+            },
+            "symbol": {
+              "const": "D"
+            }
+          }
+        }
+      ],
       "description": "a function to determine the diffusion coefficient of a molecule in the electrolyte under given conditions"
     },
     "species": {
@@ -43,10 +71,13 @@
         "nominalConcentration": {
           "$ref": "PhysicalQuantity.schema.json",
           "description": "nominal concentration used as initial concentration in a simulation, if the later is not given explicitely, see StateInitialization.schema.json"
-        }}},
-    "nominalEthyleneCarbonateConcentration" : {
-      "$ref" : "PhysicalQuantity.schema.json",
-      "description" : "Nominal Ethylene Carbonate concentration in the electrolyte. This is used as initial concentration, in case the SEI layer is included in model, see Coating.schema.json and the active_material_type property"},
+        }
+      }
+    },
+    "nominalEthyleneCarbonateConcentration": {
+      "$ref": "PhysicalQuantity.schema.json",
+      "description": "Nominal Ethylene Carbonate concentration in the electrolyte. This is used as initial concentration, in case the SEI layer is included in model, see Coating.schema.json and the active_material_type property"
+    },
     "density": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the mass density of the material",
@@ -57,30 +88,40 @@
       "description": "the coefficient for determining effective transport parameters in porous media",
       "symbol": "beta"
     },
-    "useRegionBruggemanCoefficients" : {
-      "type" : "boolean",
-      "description" : "Set to true if the electrolye region for each component should get a specific Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false"},
-    "bgfactor" : {
-      "type" : "number",
-      "default" : 1,
-      "description" : "Default dimensionless multiplier applied to effective electrolyte ionic conductivity and diffusivity"},
-    "bgfactorKappa" : {
-      "type" : "number",
-      "description" : "Optional dimensionless multiplier applied to effective electrolyte ionic conductivity; overrides bgfactor for conductivity"},
-    "bgfactorD" : {
-      "type" : "number",
-      "description" : "Optional dimensionless multiplier applied to effective electrolyte diffusivity; overrides bgfactor for diffusivity"},
-    "regionBruggemanCoefficients" : {
-      "type" : "object",
-      "description" : "Bruggeman coefficients for each region",
-      "NegativeElectrode" : {
-        "$ref": "PhysicalQuantity.schema.json"},
-      "PositiveElectrode" : {
-        "$ref": "PhysicalQuantity.schema.json"},
-      "Separator" : {
-        "$ref": "PhysicalQuantity.schema.json"}},
-    "regionTags" :  {"type" : "array",
-                     "description" : "Numerical tags that identifies each grid cell for the electrolyte. The conventions is 1 for negative electrode, 2 for positive electrodes, 3 for separator. It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor."},
+    "useRegionBruggemanCoefficients": {
+      "type": "boolean",
+      "description": "Set to true if the electrolye region for each component should get a specific Bruggeman coefficient, as given by regionBruggemanCoefficients. Default value is false"
+    },
+    "bgfactor": {
+      "type": "number",
+      "default": 1,
+      "description": "Default dimensionless multiplier applied to effective electrolyte ionic conductivity and diffusivity"
+    },
+    "bgfactorKappa": {
+      "type": "number",
+      "description": "Optional dimensionless multiplier applied to effective electrolyte ionic conductivity; overrides bgfactor for conductivity"
+    },
+    "bgfactorD": {
+      "type": "number",
+      "description": "Optional dimensionless multiplier applied to effective electrolyte diffusivity; overrides bgfactor for diffusivity"
+    },
+    "regionBruggemanCoefficients": {
+      "type": "object",
+      "description": "Bruggeman coefficients for each region",
+      "NegativeElectrode": {
+        "$ref": "PhysicalQuantity.schema.json"
+      },
+      "PositiveElectrode": {
+        "$ref": "PhysicalQuantity.schema.json"
+      },
+      "Separator": {
+        "$ref": "PhysicalQuantity.schema.json"
+      }
+    },
+    "regionTags": {
+      "type": "array",
+      "description": "Numerical tags that identifies each grid cell for the electrolyte. The conventions is 1 for negative electrode, 2 for positive electrodes, 3 for separator. It is used only when useRegionBruggemanCoefficients is true. This property is typically setup by the grid constructor."
+    },
     "thermalConductivity": {
       "$ref": "PhysicalQuantity.schema.json",
       "description": "the intrinsic Thermal conductivity of the active component",
