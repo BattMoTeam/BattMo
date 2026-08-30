@@ -1,7 +1,15 @@
-%% Time fitting
+%% ECM fitting from time dependent measurements
+%
+
+
+%%
+% We use the class FittigTime to fit the parameters of a Thevenin model to given time
+% dependent data. The data consists of current and voltage measurement as function of time. Here, we
+% generate synthetically this data using a P2D model
 %
 
 %% Setup current input
+%
 
 clear jsonstruct_control
 jsonstruct_control.controlPolicy = "timeControl";
@@ -77,11 +85,7 @@ p = best_params;
 
 %% Printing results
 
-doprint = true;
-if doprint
+ftime.plotresults_thevenin(best_params, fitting_error);
+ftime.printResults(best_params, fitting_error);          
     
-    ftime.plotresults_thevenin(best_params, fitting_error);
-    ftime.printResults(best_params, fitting_error);          
-    
-end
 

@@ -8,8 +8,8 @@ classdef FittingTime
     % Inputs:
     %   jsonstruct  - BattMo JSON structure used to setup P2D model and OCV
     %   time_vec    - vector of time instants (s) for experimental current
-    %   current_exp - experimental current vector (A) or experimental voltage
-    %                 matched to time_vec (used to generate P2D reference)
+    %   current_exp - experimental current vector (A) matched to time_vec
+    %   voltage_exp - experimental voltage vector (V) matched to time_vec
     %   params0     - initial guess [R0; R1; C1; R2; C2]
     %   scales      - normalization bounds vector: [pmin(1:5); pmax(1:5)]
     %
