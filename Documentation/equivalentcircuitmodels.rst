@@ -139,7 +139,8 @@ Notebooks
    nblinks/runImpedanceExplorer.nblink
    nblinks/runEquivalentCircuitModel.nblink
    nblinks/runCalibrateEcmFromP2D.nblink
-   
+   nblinks/runFittingTime.nblink
+      
 .. grid:: 2
 
    .. grid-item-card::
@@ -160,8 +161,13 @@ Notebooks
    .. grid-item-card::
       :padding: 2
 
-      :ref:`ECM calibration <runCalibrateEcmFromP2D>`
+      :ref:`ECM calibration (frequency data) <runCalibrateEcmFromP2D>`
 
+   .. grid-item-card::
+      :padding: 2
+
+      :ref:`ECM calibration (time data) <runFittingTime>`
+           
 
 
 
