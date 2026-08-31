@@ -9,9 +9,11 @@ Release installation
 
 The latest release version of BattMo is available as a **zip file**.
 
-1. **Download** :code:`battmo.zip` from the latest `release page <https://github.com/BattMoTeam/BattMo/releases/latest>`__ and unzip the file
+The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo/releases/latest>`__ as a **zip file**.
 
-2. Start MATLAB and run the file :code:`startupBattMo` which is located at the root of the directory
+1. Create a directory where you want BattMo to be installed. Then, **download** :code:`battmo.zip` in this directory and **unzip** the file
+
+2. Start MATLAB and run the file :code:`startupBattMo` which is located at the root of your BattMo installation directory
 
    .. code-block:: matlab
 
