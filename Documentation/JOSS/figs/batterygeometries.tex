@@ -1,0 +1,48 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1cm]{geometry}
+\usepackage{pdfpages}
+\usepackage{tikz}
+
+
+\graphicspath{{./},{../../img/}}
+
+\def\figg #1#2{\includegraphics[width=#1\textwidth]{#2.pdf}}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+
+\begin{tikzpicture}[remember picture, overlay]
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at (current page.north west) {
+    \figg{0.5}{illustration3Dgeometry}
+  };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([xshift=0.44\paperwidth] current page.north west) {
+    \figg{0.5}{coincell_geometry}
+  };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([yshift=-0.25\paperheight] current page.north west) {
+    \figg{0.5}{jellyrollcombine}
+  };
+
+  \node[anchor=north west, minimum width=0.5\paperwidth, minimum height=0.5\paperheight] at ([xshift=0.47\paperwidth, yshift=-0.24\paperheight] current page.north west) {
+    \figg{0.6}{multilayerpouch_geometry}
+  };
+
+\end{tikzpicture}
+
+\end{document}
+
+% Convert pdf to png using something like
+% pdfcrop batterygeometries.pdf
+% pdftoppm -png -r 300 batterygeometries-crop.pdf batterygeometries-crop
+% mv batterygeometries-crop-1.png batterygeometries.png
+
+% Local Variables:
+% TeX-engine: luatex
+% eval: (defun LaTeX-item-beamer () (TeX-insert-macro "item") (delete-horizontal-space) (insert " ") (indent-according-to-mode))
+% eval: (cl-delete "beamer" TeX-active-styles :test 'equal)
+% eval: (TeX-run-style-hooks "beamer")
+% End:

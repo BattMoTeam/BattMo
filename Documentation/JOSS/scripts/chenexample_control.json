@@ -1,0 +1,9 @@
+{"Control" :
+ {"controlPolicy" : "timeControl",
+  "durations" : [{"unit" : "hour",
+                  "value" : 1}],
+  "values" : [5],
+  "controltypes" : [1]
+ },
+ "TimeStepping" : {"numberOfTimeSteps" : 100}
+}

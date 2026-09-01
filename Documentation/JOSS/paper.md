@@ -1,0 +1,175 @@
+---
+title: 'BattMo - Battery Modelling Toolbox'
+tags:
+  - Battery modeling
+  - Numerical simulation
+  - MATLAB
+authors:
+  - name: Xavier Raynaud^[corresponding author]
+    orcid: 0000-0002-4100-3035
+    affiliation: 1
+  - name: Halvor Møll Nilsen
+    orcid: 0000-0002-2153-0962
+    affiliation: 1
+  - name: August Johansson
+    orcid: 0000-0001-6950-6016
+    affiliation: 1
+  - name: Eibar Flores
+    orcid: 0000-0003-2954-1233
+    affiliation: 2
+  - name: Lorena Hendrix
+    orcid: 0009-0006-9621-6122
+    affiliation: 2
+  - name: Francesca Watson
+    orcid: 0000-0002-4391-4166
+    affiliation: 1
+  - name: Sridevi Krishnamurthi
+    orcid: 0009-0006-0805-6713
+    affiliation: 2
+  - name: Olav Møyner
+    orcid: 0000-0001-9993-3879
+    affiliation: 1
+  - name: Simon Clark
+    orcid: 0000-0002-8758-6109
+    affiliation: 2
+affiliations:
+ - name: SINTEF Digital, Dept. of Mathematics and Cybernetics, Norway
+   index: 1
+ - name: SINTEF Industry, Dept. of Sustainable Energy Technology, Norway
+   index: 2
+date: 22 May 2026
+bibliography: paper.bib
+---
+<!-- To compile this file, after installing docker, from this directory, run : docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara  -->
+# Summary
+
+This paper presents the Battery Modelling Toolbox (BattMo), a flexible finite volume continuum modelling framework in MATLAB$^®$ [@MATLAB] for
+simulating the performance of electro-chemical cells. BattMo can quickly set up and solve models for a variety of battery
+chemistries, even considering 3D designs such as cylindrical and prismatic cells.
+
+The simulation input parameters, including the material parameters and geometric descriptions, are specified through
+JSON schemas. In this respect, we follow the guidelines of the Battery Interface Ontology (BattINFO) to support semantic
+interoperability in accordance with the FAIR principles [@fair].
+
+The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
+thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth, and the use of composite
+material, such as a mixture of Silicon and graphite.
+
+The models are set up in a hierarchical way, for clarity and modularity. Each model corresponds to a computational graph,
+which introduces a set of variables (the nodes) and functional relationship (the edges). This design enables the
+flexibility for changing and designing new models.
+
+The solver in BattMo uses automatic differentiation and support adjoint computation. We can therefore compute the
+derivative of objective functions with respect to all parameters efficiently. Gradient-based optimization
+routines can be used to calibrate parameters from experimental data.
+
+# Statement of need
+
+New high-performance electro-chemical systems such as Li-ion and post-Li-ion batteries are essential to achieve the goals of the electric energy transition. Developing
+rigorous digital workflows can help industrial and research institutions reduce the need for physical prototyping
+and derive greater insight and knowledge from their data.
+
+BattMo extends this effort by supporting fully 3D geometry and the
+possibility to easily modify the underlying equations. We provide a
+library of standard parameterized battery geometries. Design
+optimization can also be done on the geometry, which is an essential
+part of the design. BattMo is useful for both experienced battery
+designers, wanting to optimize and virtually test different designs,
+research software developers integrating simulation tools in
+electro-chemical system workflows as well as beginners wanting to
+understand fundamental processes.
+
+A challenge for physics-based models for batteries and other electro-chemical systems is the difficulty to calibrate the parameters. With an adjoint-based
+approach, we can effectively calibrate the models from experiments in a reasonable computational time.
+
+# State of the field
+
+Recently, a variety of
+open-source battery modelling codes have been released including PyBaMM [@sulzer2021python], cideMOD
+[@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], and PETLion [@Berliner_2021], among others. These
+open-source frameworks help the community reduce the cost of model development and help ensure the
+validity and the reproducibility of findings. PyBaMM is, to our knowledge, the most popular option. Unlike BattMo, it has just recently (2025) allowed for simulations in 2D and 3D, and for calibration and optimization, it is usually recommended to utilize PyBOP [@Planden2025] which is an external package (although coupled tightly to PyBaMM). BattMo's foundation is designed for coupled electro-chemical-thermal simulations in 3D, as well calibration and optimization. The extensive portfolio of degradation models in PyBaMM is a great strength. In BattMo we are currently allowing for SEI (Safari [@Safari2009] and Bolay [@Bolay2022] models) as well as plating [@Hein2020]. Based on FEniCS [@fenics],  cideMOD by design allows for simulations in 3D, but the lack of automatic differentiation means handling complex nonlinear systems and performing design optimization is more challenging.
+
+# Software design
+
+BattMo builds on the MATLAB Reservoir Simulation Toolbox [@mrst-book-i] which provides the foundation for meshing
+intricate geometries, solving large nonlinear systems of equations, visualizing the results, etc, in addition to fundamental robust, low-order finite volume methods and fully implicit time discretization. Although developed in
+MATLAB$^®$, we try to provide Octave [@octave] compatibility. Neither BattMo nor MRST rely on extra MATLAB$^®$ packages; the basic license is sufficient. We do recommend using AMG preconditioners from the open-source
+AMGCL library [@Demidov2020] for fast, multi-threaded solution of linear systems.
+
+## Functionality overview
+
+The main features of BattMo are summarized in the following list:
+
+- JSON based input with schema
+- Library of parameterized battery formats
+- Flexible graph-based model design
+- Fully coupled electro-chemical--thermal models
+- 3D visualization
+- Parameter calibration
+- Design optimization
+- Support for standard protocols such as CC, CV, CCCV, and time series
+- SEI layer growth model
+- Composite material model
+- Silicon swelling model
+- Material database for NMC, NCA, LFP, LNMO, SiGr, electrolytes, etc
+- Alkaline membrane electrolyser model
+- Proton ceramic membrane model
+
+
+## Battery format library
+
+We support coin cells, jelly roll cells and multi-pouch cells with different tab layouts. The geometries are parameterized and can be modified
+using a simple set of parameters. 1D and 2D grids for P2D and P3D models can also be generated.
+
+![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries){width=100%}
+
+## Graph based model development
+
+BattMo has the ambition to support a variety of electro-chemical systems. The complexity of such models increases rapidly as models are extended or coupled. To manage this, BattMo introduces a computational graph-based model design. Each model is defined as a graph whose nodes represent variables and whose directed edges represent their functional relationships. A model is ready for simulation when the graph’s roots are the governing variables and its leaves the governing equations. Interactive tools are available to explore these graphs.
+
+Model hierarchy is an essential part of the framework. Coupling two models is done by creating a new coupling model that contains both as sub-models. Their graphs become sub-graphs, and new edges are added to represent coupling mechanisms, allowing most sub-models to remain unchanged. For more details, see the [documentation](https://battmo.org/BattMo/computationalGraph/graphdoc.html).
+
+![The computational graph of an active material model. \label{fig:graph}](figs/graphexample){width=80%}
+
+## Examples
+
+Numerous documented and tested examples are provided with the code and demonstrate the features listed above. We seek to be cross-compatible, allowing for any chemistry and material combination with any battery format. A selection of the examples are documented at [https://battmo.org/BattMo/](https://battmo.org/BattMo/). The complete list of examples are available at [https://github.com/BattMoTeam/BattMo/tree/main/Examples](https://github.com/BattMoTeam/BattMo/tree/main/Examples). <!--  -->
+
+## BattMo family
+
+The following software include the BattMo family:
+
+| Software                                             | Description                                                         |
+|------------------------------------------------------|---------------------------------------------------------------------|
+| [BattMo](https://github.com/BattMoTeam/BattMo)       | MATLAB$^®$ version presented in this publication |
+| [BattMo.jl](https://github.com/BattMoTeam/BattMo.jl) | Julia version                                                       |
+| [PyBattMo](https://github.com/BattMoTeam/PyBattMo)   | Python wrapper around BattMo.jl                                     |
+| [BattMoApp](https://app.battmo.org/)                 | Web-application built on top of BattMo.jl                           |
+
+# Research impact statement
+
+By combining a modular modeling framework with documented JSON-based
+inputs, tutorials, and interfaces such as the Julia bridge, BattMo
+provides reproducible battery cell development for research and
+education.  BattMo has been used in several commercial and
+non-commercial projects. Publications include [@Clark2026] and
+[@Schmitt2026]. It has been important for the success of several EU
+projects, primarily HYDRA (875527) and BATMAX (101104013), where it
+has been used to model novel LNMO cells, as well as commercial
+LFP and NMC cells in both 1D and 3D.
+
+# AI usage disclosure
+
+Development of BattMo started before AI tools were
+introduced. Therefore only very minor use of AI tools (ChatGPT from
+OpenAI and Microsoft Copilot) were used in the development of this
+software. AI tools have been used to assist phrasing and conciseness
+when writing this manuscript. In all instances, the authors have
+reviewed the suggestions and edited them if necessary.
+
+# Acknowledgements
+
+BattMo has been mainly been developed and used in projects funded by the European Union. We acknowledge contributions from the European Union, Grant agreements 101069765 (IntelLiGent), 875527 (HYDRA), 957189 (BIG-MAP), 101104013 (BATMAX) and 101103997 (DigiBatt).
+
+# References
