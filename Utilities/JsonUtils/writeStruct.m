@@ -8,7 +8,8 @@ function filename = writeStruct(jsonstruct, filename)
     end
 
     fid = fopen(filename, 'w');
-    fprintf(fid, jsonencode(jsonstruct, 'PrettyPrint', prettyprint));
+    jsonstr = jsonencode(jsonstruct, 'PrettyPrint', prettyprint);
+    fprintf(fid, '%s', jsonstr);
     fclose(fid);
 
 end
