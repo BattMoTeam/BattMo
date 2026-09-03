@@ -4,11 +4,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Safari2009', 'fullmodel.json'));
 

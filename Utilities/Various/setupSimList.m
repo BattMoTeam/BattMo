@@ -3,8 +3,6 @@ function [bp, simlist] = setupSimList(directory, varargin)
     opt = struct('addDirectoryName', false, ...
                  'directoryField', 'directory');
     opt = merge_options(opt, varargin{:});
-    
-    mrstModule add mpfa
 
     if exist(directory, 'dir')
         dataDirectory = directory;

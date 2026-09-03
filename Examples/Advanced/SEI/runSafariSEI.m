@@ -6,11 +6,6 @@
 clear all
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
 
 jsonstruct = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite_sei.json');
@@ -111,4 +106,3 @@ title('SEI thickness in negative electrode/ nm')
 xlabel('Time / h')
 
 legend show
-

@@ -31,8 +31,6 @@ classdef BatteryLinearSolver < handle
 
         function solver = BatteryLinearSolver(varargin)
 
-            mrstModule add linearsolvers
-
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;

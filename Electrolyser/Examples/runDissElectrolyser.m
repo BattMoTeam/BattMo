@@ -1,5 +1,3 @@
-mrstModule add ad-core mpfa
-
 mrstDebug(20);
 
 jsonfilename = fullfile('Electrolyser','Parameters','alkalineElectrolyser.json');

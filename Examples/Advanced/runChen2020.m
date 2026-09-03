@@ -5,9 +5,6 @@
 clear
 close all
 
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 % Useful abbreviations
 elyte   = 'Electrolyte';
 ne      = 'NegativeElectrode';
