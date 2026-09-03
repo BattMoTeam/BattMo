@@ -1,0 +1,3 @@
+{
+  "path" : "../../Examples/Tutorials/notebooks/tutorial_3_modify_structural_parameters_live.ipynb"
+}
