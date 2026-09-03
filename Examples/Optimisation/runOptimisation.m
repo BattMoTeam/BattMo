@@ -1,8 +1,6 @@
 clear all
 close all
 
-mrstModule add optimization
-
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 am      = 'ActiveMaterial';

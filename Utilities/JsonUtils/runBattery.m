@@ -7,8 +7,6 @@ function  output = runBattery(jsonstruct, varargin)
                  'verbose'             , true);
     opt = merge_options(opt, varargin{:});
 
-    mrstModule add ad-core mrst-gui mpfa
-
     % We define some shorthand names for simplicity.
     ne      = 'NegativeElectrode';
     pe      = 'PositiveElectrode';

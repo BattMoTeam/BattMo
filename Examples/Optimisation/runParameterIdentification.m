@@ -1,5 +1,4 @@
 %% Setup
-mrstModule add ad-core optimization mpfa mrst-gui
 
 clear all
 close all

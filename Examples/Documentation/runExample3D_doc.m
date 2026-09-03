@@ -1,14 +1,6 @@
 %% BattMo example Json input
 % This script shows an example where we setup a simulation using exclusively json input files.
 
-%% Setting up the environment
-% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality
-% is collected into modules where each module contains code for doing
-% specific things. To use this functionality we must add these modules to
-% the matlab path by running:
-
-mrstModule add ad-core mrst-gui
-
 %% We load the json files
 % When loading a json file using :code:`parseBattmoJson`, the output is the standard matlab structure that is
 % obtained by the native matlab command :code:`jsondecode`, see `here <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_
