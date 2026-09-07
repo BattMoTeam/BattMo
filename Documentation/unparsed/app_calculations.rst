@@ -30,7 +30,7 @@ In this section you can find the formulas that belong to these calculations.
       Q_s = c_{max} |x_{max} - x_{min}| \frac{nF}{\rho}
 
    Here is :math:`c_{max}` the maximum concentration, :math:`x_{max}` and :math:`x_{min}` are the maximum and minimum stoichiometry,
-   :math:`F` is the Faraday constant, :math:`\rho` the density of the active material, and :math:`n` is the number of electrons transfered.
+   :math:`F` is the Faraday constant, :math:`\rho` the density of the active material, and :math:`n` is the number of electrons transferred.
 
 
 **Capacity**

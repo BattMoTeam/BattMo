@@ -126,7 +126,7 @@ property :code:`diffusionModelType` is used to choose between the different diff
    The *model switch* for the diffusion model (i.e. :code:`diffusionModelType`) is provided in the model *above* the
    diffusion model itself, in this case the active material model. When we initialise a sub-model, we need to know its
    type. By having the *model switch* in the model above, we can directly choose and start the corresponding
-   initializaton. This design choice is in fact used consistently in BattMo.
+   initialization. This design choice is in fact used consistently in BattMo.
    
 .. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
    :language: json
@@ -136,7 +136,7 @@ See json :ref:`input example<jsonexample:Active Material>`
 Interface
 ---------
 
-The interface input data gives the specification of the chemical reaction occuring there. In particular, we find the
+The interface input data gives the specification of the chemical reaction occurring there. In particular, we find the
 definition of open circuit potential (:code:`openCircuitPotential`). As mentioned
 :ref:`above<note-on-future-function-support>`, we plan to include support for tabulated and string input for
 functions.
@@ -220,7 +220,7 @@ Thermal Model
 -------------
 
 The thermal parameters such as thermal capacity and conductivity are part of the material parameters. In the thermal
-model, we include the external temperature and the heat transfer paremeters with the exterior domain. The later depend
+model, we include the external temperature and the heat transfer parameters with the exterior domain. The later depend
 often on the geometry, and they are in fact also included in the schema there, see below. We have included a flag to
 indicate if we consider wet or dry properties. This flag is not yet supported and we always consider dry properties,
 from which the effective wet properties are computed.
@@ -274,7 +274,7 @@ Solver Parameters
 =================
 
 Default parameters for the solver are provided. There exist a json interface to modify those and the corresponding
-parameters are desribed in the schema. Many more options are available at the matlab level, which we do not document
+parameters are described in the schema. Many more options are available at the matlab level, which we do not document
 here .
 
 .. literalinclude:: ../Utilities/JsonSchemas/Solver.schema.json

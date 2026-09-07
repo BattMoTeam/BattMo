@@ -160,7 +160,7 @@ The parameter input options will be saved as a <code>.mat</code> in the <code>na
 
 #### Collecting results
 
-Because the paramter sweeps run in the background it can be hard to determine when the simulation is complete. The <code>sweep</code> method in <code>ServerManager</code> returns a [Matlab Futures](https://se.mathworks.com/help/matlab/ref/parallel.future.html) which runs in the background, continously checking if <code>/name/\<experiment name\>_output.json</code> exists. When this file exists the Futures will read it. The <code>collect_results</code> method is a wrapper that simplifies collecting results based on this object.
+Because the parameter sweeps run in the background it can be hard to determine when the simulation is complete. The <code>sweep</code> method in <code>ServerManager</code> returns a [Matlab Futures](https://se.mathworks.com/help/matlab/ref/parallel.future.html) which runs in the background, continuously checking if <code>/name/\<experiment name\>_output.json</code> exists. When this file exists the Futures will read it. The <code>collect_results</code> method is a wrapper that simplifies collecting results based on this object.
 
 ## Making improvements
 
@@ -168,7 +168,7 @@ JuliaBridge is NOT a generic interface (see rather something like [MATDaemon.jl]
 <ul>
     <li>Add or adapt a method in <code>ServerManager</code></li>
     <li>Add a new script option in <code>DeamonHandler.jl</code></li>
-    <li>Build an appropritate call to the Daemon. Please take a look at the <code>DeamonCall</code> method. Set <code>debug</code> to <code>true</code> to get some examples.</li>
+    <li>Build an appropriate call to the Daemon. Please take a look at the <code>DeamonCall</code> method. Set <code>debug</code> to <code>true</code> to get some examples.</li>
 </ul>
 
 The idea is the JuliaBridge should evolve as the demands on BattMo evolve.

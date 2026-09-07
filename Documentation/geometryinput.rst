@@ -398,7 +398,7 @@ A geometrical model for a multi-layer pouch cell.
    * - Tabs discretization number
      - :code:`tab.Nx`
      - 3
-   * - Tab lenght of negative electrode
+   * - Tab length of negative electrode
      - :code:`tab.NegativeElectrode.length`
      - 4 cm
    * - Tab length of positive electrode

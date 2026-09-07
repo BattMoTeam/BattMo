@@ -4,7 +4,7 @@ Introduction
 
 BattMo uses a simple object dictionary structure as unique input for a whole simulation. The structure is easily
 editable programmatically in matlab. As a file, it is written using the `json format
-<https://en.wikipedia.org/wiki/JSON>`_ provides a basic but yet extremly flexible way to provide a dictionary-like data.
+<https://en.wikipedia.org/wiki/JSON>`_ provides a basic but yet extremely flexible way to provide a dictionary-like data.
 
 As seen in :ref:`Your First Example<You First Example>`, you can simply provide the path of your input data using the
 command :code:`parseBattmoJson`
@@ -26,10 +26,10 @@ probably to look at examples
 
 In :ref:`My first Json input file<jsonexample:My first Json Input>`, we guide you through some selected examples. In
 :ref:`List of Json File Examples<jsonfiles:List of Json File Examples>`, we provide links to json datasets available in
-your BattMo installationa and corresponding to different components in the simulation (material properties, geometry,
+your BattMo installation and corresponding to different components in the simulation (material properties, geometry,
 controls, ...).
 
-Combining different inputs is a standard way to create you own input, for the model you are targetting, and is is easily
+Combining different inputs is a standard way to create you own input, for the model you are targeting, and is is easily
 achieved using the function :battmo:`mergeStructs`, see :ref:`Merging Parameters<mergestruct:Merging
 parameters>`.
 

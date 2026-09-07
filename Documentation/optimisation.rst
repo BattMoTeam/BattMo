@@ -71,7 +71,7 @@ effect of using a finer time discretization and stricter tolerances.
 	  validateJson = false;
 
 The json struct completely specifies the simulation. We simulate the
-model and save the output in a conventient data structure. This will
+model and save the output in a convenient data structure. This will
 form the initial data for the parameter identification later on.
 
 .. code:: matlab
@@ -593,7 +593,7 @@ set by the `boxLims`.
 				    'getfun'      , []                           , ...
 				    'setfun'      , setfun);
 
-Now we construct the function handle to the `EnergyOutput` function as objective functional. We also include a so-called hook -- a function that is called after each optimization step which here plots the current, voltage, power and energy. The objective function also evaluates the gradient, as will perform a gradient-based optimization to reduce the number of costly model evalutations. The gradients are obtained by solving an adjoint problem.
+Now we construct the function handle to the `EnergyOutput` function as objective functional. We also include a so-called hook -- a function that is called after each optimization step which here plots the current, voltage, power and energy. The objective function also evaluates the gradient, as will perform a gradient-based optimization to reduce the number of costly model evaluations. The gradients are obtained by solving an adjoint problem.
 
 .. code:: matlab
 
