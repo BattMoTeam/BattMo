@@ -33,9 +33,9 @@ authors:
     orcid: 0000-0002-8758-6109
     affiliation: 2
 affiliations:
- - name: SINTEF Digital, Dept. of Mathematics and Cybernetics, Norway
+ - name: SINTEF Digital, Dept. of Mathematics and Cybernetics, Oslo,  Norway
    index: 1
- - name: SINTEF Industry, Dept. of Sustainable Energy Technology, Norway
+ - name: SINTEF Industry, Dept. of Sustainable Energy Technology, Trondheim, Norway
    index: 2
 date: 22 May 2026
 bibliography: paper.bib
@@ -53,13 +53,13 @@ interoperability in accordance with the FAIR principles [@fair].
 
 The Doyle-Fuller-Newman (DFN) [@Doyle1993ModelingCell] approach is used as a base model. We include fully coupled
 thermal simulations. It is possible to include degradation mechanisms such as SEI layer growth, and the use of composite
-material, such as a mixture of Silicon and graphite.
+material, such as a mixture of silicon and graphite.
 
 The models are set up in a hierarchical way, for clarity and modularity. Each model corresponds to a computational graph,
-which introduces a set of variables (the nodes) and functional relationship (the edges). This design enables the
+which introduces a set of variables (the nodes) and functional relationships (the edges). This design enables the
 flexibility for changing and designing new models.
 
-The solver in BattMo uses automatic differentiation and support adjoint computation. We can therefore compute the
+The solver in BattMo uses automatic differentiation and supports adjoint computation. We can therefore compute the
 derivative of objective functions with respect to all parameters efficiently. Gradient-based optimization
 routines can be used to calibrate parameters from experimental data.
 
@@ -88,7 +88,7 @@ Recently, a variety of
 open-source battery modelling codes have been released including PyBaMM [@sulzer2021python], cideMOD
 [@CiriaAylagas2022], LIONSIMBA [@torchio2016lionsimba], and PETLion [@Berliner_2021], among others. These
 open-source frameworks help the community reduce the cost of model development and help ensure the
-validity and the reproducibility of findings. PyBaMM is, to our knowledge, the most popular option. Unlike BattMo, it has just recently (2025) allowed for simulations in 2D and 3D, and for calibration and optimization, it is usually recommended to utilize PyBOP [@Planden2025] which is an external package (although coupled tightly to PyBaMM). BattMo's foundation is designed for coupled electro-chemical-thermal simulations in 3D, as well calibration and optimization. The extensive portfolio of degradation models in PyBaMM is a great strength. In BattMo we are currently allowing for SEI (Safari [@Safari2009] and Bolay [@Bolay2022] models) as well as plating [@Hein2020]. Based on FEniCS [@fenics],  cideMOD by design allows for simulations in 3D, but the lack of automatic differentiation means handling complex nonlinear systems and performing design optimization is more challenging.
+validity and the reproducibility of findings. PyBaMM is, to our knowledge, the most popular option. Unlike BattMo, PyBaMM's electrochemical models have been primarily P2D with so-called 2+1D model support for improved modeling of current collectors and thermal properties. Recently (2025), 3D thermal FEM is supported, and its 3D functionality is expanding. For calibration and optimization, it is usually recommended to utilize PyBOP [@Planden2025] which is an external package (although coupled tightly to PyBaMM). BattMo's foundation is designed for coupled electro-chemical-thermal simulations in 3D, as well as calibration and optimization. The extensive portfolio of degradation models in PyBaMM is a great strength. In BattMo we are currently allowing for SEI (Safari [@Safari2009] and Bolay [@Bolay2022] models) as well as plating [@Hein2020]. Based on FEniCS [@fenics],  cideMOD by design allows for simulations in 3D, but the lack of automatic differentiation means handling complex nonlinear systems and performing design optimization is more challenging.
 
 # Software design
 
@@ -112,21 +112,21 @@ The main features of BattMo are summarized in the following list:
 - SEI layer growth model
 - Composite material model
 - Silicon swelling model
-- Material database for NMC, NCA, LFP, LNMO, SiGr, electrolytes, etc
+- Material database for NMC, LCO, LFP, LNMO, SiGr, electrolytes, etc
 - Alkaline membrane electrolyser model
 - Proton ceramic membrane model
 
 
 ## Battery format library
 
-We support coin cells, jelly roll cells and multi-pouch cells with different tab layouts. The geometries are parameterized and can be modified
+We support coin cells, jelly roll cells and multi-pouch cells with different tab layouts, see \autoref{fig:geometries}. The geometries are parameterized and can be modified
 using a simple set of parameters. 1D and 2D grids for P2D and P3D models can also be generated.
 
 ![A selection of the parameterized battery geometries available. Clockwise from top left are: A single-layer pouch cell, CR 2016 coin cell, 30-layer pouch cell and jelly roll cylindrical cell. \label{fig:geometries}](figs/batterygeometries){width=100%}
 
 ## Graph based model development
 
-BattMo has the ambition to support a variety of electro-chemical systems. The complexity of such models increases rapidly as models are extended or coupled. To manage this, BattMo introduces a computational graph-based model design. Each model is defined as a graph whose nodes represent variables and whose directed edges represent their functional relationships. A model is ready for simulation when the graph’s roots are the governing variables and its leaves the governing equations. Interactive tools are available to explore these graphs.
+BattMo has the ambition to support a variety of electro-chemical systems. The complexity of such models increases rapidly as models are extended or coupled. To manage this, BattMo introduces a computational graph-based model design. Each model is defined as a graph whose nodes represent variables and whose directed edges represent their functional relationships -- see \autoref{fig:graph}. A model is ready for simulation when the graph’s roots are the governing variables and its leaves the governing equations. Interactive tools are available to explore these graphs.
 
 Model hierarchy is an essential part of the framework. Coupling two models is done by creating a new coupling model that contains both as sub-models. Their graphs become sub-graphs, and new edges are added to represent coupling mechanisms, allowing most sub-models to remain unchanged. For more details, see the [documentation](https://battmo.org/BattMo/computationalGraph/graphdoc.html).
 
@@ -138,7 +138,7 @@ Numerous documented and tested examples are provided with the code and demonstra
 
 ## BattMo family
 
-The following software include the BattMo family:
+The following software are included in the BattMo family:
 
 | Software                                             | Description                                                         |
 |------------------------------------------------------|---------------------------------------------------------------------|
@@ -170,6 +170,6 @@ reviewed the suggestions and edited them if necessary.
 
 # Acknowledgements
 
-BattMo has been mainly been developed and used in projects funded by the European Union. We acknowledge contributions from the European Union, Grant agreements 101069765 (IntelLiGent), 875527 (HYDRA), 957189 (BIG-MAP), 101104013 (BATMAX) and 101103997 (DigiBatt).
+BattMo has mainly been developed and used in projects funded by the European Union. We acknowledge contributions from the European Union, Grant agreements 101069765 (IntelLiGent), 875527 (HYDRA), 957189 (BIG-MAP), 101104013 (BATMAX) and 101103997 (DigiBatt).
 
 # References
