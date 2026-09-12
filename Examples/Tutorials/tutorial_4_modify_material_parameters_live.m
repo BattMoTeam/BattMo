@@ -84,7 +84,7 @@ ylabel('Cell Voltage  /  V')
 legend(strcat('r=', num2str(radius(1)/micro), ' µm'), strcat('r=', num2str(radius(2)/micro), ' µm'), strcat('r=', num2str(radius(3)/micro), ' µm'))
 %% Swap Active Materials
 % Now let's try to replace the active material with a different material from 
-% the BattMo library. In this example, we will replace the NMC material with LFP. 
+% the BattMo library. In this example, we will replace the LCO material with LFP. 
 % First, let's re-load our baseline example parameter set to get rid of the changes 
 % from the previous sections.
 
@@ -135,5 +135,5 @@ ylabel('Cell Voltage  /  V')
 % In this tutorial, we explored how to modify material parameters in BattMo. 
 % We first explored the material parameter structure. Then we modified the effective 
 % particle radius and simulated its affect on the cell discharge curve. Finally 
-% we swapped out the NMC active material for a LFP material and simulated the 
+% we swapped out the LCO active material for a LFP material and simulated the 
 % new performance of the cell.

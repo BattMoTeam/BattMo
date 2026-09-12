@@ -2,7 +2,7 @@ classdef TestBatteryPND < matlab.unittest.TestCase
 
     properties (TestParameter)
 
-        jsonfile            = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json')};
+        jsonfile            = {fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json')};
         dim                 = {2, 3};
         testSize            = {'short', 'long'};
         createReferenceData = {false};

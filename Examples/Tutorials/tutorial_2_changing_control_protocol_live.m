@@ -1,7 +1,7 @@
 %% Tutorial 2 - Change the Control Protocol
 %% Introduction
 % In this tutorial, we will use a P2D model to simulate the discharge of an 
-% NMC-Graphite cell at different rates. After completing this tutorial, you should 
+% LCO-Graphite cell at different rates. After completing this tutorial, you should 
 % have a working knowledge of:
 %% 
 % * Basics of the control protocol definitions in BattMo

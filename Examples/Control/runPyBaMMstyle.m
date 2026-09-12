@@ -19,7 +19,7 @@ writeStruct(jsonstruct, 'test.json');
 
 jsonstruct_control = jsonstruct;
 
-jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct_material = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json'));
 jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometryChen.json'));
 
 jsonstruct_material = removeStructFields(jsonstruct_material              , ...

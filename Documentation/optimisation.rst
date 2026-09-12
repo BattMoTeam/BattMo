@@ -54,7 +54,7 @@ effect of using a finer time discretization and stricter tolerances.
 
 .. code:: matlab
 
-	  jsonParams  = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+	  jsonParams  = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json'));
 	  jsonGeom    = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometry1d.json'));
 	  jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 	  jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
@@ -390,7 +390,7 @@ We start by clearing the workspace, closing figures and initializing the MRST mo
 	  % Load MRST modules
 	  mrstModule add ad-core mrst-gui mpfa optimization
 
-For this example we set up a standard Li-ion battery with an NMC
+For this example we set up a standard Li-ion battery with an LCO
 cathode and graphite anode without currect collectors. At the moment,
 we do not take into account thermal effects, and we use a simple
 diffusion model. This means that the diffusion in the active material
@@ -402,7 +402,7 @@ this.
 
 .. code:: matlab
 
-	  jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+	  jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
 	  jsonstruct.include_current_collectors = false;
 	  jsonstruct.use_thermal = false;
 

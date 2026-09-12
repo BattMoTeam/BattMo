@@ -76,7 +76,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', false);
 
 % The input material parameters given in json format are used to populate the inputparams object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json'));
 inputparams = BatteryInputParams(jsonstruct);
 
 %% NB for linear solver test

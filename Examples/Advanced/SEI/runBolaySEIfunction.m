@@ -26,7 +26,7 @@ function output = runBolaySEIfunction(input, varargin)
 
     %% Setup the properties of the Li-ion battery materials and of the cell design
     jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                            'lithium_ion_battery_nmc_graphite_bolay.json');
+                            'lithium_ion_battery_lco_graphite_bolay.json');
     jsonstruct = parseBattmoJson(jsonfilename);
 
     jsonstruct.use_thermal = false;

@@ -10,7 +10,7 @@ if doplot.illustration1D
 
     % We fake a 1D model
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     inputparams = BatteryInputParams(jsonstruct_material);
@@ -29,7 +29,7 @@ if doplot.illustration3D
 
     % We fake a 1D model
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     inputparams = BatteryInputParams(jsonstruct_material);
@@ -48,7 +48,7 @@ end
 
 if doplot.jellyroll
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     % load json struct for geometry
@@ -117,7 +117,7 @@ end
 
 if doplot.multilayerpouch
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     % load json struct for geometry
@@ -149,7 +149,7 @@ if doplot.coincell
     sep     = 'Separator';
 
     %% Setup the properties of Li-ion battery materials and cell design
-    jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct.use_thermal = false;
     jsonstruct.include_current_collectors = true;
 

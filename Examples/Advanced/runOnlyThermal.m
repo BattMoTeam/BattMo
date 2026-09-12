@@ -9,12 +9,12 @@
 % In this example, we compare the solutions obtained both for the voltage and 
 % for the temperature on a P4D model.
 %% setup material property input
-% We use a lithium-ion battery cell with NMC cathode and graphite anode
+% We use a lithium-ion battery cell with LCO cathode and graphite anode
 
 jsonfilename = fullfile('ParameterData'        , ...
                         'BatteryCellParameters', ...
                         'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 %% Setup geometry input
 % We use a simple 3d-geometry (see image below) with only one layer
