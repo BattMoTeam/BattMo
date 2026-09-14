@@ -1,5 +1,3 @@
-mrstModule add ad-core mrst-gui mpfa
-
 el      = 'ElectronicModel';
 thermal = 'ThermalModel';
 ctrl    = 'Control';

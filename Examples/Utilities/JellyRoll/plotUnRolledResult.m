@@ -1,7 +1,6 @@
 try
     require ad-core mrst-gui battery mpfa
 catch
-    mrstModule add ad-core mrst-gui mpfa
 end
 
 clear

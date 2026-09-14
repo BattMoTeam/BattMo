@@ -2,7 +2,7 @@ classdef MLXnotebookExporter
 
     properties
 
-        % list of the registered mlx notebooks (for info and automatic iteration)
+        % Documentation sources rebuilt by updateDocumentationIpynbs.
         notebooknames = {'part_1_battery_modeling_guide'                   , ...
                          'part_2_battery_modeling_guide'                   , ...
                          'tutorial_1_a_simple_p2d_model_live'              , ...
@@ -13,39 +13,36 @@ classdef MLXnotebookExporter
                          'tutorial_6_simulate_thermal_performance_live'    , ...
                          'tutorial_7_a_simple_p4d_model_live'              , ...
                          'tutorial_8_simulate_a_multilayer_pouch_cell_live', ...
-                         'tutorial_9_simulate_a_cylindrical_cell_live'};
+                         'tutorial_9_simulate_a_cylindrical_cell_live', ...
+                         'runImpedanceScript'};
 
-        % list of registered m-scripts (obtained from the test suite)
-        mscripts
-        
-        
     end
 
     methods
 
-        function mne = MLXnotebookExporter()
-            
-            testrunexample = TestRunExamples();
-            mne.mscripts = testrunexample.filename;
-            
-        end
+        function updateDocumentationIpynbs(exporter, varargin)
+            % Rebuild registered documentation notebooks; use 'run', true to refresh plots.
 
-        function updateDocumentationIpynbs(mne)
-        % Update all the ipynb in the documentation.
+            options = struct('run', false);
+            options = merge_options(options, varargin{:});
 
-            run_note_book = false;
-            
-            inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
-            outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
-            
-            for inote = 1 : numel(mne.notebooknames)
-                
-                notebookname = mne.notebooknames{inote};
-                
-                inputfilename  = fullfile(inputdir, [notebookname, '.mlx']);
-                
-                mne.setupIpynbFromMlx(inputfilename, 'outputDirectory', outputdir);
-                
+            for notebookIndex = 1 : numel(exporter.notebooknames)
+                notebookName = exporter.notebooknames{notebookIndex};
+                scriptFilename = which([notebookName, '.m']);
+
+                if ~isempty(scriptFilename)
+                    % Regenerate the intermediate live script so code edits reach the HTML.
+                    exporter.setupIpynbFromM(scriptFilename, 'run', options.run);
+                else
+                    % The modeling guides are authored directly as live scripts.
+                    liveFilename = which([notebookName, '.mlx']);
+                    assert(~isempty(liveFilename), 'Notebook %s not found.', notebookName);
+                    if options.run
+                        matlab.internal.liveeditor.executeAndSave(liveFilename);
+                    end
+                    outputDirectory = fullfile(battmoDir(), 'Documentation', 'modelingGuide');
+                    exporter.setupIpynbFromMlx(liveFilename, 'outputDirectory', outputDirectory);
+                end
             end
 
         end
@@ -203,15 +200,6 @@ classdef MLXnotebookExporter
             
         end
 
-        function runMlxAndSave(mne, filename)
-
-        % To run and update the mlx notebook programmatically, it is possible to use:
-        % matlab.internal.liveeditor.executeAndSave('fullpathnameto.mlx')
-            
-            matlab.internal.liveeditor.executeAndSave(filename);
-
-        end
-
     end
 
     methods (Static)
@@ -282,4 +270,3 @@ classdef MLXnotebookExporter
     end
 
 end
-

@@ -26,7 +26,7 @@ jsonstruct.include_current_collectors = false;
 %% Impedance computation
 %
 
-%%
+%
 % Plot settings
 set(0, 'defaultlinelinewidth', 1);
 set(0, 'defaultaxesfontsize', 15);
@@ -34,7 +34,7 @@ set(0, 'defaultaxesfontsize', 15);
 figure
 hold on
 
-%%
+%
 % We compute the impedance for different SOC values, and plot the results in a Nyquist plot. The impedance is normalized
 % by the face area of the model and converted to Ωcm^2 for better visualization.
 
@@ -46,14 +46,14 @@ options.stateInitialization.initializationSetup = 'soc';
 for isoc = 1 : numel(socs)
 
     soc = socs(isoc);
-    
+
     options.stateInitialization.soc = soc;
     impsolv = ImpedanceSolver(inputparams, options);
 
     omegas = linspace(-3, 6, 500);
     omegas = 10.^omegas;
     Z = impsolv.computeImpedance(omegas);
-    
+
     Z = (Z*gen.faceArea)/((centi*meter)^2);
 
     legtxt = sprintf('SOC=%g', soc);
