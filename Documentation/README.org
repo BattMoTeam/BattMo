@@ -69,14 +69,32 @@
 
 * Workflow for notebooks written in mlx format
 
+** Rebuild all registered documentation notebooks
+   From the repository root, run in MATLAB:
+   #+begin_src matlab
+     startupBattMo
+     exporter = MLXnotebookExporter();
+     exporter.updateDocumentationIpynbs('run', true);
+   #+end_src
+   The ~notebooknames~ property in ~Utilities/Various/MLXnotebookExporter.m~ is the
+   rebuild list, including ~runImpedanceScript~. For sources with an ~.m~ file, this
+   regenerates the ~notebooks/*.mlx~ and ~notebooks/*.ipynb~ files from that script.
+   The modeling guides are exported from their authored ~.mlx~ files into
+   ~Documentation/modelingGuide~. Use ~'run', false~ to export without executing.
+
+   Then run ~make html SPHINXOPTS="-E -a"~ in ~Documentation~ to rebuild the HTML.
+   The Sphinx build alone does not regenerate notebooks from MATLAB sources.
+
 ** Compilation
    We use the ~export~ function from matlab to export the notebook to ~ipynb~ format. An help exporter class is provided
-   [[https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/MLXnotebookExporter.m][here]]. The following [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/utils/exportMLXnotebooks.m][script]] gives example on how it can be used. I have noticed problems with older Matlab
-   version. Please update to R24b.
+   [[https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Various/MLXnotebookExporter.m][here]].
+   The batch rebuild example above shows how to use it. I have noticed problems with older
+   MATLAB versions. Please update to R24b.
 ** Output
 *** direct
-    Write the output in the ~Documentation~ directory. At the moment, the notebooks are located in the directory
-    [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/pynbnotebooks/][pynbnotebooks]]
+    The modeling guide notebooks are written directly to ~Documentation/modelingGuide~.
+    Script-generated notebooks are written beside their sources in a ~notebooks~ subdirectory
+    and included through ~.nblink~ files.
 *** link using nbsphinx-link
     - We use [[https://github.com/vidartf/nbsphinx-link][nbsphinx-link]]
     - Create a link file with extension ~nblink~, see example [[https://github.com/BattMoTeam/BattMo/blob/main/Documentation/runThermalExample.nblink][here]]

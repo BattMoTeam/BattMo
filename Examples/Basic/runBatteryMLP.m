@@ -6,10 +6,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
 % The properties and parameters of the battery cell, including the
 % architecture and materials, are set using an instance of

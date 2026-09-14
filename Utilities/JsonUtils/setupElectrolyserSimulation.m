@@ -1,7 +1,5 @@
 function simsetup = setupElectrolyserSimulation(jsonstruct, varargin)
 
-    mrstModule add ad-core mrst-gui mpfa
-
     inputparams = ElectrolyserInputParams(jsonstruct);
     inputparams = setupElectrolyserGridFromJson(inputparams, jsonstruct);
 

@@ -4,10 +4,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
