@@ -9,13 +9,13 @@
 
 %% Parameter setup
 %
-% We load a set of NMC-graphite material parameters
+% We load a set of LCO-graphite material parameters
 %
 
 filename = fullfile('ParameterData'        , ...
                     'BatteryCellParameters', ...
                     'LithiumIonBatteryCell', ...
-                    'lithium_ion_battery_nmc_graphite.json');
+                    'lithium_ion_battery_lco_graphite.json');
 
 jsonstruct = parseBattmoJson(filename);
 

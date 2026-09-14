@@ -29,7 +29,7 @@ am      = 'ActiveMaterial';
 sep     = 'Separator';
 
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
 jsonstruct.use_thermal = false;
 jsonstruct.include_current_collectors = true;
 

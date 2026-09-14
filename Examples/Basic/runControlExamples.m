@@ -12,7 +12,7 @@
 %
 % We load some parameter sets for the material property and geometry
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 
 jsonstruct_material = parseBattmoJson(jsonfilename);
 

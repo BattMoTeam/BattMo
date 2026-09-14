@@ -7,7 +7,7 @@ close all
 %% Setup the properties of Li-ion battery materials and cell design
 
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
 jsonfilename = fullfile('Examples', 'JsonDataFiles', 'geometry1d.json');

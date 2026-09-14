@@ -4,7 +4,7 @@ function [OCP, dUdT] = computeOCPSilicon_Delithiation_Chandresekaran2011(c, T, c
     theta = c/cmax;
 
     %fname = fullfile('ParameterData','BatteryCellParameters',...
-    %                'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+    %                'LithiumIonBatteryCell','lithium_ion_battery_lco_silicon.json');
     %jsonstruct = parseBattmoJson(fname);
     %R_delith = jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.rp;
     %molarVolumeSi = 1.2e-05;

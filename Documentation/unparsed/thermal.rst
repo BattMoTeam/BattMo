@@ -14,7 +14,7 @@ model<3dgeometry>` mainly used for demonstration.
    jsonfilename = fullfile('ParameterData'        , ...
                            'BatteryCellParameters', ...
                            'LithiumIonBatteryCell', ...
-                           'lithium_ion_battery_nmc_graphite.json');
+                           'lithium_ion_battery_lco_graphite.json');
    jsonstruct_material = parseBattmoJson(jsonfilename);
    
    jsonstruct_material.include_current_collectors = true;
@@ -39,7 +39,7 @@ model<3dgeometry>` mainly used for demonstration.
           
 
 In the json structure
-:battmofile:`lithium_ion_battery_nmc_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json#4>`,
+:battmofile:`lithium_ion_battery_lco_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json#4>`,
 the flag :code:`use_thermal` is set to :code:`true`, which means that the simulation will include thermal effects.
 
 The thermal parameters are given for each component. They typically consists of

@@ -14,7 +14,7 @@ close all;
 % Battmo. The function |parseBattmoJson| parses files and a file path can be given from the battmo root directory.
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
-                 'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+                 'LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json');
 jsonstruct = parseBattmoJson(fname);
 
 %%
