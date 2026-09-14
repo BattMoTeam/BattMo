@@ -3,7 +3,7 @@ Note on Octave Support
 ======================
 
 `GNU Octave <https://octave.org/>`_ is an open source scientific programming language. The language syntax is by design
-compatible with Matlab and the Octave developpers strive to maintain this compatibility (*drop-in compatibility*). Thus,
+compatible with Matlab and the Octave developers strive to maintain this compatibility (*drop-in compatibility*). Thus,
 Octave can be used as a free alternative to Matlab.
 
 In BattMo, we use only the matlab core functionalities meaning that none of the matlab toolboxes are required. We also

@@ -9,7 +9,7 @@ Introduction
 |battmo| has a julia implementation for the standard PXD model: **BattMo.jl**. This package is registered in the General
 Julia registry and available from `github <https://github.com/BattMoTeam/BattMo.jl>`_ . For small problems, the
 simulator implemented in Julia is *significantly* faster than the matlab solver (several order of magnitude of
-speed-up). The reason is that the assembly of the residual equations and their derivatives can be optimized in completly
+speed-up). The reason is that the assembly of the residual equations and their derivatives can be optimized in completely
 different ways in a compiled code such as Julia. Our julia implementation relies on the package `Jutul
 <https://github.com/sintefmath/Jutul.jl>`_.
 
