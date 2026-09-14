@@ -6,13 +6,9 @@
 clear
 close all
 
-
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
 mrstVerbose off
 
-% We define some shorthand names for simplicity.
+%% We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
 pe      = 'PositiveElectrode';
 cc      = 'CurrentCollector';

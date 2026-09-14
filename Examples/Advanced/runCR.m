@@ -1,6 +1,5 @@
 %% Coin cell Lithium-Ion Battery Model
-% This example demonstrates how to setup a simulation of a lithium
-% manganese dioxide (CR) coin cell battery
+% This example demonstrates how to setup a simulation of a coin cell battery
 
 %%
 
