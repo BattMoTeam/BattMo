@@ -13,6 +13,17 @@ fprintf('BattMo is based on MRST, which will now be initialized.\n\n');
 
 rootdirname = fileparts(mfilename('fullpath'));
 
+% Check for git lfs
+lfsFile = fullfile(rootdirname, 'Utilities/Visualization/Colormaps/crameri/CrameriColourMaps7.0.mat');
+fileId = fopen(lfsFile, 'rb');
+assert(fileId ~= -1, 'BattMo cannot check for git lfs. The file %s cannot be found', lfsFile);
+lfsPointerHeader = 'version https://git-lfs.github.com/spec/v1';
+fileHeader = fread(fileId, numel(lfsPointerHeader), '*char')';
+fclose(fileId);
+if strcmp(fileHeader, lfsPointerHeader)
+    warning('BattMo is missing LFS data. Run "git lfs install" and "git lfs pull", or use the release zip.');
+end
+
 run(fullfile(rootdirname, 'Externals', 'mrst', 'core',  'startup'));
 
 names = {'autodiff'     , ...
