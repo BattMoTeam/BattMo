@@ -48,7 +48,7 @@ ctrl  = 'Control';
 %
 % We use a standard parameter set
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct = parseBattmoJson(jsonfilename);
 
 %%

@@ -19,11 +19,11 @@
 % here>.
 % 
 % First, let’s define our cell materials. We have provided a JSON file that 
-% contains material properties for a NMC and Graphite active materials, which 
+% contains material properties for LCO and graphite active materials, which 
 % we can parse as a *BattMo* structure:
 
 % parse material definitions as a BattMo structure
-jsonfilename = 'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json';
+jsonfilename = 'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json';
 jsonstruct_material = parseBattmoJson(jsonfilename);
 %% 
 % Next, we have defined the cell geometry properties in a separate JSON file 

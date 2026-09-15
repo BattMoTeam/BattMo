@@ -15,7 +15,7 @@
 % JSON input specification>.
 % 
 % For this example, we provide a sample JSON file <https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/sample_input.json 
-% sample_input.json> that describes a simple NMC-Graphite cell.
+% sample_input.json> that describes a simple LCO-Graphite cell.
 % 
 % We load and parse the JSON input file into *BattMo* using the command:
 

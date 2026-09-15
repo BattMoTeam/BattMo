@@ -16,7 +16,7 @@ elyte = 'Electrolyte';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 jsonstruct = jsonstruct_material.(ne).(co).(am);
 

@@ -24,11 +24,11 @@ We will combine five separate JSON files that define the parameters for:
 - simulation settings
 - output specifications
 
-First, let's define our cell materials. We have provided a JSON file that contains material properties for an NMC-Graphite Li-ion battery and can parse this as a |battmo| structure:
+First, let's define our cell materials. We have provided a JSON file that contains material properties for an LCO-Graphite Li-ion battery and can parse this as a |battmo| structure:
 
 .. code:: matlab
           
-   jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json');
+   jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json');
    jsonstruct_material = parseBattmoJson(jsonfilename);
 
 Next, we have defined the cell geometry properties in a separate JSON file that we can also parse into |battmo|:
@@ -129,7 +129,7 @@ basically relies on `jsondecode <https://se.mathworks.com/help/matlab/ref/jsonde
 
 In this process the reserved keyword properties :code:`isFile` combined with :code:`filename` are used to fetch and
 insert in place JSON data located in separate files. Here is an example, taken from
-:battmofile:`lithium_ion_battery_nmc_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json>`
+:battmofile:`lithium_ion_battery_lco_graphite.json<ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json>`
 where we have the following lines
 
 .. code:: json
@@ -147,7 +147,7 @@ inserted in place. Hence, when we write
 
 .. code:: matlab
 
-   filename = fileread('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json')
+   filename = fileread('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json')
    jsonstruct = parseBattmoJson(filename)
 
 the :code:`jsonstruct` that is obtained is equivalent to the one where we would have copied and paste the content of

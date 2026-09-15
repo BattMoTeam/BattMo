@@ -13,7 +13,7 @@ flattenStruct(jsonstruct_composite_material);
 
 %%
 % For the remaining properties, we load a standard data set
-jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json');
+jsonstruct_cell = parseBattmoJson('ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json');
 
 %%
 % We remove from this structure active material field. This step is not necessary but is cleaner and we avoid a

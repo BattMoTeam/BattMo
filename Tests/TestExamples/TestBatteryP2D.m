@@ -20,7 +20,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             
             mrstModule add ad-core mrst-gui mpfa
             
-            jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+            jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json');
             json = parseBattmoJson(jsonfile);
 
             % Change json params
