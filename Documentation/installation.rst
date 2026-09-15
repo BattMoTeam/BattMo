@@ -59,3 +59,9 @@ case, you will need to run in addition to the previous command,
 .. code-block:: shell
 
    git submodule update --recursive
+
+
+ Contributing
+ ============
+
+ To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.
