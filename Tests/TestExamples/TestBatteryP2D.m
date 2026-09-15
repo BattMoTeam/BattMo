@@ -39,7 +39,6 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             end
             has_python = pyenv().Version ~= "";
             validate = serial & has_python;
-            validate = false;
             json = updateJson(json, params, 'validate', validate);
 
             inputparams = BatteryInputParams(json);
@@ -80,7 +79,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             %%  Initialize the battery model.
             % The battery model is initialized by sending inputparams to the Battery class
             % constructor. see :class:`Battery <Battery.Battery>`.
-            model = Battery(inputparams);
+            model = GenericBattery(inputparams);
             model.AutoDiffBackend = AutoDiffBackend();
 
             %% Setup schedule
@@ -103,8 +102,13 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             % Change default behavior of nonlinear solver, in case of error
             nls.errorOnFailure = false;
             nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
-            % Change default tolerance for nonlinear solver
-            model.nonlinearTolerance = 1e-3*model.Control.Imax;
+            % Scale the tolerance using the current limits for the selected control policy.
+            if use_cccv
+                currentScale = model.Control.ImaxDischarge + model.Control.ImaxCharge;
+            else
+                currentScale = model.Control.Imax;
+            end
+            model.nonlinearTolerance = 1e-3*currentScale;
             % Set verbosity
             model.verbose = true;
 
