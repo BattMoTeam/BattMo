@@ -27,7 +27,7 @@ The documentation is found at the `documentation webpage <https://battmoteam.git
 Installation
 ------------
 
-The easiest way is to download the zip file of the latest release (see the Release section to the right). Unzip this file *in a new directory*, run `startupBattMo` to set up the paths, and you are ready to go.
+The easiest way is to download the zip file of the latest release (see the Release section to the right). Unzip this file *in a new directory*, run `startupBattMo` to set up the paths, and you are ready to go. We believe you need a MATLAB version newer than R2022a.
 
 For the development version you must clone this repository. Before cloning you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation. Typically it's
 
