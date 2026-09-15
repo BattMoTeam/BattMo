@@ -128,7 +128,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html">Tutorial 7 - A Simple P4D Simulation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html#Introduction">Introduction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html#Construct-the-Model-from-Different-Sources">Construct the Model from Different Sources</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html#Visualize-the-Results">Visualize the Results</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html#Compare-with-a-P2D-Simulation">Compare with a P2D Simulation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nblinks/tutorial_7_a_simple_p4d_model_live.html#Summary">Summary</a></li>
@@ -453,6 +452,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -470,6 +470,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -584,13 +585,8 @@ identification followed by an example of optimization.</p>
 <h2>Parameter identification example<a class="headerlink" href="#parameter-identification-example" title="Link to this heading"></a></h2>
 <p>The complete source code of this example can be found at
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/Optimisation/runParameterIdentification.m">runParameterIdentification</a>.</p>
-<p>As often, we start by defining our MRST modules and some convenient
-short names. In particular, we instantiate the <cite>optimization</cite> module,
-which provides the key classes and functions for performing
-optimization.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">optimization</span><span class="w"> </span><span class="s">mpfa</span><span class="w"> </span><span class="s">mrst-gui</span>
-
-<span class="nb">clear</span>
+<p>As often, we start by defining some convenient short names.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">clear</span>
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
 
 <span class="n">ne</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
@@ -615,7 +611,7 @@ to true.</p>
 <p>In addition there is commented code for setting up a finer time
 discretization. This is because later in the tutorial we will see the
 effect of using a finer time discretization and stricter tolerances.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonParams</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">));</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonParams</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">));</span>
 <span class="n">jsonGeom</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">));</span>
 <span class="n">jsonControl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">));</span>
 <span class="n">jsonSim</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">));</span>
@@ -919,12 +915,9 @@ operating current. The complete code is available at
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Clear the workspace and close open figures</span>
 <span class="nb">clear</span>
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
-
-<span class="c">% Load MRST modules</span>
-<span class="n">mrstModule</span><span class="w"> </span><span class="s">add</span><span class="w"> </span><span class="s">ad-core</span><span class="w"> </span><span class="s">mrst-gui</span><span class="w"> </span><span class="s">mpfa</span><span class="w"> </span><span class="s">optimization</span>
 </pre></div>
 </div>
-<p>For this example we set up a standard Li-ion battery with an NMC
+<p>For this example we set up a standard Li-ion battery with an LCO
 cathode and graphite anode without currect collectors. At the moment,
 we do not take into account thermal effects, and we use a simple
 diffusion model. This means that the diffusion in the active material
@@ -933,7 +926,7 @@ standard approach, where the diffusion is determined by solving a 1D
 differential equation. The difference should not be that significant
 in this case, and the ambitious reader is encouraged to investigate
 this.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">));</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="s">&#39;lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">));</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">use_thermal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
 
