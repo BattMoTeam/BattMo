@@ -29,16 +29,10 @@ BattMo is now **installed**. You can check that that your installation is setup 
 Installation from git
 =====================
 
-The source code of BattMo can be installed using git. In this way, you can easily keep track of the
-last developments.
-
-First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command, which will include all the dependencies as submodules
-
-.. code-block:: shell
-
-   git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
-
-Then, run :code:`startupBattMo` 
+To install the development version of BattMo from git, follow the
+`installation instructions in the repository README
+<https://github.com/BattMoTeam/BattMo/blob/main/readme.rst#installation>`_.
+These cover Git LFS setup, cloning with submodules, and starting BattMo in MATLAB.
 
 Here is video which guides you through the installation in details
 
@@ -65,4 +59,3 @@ case, you will need to run in addition to the previous command,
 .. code-block:: shell
 
    git submodule update --recursive
-
