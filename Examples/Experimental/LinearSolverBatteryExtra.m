@@ -9,33 +9,31 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
         precondIterations_T
     end
     methods
-        function solver = LinearSolverBatteryExtra(varargin)            
+        function solver = LinearSolverBatteryExtra(varargin)
             opt=struct(...
                 'method','direct',...
                 'verbosity',0,...
                 'reuse_setup',false)
             [opt,extra] = merge_options(opt,varargin{:});
             solver = solver@LinearSolverADExtra(extra{:});
-            solver.method = opt.method;           
+            solver.method = opt.method;
             solver.verbosity=opt.verbosity;
             solver.first=true;
             solver.reuse_setup =  opt.reuse_setup;
         end
-    
+
         function [result, report] = solveLinearSystem(solver, A, b, x0, problem)
             report = solver.getSolveReport();
             switch solver.method
-                case 'direct'                    
-                    %indb = getPotentialIndex(solver,problem);
+                case 'direct'
                     if(condest(A)>1e10)
-                        %error()
                         result=A\b;
                     else
                         result=A\b;
                     end
                 case 'agmg'
                     a=tic();
-                    if(solver.reuse_setup)                        
+                    if(solver.reuse_setup)
                         if(solver.first)
                             solver.first = false;
                             agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
@@ -57,7 +55,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     report.Iterations = iter;
                     report.Residual = relres;
                     report.LinearSolutionTime = toc(a);
-                    report.Converged = flag; %% should we set always true?                    
+                    report.Converged = flag; %% should we set always true?
                     %if(reset)
                     %    result=agmg(A,b,20,solver.tolerance,solver.maxIterations,solver.verbosity,-1);
                     %end
@@ -104,11 +102,11 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     report.Iterations = (iter(1)-1)*solver.maxIterations + iter(2);
                     report.Residual = relres;
                     report.Converged = flags;
-                    report.precondIterations_phi = solver.precondIterations_phi; 
+                    report.precondIterations_phi = solver.precondIterations_phi;
                     report.precondIterations_c = solver.precondIterations_c;
                     report.precondIterations_T = solver.precondIterations_T;
                     report.LinearSolutionTime = toc(a);
- 
+
                 case 'matlab_cpr_agmg'
                     indb = solver.getPotentialIndex(problem);
                     agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
@@ -117,11 +115,11 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     %rphi=  agmg(A(indb,indb),b(indb),20,1e-4,20,1,[],1);
                     solver_type = 'agmgsolver';
                     voltage_solver = solver.getElipticSolver(solver_type, A, indb)
-                    
+
                     inds=true(size(indb));%not(indb);
                                           %inds = not(indb);
-                    smoother_type = 'gs'                      
-                    smoother = getSmoother(smoother_type);                     
+                    smoother_type = 'gs'
+                    smoother = getSmoother(smoother_type);
                     f=@(b) solver.precondcpr(b,A,indb,voltage_solver,smoother)
                     tic;
                     result = gmres(A,b,25,solver.tolerance,solver.maxIterations,f);
@@ -168,9 +166,9 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                                     'coarse_enough',coarsetarget,'max_levels',20,'ncycle',1,'npre',1,'npost',1,'pre_cycle',0,'direct_coarse',true);
                                  options = struct('solver',isolver,'precond',precond,...
                                      'reuse_mode',1,'solver_type','regular','write_params',false,'block_size',1,'verbosity',10);
-                              
+
                           otherwise
-                              error()
+                              error('Unknown preconditioner.');
                       end
                       tic;
                     [result,extra]=amgcl(A,b,'amgcloptions',options,'blocksize',1,'tol', solver.tolerance,'maxiter',solver.maxIterations);
@@ -179,10 +177,10 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 otherwise
                     error('Method not implemented');
             end
-            
+
             %% fill report
         end
-        
+
         function indb = getPotentialIndex(solver,problem)
             numVars = problem.equations{1}.getNumVars();
             vars=[];
@@ -190,7 +188,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 pp = problem.primaryVariables{i};
                 if strcmp(pp{end},'E') || strcmp(pp{end},'phi')
                     vars =[vars,i];
-                end 
+                end
             end
             %if(numel(problem.equations)>8)
             %    vars=[2,4,6,7,8,9];
@@ -204,7 +202,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %eind = mcolon(posvar(1,1),posvar(1,2));
             %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
             ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
+            indb=false(pos(end),1);
             indb(ind) = true;
         end
         function indb = getCIndex(solver,problem)
@@ -214,7 +212,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 pp = problem.primaryVariables{i};
                 if strcmp(pp{end},'c') %%|| strcmp(pp{end},'phi')
                     vars =[vars,i];
-                end 
+                end
             end
             %if(numel(problem.equations)>8)
             %    vars=[2,4,6,7,8,9];
@@ -228,7 +226,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %eind = mcolon(posvar(1,1),posvar(1,2));
             %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
             ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
+            indb=false(pos(end),1);
             indb(ind) = true;
         end
         function indb = getTIndex(solver,problem)
@@ -238,7 +236,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                 pp = problem.primaryVariables{i};
                 if strcmp(pp{end},'T') %%|| strcmp(pp{end},'phi')
                     vars =[vars,i];
-                end 
+                end
             end
             %if(numel(problem.equations)>8)
             %    vars=[2,4,6,7,8,9];
@@ -252,19 +250,19 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             %eind = mcolon(posvar(1,1),posvar(1,2));
             %neind = mcolon(posvar(2:end,1),posvar(2:end,2));
             ind=mcolon(posvar(:,1),posvar(:,2));
-            indb=false(pos(end),1);      
+            indb=false(pos(end),1);
             indb(ind) = true;
-        end 
+        end
         function r = precondcpr(solver,x,A,ind,voltage_solver,smoother)%,AA)
-            r=x*0;          
+            r=x*0;
             dr = smoother(A,x);
             r=r+dr;
             x=x-A*dr;
-            rphi = voltage_solver(A(ind,ind),x(ind));            
+            rphi = voltage_solver(A(ind,ind),x(ind));
             r(ind)=r(ind)+rphi;
             x(ind)=x(ind)-A(ind,ind)*rphi;
             %dr = x;
-            dr = smoother(A,x);            
+            dr = smoother(A,x);
             %% pre smooth
              %% post smooth
             %dr = x;
@@ -272,7 +270,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             r=r+dr;
             %x=x-A*dr;
         end
-     
+
         function r = p_gs_precond(solver,x,A,indphi,indc,indT,phi_solver,c_solver,T_solver, opt)%,AA)
             r=x*0;
             %xp agmg(A(ind,ind),x(ind),20,1e-4,20,1,[],2);
@@ -286,7 +284,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             xp = x(indphi) - 0.0*A(indphi,not(indphi))*r(not(indphi));
             if(true)
                [rp,flag, res, iter]  = phi_solver(A(indphi,indphi),xp);
-               solver.precondIterations_phi = solver.precondIterations_phi +iter; 
+               solver.precondIterations_phi = solver.precondIterations_phi +iter;
             else
                 ii = ind;
                 %agmg(A(ii,ii),xp,20,solver.tolerance,solver.maxIterations,0,[],1);
@@ -298,7 +296,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             ldisp('c start')
             if(true)
                 [rs,flag, res, iter] = c_solver(A(indc,indc),xs);
-                solver.precondIterations_c = solver.precondIterations_c +iter; 
+                solver.precondIterations_c = solver.precondIterations_c +iter;
             else
                 ii= indc;
                 %agmg(A(ii),x(ii),20,solver.tolerance,solver.maxIterations,0,[],-1);
@@ -313,19 +311,19 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
             ldisp('T start')
             xs = x(indT) - 0.0*A(indT,not(indT))*r(not(indT));
             [rT, flag, res, iter] = T_solver(A(indT,indT),xs);
-            solver.precondIterations_T = solver.precondIterations_T +iter; 
+            solver.precondIterations_T = solver.precondIterations_T +iter;
             ldisp('T End')
             r(indT) = rT;
             r(indphi) = rp;
-            r(indc) = rs;         
+            r(indc) = rs;
         end
-        %function r = agmgprecond(solver,x,A)            
-        %        r= agmg(A,x,0,1e-4,20,0,[],3);                
+        %function r = agmgprecond(solver,x,A)
+        %        r= agmg(A,x,0,1e-4,20,0,[],3);
         %end
         %function opts = getAmg
 
         function voltage_solver = getElipticSolver(solver,solver_type, opt)
-            
+
             switch solver_type
                 case 'agmgsolver'
                     %agmg(A(indb,indb),b(indb),20,solver.tolerance,solver.maxIterations,solver.verbosity,[],-1);
@@ -361,7 +359,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     error('Wrong solver type for cpr voltage preconditioner')
             end
         end
-        
+
         function  [X,FLAG,RELRES,ITER] = amgcl(solver,A,b,opt)
                     tol = 1e-5
                    [X,extra] =  amgcl(A,b,'amgcloptions', opt,'blocksize', 1,'tol', tol,'maxiter', 20);
@@ -386,7 +384,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     opt=struct('L',L,'U',U,'smoother','ilu0');
                     dd=abs(diag(U));
                     if(max(dd)/min(dd)>1e14)
-                        error();
+                        error('Smoother diagonal is poorly scaled.');
                     end
                     smoother =@(A,x) opt.U\(opt.L\x);
                     %gs structure
@@ -396,7 +394,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     L = Atmp-U;
                     dd=abs(diag(U));
                     if(max(dd)/min(dd)>1e14)
-                        error();
+                        error('Smoother diagonal is poorly scaled.');
                     end
                     %invLower = inv(Lower);
                     opt = struct('L',L,'U',U,'ind',inds,'smoother','gs','n');
@@ -407,7 +405,7 @@ classdef LinearSolverBatteryExtra < LinearSolverADExtra
                     %end
                     %dr(opt.ind) = drtmp;
                 otherwise
-                    error()
+                    error('Unknown smoother.');
             end
         end
     end
@@ -415,7 +413,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

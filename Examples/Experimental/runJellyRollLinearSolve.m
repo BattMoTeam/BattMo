@@ -111,8 +111,6 @@ tt = times(2 : end);
 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
-keyboard;
-
 tup = 0.1/DRate;
 
 simcase = 'discharge';
@@ -185,7 +183,7 @@ switch linearsolver
   case 'direct'
     disp('standard direct solver')
   otherwise
-    error()
+    error('Unknown linear solver.');
 end
 
 model.nonlinearTolerance = 1e-5;
@@ -265,7 +263,7 @@ plot(nits.total)
 tt = getReportOutput(report,'type','nonlinearSolverTime')
 tt = getReportOutput(report,'type','linearSolverTime')
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

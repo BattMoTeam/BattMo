@@ -13,11 +13,11 @@ classdef BatteryGeneratorP2D < BatteryGenerator
         %
         xlength = 1e-6*[25; 64; 15; 57; 15];
 
-        sepnx  = 10; % discretization number for negative current collector (default = 10)
+        sepnx  = 10; % discretization number for separator (default = 10)
         nenx   = 10; % discretization number for negative active material (default = 10)
-        penx   = 10; % discretization number for separator (default = 10)
-        ccnenx = 10; % discretization number for positive current collector (default = 10)
-        ccpenx = 10; % discretization number for positive active material (default = 10)
+        penx   = 10; % discretization number for positive active material (default = 10)
+        ccnenx = 10; % discretization number for negative current collector (default = 10)
+        ccpenx = 10; % discretization number for positive current collector (default = 10)
 
         %
         % refinement factor (can be used to easily increase discretization refinement)
@@ -205,7 +205,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

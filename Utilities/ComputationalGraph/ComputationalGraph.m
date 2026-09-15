@@ -12,7 +12,7 @@ classdef ComputationalGraph
 
     properties
         
-        adjencyMatrix    % Adjency matrix for the computational graph
+        adjacencyMatrix    % Adjacency matrix for the computational graph
                          % - column index      : output variable index (as in cgt.varNameList)
                          % - row index         : input variable (as in cgt.varNameList)
                          % - coefficient value : property function index as in model.propertyFunctionList
@@ -49,7 +49,7 @@ classdef ComputationalGraph
             % - row index         : input variable (as in cg.varNameList)
             % - coefficient value : property function index as in model.propertyFunctionList
 
-            cg.adjencyMatrix = A;
+            cg.adjacencyMatrix = A;
             cg.varNameList   = varNameList;
             cg.nodenames     = nodenames;
             cg.staticprops   = staticprops;
@@ -64,7 +64,7 @@ classdef ComputationalGraph
 
         function cg = setupComputationalGraph(cg)
 
-            A            = cg.adjencyMatrix;
+            A            = cg.adjacencyMatrix;
             varNameList  = cg.varNameList;
             nodenames    = cg.nodenames;
             staticprops  = cg.staticprops;
@@ -94,7 +94,7 @@ classdef ComputationalGraph
             end
 
             cg.varNameList   = varNameList;
-            cg.adjencyMatrix = A;
+            cg.adjacencyMatrix = A;
             cg.nodenames     = nodenames;
             cg.staticprops   = staticprops;
 
@@ -117,7 +117,7 @@ classdef ComputationalGraph
         % - 'upwards' for upwards in the graph
         % - 'downwards' for downwards in the graph
             
-            A = cg.adjencyMatrix;
+            A = cg.adjacencyMatrix;
 
             % for cell-valued variable pick-up a valid index
             if (varname.dim > 1) && (ischar(varname.index))
@@ -176,7 +176,7 @@ classdef ComputationalGraph
         % Get the list of property functions and the corresponding indices (with respect to
         % cg.model.propertyFunctionList) that should be call so that the variable of propfunc get updated.
 
-            A           = cg.adjencyMatrix;
+            A           = cg.adjacencyMatrix;
             staticprops = cg.staticprops;
 
             varname = propfunc.varname;
@@ -297,7 +297,7 @@ classdef ComputationalGraph
         % The function returns a list of PropFunction that updates the variable given by varname.
 
             nodenames = cg.nodenames;
-            A         = cg.adjencyMatrix;
+            A         = cg.adjacencyMatrix;
             model     = cg.model;
 
             if isa(varname, 'VarName')
@@ -385,7 +385,7 @@ classdef ComputationalGraph
         function primvarnames = getPrimaryVariableNames(cg)
         % Return the primary variables, which are defined as the root variables and not declared or recognized as static.
 
-            A = cg.adjencyMatrix;
+            A = cg.adjacencyMatrix;
             nodenames = cg.nodenames;
 
             ind = find(all(A == 0, 1));
@@ -403,7 +403,7 @@ classdef ComputationalGraph
         function eqvarnames = getEquationVariableNames(cg)
         % Return the equation variables, which are defined as the tail variables and not declared as extravarnames.
 
-            A                = cg.adjencyMatrix;
+            A                = cg.adjacencyMatrix;
             nodenames        = cg.nodenames;
             extravarnameinds = cg.extraVarNameInds;
 
@@ -424,7 +424,7 @@ classdef ComputationalGraph
             opt = struct('removeExtraVariables', true);
             opt = merge_options(opt, varargin{:});
 
-            A                = cg.adjencyMatrix;
+            A                = cg.adjacencyMatrix;
             staticprops      = cg.staticprops;
             extraVarNameInds = cg.extraVarNameInds;
 
@@ -514,7 +514,7 @@ end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -28,7 +28,7 @@ classdef ComputationalGraphPlot < handle
             
             cgp.computationalGraphTool = cgt;
 
-            cgp.A = cgt.adjencyMatrix;
+            cgp.A = cgt.adjacencyMatrix;
 
             nodenames = cgt.nodenames;
 
@@ -532,7 +532,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

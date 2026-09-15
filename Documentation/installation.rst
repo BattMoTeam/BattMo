@@ -7,7 +7,7 @@ Release installation
 
 .. _installation:
 
-The latest release version of BattMo is available as a **zip file**.
+The latest release version of BattMo is available as a **zip file**. We expect it to work on MATLAB versions newer than R2022a.
 
 The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo/releases/latest>`__ as a **zip file**.
 
@@ -25,20 +25,14 @@ BattMo is now **installed**. You can check that your installation is setup corre
 
    runBatteryP2D
 
-   
+
 Installation from git
 =====================
 
-The source code of BattMo can be installed using git. In this way, you can easily keep track of the
-last developments.
-
-First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command, which will include all the dependencies as submodules
-
-.. code-block:: shell
-
-   git clone --recurse-submodules https://github.com/BattMoTeam/BattMo.git
-
-Then, run :code:`startupBattMo` 
+To install the development version of BattMo from git, follow the
+`installation instructions in the repository README
+<https://github.com/BattMoTeam/BattMo/blob/main/readme.rst#installation>`_.
+These cover Git LFS setup, cloning with submodules, and starting BattMo in MATLAB.
 
 Here is video which guides you through the installation in details
 
@@ -66,3 +60,8 @@ case, you will need to run in addition to the previous command,
 
    git submodule update --recursive
 
+
+ Contributing
+ ============
+
+ To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.

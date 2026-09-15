@@ -9,14 +9,14 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 % necessary to come back to the real definition in term of matter
 % quantities : N/Nmax.
 
-    
+
     Tref = 298.15;  % [K]
 
 
     c_ratio = c./cmax;
-    
+
     R_delith      = 60e-09;
-    
+
     molarVolumeSi = 1.2e-05;
     molarVolumeLi = 9e-06;
 
@@ -32,11 +32,11 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
     refOCP = (0.62 ...
               - 1.94 .* z ...
               + 5.8 .*  z.^2 ...
-              - 7.13 .* z.^3 ... 
+              - 7.13 .* z.^3 ...
               - 1.8 .*  z.^4 ...
-              + 9.34 .* z.^5 ... 
+              + 9.34 .* z.^5 ...
               - 4.76 .* z.^6);
-   
+
     coeff1 = [0.005269056 ,...
               + 3.299265709,...
               - 91.79325798,...
@@ -46,7 +46,7 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
               - 37147.89470,...
               + 38379.18127,...
               - 16515.05308];
-    
+
     coeff2= [1, ...
              - 48.09287227,...
              + 1017.234804,...
@@ -56,19 +56,15 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
              + 374577.3152,...
              - 385821.1607,...
              + 165705.8597];
-    
-    %dUdT = 1e-3.*polyval(coeff1(end:-1:1),theta)./ polyval(coeff2(end:-1:1),theta);
 
-    % Calculate the open-circuit potential of the active material
-    %OCP = refOCP + (T - Tref) .* dUdT;
     dUdT = 0;
     OCP = refOCP;
-    
+
 end
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
