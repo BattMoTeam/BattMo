@@ -20,7 +20,7 @@ assert(fileId ~= -1, 'BattMo cannot check for git lfs. The file %s cannot be fou
 lfsPointerHeader = 'version https://git-lfs.github.com/spec/v1';
 fileHeader = fread(fileId, numel(lfsPointerHeader), '*char')';
 fclose(fileId);
-if ~strcmp(fileHeader, lfsPointerHeader)
+if strcmp(fileHeader, lfsPointerHeader)
     warning('BattMo is missing LFS data. Run "git lfs install" and "git lfs pull", or use the release zip.');
 end
 
