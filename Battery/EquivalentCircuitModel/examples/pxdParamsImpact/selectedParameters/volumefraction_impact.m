@@ -43,7 +43,9 @@ for i = 1:length(b)
     plot(Z_re, -Z_im, 'DisplayName', curve);
 end
 
-legend('show');%{
+legend('show');
+
+%{
 Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 

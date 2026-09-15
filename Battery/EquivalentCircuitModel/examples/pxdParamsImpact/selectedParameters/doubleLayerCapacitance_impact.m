@@ -74,7 +74,7 @@ for i = 1:length(b)
     
     Z_re = real(Z);
     Z_im = imag(Z);
-    curve = sprintf('doubleLayerCapacitance = %.2e', b(i));  %change here
+    curve = sprintf('doubleLayerCapacitance = %.2e', b(i));
     
     plot(Z_re, -Z_im, 'DisplayName', curve);
         

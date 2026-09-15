@@ -26,22 +26,22 @@ c_pe = 17.038*mol/litre; % initial concentration at positive electrode
 
 initstate = initStateChen2020(model, c_ne, c_pe);
 
-b = linspace(1e4, 5e4, 20);                        %change here
+b = linspace(1e4, 5e4, 20);
 
 frequences = logspace(-2, 4, 30); 
 figure;
 hold on;
 for i = 1:length(b)
     
-    inputparams.NegativeElectrode.Coating.ActiveMaterial.Interface.activationEnergyOfReaction = b(i);          %change here
-    inputparams.PositiveElectrode.Coating.ActiveMaterial.Interface.activationEnergyOfReaction = b(i)/2;          %change here
+    inputparams.NegativeElectrode.Coating.ActiveMaterial.Interface.activationEnergyOfReaction = b(i);
+    inputparams.PositiveElectrode.Coating.ActiveMaterial.Interface.activationEnergyOfReaction = b(i)/2;
 
     impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
     
     Z = impsolv.computeImpedance(frequences);
     Z_re = real(Z);
     Z_im = imag(Z);
-    curve = sprintf('activation Energy Of Reaction = %.2e', b(i));  %change here
+    curve = sprintf('activation Energy Of Reaction = %.2e', b(i));
     plot(Z_re, -Z_im, 'DisplayName', curve);
 end
 

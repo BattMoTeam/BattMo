@@ -203,7 +203,7 @@ classdef FittingTime
 
             best_params = scaled2unscaled(ftime, best_params_norm(:) );
 
-            % explications of why it stopped
+            % Explain why the optimization stopped
             fitting_error = ftime.optifunc(best_params);
 
             it_count = length(history.val) - 1;
@@ -251,7 +251,7 @@ classdef FittingTime
             Uc1 = 0;
             Uc2 = 0;
 
-            % Sensibilities initialisation
+            % Initialize sensitivities
 
             % we do not need s_R0 as it is trivial
             s_R1 = 0; % dUc1 / dR1
@@ -272,29 +272,29 @@ classdef FittingTime
                 I     = ftime.current_exp(k);
                 V_ocv = ftime.ocvFunction(soc);
 
-                % 1. Tension du modèle au pas k
+                % 1. Model voltage at step k
                 V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
 
-                % 2. Erreur instantanée
+                % 2. Instantaneous error
                 err = ftime.voltage_exp(k) - V_ecm(k);
 
                 if nargout > 1
 
-                    % Dérivées partielles de V_ecm par rapport à chaque paramètre
+                    % Partial derivatives of V_ecm with respect to each parameter
                     dV_dR0 = -I;
                     dV_dR1 = -s_R1;
                     dV_dC1 = -s_C1;
                     dV_dR2 = -s_R2;
                     dV_dC2 = -s_C2;
 
-                    % Accumulation du gradient de la fonction coût (v = sum(err^2))
+                    % Accumulate the cost function gradient (v = sum(err^2))
                     g_true(1) = g_true(1) - 2 * err * dV_dR0;
                     g_true(2) = g_true(2) - 2 * err * dV_dR1;
                     g_true(3) = g_true(3) - 2 * err * dV_dC1;
                     g_true(4) = g_true(4) - 2 * err * dV_dR2;
                     g_true(5) = g_true(5) - 2 * err * dV_dC2;
 
-                    % Mise à jour des sensibilités pour le pas suivant (Euler Explicite)
+                    % Update sensitivities for the next step using explicit Euler
                     s_R1 = s_R1 + (-s_R1 / (R1 * C1) + Uc1 / (R1^2 * C1)) * dt;
                     s_C1 = s_C1 + (-s_C1 / (R1 * C1) + Uc1 / (R1 * C1^2) - I / C1^2) * dt;
                     s_R2 = s_R2 + (-s_R2 / (R2 * C2) + Uc2 / (R2^2 * C2)) * dt;
@@ -302,25 +302,25 @@ classdef FittingTime
 
                 end
 
-                % 4. Mise à jour des variables d'état électriques pour le pas suivant
+                % 4. Update electrical state variables for the next step
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;
                 Uc2 = Uc2 + (-Uc2 / (R2 * C2) + I / C2) * dt;
                 soc = soc - I*dt/Q;
 
             end
 
-            % Valeur de la fonction objectif (Erreur quadratique totale)
+            % Objective function value (sum of squared errors)
             v = sum((ftime.voltage_exp - V_ecm).^2);
 
             if isnan(v) || isinf(v) || (nargout > 1 && (any(isnan(g_true)) || any(isinf(g_true))))
-                v = 1e10; % Assigne un coût massif pour rejeter le point instable
+                v = 1e10; % Assign a large cost to reject the unstable point
                 if nargout > 1
-                    g_norm = zeros(5, 1); % Renvoie un gradient plat pour forcer le pas arrière
+                    g_norm = zeros(5, 1); % Return a zero gradient to force backtracking
                 end
                 return;
             end
 
-            % 5. Application de la règle de dérivation en chaîne pour l'espace normalisé
+            % 5. Apply the chain rule in normalized parameter space
             if nargout > 1
                 pmin = ftime.scales(1:5);
                 pmax = ftime.scales(6:10);
@@ -411,18 +411,18 @@ classdef FittingTime
 
         function printResults(ftime, best_params, fitting_error)
 
-            % Extraction des paramètres
+            % Extract parameters
             R0 = best_params(1);
             R1 = best_params(2);
             C1 = best_params(3);
             R2 = best_params(4);
             C2 = best_params(5);
 
-            % Calcul des constantes de temps (tau = R * C)
+            % Calculate time constants (tau = R * C)
             tau1 = R1 * C1;
             tau2 = R2 * C2;
 
-            % Calcul de la RMSE pour un affichage plus parlant qu'une simple somme quadratique
+            % Calculate RMSE for a more interpretable measure than the sum of squared errors
             rmse_mv = sqrt(fitting_error / length(ftime.time_vec)) * 1000;
 
             fprintf('\n=======================================\n');
@@ -477,8 +477,8 @@ classdef FittingTime
                 else
                     dt = time_test_sim(k) - time_test_sim(k-1);
                 end
-                I = current_test_sim(k); % Courant réel synchronisé simulé par BattMo
-                V_ocv = ocv_test(k);     % OCV réel synchronisé simulé par BattMo
+                I = current_test_sim(k); % Synchronized current simulated by BattMo
+                V_ocv = ocv_test(k);     % Synchronized OCV simulated by BattMo
                 V_ecm(k) = V_ocv - R0 * I - Uc1 - Uc2;
 
                 Uc1 = Uc1 + (-Uc1 / (R1 * C1) + I / C1) * dt;

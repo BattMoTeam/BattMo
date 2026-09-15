@@ -25,26 +25,28 @@ c_pe = 17.038*mol/litre; % initial concentration at positive electrode
 
 initstate = initStateChen2020(model, c_ne, c_pe);
 
-b = linspace(1e5, 7e5, 20);                        %change here
+b = linspace(1e5, 7e5, 20);
 
 frequences = logspace(-2, 4, 30); 
 figure;
 hold on;
 for i = 1:length(b)
     
-    inputparams.NegativeElectrode.Coating.ActiveMaterial.Interface.volumetricSurfaceArea = b(i);          %change here
-    inputparams.PositiveElectrode.Coating.ActiveMaterial.Interface.volumetricSurfaceArea = b(i);          %change here
+    inputparams.NegativeElectrode.Coating.ActiveMaterial.Interface.volumetricSurfaceArea = b(i);
+    inputparams.PositiveElectrode.Coating.ActiveMaterial.Interface.volumetricSurfaceArea = b(i);
 
     impsolv = ImpedanceSolver(inputparams, 'initstate', initstate, 'computeSteadyState', false);
     
     Z = impsolv.computeImpedance(frequences);
     Z_re = real(Z);
     Z_im = imag(Z);
-    curve = sprintf('volumetric Surface Area = %.2e', b(i));  %change here
+    curve = sprintf('volumetric Surface Area = %.2e', b(i));
     plot(Z_re, -Z_im, 'DisplayName', curve);
 end
 
-legend('show');%{
+legend('show');
+
+%{
 Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
