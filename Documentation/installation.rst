@@ -7,7 +7,7 @@ Release installation
 
 .. _installation:
 
-The latest release version of BattMo is available as a **zip file**.
+The latest release version of BattMo is available as a **zip file**. We expect it to work on MATLAB versions newer than R2022a.
 
 The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo/releases/latest>`__ as a **zip file**.
 
@@ -25,7 +25,7 @@ BattMo is now **installed**. You can check that that your installation is setup 
 
    runBatteryP2D
 
-   
+
 Installation from git
 =====================
 
