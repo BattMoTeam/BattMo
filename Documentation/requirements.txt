@@ -19,7 +19,7 @@ habanero==2.9.2
 httpcore==1.0.9
 httpcore2==2.10.0
 httpx==0.28.1
-httpx2==2.10.0
+httpx2==2.12.0
 idna==3.18
 imagesize==2.0.0
 jedi==0.20.0
