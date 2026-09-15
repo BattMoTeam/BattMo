@@ -1,31 +1,11 @@
 classdef BatchProcessor
 
-%{
-  Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
-  and SINTEF Digital, Mathematics & Cybernetics.
-
-  This file is part of The Battery Modeling Toolbox BattMo
-
-  BattMo is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  BattMo is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
-%}
-
     properties
         paramnames
     end
-    
+
     methods
-        
+
         function bp = BatchProcessor(varargin)
             bp.paramnames = {};
             if nargin > 0
@@ -41,32 +21,32 @@ classdef BatchProcessor
             for ind = 1 : numel(fdnames)
                 fdname = fdnames{ind};
                 bp = bp.addParameterName(fdname);
-            end            
+            end
         end
-    
+
         function [bp, simlist] = addElement(bp, simlist, elt)
             simlist{end + 1} = elt;
             bp = bp.registerElementParamnames(elt);
         end
-        
 
-        
+
+
         function bp = addParameterName(bp, paramname)
             if ~ismember(paramname, bp.paramnames)
                 bp.paramnames{end + 1} = paramname;
-            end        
+            end
         end
-        
+
         function ind = getParameterIndex(bp, paramname)
             [~, ind] = ismember(paramname, bp.paramnames);
         end
-        
+
         function [bp, simlist] = modifyElement(bp, simlist, ind, paramname, paramvalue)
             error('not robust')
             simlist{ind}.paramname = paramvalue;
             bp = bp.addParameterName(paramname);
-        end        
-    
+        end
+
         function [vals, type, dim] = getParameterValue(bp, simlist, paramname)
             bp.assertParam(paramname);
             vals = {};
@@ -101,7 +81,7 @@ classdef BatchProcessor
                 vals{end + 1}  = val;
                 types{end + 1} = type;
                 dims{end + 1}  = dim;
-                
+
             end
 
             ok = false;
@@ -117,7 +97,7 @@ classdef BatchProcessor
                 type = 'boolean';
                 dim = [];
             end
-            
+
             if ~isempty(vals) && (isnumeric(vals{1}) | isempty(vals{1}))
                 if all(ismember(types, {'scalar', 'undef'}))
                     ok = true;
@@ -146,9 +126,9 @@ classdef BatchProcessor
             if ~ok
                 error('values are not consistents');
             end
-            
-            
-        end        
+
+
+        end
 
         function [T, singlevalued] = setupTable(bp, simlist)
 
@@ -160,7 +140,7 @@ classdef BatchProcessor
             Tc = cell(nlist, nparams);
 
             singlevalued = false(nparams, 1);
-            
+
             for ic  = 1 : nparams
                 paramname = paramnames{ic};
                 [vals, type, dim] = getParameterValue(bp, simlist, paramname);
@@ -202,20 +182,20 @@ classdef BatchProcessor
 
             singlevalued = find(singlevalued);
             T = cell2table(Tc, 'VariableNames', paramnames);
-            
+
         end
-        
+
         function rangevalues = getParameterRanges(bp, simlist, varargin)
-            
+
             if nargin > 2
                 paramnames = varargin;
                 for iparam = 1 : numel(paramnames)
                     bp.assertParam(paramnames{iparam});
-                end                    
+                end
             else
                 paramnames = bp.paramnames;
             end
-            
+
             rangevalues = [];
             for ind = 1 : numel(paramnames)
                 paramname = paramnames{ind};
@@ -235,17 +215,17 @@ classdef BatchProcessor
                     vals = vertcat(vals{:});
                     vals = unique(vals);
                 else
-                    vals = unique(vals);                    
+                    vals = unique(vals);
                 end
                 rangevalues.(paramname) = vals;
             end
-            
+
         end
-        
+
         function assertParam(bp, paramname)
             assert(ismember(paramname, bp.paramnames), sprintf('parameter %s not registered', paramname));
         end
-        
+
         function printSimList(bp, simlist, varargin)
             [T, singlevalued] = bp.setupTable(simlist);
             if nargin > 2 && strcmp(varargin{1}, 'all')
@@ -273,7 +253,7 @@ classdef BatchProcessor
                 else
                     paramnames = vparamnames;
                 end
-            else                
+            else
                 paramnames = varargin;
                 for iparam = 1 : numel(paramnames)
                     bp.assertParam(paramnames{iparam});
@@ -290,15 +270,15 @@ classdef BatchProcessor
             else
                 T = T(:, paramnames)
             end
-        end        
-        
+        end
+
         function sortedsimlist = sortSimList(bp, simlist, varargin)
             paramname = varargin{end};
             rest = varargin(1 : end - 1);
 
             direction = 'ascend';
             usefunc   = false;
-            
+
             if iscell(paramname)
                 func      = paramname{2};
                 paramname = paramname{1};
@@ -309,7 +289,7 @@ classdef BatchProcessor
                 else
                     error('filter format not recognized');
                 end
-                
+
             end
             [vals, type] = getParameterValue(bp, simlist, paramname);
             eind = cellfun(@(val) isempty(val), vals);
@@ -320,14 +300,14 @@ classdef BatchProcessor
             elseif strcmp(type, 'vector')
                 error('vectors cannot be ordered');
             end
-            
+
             if usefunc
                 vals = func(vals);
             end
 
             [~, ~, ic] = unique(vals, 'sorted');
             inds = [ic, (1 : numel(vals))'];
-            
+
             switch direction
               case 'ascend'
                 [~, ind] = sortrows(inds);
@@ -343,16 +323,16 @@ classdef BatchProcessor
                 sortedsimlist = sortSimList(bp, sortedsimlist, rest{:});
             end
         end
-        
+
         function [bp, simlist] = filterMergeSimLists(bp, simlist, simlist_to_merge, varargin)
-            
+
             [bp, simlist_to_merge] = bp.mergeSimLists({}, simlist_to_merge);
             simlist_to_merge = bp.filterSimList(simlist_to_merge, varargin{:});
             [bp, simlist] = bp.mergeSimLists(simlist, simlist_to_merge);
-            
+
         end
-        
-        
+
+
         function filteredsimlist = filterSimList(bp, simlist, varargin)
             assert(mod(numel(varargin), 2) == 0, 'wrong number of argument')
             filteredsimlist = {};
@@ -394,14 +374,14 @@ classdef BatchProcessor
             if ~isempty(rest)
                 filteredsimlist = bp.filterSimList(filteredsimlist, rest{:});
             end
-        end        
-    
+        end
+
     end
 
     methods(Static)
 
         function [bp, simlist] = mergeSimList(simlist, simlist_to_merge)
-            
+
             bp = BatchProcessor(simlist);
             for isim = 1 : numel(simlist_to_merge)
                 elt = simlist_to_merge{isim};
@@ -409,7 +389,7 @@ classdef BatchProcessor
             end
 
         end
-        
+
         function [bp, simlist] = mergeSimLists(simlists)
 
             simlist = simlists{1};
@@ -419,22 +399,22 @@ classdef BatchProcessor
 
                 simlist_to_merge = simlists{1};
                 simlists = simlists(2 : end);
-                
+
                 [bp, simlist] = BatchProcessor.mergeSimList(simlist, simlist_to_merge);
-                
+
             end
-            
+
         end
-        
+
     end
-        
-    
+
+
 end
 
 
 
 %{
-Copyright 2021-2022 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
