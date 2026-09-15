@@ -183,7 +183,7 @@ switch linearsolver
   case 'direct'
     disp('standard direct solver')
   otherwise
-    error()
+    error('Unknown linear solver.');
 end
 
 model.nonlinearTolerance = 1e-5;

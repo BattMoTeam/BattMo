@@ -626,7 +626,7 @@ classdef BatteryLinearSolver < handle
                 dd = abs(diag(U));
 
                 if (max(dd)/min(dd) > 1e14)
-                    error();
+                    error('Smoother diagonal is poorly scaled.');
                 end
 
                 smoother = @(A, x) opt.U\(opt.L\x);
@@ -639,7 +639,7 @@ classdef BatteryLinearSolver < handle
                 dd   = abs(diag(U));
 
                 if(max(dd)/min(dd) > 1e14)
-                    error();
+                    error('Smoother diagonal is poorly scaled.');
                 end
 
                 opt = struct('L'       , L   , ...
