@@ -18,7 +18,7 @@ classdef Coating < ElectronicComponent
         % Standard parameters
         effectiveDensity     % the mass density of the material (symbol: rho). Important : the density is computed with respect to total volume (including the empty pores)
         bruggemanCoefficient % the Bruggeman coefficient for effective transport in porous media (symbol: beta)
-        
+
         activeMaterialModelSetup % Structure which describes the chosen model, see schema in Utilities/JsonSchemas/Coating.schema.json. Here, we summarize
                               % - 'composite' : boolean (default is false)
                               % - 'SEImodel' : string with one of
@@ -26,7 +26,7 @@ classdef Coating < ElectronicComponent
                               %                 "Safari"
                               %                 "Bolay"
                               % - 'swelling' : boolean (default is false)
-        
+
         %% Advanced parameters (used if given, otherwise computed)
         volumeFractions                 % mass fractions of each components (if not given computed subcomponent and density)
         volumeFraction
@@ -71,12 +71,12 @@ classdef Coating < ElectronicComponent
             ad  = 'ConductingAdditive';
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
-            
+
             if model.activeMaterialModelSetup.composite
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
                 compnames = {am1, am2, bd, ad};
-            else 
+            else
                 am = 'ActiveMaterial';
                 compnames = {am, bd, ad};
             end
@@ -103,7 +103,7 @@ classdef Coating < ElectronicComponent
 
             model.compInds        = compInds;
             model.specificVolumes = specificVolumes;
-            
+
             % We treat special cases for the specific volumes
 
             use_am_only = false;
@@ -135,7 +135,7 @@ classdef Coating < ElectronicComponent
                     inputparams.(am).massFraction = 1;
                     inputparams.(bd).massFraction = 0;
                     inputparams.(ad).massFraction = 0;
-                else                    
+                else
                     volumeFractions = zeros(numel(compnames), 1);
                     sumSpecificVolumes = sum(specificVolumes);
                     for icomp = 1 : numel(compnames)
@@ -199,7 +199,7 @@ classdef Coating < ElectronicComponent
             np = inputparams.G.getNumberOfCells();
 
             if model.activeMaterialModelSetup.composite
-                
+
                 ams = {am1, am2};
                 for iam = 1 : numel(ams)
                     amc = ams{iam};
@@ -211,9 +211,9 @@ classdef Coating < ElectronicComponent
                 end
 
             else
-                
+
                 switch model.activeMaterialModelSetup.SEImodel
-                    
+
                   case {'none', 'Bolay'}
 
                     inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
@@ -222,7 +222,7 @@ classdef Coating < ElectronicComponent
                         lp = 'LithiumPlating';
                         inputparams.(am).(lp).volumeFraction = inputparams.(am).(sd).volumeFraction;
                     end
-                    
+
                     switch inputparams.(am).diffusionModelType
                       case {'full', 'swelling'}
                         inputparams.(am).(sd).np = np;
@@ -231,20 +231,20 @@ classdef Coating < ElectronicComponent
                       otherwise
                         error('diffusion model type not recognized')
                     end
-                    
+
                     model.ActiveMaterial = ActiveMaterial(inputparams.ActiveMaterial);
-                    
+
                   case 'Safari'
-                    
+
                     inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
                     inputparams.(am).(sd).np  = np;
                     inputparams.(am).(sei).np = np;
                     model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
-                    
+
                   otherwise
-                    
+
                     error('SEI model not recognized')
-                    
+
                 end
             end
 
@@ -319,7 +319,7 @@ classdef Coating < ElectronicComponent
             sei = 'SolidElectrodeInterface';
             sr  = 'SideReaction';
             lp  = 'LithiumPlating';
-            
+
             varnames = {'jCoupling', ...
                         'jExternal', ...
                         'SOC'};
@@ -349,7 +349,7 @@ classdef Coating < ElectronicComponent
                         model = model.registerPropFunction({'eSource', fn, {{am, sd, 'Rvol'}}});
                     end
                 end
-                
+
                 fn = @Coating.updatePhi;
                 model = model.registerPropFunction({{am, itf, 'phiElectrode'}, fn, {'phi'}});
 
@@ -365,7 +365,7 @@ classdef Coating < ElectronicComponent
                 end
 
             else
-                  
+
                 am1 = 'ActiveMaterial1';
                 am2 = 'ActiveMaterial2';
 
@@ -407,7 +407,7 @@ classdef Coating < ElectronicComponent
 
             end
 
-            
+
             if model.use_thermal
                 varnames = {'jFaceCoupling', ...
                             'jFaceExternal'};
@@ -434,7 +434,7 @@ classdef Coating < ElectronicComponent
             if model.use_thermal
                 model = model.registerPropFunction({'jFaceCoupling', fn, {}});
             end
-                                                   
+
         end
 
         function model = setTPFVgeometry(model, tPFVgeometry)
@@ -469,24 +469,24 @@ classdef Coating < ElectronicComponent
         function jsonstruct = exportParams(model)
 
             jsonstruct = exportParams@ElectronicComponent(model);
-            
-            fdnames = {'effectiveDensity'            , ...     
-                       'bruggemanCoefficient'        , ... 
-                       'volumeFractions'             , ...                 
+
+            fdnames = {'effectiveDensity'            , ...
+                       'bruggemanCoefficient'        , ...
+                       'volumeFractions'             , ...
                        'volumeFraction'              , ...
-                       'thermalConductivity'         , ...             
-                       'specificHeatCapacity'        , ...            
-                       'effectiveThermalConductivity', ...    
+                       'thermalConductivity'         , ...
+                       'specificHeatCapacity'        , ...
+                       'effectiveThermalConductivity', ...
                        'effectiveVolumetricHeatCapacity' };
-            
+
             for ifd = 1 : numel(fdnames)
                 fdname = fdnames{ifd};
                 jsonstruct.(fdname) = model.(fdname);
             end
 
         end
-        
-        
+
+
         function model = updateEffectiveDensity(model, inputparams)
 
             compnames = model.compnames;
@@ -554,20 +554,20 @@ classdef Coating < ElectronicComponent
             sd  = 'SolidDiffusion';
             itf = 'Interface';
             lp  = 'LithiumPlating';
-            
+
             F    = model.constants.F;
             n    = model.(am).(itf).numberOfElectronsTransferred;
             vsa  = model.(am).(itf).volumetricSurfaceArea;
             vols = model.G.getVolumes();
-            
+
             interFlux   = state.(am).(itf).intercalationFlux;
             theta       = state.(am).(lp).surfaceCoverage;
             platingFlux = state.(am).(lp).platingFlux;
-            
+
             state.eSource = -n*F*vsa*vols.*((1 - theta).*interFlux + theta.*platingFlux); % flux are to the outside
-            
+
         end
-        
+
         function state = updateBolayEsource(model, state)
 
             am  = 'ActiveMaterial';
@@ -577,17 +577,17 @@ classdef Coating < ElectronicComponent
             F    = model.constants.F;
             n    = model.(am).(itf).numberOfElectronsTransferred;
             vsa  = model.(am).(itf).volumetricSurfaceArea;
-            
+
             vols = model.G.getVolumes();
 
             Rvol    = state.(am).(sd).Rvol;
             seiflux = state.(am).(itf).SEIflux;
-            
+
             state.eSource =  F*vols.*( -n*Rvol + vsa*seiflux );
 
         end
 
-        
+
        function state = updateCompositeEsource(model, state)
 
             am1 = 'ActiveMaterial1';
@@ -648,9 +648,9 @@ classdef Coating < ElectronicComponent
             sr = 'SideReaction';
 
             state.(am).(sr).phiElectrode = state.phi;
-            
+
         end
-        
+
         function state = dispatchCompositeTemperature(model, state)
 
             am1 = 'ActiveMaterial1';
@@ -688,13 +688,10 @@ classdef Coating < ElectronicComponent
             theta0   = model.(am).(itf).guestStoichiometry0;
 
             c = state.(am).(sd).cAverage;
-            
+
             %% We do not use the gueststochiometry value to compute the State of Charge
-            
+
             theta = c/cmax;
-            % m     = (1 ./ (theta100 - theta0));
-            % b     = -m .* theta0;
-            % SOC   = theta*m + b;
             SOC = theta;
             vol = am_frac*vf.*vols;
 
@@ -730,14 +727,14 @@ classdef Coating < ElectronicComponent
                 vol = am_frac*vf.*vols;
 
                 %% We do not use the gueststochiometry value to compute the State of Charge
-                
+
                 molvals(iam)    = sum(c.*vol);
                 % molval0s(iam)   = theta0*cmax*sum(vol);
                 % molval100s(iam) = theta100*cmax*sum(vol);
 
                 molval0s(iam)   = 0;
                 molval100s(iam) = cmax*sum(vol);
-                
+
                 state.(amc).SOC = (molvals(iam) - molval0s(iam))/(molval100s(iam) - molval0s(iam));
 
             end

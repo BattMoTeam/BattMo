@@ -2,15 +2,7 @@ function sum = sha1sum(varargin)
 
     if mrstPlatform('matlab')
 
-        % Use persistent Java MessageDigest object to avoid repeated initialization
-        % persistent md
-
-        % if isempty(md)
-        %     md = java.security.MessageDigest.getInstance('SHA-1');
-        % else
-        %     md.reset(); % Reset for reuse
-        % end
-
+        % Possibly make this persistent
         md = java.security.MessageDigest.getInstance('SHA-1');
 
         % Serialize the input arguments to byte arrays

@@ -51,12 +51,9 @@ doTestExamples = false;
 if doTestExamples
     suite = testsuite('TestRunExamples');
     runner = testrunner('textoutput');
-
     import matlab.unittest.plugins.StopOnFailuresPlugin
     runner.addPlugin(StopOnFailuresPlugin)
     results = runner.run(suite);
-
-    %results = runner.runInParallel(suite);
 end
 
 doTestJsonFiles = false;

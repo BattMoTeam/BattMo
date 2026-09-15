@@ -58,35 +58,4 @@ function plotContours(output)
     colormap(cm)
     set(gca, 'FontSize', 18);
 
-    % % Plot the potential at the given grid centroid locations
-    % figure
-    % contourf(x_ne, time, phi_ne, 20, 'LineStyle', 'none')
-    % xlabel('Position  /  µm')
-    % ylabel('Time  /  h')
-    % title('Negative Electrode Potential  /  V')
-    % colorbar()
-    % cm = flipud(crameri('lajolla'));
-    % colormap(cm)
-    % set(gca, 'FontSize', 18);
-
-    % figure
-    % contourf(x_elyte, time, phi_elyte, 20, 'LineStyle', 'none')
-    % xlabel('Position  /  µm')
-    % ylabel('Time  /  h')
-    % title('Electrolyte Potential  /  V')
-    % colorbar()
-    % cm = cmocean('curl'); %, 'pivot', 1);
-    % colormap(cm)
-    % set(gca, 'FontSize', 18);
-
-    % figure
-    % contourf(x_pe, time, phi_pe, 20, 'LineStyle', 'none')
-    % xlabel('Position  /  µm')
-    % ylabel('Time  /  h')
-    % title('Positive Electrode Potentials  /  V')
-    % colorbar()
-    % cm = crameri('nuuk');
-    % colormap(cm)
-    % set(gca, 'FontSize', 18);
-
 end

@@ -111,8 +111,6 @@ tt = times(2 : end);
 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
-keyboard;
-
 tup = 0.1/DRate;
 
 simcase = 'discharge';

@@ -232,8 +232,6 @@ classdef ComputationalGraphInteractiveTool < handle
             fncallstr = propfunc.functionCallSetupFn(propfunc);
 
             try
-                % fn = @(model,state)ProtonicMembraneGasSupply.updateDensity(model,state);
-                % state.GasSupplyBc = fn(model.GasSupplyBc, state.GasSupplyBc);
                 eval(fncallstr);
             catch ME
                 fprintf('%s\n', fncallstr);

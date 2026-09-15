@@ -47,7 +47,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             model = dispatchParams(model, inputparams, fdnames);
             model.operators = model.setupOperators();
-            
+
             if ~isempty(model.diffusionCoefficient)
                 model.useDFunc = true;
                 [model.computeDFunc, model.computeD] = setupFunction(model.diffusionCoefficient);
@@ -369,13 +369,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             if useDFunc
                 state.flux = op.flux(D, c);
-                % a = state.flux;
-                % a = combineEquations(a);
-                % keyboard
             else
                 D = op.mapToParticle*D;
                 state.flux = op.flux(D, c);
-                % keyboard
             end
 
 
@@ -428,9 +424,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             N  = model.N;
 
             c = reshape(state.c, np, N)';
-            
+
         end
-        
+
     end
 
 end
