@@ -32,15 +32,15 @@ ctrl    = 'Control';
 %% Setup the geometry and computational grid
 % Here, we setup the 3D computational grid that will be used for the
 % simulation. The required discretization parameters are already included
-% in the class BatteryGeneratorP4D.
+% in the class BatteryGeneratorMultilayerPouch.
 gen = BatteryGeneratorMultilayerPouch();
 
 % Now, we update the inputparams with the properties of the grid.
 inputparams = gen.updateBatteryInputParams(inputparams);
 
 %%  Initialize the battery model.
-% The battery model is initialized by sending inputparams to the Battery class
-% constructor. see :class:`Battery <Battery.Battery>`.
+% The battery model is initialized by sending inputparams to the GenericBattery class
+% constructor.
 
 model = GenericBattery(inputparams);
 

@@ -3,8 +3,10 @@ function startupBattMo
 % This startup file set up the MATLAB path
 %
 %% We use first `MRST <https://github.com/SINTEF-AppliedCompSci/MRST>`_ setup for MRST modules.
-% The source code for MRST is synchronized to BattMo using git-submodule mechanisms (In the MRST directory in BattMo, you
-% should find the subdirectories given by the ``names`` cell array below)
+% The source code for MRST is synchronized to BattMo using
+% git-submodule mechanisms (In the Externals/mrst directory in BattMo,
+% you should find the subdirectories given by the ``names`` cell array
+% below)
 %
 
 fprintf('\n  /-\\\n | + | BattMo\n  \\-/\n\n');
