@@ -19,7 +19,7 @@ The latest release version of BattMo is available `here <https://github.com/Batt
 
       startupBattMo
 
-BattMo is now **installed**. You can check that that your installation is setup correctly by running one of the example scripts, directly from Matlab command line.
+BattMo is now **installed**. You can check that your installation is setup correctly by running one of the example scripts, directly from Matlab command line.
 
 .. code-block:: matlab
 

@@ -52,7 +52,7 @@ Then start MATLAB and in the directory where you cloned the repository, run:
 
 ``startupBattMo``
 
-You can check that that your installation is setup correctly by running one of the example scripts:
+You can check that your installation is setup correctly by running one of the example scripts:
 
 ``runBatteryP2D``
 

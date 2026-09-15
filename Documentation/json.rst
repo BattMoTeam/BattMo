@@ -74,7 +74,7 @@ Electrolyte
 
 The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
 the json file should contain the function name that is used. The *signature* of the function is given in the schema in
-form of a *argument list*. For example, below, we can read that that the :code:`ionicConductivity` is a function of
+form of a *argument list*. For example, below, we can read that the :code:`ionicConductivity` is a function of
 concentration and temperature, see examples :battmofile:`here<ParameterData/MaterialProperties/OrganicLiPF6Solutions>`.
 
 .. _note-on-future-function-support:
