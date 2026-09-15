@@ -741,7 +741,7 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        function cgit = getComputationalGrapInteractiveTool(model)
+        function cgit = getComputationalGraphInteractiveTool(model)
         % setup and retrieve the computational graph interactive tool
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
@@ -751,7 +751,7 @@ classdef BaseModel < PhysicalModel
         end
 
         function cgit = cgit(model)
-            cgit = model.getComputationalGrapInteractiveTool();
+            cgit = model.getComputationalGraphInteractiveTool();
         end
 
         function G = grid(model)

@@ -28,7 +28,7 @@ classdef ComputationalGraphPlot < handle
             
             cgp.computationalGraphTool = cgt;
 
-            cgp.A = cgt.adjencyMatrix;
+            cgp.A = cgt.adjacencyMatrix;
 
             nodenames = cgt.nodenames;
 

@@ -13,7 +13,7 @@ classdef ComputationalGraphInteractiveTool < handle
 % cgit.help
 
 % to get an overview of the different commands that are available.
-% 
+%
     properties (SetAccess = private)
 
         functionDocs % cell array. Each cell contains a struct describing the function documentation, with fields
@@ -24,12 +24,12 @@ classdef ComputationalGraphInteractiveTool < handle
 
     properties
 
-        computationalGraph 
+        computationalGraph
 
         plotnodenames % names of the nodes, copy from computationalGraphTool, with added comment for the static variable
-        
+
         stack = {} % stack of selectors (plotting tool)
-        
+
         plotOptions
 
     end
@@ -37,7 +37,7 @@ classdef ComputationalGraphInteractiveTool < handle
     methods
 
         function cgit = ComputationalGraphInteractiveTool(cg, varargin)
-            
+
             opt = struct('markStatic', true);
             opt = merge_options(opt, varargin{:});
 
@@ -49,49 +49,49 @@ classdef ComputationalGraphInteractiveTool < handle
             if opt.markStatic
                 cgit.markStaticVarNames();
             end
-            
+
             cgit.plotnodenames = plotnodenames;
-            
+
             cgit.plotOptions = {};
-            
+
         end
 
         function  markStaticVarNames(cgit)
 
             cg = cgit.computationalGraph;
-            
+
             nodenames = cg.nodenames;
 
             plotnodenames = nodenames;
 
             staticprops = cg.staticprops;
-            
+
             for istat = 1 : numel(staticprops)
                 ind = staticprops{istat}.varnameind;
                 plotnodenames{ind} = sprintf('%s (static)', nodenames{ind});
             end
-            
+
             cgit.plotnodenames = plotnodenames;
-            
+
         end
 
         %%%%%%%%%%%%%%%%
         %% REPL tools
         %%%%%%%%%%%%%%%%
-        
+
         function printChildDependencyList(cgit, varname)
-            
+
             cgit.printDependencyList(varname, 'downwards');
-            
+
         end
-        
+
         function printParentDependencyList(cgit, varname)
-            
+
             cgit.printDependencyList(varname, 'upwards');
 
         end
 
-        
+
         function printDependencyList(cgit, varname, direction)
         % input varname is either
         %  - a VarName instance
@@ -103,18 +103,18 @@ classdef ComputationalGraphInteractiveTool < handle
         % - 'downwards' for downwards in the graph
         %
         % Prints the dependency list of the variable given by varname
-            
+
 
             cg = cgit.computationalGraph;
-            
+
             varnameind = cg.findVarName(varname);
             varname = cg.varNameList{varnameind};
-            
+
             [varnames, varnameinds, propfuncinds, distance] = cg.getDependencyList(varname, direction);
 
             [distance, inds] = sort(distance, 'descend');
             varnameinds = varnameinds(inds);
-            
+
             for ivar = 1 : numel(varnameinds)
                 varnameind = varnameinds(ivar);
                 fprintf('%s (%d)\n', cg.nodenames{varnameind}, distance(ivar));
@@ -134,7 +134,7 @@ classdef ComputationalGraphInteractiveTool < handle
         % Print the list of function call (as string) that will update the property function propfunc.
 
             cg = cgit.computationalGraph;
-            
+
             opt = struct('fullSignature', false);
             opt = merge_options(opt, varargin{:});
 
@@ -222,13 +222,13 @@ classdef ComputationalGraphInteractiveTool < handle
             % Initialise variable state with empty structure. In this way calling the property function will raise an error that
             % we will catch (see call passed in eval below)
             mn = propfunc.modelnamespace;
-            
+
             state         = ComputationalGraphInteractiveTool.setupState([], mn);
             state0        = state; % may be needed in case of accumulation term
             dt            = 0;     % may be needed in case of accumulation term
             drivingForces = [];    % may be needed in case of update of driving force term
             model         = cg.model; % needed in function call passed in eval
-            
+
             fncallstr = propfunc.functionCallSetupFn(propfunc);
 
             try
@@ -344,7 +344,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
             cg = cgit.computationalGraph;
 
-            A = cg.adjencyMatrix;
+            A = cg.adjacencyMatrix;
             nodenames = cg.nodenames;
 
             %% print root variables after removing the variables that were declared as static in the model
@@ -359,7 +359,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 inds = regexpSelect(cg.nodenames, nodename);
                 rootinds = intersect(inds, rootinds);
             end
-            
+
             cgit.printHeader('Root Variables', numel(rootinds));
 
             for irind = 1 : numel(rootinds)
@@ -385,7 +385,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
             cg = cgit.computationalGraph;
 
-            A                = cg.adjencyMatrix;
+            A                = cg.adjacencyMatrix;
             nodenames        = cg.nodenames;
             extravarnameinds = cg.extraVarNameInds;
 
@@ -399,7 +399,7 @@ classdef ComputationalGraphInteractiveTool < handle
             end
 
             cgit.printHeader('Tail Variables', numel(tailinds));
-            
+
             for itail = 1 : numel(tailinds)
                 fprintf('%s\n', nodenames{tailinds(itail)});
             end
@@ -419,7 +419,7 @@ classdef ComputationalGraphInteractiveTool < handle
 
             cg = cgit.computationalGraph;
 
-            A = cg.adjencyMatrix;
+            A = cg.adjacencyMatrix;
             nodenames = cg.nodenames;
 
             fprintf('Detached variables \n');
@@ -469,22 +469,22 @@ classdef ComputationalGraphInteractiveTool < handle
             end
 
         end
-        
+
         function help_repl(cgit, varargin)
         % print help to terminal to get an overview of all the interactive functions
 
             cg = cgit.computationalGraph;
-            
+
             cgit = cgit.setupFuncDocs();
-            
+
             functionDocs = cgit.functionDocs;
-            
+
             names = cellfun(@(functionDoc) functionDoc.name, functionDocs, 'un', false);
-            
+
             if nargin > 1
 
                 option = varargin{1};
-                
+
                 parsed = false;
 
                 if ismember(option, {'printAll', 'oneline', 'help', 'printFunctions'})
@@ -516,12 +516,12 @@ classdef ComputationalGraphInteractiveTool < handle
             else
                 oneline = false;
             end
-            
+
             parfill = ParagraphFiller('parlength', 80);
             if oneline
                 parfill.parlength = Inf;
             end
-            
+
             if ismember(option, {'printAll', 'help'})
 
                 fprintf('Help for interactive use of the computational graph tool\n\n');
@@ -539,22 +539,22 @@ classdef ComputationalGraphInteractiveTool < handle
                 arg.name = 'help';
                 arg.str = 'print only instruction for the help function';
                 args{end + 1} = arg;
-                
+
                 arg.name = 'printAll';
                 arg.str = 'print everything, particular help for all of the interactive functions. This is the default argument.';
-                args{end + 1} = arg;                
-                
+                args{end + 1} = arg;
+
                 arg.name = 'interactive_function';
                 arg.str = 'print the help for te given interactive function. A substring can be given resulting in printing all the functions that match this substring.';
                 args{end + 1} = arg;
 
                 largs    = cellfun(@(arg) strlength(arg.name), args);
                 maxlargs = max(largs) + 2;
-                
+
                 for iarg = 1 : numel(largs)
 
                     arg = args{iarg};
-                    
+
                     lines = parfill.getLines(arg.str);
 
                     formatstr = sprintf('%%-%ds %%s\n', maxlargs);
@@ -571,34 +571,34 @@ classdef ComputationalGraphInteractiveTool < handle
                 fprintf('\n');
                 str = 'if the string ''online'' is added at the end of the argument list, the output will not be formated but written as a single line (shorter output)';
                 parfill.print(str);
-                
+
             end
 
             if ismember(option, {'printAll', 'printFunctions'})
-                
+
                 option   = 'printSelected';
                 funcinds = (1 : numel(functionDocs));
-                
+
             end
 
             if strcmp(option, 'printSelected')
 
                 fprintf('\n')
                 parfill.print('Description of interactive functions for  the computational graph');
-                fprintf('\n')                
-                
+                fprintf('\n')
+
                 functionDocs = functionDocs(funcinds);
 
                 ComputationalGraphInteractiveTool.printFunctionDocs(functionDocs, parfill, oneline);
 
             end
-            
+
         end
 
         function cgit = setupFuncDocs(cgit)
 
             cg = cgit.computationalGraph;
-            
+
             functionDocs = {};
 
             % printVarNames
@@ -650,7 +650,7 @@ classdef ComputationalGraphInteractiveTool < handle
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
-            
+
             % printChildDependencyList
 
             docstring = 'Given a variable, prints the list of the variables that depends on it (children in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
@@ -660,7 +660,7 @@ classdef ComputationalGraphInteractiveTool < handle
             functionDoc.docstring = docstring;
 
             functionDocs{end + 1} = functionDoc;
-            
+
             % printParentDependencyList
 
             docstring = 'Given a variable, prints the list of the variables that the variables depends on (parents in the directed graph). The variables are given with the distance to the input variable. The distance gives an idea on how far the variable is in the evaluation tree. More precisely, in an acyclic directed graph, the distance corresponds to number of nodes that separates two nodes using the shortest path to connect them.';
@@ -717,7 +717,7 @@ classdef ComputationalGraphInteractiveTool < handle
             if nargin < 3
                 n = 2;
             end
-            
+
             if numel(stack) < n
                 error(sprintf('%s operation require %d elements in this call'), op, n);
             end
@@ -725,27 +725,27 @@ classdef ComputationalGraphInteractiveTool < handle
             cgit.stack = { {op, stack(1 : n)}, stack{n + 1 : end}};
 
             cgit.printStack();
-            
+
         end
 
         function and(cgit, n)
-            
+
             if nargin < 2
                 n = 2;
             end
 
             cgit.booleanOperator('and', n);
-            
+
         end
 
         function or(cgit, n)
-            
+
             if nargin < 2
                 n = 2;
             end
 
             cgit.booleanOperator('or', n);
-            
+
         end
 
         function addFamily(cgit, branch, level)
@@ -763,41 +763,41 @@ classdef ComputationalGraphInteractiveTool < handle
             cgit.stack = {{branch, level, stack{1}}, stack{2 : end}};
 
             cgit.printStack();
-            
+
         end
 
 
         function parents(cgit, level)
-            
+
             if nargin < 2
                 level = inf;
             end
 
             cgit.addFamily('parents', level);
-            
+
         end
 
         function children(cgit, level)
-            
+
             if nargin < 2
                 level = inf;
             end
 
             cgit.addFamily('children', level);
-            
+
         end
-        
+
         function select(cgit, expr)
 
             cgit.stack = {{'select', expr}, cgit.stack{:}};
             cgit.printStack();
-            
+
         end
 
         function reset(cgit)
 
             cgit.stack = {};
-            
+
         end
 
         function del(cgit, n)
@@ -811,7 +811,7 @@ classdef ComputationalGraphInteractiveTool < handle
             assert(numel(stack) >= n, sprintf('I cannot remove %d elements in the stack. Stack contains %d elements', n, numel(stack)));
 
             cgit.stack = stack(n + 1 : end);
-            
+
             cgit.printStack();
 
         end
@@ -819,7 +819,7 @@ classdef ComputationalGraphInteractiveTool < handle
         function delop(cgit)
 
             stack = cgit.stack;
-            
+
             assert(numel(stack) >= 1, 'stack is empty');
 
             selector = stack{1};
@@ -855,12 +855,12 @@ classdef ComputationalGraphInteractiveTool < handle
             assert(numel(stack) > 0, 'stack is empty');
 
             cgit.stack = {stack{1}, stack{1}, stack{2 : end}};
-            
+
             cgit.printStack();
 
         end
-        
-        
+
+
         function swap(cgit, n)
 
             stack = cgit.stack;
@@ -868,17 +868,17 @@ classdef ComputationalGraphInteractiveTool < handle
             if nargin < 2
                 n = 2;
             end
-            
+
             assert(numel(stack) >= n, 'There should be at least %d elements in the stack to swap the %dth element', n);
 
             inds = (1 : numel(stack));
             inds(n) = [];
             inds = [n, inds];
-            
+
             cgit.stack = stack(inds);
 
             cgit.printStack();
-            
+
         end
 
         function diff(cgit)
@@ -890,24 +890,24 @@ classdef ComputationalGraphInteractiveTool < handle
             cgit.stack = {{'diff', {stack{1}, stack{2}}}, stack{3 : end}};
 
             cgit.printStack();
-            
+
         end
-        
-        
+
+
         function selection = parseSelector(cgit, selector)
 
             cg = cgit.computationalGraph;
-            
+
             selectiontype = selector{1};
 
             assert(ischar(selectiontype), 'The first element of the selector should be a string');
-            
+
             switch selectiontype
-                
+
               case 'set'
 
                 return
-                
+
               case 'select'
 
                 nodenames = cg.nodenames;
@@ -915,9 +915,9 @@ classdef ComputationalGraphInteractiveTool < handle
 
                 selection = {'set', cg.nodenames(inds)};
                 return
-                
+
               case {'and', 'or'}
-                
+
                 varnamesets = selector{2};
 
                 varnameset = cgit.parseSelector(varnamesets{1});
@@ -940,18 +940,18 @@ classdef ComputationalGraphInteractiveTool < handle
 
                 switch selectiontype
                   case 'parents'
-                    B = cg.adjencyMatrix;
+                    B = cg.adjacencyMatrix;
                   case 'children'
-                    B = cg.adjencyMatrix';
+                    B = cg.adjacencyMatrix';
                 end
-                
+
                 level      = selector{2};
                 varnameset = cgit.parseSelector(selector{3});
 
                 varnames   = varnameset{2};
 
                 familyVarnames = {};
-                
+
                 for ivar = 1 : numel(varnames)
 
                     varname = varnames{ivar};
@@ -959,13 +959,13 @@ classdef ComputationalGraphInteractiveTool < handle
                     % setup from method getDependencyList. We could have cleaned up the implementation there.
                     varnameind = cg.findVarName(sprintf('%s$', varname));
                     [varnameinds, ~, ~, propdeplevels, ~, rootdeplevels] = getDependencyVarNameInds(varnameind, B);
-                    levels = [rootdeplevels; propdeplevels];  
+                    levels = [rootdeplevels; propdeplevels];
 
                     varnameinds = varnameinds(levels <= level);
-                    
+
                     familyVarnames = union(familyVarnames, cg.nodenames(varnameinds));
 
-                    
+
                 end
 
                 selection = {'set', familyVarnames};
@@ -984,9 +984,9 @@ classdef ComputationalGraphInteractiveTool < handle
 
                 varnames = setdiff(varnames{2}, varnames{1});
                 selection = {'set', varnames};
-                
+
                 return
-                
+
             end
 
         end
@@ -1006,26 +1006,26 @@ classdef ComputationalGraphInteractiveTool < handle
                     fprintf('%s%s\n', start, lines{iline});
                 end
             end
-            
+
         end
 
         function printStackSelection(cgit)
 
             assert(numel(cgit.stack) > 0, 'stack is empty');
-            
+
             cgit.printSelection(cgit.stack{1});
-            
+
         end
-        
+
         function printSelection(cgit, selection)
 
             if ~strcmp(selection{1}, 'set')
                 selection = cgit.parseSelector(selection);
             end
-            
+
             varnames = selection{2};
             fprintf('\n');
-            
+
             for ivar = 1 : numel(varnames)
                 fprintf('%s\n', varnames{ivar});
             end
@@ -1033,9 +1033,9 @@ classdef ComputationalGraphInteractiveTool < handle
         end
 
         function lines = setupSelectorPrint(cgit, selector)
-            
+
             indent0 = '  ';
-            
+
             function lines = setupLines(selector, indent)
 
                 selectortype = selector{1};
@@ -1043,7 +1043,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 switch selectortype
 
                   case 'select'
-                    
+
                     lines{1} = sprintf('%s%s ''%s''', indent, selectortype, selector{2});
                     return
 
@@ -1064,56 +1064,56 @@ classdef ComputationalGraphInteractiveTool < handle
                     return
 
                 end
-                
+
 
             end
 
             lines = setupLines(selector, '');
 
         end
-        
+
         function printSelector(cgit, selector)
 
             lines = cgit.setupSelectorPrint(selector);
-            
-            for iline = numel(lines) : -1 : 1  
+
+            for iline = numel(lines) : -1 : 1
                 fprintf('%s\n', lines{iline});
             end
-            
+
         end
-        
+
         function h = plot(cgit)
 
             cg = cgit.computationalGraph;
-            
+
             if isempty(cgit.stack)
                 selection = {'set', cg.nodenames};
             else
                 selection = cgit.parseSelector(cgit.stack{1});
             end
-            
+
             varnames = selection{2};
 
             nodeinds = ismember(cg.nodenames, varnames);
-            
-            A = cg.adjencyMatrix(nodeinds, nodeinds);
-            
+
+            A = cg.adjacencyMatrix(nodeinds, nodeinds);
+
             plotnodenames = cgit.plotnodenames(nodeinds);
-            
+
             g = digraph(A, plotnodenames);
             h = plot(g, cgit.plotOptions{:});
 
             if nargout < 1
                 clear h
             end
-            
+
         end
-        
+
         function h = plotModelGraph(cgit, modelname)
 
             cg = cgit.computationalGraph;
             cg = cg.setupModelGraph();
-            
+
             A          = cg.modelAdjencyMatrix;
             modelnames = cg.modelnames;
 
@@ -1124,15 +1124,15 @@ classdef ComputationalGraphInteractiveTool < handle
             end
 
             g = digraph(A, modelnames);
-            
+
             h = plot(g);
 
             if nargout < 1
                 clear h
             end
-            
+
         end
-        
+
         %%%%%%%%%%%%%%%
         %% Export tools
         %%%%%%%%%%%%%%%
@@ -1146,40 +1146,40 @@ classdef ComputationalGraphInteractiveTool < handle
                 str = join(strs, '\n');
                 str = str{1};
             end
-            
+
             fid = fopen(filename, 'w');
             fprintf(fid, 'digraph G {\n');
             for ind = 1 : numel(cg.nodenames)
                 fprintf(fid, '%d [label = "%s"]\n', ind, getnodelabel(cg.nodenames{ind}));
             end
-            [ii, jj, ss] = find(cg.adjencyMatrix);
+            [ii, jj, ss] = find(cg.adjacencyMatrix);
 
             propfuncs = cg.model.propertyFunctionList;
             function str = getproplabel(indprop)
                 propfunc = cg.model.propertyFunctionList{indprop};
                 str = func2str(propfunc.fn);
             end
-            
+
             for ind = 1 : numel(ii)
                 fprintf(fid, '%d -> %d [label = "%s"]\n', ii(ind), jj(ind), getproplabel(ss(ind)));
             end
-            
+
             fprintf(fid, '}\n');
             fclose(fid);
-            
+
         end
-        
+
         function exportCytoscape(cgit, filename)
 
             cg = cgit.computationalGraph;
-            
+
             function str = getnodelabel(nodename)
                 strs = split(nodename, '.');
                 str = join(strs, ' ');
                 str = ['"', str{1}, '"'];
             end
 
-            A = cg.adjencyMatrix;
+            A = cg.adjacencyMatrix;
             nodenames = cg.nodenames;
 
             %% print root variables after removing the variables that were declared as static in the model
@@ -1199,9 +1199,9 @@ classdef ComputationalGraphInteractiveTool < handle
             tailinds = tailinds(~isadded);
             istail = false(numel(nodenames), 1);
             istail(tailinds) = true;
-            
+
             nodefilename = [filename, '_nodes.csv'];
-            
+
             nodefid = fopen(nodefilename, 'w');
             fprintf(nodefid, 'node id, node name,color, border width\n');
             for ind = 1 : numel(cg.nodenames)
@@ -1211,7 +1211,7 @@ classdef ComputationalGraphInteractiveTool < handle
                     borderwidth = 100;
                 elseif istail(ind)
                     color = '#00FF22';
-                    borderwidth = 100;                    
+                    borderwidth = 100;
                 else
                     color = '#F7E7E7';
                     borderwidth = 2;
@@ -1219,36 +1219,36 @@ classdef ComputationalGraphInteractiveTool < handle
                 fprintf(nodefid, '%d,%s,%s,%d\n', ind, getnodelabel(cg.nodenames{ind}), color, borderwidth);
             end
             fclose(nodefid);
-            
+
             siffilename  = [filename, '.sif'];
             edgefilename = [filename, '_edgelabels.csv'];
 
             siffid  = fopen(siffilename, 'w');
             edgefid = fopen(edgefilename, 'w');
-            
+
             fprintf(edgefid, 'edge id,edge name\n');
 
-            [ii, jj, ss] = find(cg.adjencyMatrix);
+            [ii, jj, ss] = find(cg.adjacencyMatrix);
 
             function str = getproplabel(indprop)
                 propfunc = cg.model.propertyFunctionList{indprop};
                 str = func2str(propfunc.fn);
             end
-            
+
             for ind = 1 : numel(ii)
-                
+
                 fprintf(siffid, '%d interaction %d\n', ii(ind), jj(ind));
                 fprintf(edgefid, '%d,%s\n', ind, getproplabel(ss(ind)));
-                
+
             end
 
             fclose(siffid);
             fclose(edgefid);
-            
+
         end
-        
+
     end
-    
+
     methods (Static)
 
         function state = setupState(state, modelspace)
@@ -1258,7 +1258,7 @@ classdef ComputationalGraphInteractiveTool < handle
             else
                 state.(modelspace{1}) = ComputationalGraphInteractiveTool.setupState(state, modelspace(2 : end));
             end
-            
+
         end
 
         function printFunctionDocs(functionDocs, parfill, oneline)
@@ -1274,7 +1274,7 @@ classdef ComputationalGraphInteractiveTool < handle
             for ifunc = 1 : numel(functionDocs)
 
                 functionDoc = functionDocs{ifunc};
-                
+
                 lines = parfill.getLines(functionDoc.docstring);
 
                 formatstr = sprintf('%%-%ds %%s\n', maxl);
@@ -1289,7 +1289,7 @@ classdef ComputationalGraphInteractiveTool < handle
             end
 
         end
-        
+
         function printHeader(headertxt, n)
         % Minor utility function used in this class to print a header with a number
             str = sprintf('\n%d %s', n, headertxt);
@@ -1311,7 +1311,7 @@ classdef ComputationalGraphInteractiveTool < handle
                 error('Selection types do not match');
             end
         end
-        
+
     end
 
 end
