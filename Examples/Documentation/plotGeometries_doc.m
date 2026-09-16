@@ -96,7 +96,7 @@ if doplot.jellyroll
 
     createFig = false;
     if createFig
-        cwdir = fullfile(battmoDir(), 'Examples', 'Documentation');
+        cwdir = fullfile(battmoDir(), 'Examples', 'Documentation'); %#ok<UNRCH>
 
         exportgraphics(fig1, fullfile(cwdir, 'jellyroll1.pdf'), 'Resolution', 300);
         exportgraphics(fig2, fullfile(cwdir, 'jellyroll2.pdf'), 'Resolution', 300);

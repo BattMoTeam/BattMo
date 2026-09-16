@@ -13,7 +13,7 @@ set(h, 'Position', [10 10 900 1000]);
 dovideo = false;
 
 if dovideo
-    filename = 'phi.avi';
+    filename = 'phi.avi'; %#ok<UNRCH>
     video = VideoWriter(filename);
     video.FrameRate = 3;
     open(video);

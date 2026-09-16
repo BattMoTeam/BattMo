@@ -117,7 +117,7 @@ ylabel 'potential  / V';
 %% Plot an animated summary of the results
 doplot = false;
 if doplot
-    plotDashboard(model, states, 'step', 1);
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
 end
 
 %{

@@ -46,7 +46,7 @@ jsonstruct.SOC = 1;
 doPrintStruct = false;
 
 if doPrintStruct
-    fsv = flattenStruct(jsonstruct);
+    fsv = flattenStruct(jsonstruct); %#ok<UNRCH>
     % fsv.print('filter', {'parame name', 'SEI'})
 end
 

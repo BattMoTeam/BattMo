@@ -120,7 +120,7 @@ objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simsetup, params, 'ob
 %% Optional debug: Compare gradients using adjoints and finite difference approximation
 debug = false;
 if debug
-    pTmp = getScaledParameterVector(simsetup, params);
+    pTmp = getScaledParameterVector(simsetup, params); %#ok<UNRCH>
 
     [vad, gad] = evalObjectiveBattmo(pTmp, objective, simsetup, params, ...
                                      'gradientMethod', 'AdjointAD');

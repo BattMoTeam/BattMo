@@ -74,7 +74,7 @@ model = Battery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgit = model.computationalGraph;
+    cgit = model.computationalGraph; %#ok<UNRCH>
     return
 end
 

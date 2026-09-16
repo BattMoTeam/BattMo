@@ -68,7 +68,7 @@ model = GenericBattery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgit = model.computationalGraph;
+    cgit = model.computationalGraph; %#ok<UNRCH>
     return
 end
 
@@ -157,7 +157,7 @@ ylabel 'Current  / A';
 
 writeh5 = false;
 if writeh5
-    writeOutput(model, states, 'output.h5');
+    writeOutput(model, states, 'output.h5'); %#ok<UNRCH>
 end
 
 

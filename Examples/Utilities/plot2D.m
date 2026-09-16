@@ -26,7 +26,7 @@ if strcmp(modelcase, '1D')
     
     doFixedTempScale = false;
     if doFixedTempScale
-        tM = max(states{1}.(thermal).T);
+        tM = max(states{1}.(thermal).T); %#ok<UNRCH>
         tm = min(states{1}.(thermal).T);
         for i = 1 : numel(states)
             tM = max(tM, max(states{i}.(thermal).T));
@@ -117,7 +117,7 @@ close all
 dovideo = false;
 
 if dovideo
-    filename = 'temperature.avi';
+    filename = 'temperature.avi'; %#ok<UNRCH>
     video = VideoWriter(filename);
     video.FrameRate = 3;
     open(video);

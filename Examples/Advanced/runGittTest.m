@@ -173,7 +173,7 @@ model.verbose = true;
 %% Run simulation
 doprofiling = false;
 if doprofiling
-    profile off
+    profile off %#ok<UNRCH>
     profile on
 end
 
@@ -204,7 +204,7 @@ axis([0 max(time/hour) 3.75 4.15])
 %% Plot an animated summary of the results
 doplot = false;
 if doplot
-    plotDashboard(model, states, 'step', 1);
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
 end
 
 %{

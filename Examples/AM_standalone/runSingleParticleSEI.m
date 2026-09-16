@@ -56,7 +56,7 @@ end
 dograph = false;
 
 if dograph
-    cgit = ComputationalGraphInteractiveTool(model);
+    cgit = ComputationalGraphInteractiveTool(model); %#ok<UNRCH>
     % cgit.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
     cgit.includeNodeNames = 'Control.I$';
     % cgit.includeNodeNames = 'SideReaction.R';
@@ -183,7 +183,7 @@ nls.errorOnFailure = false;
 
 dopack = false;
 if dopack
-    dataFolder = 'BattMo';
+    dataFolder = 'BattMo'; %#ok<UNRCH>
     problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonLinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true;
     simulatePackedProblem(problem);

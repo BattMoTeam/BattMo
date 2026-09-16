@@ -13,7 +13,7 @@ set(h, 'Position', [107 28 1357 902]);
 dovideo = false;
 
 if dovideo
-    filename = 'concentration.avi';
+    filename = 'concentration.avi'; %#ok<UNRCH>
     video = VideoWriter(filename);
     video.FrameRate = 3;
     open(video);

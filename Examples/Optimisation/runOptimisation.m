@@ -51,7 +51,7 @@ dorunstartup = false;
 
 if dorunstartup
 
-    [wellSols, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+    [wellSols, states, report] = simulateScheduleAD(state0, model, schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls); %#ok<UNRCH>
 
     ind = cellfun(@(x) not(isempty(x)), states);
     states = states(ind);
@@ -116,7 +116,7 @@ doCompareGradient = false;
 
 if doCompareGradient
 
-    p = getScaledParameterVector(simulatorSetup, parameters);
+    p = getScaledParameterVector(simulatorSetup, parameters); %#ok<UNRCH>
     [vad, gad]   = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'gradientMethod', 'AdjointAD', options{:});
     perturbationSize = 1e-10;
     [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, ...
