@@ -326,7 +326,10 @@ end
 
 
 %% Plot the the output voltage and current
-% plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1);
+end
 
 %{
 Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology

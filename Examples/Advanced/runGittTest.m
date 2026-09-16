@@ -208,7 +208,10 @@ axis tight
 axis([0 max(time/hour) 3.75 4.15])
 
 %% Plot an animated summary of the results
-% plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1);
+end
 
 %{
 Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology

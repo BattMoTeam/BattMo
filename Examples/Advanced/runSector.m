@@ -197,7 +197,10 @@ figure
 plot(time, E);
 
 %% Plot an animated summary of the results
-%plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1);
+end
 
 
 
