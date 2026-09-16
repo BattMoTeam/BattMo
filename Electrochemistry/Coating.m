@@ -684,8 +684,6 @@ classdef Coating < ElectronicComponent
             am_frac  = model.volumeFractions(model.compInds.(am));
             vols     = model.G.getVolumes();
             cmax     = model.(am).(itf).saturationConcentration;
-            theta100 = model.(am).(itf).guestStoichiometry100;
-            theta0   = model.(am).(itf).guestStoichiometry0;
 
             c = state.(am).(sd).cAverage;
 
@@ -719,8 +717,6 @@ classdef Coating < ElectronicComponent
 
                 am_frac  = model.volumeFractions(model.compInds.(amc));
                 cmax     = model.(amc).(itf).saturationConcentration;
-                theta100 = model.(amc).(itf).guestStoichiometry100;
-                theta0   = model.(amc).(itf).guestStoichiometry0;
 
                 c = state.(amc).(sd).cAverage;
 
@@ -728,7 +724,6 @@ classdef Coating < ElectronicComponent
 
                 %% We do not use the gueststochiometry value to compute the State of Charge
 
-                molvals(iam)    = sum(c.*vol);
                 % molval0s(iam)   = theta0*cmax*sum(vol);
                 % molval100s(iam) = theta100*cmax*sum(vol);
 
