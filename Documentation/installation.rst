@@ -7,7 +7,7 @@ Release installation
 
 .. _installation:
 
-The latest release version of BattMo is available as a **zip file**. We expect it to work on MATLAB versions newer than R2022a.
+The latest release version of BattMo is available as a **zip file**. We expect it to work on MATLAB version R2022a or newer.
 
 The latest release version of BattMo is available `here <https://github.com/BattMoTeam/BattMo/releases/latest>`__ as a **zip file**.
 
@@ -19,7 +19,7 @@ The latest release version of BattMo is available `here <https://github.com/Batt
 
       startupBattMo
 
-BattMo is now **installed**. You can check that that your installation is setup correctly by running one of the example scripts, directly from Matlab command line.
+BattMo is now **installed**. You can check that your installation is setup correctly by running one of the example scripts, directly from Matlab command line.
 
 .. code-block:: matlab
 

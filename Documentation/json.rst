@@ -40,7 +40,7 @@ This is the main schema for the input json file. It uses other separate schemas 
 The schemas are available in the directory
 :battmofile:`JsonSchemas<Utilities/JsonSchemas>`. :ref:`Here<jsonexample:Simulation>` is an example of the main input
 file where the inputs are given in separate files using the :code:`isFile` key.
-              
+
 
 Material Parameters
 ===================
@@ -56,25 +56,25 @@ It contains references to schemas that are written in separate files
 
 * Electrolyte
 * Electrode
-  
+
   * Coating
-    
+
     * Interface
     * Solid Diffusion
-      
+
   * Current Collector
-    
+
 * Separator
 * Thermal Model
 
-See json :ref:`input example<jsonexample:Battery>`.  
-              
+See json :ref:`input example<jsonexample:Battery>`.
+
 Electrolyte
 -----------
 
 The ionic conductivity and the diffusion coefficient can be given as a function or a constant. When a function is given,
 the json file should contain the function name that is used. The *signature* of the function is given in the schema in
-form of a *argument list*. For example, below, we can read that that the :code:`ionicConductivity` is a function of
+form of a *argument list*. For example, below, we can read that the :code:`ionicConductivity` is a function of
 concentration and temperature, see examples :battmofile:`here<ParameterData/MaterialProperties/OrganicLiPF6Solutions>`.
 
 .. _note-on-future-function-support:
@@ -100,7 +100,7 @@ The electrode input data contains essentially the input data for the coating and
    :language: json
 
 See json :ref:`input example<jsonexample:Negative Electrode>`.
-              
+
 Coating
 -------
 
@@ -127,7 +127,7 @@ property :code:`diffusionModelType` is used to choose between the different diff
    diffusion model itself, in this case the active material model. When we initialise a sub-model, we need to know its
    type. By having the *model switch* in the model above, we can directly choose and start the corresponding
    initializaton. This design choice is in fact used consistently in BattMo.
-   
+
 .. literalinclude::  ../Utilities/JsonSchemas/ActiveMaterial.schema.json
    :language: json
 
@@ -143,9 +143,9 @@ functions.
 
 .. literalinclude:: ../Utilities/JsonSchemas/Interface.schema.json
    :language: json
-   
+
 See json :ref:`input example<jsonexample:Interface>`
-              
+
 Solid Diffusion
 ---------------
 
@@ -157,7 +157,7 @@ full diffusion model, we can provide a diffusion coefficient that depends on the
    :language: json
 
 See json :ref:`input example<jsonexample:Solid Diffusion>`
-              
+
 Full Solid Diffusion
 --------------------
 
@@ -174,9 +174,9 @@ the guest stoichiometries and the saturation concentration.
 
 .. literalinclude:: ../Utilities/JsonSchemas/FullSolidDiffusionModel.schema.json
    :language: json
-              
+
 See json :ref:`input example<jsonexample:Solid Diffusion>`
-              
+
 Binder
 ------
 
@@ -196,7 +196,7 @@ The conductivity of the binder and conductiving additive are used to compute the
    :language: json
 
 See json :ref:`input example<jsonexample:Conducting Additive>`
-              
+
 Current Collector
 -----------------
 
@@ -230,7 +230,7 @@ from which the effective wet properties are computed.
 
 See json :ref:`input example<jsonexample:Thermal Model>`
 
-.. _geometryschema:                 
+.. _geometryschema:
 
 Geometry Setup
 ==============
@@ -247,7 +247,7 @@ For each design, the parameters are described in the schema.
 
 See json :ref:`input example<jsonexample:Geometry>`
 
-                 
+
 Control Parameters
 ==================
 
@@ -258,7 +258,7 @@ various control models can be read from the schema.
    :language: json
 
 See json :ref:`input example<jsonexample:Control>`
-              
+
 
 Time Stepping Parameters
 ========================
@@ -269,7 +269,7 @@ The description of the time stepping parameters can be read from the schema. Def
    :language: json
 
 See json :ref:`input example<jsonexample:Time Stepping>`
-              
+
 Solver Parameters
 =================
 
@@ -288,4 +288,3 @@ compute those afterwards (see function :battmo:`computeEnergyDensity` for exampl
 
 .. literalinclude:: ../Utilities/JsonSchemas/Output.schema.json
    :language: json
-                                                                    
