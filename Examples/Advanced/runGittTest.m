@@ -170,12 +170,6 @@ model.nonlinearTolerance = 1e-4;
 % Get more or less verbose output
 model.verbose = true;
 
-use_amg = false;
-if use_amg
-    mrstModule add agmg
-    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 0);
-end
-
 %% Run simulation
 doprofiling = false;
 if doprofiling
