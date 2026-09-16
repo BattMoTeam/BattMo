@@ -1,6 +1,13 @@
 function OCP = computeOCP_Graphite_Torchio(theta)
-%   Calculate the equilibrium open cirucuit potential of
+%   Calculate the equilibrium open-circuit potential of
 %   graphite according to the model used by Torchio et al [1].
+%
+%   References
+%   ----------
+%   .. [1] Torchio, M., Magni, L., Gopaluni, R. B., Braatz, R. D., and Raimondo, D. M. (2016).
+%      LIONSIMBA: A Matlab Framework Based on a Finite Volume Model Suitable for Li-Ion
+%      Battery Design, Simulation, and Control. Journal of The Electrochemical Society,
+%      163(7), A1192. DOI: 10.1149/2.0291607jes.
 
     % Calculate the open-circuit potential at the reference temperature for the given lithiation
     OCP = (0.7222 ...
