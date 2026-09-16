@@ -46,28 +46,14 @@ extrastructs = [];
 extrastructs.initstate = initstate;
 
 impsolv = ImpedanceSolver(inputparams, options, extrastructs);
-
-
-
-
-
-
-
-set(0, 'defaultlinelinewidth', 3);
-
-
-
-figure
-
-
 omegas = logspace(-4, 2, 30);
 Z = impsolv.computeImpedance(omegas);
+
+set(0, 'defaultlinelinewidth', 3);
+figure
 hold on
-
 plot(real(Z), -imag(Z), 'displayname', 'battmo');
-
 axis equal;
-
 
 docompare = true;
 if docompare
