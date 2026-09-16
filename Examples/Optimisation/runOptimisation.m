@@ -24,14 +24,14 @@ model   = output.model;
 gridgen = output.gridGenerator;
 
 css = CellSpecificationSummary(model);
-css = css.updatePackingMass(60*gram);
+css = css.setupPacking('packing_mass', 60*gram);
 
 %% Setup default schedule
 
 model.(ctrl).useCVswitch = true;
 schedule = output.schedule;
-tup = 0.1;
-schedule.control.src = @(time, I, E) rampupSwitchControl(time, tup, I, E, model.(ctrl).Imax, model.(ctrl).lowerCutoffVoltage);
+model.(ctrl).rampupTime = 0.1;
+schedule.control = model.(ctrl).setupScheduleControl();
 
 
 %% Setup the initial state of the model
@@ -59,17 +59,21 @@ if dorunstartup
     I = cellfun(@(x) x.(ctrl).I, states);
     time = cellfun(@(x) x.time, states);
 
-    % figure
-    % plot(time, E)
+    figure
+    plot(time, E)
 
-    % figure
-    % plot(time, I)
+    figure
+    plot(time, I)
 
 end
 
 %%
 
-simulatorSetup = struct('model', model, 'schedule', schedule, 'state0', state0);
+simulatorSetup = SimulationSetup(struct('model', model, ...
+    'schedule', schedule, ...
+    'initstate', state0, ...
+    'NonLinearSolver', nls, ...
+    'OutputMinisteps', false));
 
 NPratio = 1.1;
 paramsetter = NPlengthPorositySetter1D(model, gridgen, NPratio);
@@ -82,7 +86,10 @@ boxLims = [[50, 110]*1e-6; ...
            [0.15, 0.4]  ; ...
            [0.15, 0.4]];
 
-css = css.updateModel(simulatorSetup.model);
+% Rebuild the summary because its model is immutable, then restore the packing mass.
+packingMass = css.packing_mass;
+css = CellSpecificationSummary(simulatorSetup.model);
+css = css.setupPacking('packing_mass', packingMass);
 css.printSpecifications();
 
 parameters{1} = ModelParameter(simulatorSetup            , ...
@@ -93,34 +100,27 @@ parameters{1} = ModelParameter(simulatorSetup            , ...
                                'getfun'   , getValues    , ...
                                'setfun'   , setValues);
 
-params.E0    = 3.65;
-params.alpha = 100;
+objmatch = @(simsetup, states, varargin) EnergyOutput(simsetup, states, varargin{:});
 
-mass = computeCellMass(model);
-params.extraMass = css.packingMass;
-
-objmatch = @(model, states, schedule, varargin) SpecificEnergyOutput(model, states, schedule, params, varargin{:});
-objmatch = @(model, states, schedule, varargin) EnergyOutput(model, states, schedule, varargin{:});
-
-options = {'NonLinearSolver', nls, 'OutputMinisteps', false};
+options = {};
 
 % setup objective function scaling. We use initial value
 p = getScaledParameterVector(simulatorSetup, parameters);
-v0 = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'None', options{:});
+v0 = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'gradientMethod', 'None', options{:});
 
 options = horzcat(options, {'objScaling', v0});
 
 
 %%
-doCompareGradient = true;
+doCompareGradient = false;
 
 if doCompareGradient
 
     p = getScaledParameterVector(simulatorSetup, parameters);
-    [vad, gad]   = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    [vad, gad]   = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'gradientMethod', 'AdjointAD', options{:});
     perturbationSize = 1e-10;
     [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, ...
-                                       'GradientMethod', 'PerturbationADNUM'  , ...
+                                       'gradientMethod', 'PerturbationADNUM'  , ...
                                        'PerturbationSize', perturbationSize   , ...
                                        options{:});
 
@@ -137,7 +137,7 @@ doOptimization = true;
 if doOptimization
 
     pBase = getScaledParameterVector(simulatorSetup, parameters);
-    obj = @(p) evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'GradientMethod', 'AdjointAD', options{:});
+    obj = @(p) evalObjectiveBattmo(p, objmatch, simulatorSetup, parameters, 'gradientMethod', 'AdjointAD', options{:});
     [v, pOpt, history] = unitBoxBFGS(pBase, obj, 'gradTol', 1e-4, 'objChangeTol', 1e-6);
 
     optimSetup = updateSetupFromScaledParameters(simulatorSetup, parameters, pOpt);
@@ -146,13 +146,13 @@ if doOptimization
 
     if doplot
 
-        [~, states] = simulateScheduleAD(simulatorSetup.state0, simulatorSetup.model, simulatorSetup.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+        [~, states] = simulateScheduleAD(simulatorSetup.initstate, simulatorSetup.model, simulatorSetup.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         ind = cellfun(@(x) not(isempty(x)), states);
         states = states(ind);
         E = cellfun(@(x) x.(ctrl).E, states);
         time = cellfun(@(x) x.time, states);
 
-        [~, states] = simulateScheduleAD(optimSetup.state0, optimSetup.model, optimSetup.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
+        [~, states] = simulateScheduleAD(optimSetup.initstate, optimSetup.model, optimSetup.schedule, 'OutputMinisteps', true, 'NonLinearSolver', nls);
         ind = cellfun(@(x) not(isempty(x)), states);
         states = states(ind);
         EOpt = cellfun(@(x) x.(ctrl).E, states);
@@ -185,8 +185,8 @@ if doOptimization
 
     % Print statistics
     css.printSpecifications();
-    cssOpt = CellSpecificationSummary(optimSetup.model, 'packingMass', css.packingMass);
-    cssOpt = cssOpt.updateModel(optimSetup.model);
+    cssOpt = CellSpecificationSummary(optimSetup.model);
+    cssOpt = cssOpt.setupPacking('packing_mass', css.packing_mass);
     cssOpt.printSpecifications();
 
 end
