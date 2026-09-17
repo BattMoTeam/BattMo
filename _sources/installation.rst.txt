@@ -61,7 +61,7 @@ case, you will need to run in addition to the previous command,
    git submodule update --recursive
 
 
- Contributing
- ============
+Contributing
+============
 
- To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.
+To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.
