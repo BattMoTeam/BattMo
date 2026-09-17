@@ -46,7 +46,7 @@ For a detailed guided installation of git, you can consult this `video <https://
 Update existing installation
 ============================
 
-In the case where we alread have installed BattMo and you want to update to the latest version. As usual in git, you
+In the case where we already have installed BattMo and you want to update to the latest version. As usual in git, you
 will do that by running
 
 .. code-block:: shell

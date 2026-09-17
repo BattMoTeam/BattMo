@@ -22,7 +22,7 @@ meaning of the arguments.
 
 .. note:: After parsing a function can be setup directly using :code:`setupFunction`, see :ref:`Example of the function interface <nblinks/functionInterfaceExample:Example of the function interface>`
 
-Let us go through each different format separatly. For each format, we start by giving an example.
+Let us go through each different format separately. For each format, we start by giving an example.
 
 Function name
 =============

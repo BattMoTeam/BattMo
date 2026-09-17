@@ -628,7 +628,7 @@ effect of using a finer time discretization and stricter tolerances.</p>
 </pre></div>
 </div>
 <p>The json struct completely specifies the simulation. We simulate the
-model and save the output in a conventient data structure. This will
+model and save the output in a convenient data structure. This will
 form the initial data for the parameter identification later on.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">json0</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">json</span><span class="p">;</span>
 <span class="n">output0</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">json0</span><span class="p">,</span><span class="w"> </span><span class="s">'validateJson'</span><span class="p">,</span><span class="w"> </span><span class="n">validateJson</span><span class="p">);</span>
@@ -1103,7 +1103,7 @@ set by the <cite>boxLims</cite>.</p>
 <span class="w">                          </span><span class="s">'setfun'</span><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="n">setfun</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Now we construct the function handle to the <cite>EnergyOutput</cite> function as objective functional. We also include a so-called hook – a function that is called after each optimization step which here plots the current, voltage, power and energy. The objective function also evaluates the gradient, as will perform a gradient-based optimization to reduce the number of costly model evalutations. The gradients are obtained by solving an adjoint problem.</p>
+<p>Now we construct the function handle to the <cite>EnergyOutput</cite> function as objective functional. We also include a so-called hook – a function that is called after each optimization step which here plots the current, voltage, power and energy. The objective function also evaluates the gradient, as will perform a gradient-based optimization to reduce the number of costly model evaluations. The gradients are obtained by solving an adjoint problem.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">objmatch</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="nb">varargin</span><span class="p">)</span><span class="w"> </span><span class="n">EnergyOutput</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="nb">varargin</span><span class="p">{:});</span>
 <span class="k">if</span><span class="w"> </span><span class="n">doPlot</span>
 <span class="w">    </span><span class="n">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@</span><span class="n">plotAfterStepIV</span><span class="p">;</span>

@@ -188,7 +188,7 @@ We run the simulation for each current value and collect the results in the :cod
   
   end
 
-We plot the profile of the electromotive potential for the mininum and maximum current values.
+We plot the profile of the electromotive potential for the minimum and maximum current values.
 
 .. code-block:: matlab
 
