@@ -1,4 +1,5 @@
 {
+  "description": "Parameter-set reference: Safari, M., Morcrette, M., Teyssot, A., and Delacourt, C. (2009). Multimodal Physics-Based Aging Model for Life Prediction of Li-Ion Batteries. Journal of The Electrochemical Society, 156(3), A145-A153. DOI: 10.1149/1.3043429.",
   "anodeArea": 4.38,
   "cathodeArea": 4.76,
   "Anode" : {"isFile" : true,

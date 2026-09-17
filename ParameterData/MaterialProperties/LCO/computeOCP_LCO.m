@@ -1,6 +1,12 @@
 function OCP = computeOCP_LCO(theta)
     
-    % From Ramadass et al 2004. 10.1149/1.1634273
+% LCO open-circuit potential from Ramadass et al. [1].
+%
+% References
+% ----------
+% .. [1] Ramadass, P., Haran, B., Gomadam, P. M., White, R., and Popov, B. N. (2004). Development
+%    of First Principles Capacity Fade Model for Li-Ion Cells. Journal of The Electrochemical
+%    Society, 151(2), A196-A203. DOI: 10.1149/1.1634273.
     
     coeff1 = [ -4.656   , ...
                0        , ...
