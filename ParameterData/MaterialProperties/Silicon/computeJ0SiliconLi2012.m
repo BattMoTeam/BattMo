@@ -1,8 +1,15 @@
-function j0 = computeJ0_Silicon_Li2012(soc)
+function j0 = computeJ0SiliconLi2012(soc)
+% Constant silicon exchange-current density associated with the Li et al. data set [1].
+%
+% References
+% ----------
+% .. [1] Li, J., Xiao, X., Yang, F., Verbrugge, M. W., and Cheng, Y.-T. (2012). Potentiostatic
+%    Intermittent Titration Technique for Electrodes Governed by Diffusion and Interfacial
+%    Reaction. The Journal of Physical Chemistry C, 116(1), 1472-1478. DOI: 10.1021/jp207919q.
 %% unit of j0 is in [A/m^2]
-    
+
     j0 = 10;
-    
+
 end
 
 %{

@@ -1,5 +1,10 @@
 function D = computeDiffusionCoefficient_Nyman2008(c, T)
-    
+% References
+% ----------
+% .. [1] Nyman, A., Behm, M., and Lindbergh, G. (2008). Electrochemical characterisation and
+%    modelling of the mass transport phenomena in LiPF6-EC-EMC electrolyte. Electrochimica
+%    Acta, 53(22), 6356-6365. DOI: 10.1016/j.electacta.2008.04.023.
+
     D = 8.794e-11*(c/1000).^2 - 3.972e-10*(c/1000) + 4.862e-10;
 
 end

@@ -1,4 +1,5 @@
 {
+  "description": "The ionicConductivity and diffusionCoefficient functions cite: Ai, W., Kraft, L., Sturm, J., Jossen, A., and Wu, B. (2020). Electrochemical Thermal-Mechanical Modelling of Stress Inhomogeneity in Lithium-Ion Pouch Cells. Journal of The Electrochemical Society, 167(1), 013512. DOI: 10.1149/2.0122001JES. A source for every other scalar parameter in this file has not been established.",
   "specificHeatCapacity": 2055.0,
   "thermalConductivity": 0.6,
   "density": 1200,

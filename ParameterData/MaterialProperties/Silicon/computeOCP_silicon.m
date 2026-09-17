@@ -8,8 +8,12 @@ function [OCP, dUdT] = computeOCP_silicon(c, T, cmax)
 %    Effects of stress dependent electrochemical reaction on voltage hysteresis of
 %    lithium ion batteries. Applied Mathematics and Mechanics, 39(10), 1453-1464.
 %    DOI: 10.1007/s10483-018-2373-8.
+% .. [2] Torchio, M., Magni, L., Gopaluni, R. B., Braatz, R. D., and Raimondo, D. M. (2016).
+%    LIONSIMBA: A Matlab Framework Based on a Finite Volume Model Suitable for Li-Ion Battery
+%    Design, Simulation, and Control. Journal of The Electrochemical Society, 163(7),
+%    A1192-A1205. DOI: 10.1149/2.0291607jes.
 
-% The optional thermal correction uses graphite coefficients as a proxy for silicon.
+% The optional thermal correction uses graphite coefficients from [2] as a proxy for silicon.
 
 % It is a swelling Material --> theta cannot just be expressed by c/cmax,
 % necessary to come back to the real definition in term of matter

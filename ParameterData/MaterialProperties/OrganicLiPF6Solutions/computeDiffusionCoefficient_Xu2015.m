@@ -1,16 +1,23 @@
 function D = computeDiffusionCoefficient_Xu2015(c, T)
-    
+% Electrolyte transport function for the Xu et al. parameter set [1].
+%
+% References
+% ----------
+% .. [1] Xu, M., Zhang, Z., Wang, X., Jia, L., and Yang, L. (2015). A pseudo three-dimensional
+%    electrochemical-thermal model of a prismatic LiFePO4 battery during discharge process.
+%    Energy, 80, 303-317. DOI: 10.1016/j.energy.2014.11.073.
+
     % Calculate diffusion coefficients constant for the diffusion coefficient calculation
-    cnst = [ -4.43, -54; 
+    cnst = [ -4.43, -54;
              -0.22, 0.0 ];
 
     Tgi = [ 229; 5.0 ];
-    
+
     % Diffusion coefficient, [m^2 s^-1]
     %Removed 10⁻⁴ otherwise the same
     D = 10 .^ ( ( cnst(1,1) + cnst(1,2) ./ ( T - Tgi(1) - Tgi(2) .* c .* 1e-3) + cnst(2,1) .* ...
                           c .* 1e-3) );
-    
+
 end
 
 %{

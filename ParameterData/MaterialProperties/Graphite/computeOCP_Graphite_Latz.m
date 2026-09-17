@@ -9,8 +9,11 @@ function OCP = computeOCP_Graphite_Latz(theta)
 %   Output:
 %       OCP   - open-circuit potential at 298.15 K [V vs Li/Li+]
 %
-%   Reference:
-%       Hein, Danner, and Latz, ACS Appl. Energy Mater. 2020, 3, 8519−8531
+% References
+% ----------
+% .. [1] Hein, S., Danner, T., and Latz, A. (2020). An Electrochemical Model of Lithium Plating and
+%    Stripping in Lithium Ion Batteries. ACS Applied Energy Materials, 3(9), 8519-8531. DOI:
+%    10.1021/acsaem.0c01155.
 
     % Modified hyperbolic tangent function used in the original paper
     tanhmod = @(x) (exp(20 .* x) - exp(-x)) ./ (exp(-x) + exp(x));

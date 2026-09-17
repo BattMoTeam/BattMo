@@ -1,4 +1,16 @@
 function D = computeElectrolyteConductivity_Chen2020(c, T)
+% Electrolyte transport fit used with the Chen et al. parameter set [1]; the underlying
+% electrolyte measurements are from Nyman et al. [2].
+%
+% References
+% ----------
+% .. [1] Chen, C.-H., Brosa Planella, F., O’Regan, K., Gastol, D., Widanage, W. D., and Kendrick,
+%    E. (2020). Development of Experimental Techniques for Parameterization of Multi-scale
+%    Lithium-ion Battery Models. Journal of The Electrochemical Society, 167, 080534. DOI:
+%    10.1149/1945-7111/ab9050.
+% .. [2] Nyman, A., Behm, M., and Lindbergh, G. (2008). Electrochemical characterisation and
+%    modelling of the mass transport phenomena in LiPF6-EC-EMC electrolyte. Electrochimica
+%    Acta, 53(22), 6356-6365. DOI: 10.1016/j.electacta.2008.04.023.
     
     c = c./1000;
     D = 0.1297 .*c.^3 - 2.51 .*c.^(1.5) + 3.329 .*c;
