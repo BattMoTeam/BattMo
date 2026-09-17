@@ -575,7 +575,7 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <section id="release-installation">
 <h2>Release installation<a class="headerlink" href="#release-installation" title="Link to this heading"></a></h2>
-<p id="id1">The latest release version of BattMo is available as a <strong>zip file</strong>.</p>
+<p id="id1">The latest release version of BattMo is available as a <strong>zip file</strong>. We expect it to work on MATLAB version R2022a or newer.</p>
 <p>The latest release version of BattMo is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/releases/latest">here</a> as a <strong>zip file</strong>.</p>
 <ol class="arabic">
 <li><p>Create a directory where you want BattMo to be installed. Then, <strong>download</strong> <code class="code docutils literal notranslate"><span class="pre">battmo.zip</span></code> in this directory and <strong>unzip</strong> the file</p></li>
@@ -592,13 +592,9 @@
 </section>
 <section id="installation-from-git">
 <h2>Installation from git<a class="headerlink" href="#installation-from-git" title="Link to this heading"></a></h2>
-<p>The source code of BattMo can be installed using git. In this way, you can easily keep track of the
-last developments.</p>
-<p>First, open a terminal and navigate to the directory where you would like to install BattMo. Then, clone the repository using the following command, which will include all the dependencies as submodules</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>https://github.com/BattMoTeam/BattMo.git
-</pre></div>
-</div>
-<p>Then, run <code class="code docutils literal notranslate"><span class="pre">startupBattMo</span></code></p>
+<p>To install the development version of BattMo from git, follow the
+<a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/readme.rst#installation">installation instructions in the repository README</a>.
+These cover Git LFS setup, cloning with submodules, and starting BattMo in MATLAB.</p>
 <p>Here is video which guides you through the installation in details</p>
 <div class="video_wrapper" style="">
 <iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/-XVppzyNSs0" style="border: 0; height: 345px; width: 560px">
@@ -613,7 +609,13 @@ will do that by running</p>
 </div>
 <p>In addition to that, the dependencies that are given through git submodules. The are not updated often but, if it is the
 case, you will need to run in addition to the previous command,</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--recursive
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="w">  </span>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--recursive
+
+
+<span class="nv">Contributing</span>
+<span class="o">============</span>
+
+To<span class="w"> </span>contribute,<span class="w"> </span>please<span class="w"> </span>see<span class="w"> </span><span class="sb">`</span>contributing.rst<span class="w"> </span>&lt;https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#&gt;<span class="sb">`</span>_.
 </pre></div>
 </div>
 </section>
