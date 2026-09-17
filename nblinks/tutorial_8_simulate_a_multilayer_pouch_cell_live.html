@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -592,7 +590,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/jsondatafiles/sample_input.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -602,7 +600,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Examples/JsonDataFiles/geometryMultiLayerPouch.json&#39;</span><span class="p">;</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'Examples/JsonDataFiles/geometryMultiLayerPouch.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -699,7 +697,7 @@ fsv =
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsondatafiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'cc_discharge_control.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -709,7 +707,7 @@ fsv =
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsondatafiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsondatafiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'simulation_parameters.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_simparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -722,7 +720,7 @@ fsv =
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">    </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">    </span><span class="n">jsonstruct_control</span><span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">    </span><span class="n">jsonstruct_simparams</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;warn&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">jsonstruct_simparams</span><span class="p">},</span><span class="w"> </span><span class="s">'warn'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -797,7 +795,7 @@ ans = struct with fields:
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 
 <span class="nb">time</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">&#39;Control&#39;</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">'Control'</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -807,10 +805,10 @@ ans = struct with fields:
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span><span class="p">();</span>
-<span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time  /  h&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Voltage  /  V&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">'-'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time  /  h'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Cell Voltage  /  V'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -841,7 +839,7 @@ ans = struct with fields:
 <span class="c">% plot the surface concentration of lithium in the positive electrode active material</span>
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">SolidDiffusion</span><span class="p">.</span><span class="n">cSurface</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">))</span>
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Active Material Surface Lithium Concentration  /  mol \cdot L^{-1}&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Active Material Surface Lithium Concentration  /  mol \cdot L^{-1}'</span><span class="p">);</span>
 <span class="c">% add a colorbar</span>
 <span class="nb">colorbar</span><span class="p">()</span>
 <span class="nb">view</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span><span class="mi">45</span><span class="p">)</span>

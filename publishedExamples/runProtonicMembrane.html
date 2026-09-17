@@ -455,7 +455,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -473,7 +472,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -651,10 +649,10 @@ a relation between the <span class="math notranslate nohighlight">\(H^+\)</span>
 <section id="load-and-parse-input-from-given-json-files">
 <h2>Load and parse input from given json files<a class="headerlink" href="#load-and-parse-input-from-given-json-files" title="Link to this heading"></a></h2>
 <p>The source of the json files can be seen in <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/protonicMembrane.json">protonicMembrane.json</a> and <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ProtonicMembrane/jsonfiles/1d-PM-geometry.json">1d-PM-geometry.json</a></p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;protonicMembrane.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">'ProtonicMembrane'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'protonicMembrane.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;1d-PM-geometry.json&#39;</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">'ProtonicMembrane'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'1d-PM-geometry.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct_geometry</span><span class="p">});</span>
@@ -708,13 +706,13 @@ We compute the steady-state solution and the time stepping here does not corresp
 <section id="plotting">
 <h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading"></a></h2>
 <p>We setup som shortcuts for convenience and introduce plotting options</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">an</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Anode&#39;</span><span class="p">;</span>
-<span class="n">ct</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Cathode&#39;</span><span class="p">;</span>
-<span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
-<span class="n">ctrl</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Control&#39;</span><span class="p">;</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">an</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'Anode'</span><span class="p">;</span>
+<span class="n">ct</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'Cathode'</span><span class="p">;</span>
+<span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'Electrolyte'</span><span class="p">;</span>
+<span class="n">ctrl</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'Control'</span><span class="p">;</span>
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>We recover the position of the mesh cell of the discretization grid. This is used when plotting the spatial distribution of some of the variables.</p>
@@ -729,9 +727,9 @@ We compute the steady-state solution and the time stepping here does not corresp
 <p>Plot of electromotive potential</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electromotive potential (\pi)&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\pi / V&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Electromotive potential (\pi)'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'\pi / V'</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
@@ -740,9 +738,9 @@ We compute the steady-state solution and the time stepping here does not corresp
 <p>Plot of electronic chemical potential</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electronic chemical potential (E)&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Electronic chemical potential (E)'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'E / V'</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
@@ -751,9 +749,9 @@ We compute the steady-state solution and the time stepping here does not corresp
 <p>Plot of electrostatic potential</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electrostatic potential (\phi)&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\phi / V&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Electrostatic potential (\phi)'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'\phi / V'</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
@@ -762,9 +760,9 @@ We compute the steady-state solution and the time stepping here does not corresp
 <p>Plot of the conductivity</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="nb">log</span><span class="p">(</span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">sigmaEl</span><span class="p">))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;logarithm of conductivity (\sigma)&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;log(\sigma/Siemens)&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'logarithm of conductivity (\sigma)'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / m'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'log(\sigma/Siemens)'</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
@@ -800,13 +798,13 @@ We sample the current value from 0 to 1 A/cm^2.</p>
 <span class="n">unit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ampere</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="c">% shortcut</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">endstates</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;I=%g A/cm^2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'I=%g A/cm^2'</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">endstates</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;I=%g A/cm^2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="k">end</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'I=%g A/cm^2'</span><span class="p">,</span><span class="w"> </span><span class="n">Is</span><span class="p">(</span><span class="k">end</span><span class="p">)</span><span class="o">/</span><span class="n">unit</span><span class="p">));</span>
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electromotive potential (\pi)&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;\pi / V&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Electromotive potential (\pi)'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'\pi / V'</span><span class="p">)</span>
 <span class="nb">legend</span>
 </pre></div>
 </div>
@@ -817,10 +815,10 @@ We sample the current value from 0 to 1 A/cm^2.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">pi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ct</span><span class="p">).</span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="n">endstates</span><span class="p">);</span>
 
 <span class="n">figure</span>
-<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">E,</span><span class="w"> </span><span class="s">&#39;*-&#39;)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Current density / A/cm^2&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Cell potential&#39;</span><span class="p">);</span>
+<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">E,</span><span class="w"> </span><span class="s">'*-')</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Current density / A/cm^2'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'E / V'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Cell potential'</span><span class="p">);</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">
@@ -830,10 +828,10 @@ We sample the current value from 0 to 1 A/cm^2.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">iHp</span><span class="o">/</span><span class="n">state</span><span class="p">.(</span><span class="n">an</span><span class="p">).</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">endstates</span><span class="p">);</span>
 
 <span class="n">figure</span>
-<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">feff,</span><span class="w"> </span><span class="s">&#39;*-&#39;)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Current density / A/cm^2&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Faradic efficiency / -&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Faradic efficiency&#39;</span><span class="p">);</span>
+<span class="s">plot(Is/unit,</span><span class="w"> </span><span class="s">feff,</span><span class="w"> </span><span class="s">'*-')</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Current density / A/cm^2'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Faradic efficiency / -'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Faradic efficiency'</span><span class="p">);</span>
 </pre></div>
 </div>
 <figure class="align-default" style="width: 100%">

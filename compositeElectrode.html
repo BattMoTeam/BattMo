@@ -451,7 +451,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -469,7 +468,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -574,45 +572,45 @@
 <span id="compositeelectrode"></span><h1>Composite electrode json input file<a class="headerlink" href="#composite-electrode-json-input-file" title="Link to this heading"></a></h1>
 <p>Here is json input for the composite electrode part, in <a class="reference internal" href="nblinks/runSiliconGraphiteBattery.html#runsilicongraphitebattery"><span class="std std-ref">Composite Material</span></a></p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Coating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;activeMaterialModelSetup&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;composite&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;ActiveMaterial1&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">632.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;heatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">632000.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;massFraction&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ParameterData/MaterialProperties/Graphite/graphite.json&quot;</span>
+<span class="w">  </span><span class="nt">"NegativeElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"Coating"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"activeMaterialModelSetup"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"composite"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"ActiveMaterial1"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mf">632.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"heatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mf">632000.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"massFraction"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Interface"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ParameterData/MaterialProperties/Graphite/graphite.json"</span>
 <span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;diffusionModelType&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;activationEnergyOfDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;referenceDiffusionCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.9e-14</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;particleRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-06</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;N&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">        </span><span class="nt">"diffusionModelType"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"SolidDiffusion"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"activationEnergyOfDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"referenceDiffusionCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">3.9e-14</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"particleRadius"</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-06</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"N"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">&quot;ActiveMaterial2&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">632.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;heatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">632000.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;massFraction&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2330</span><span class="p">,</span><span class="w">        </span>
-<span class="w">        </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ParameterData/MaterialProperties/Silicon/silicon.json&quot;</span>
+<span class="w">      </span><span class="nt">"ActiveMaterial2"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mf">632.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"heatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mf">632000.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"massFraction"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">2330</span><span class="p">,</span><span class="w">        </span>
+<span class="w">        </span><span class="nt">"Interface"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ParameterData/MaterialProperties/Silicon/silicon.json"</span>
 <span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nt">&quot;diffusionModelType&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;activationEnergyOfDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;referenceDiffusionCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-15</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;particleRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">6e-8</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;N&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">        </span><span class="nt">"diffusionModelType"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"SolidDiffusion"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"activationEnergyOfDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"referenceDiffusionCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-15</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"particleRadius"</span><span class="p">:</span><span class="w"> </span><span class="mf">6e-8</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"N"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>

@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -596,10 +594,10 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                    </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                    </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                    </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                    </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                    </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                    </span><span class="s">'lithium_ion_battery_nmc_graphite.json'</span><span class="p">);</span>
 
 
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
@@ -611,13 +609,13 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
-<span class="n">pe</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">;</span>
-<span class="n">lp</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;LithiumPlating&#39;</span><span class="p">;</span>
-<span class="n">co</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">;</span>
-<span class="n">am</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">;</span>
-<span class="n">itf</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Interface&#39;</span><span class="p">;</span>
-<span class="n">sd</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidDiffusion&#39;</span><span class="p">;</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'NegativeElectrode'</span><span class="p">;</span>
+<span class="n">pe</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'PositiveElectrode'</span><span class="p">;</span>
+<span class="n">lp</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'LithiumPlating'</span><span class="p">;</span>
+<span class="n">co</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">;</span>
+<span class="n">am</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'ActiveMaterial'</span><span class="p">;</span>
+<span class="n">itf</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">'Interface'</span><span class="p">;</span>
+<span class="n">sd</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'SolidDiffusion'</span><span class="p">;</span>
 </pre></div>
 </div>
 </div>
@@ -644,8 +642,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
 
 
 <span class="n">theta</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
@@ -653,9 +651,9 @@
 
 
 <span class="nb">plot</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span><span class="w"> </span><span class="n">OCP</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Stoichiometry / 1&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;OCP / Voltage&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP for Graphite-Silicon active material&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Stoichiometry / 1'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'OCP / Voltage'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP for Graphite-Silicon active material'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -671,9 +669,9 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">func</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;named function&#39;</span><span class="p">;</span>
-<span class="n">func</span><span class="p">.</span><span class="n">functionName</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;computeOCP_Graphite_Latz&#39;</span><span class="p">;</span>
-<span class="n">func</span><span class="p">.</span><span class="n">argumentList</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;stoichiometry&#39;</span><span class="p">};</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">func</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'named function'</span><span class="p">;</span>
+<span class="n">func</span><span class="p">.</span><span class="n">functionName</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'computeOCP_Graphite_Latz'</span><span class="p">;</span>
+<span class="n">func</span><span class="p">.</span><span class="n">argumentList</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">'stoichiometry'</span><span class="p">};</span>
 
 
 <span class="n">jsonstruct</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">openCircuitPotential</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">func</span><span class="p">;</span>
@@ -694,7 +692,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_lithium_plating</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Advanced&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Plating&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;lithium_plating.json&#39;</span><span class="p">));</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_lithium_plating</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'Advanced'</span><span class="p">,</span><span class="w"> </span><span class="s">'Plating'</span><span class="p">,</span><span class="w"> </span><span class="s">'lithium_plating.json'</span><span class="p">));</span>
 <span class="n">viewStruct</span><span class="p">(</span><span class="n">jsonstruct_lithium_plating</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -728,7 +726,7 @@
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).</span><span class="n">LithiumPlating</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsonstruct_lithium_plating</span><span class="p">.</span><span class="n">LithiumPlating</span><span class="p">;</span>
 
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometry1d.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 
@@ -741,7 +739,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">controlPolicy</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;CCCharge&#39;</span><span class="p">;</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">controlPolicy</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">'CCCharge'</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">CRate</span><span class="w">              </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">SOC</span><span class="w">                        </span><span class="p">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">upperCutoffVoltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">4.5</span><span class="p">;</span>
@@ -754,7 +752,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;runSimulation&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">'runSimulation'</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -784,9 +782,9 @@
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time [second]&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Potential [mol/L]&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Potential difference&#39;</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time [second]'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Potential [mol/L]'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Potential difference'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -804,7 +802,7 @@
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="nb">numel</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
 <span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">});</span>
-<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;platedThickness&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'platedThickness'</span><span class="p">});</span>
 <span class="k">end</span>
 </pre></div>
 </div>
@@ -814,12 +812,12 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">varnames</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">sd</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cSurface&#39;</span><span class="p">}</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;platedConcentration&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;etaPlating&#39;</span><span class="p">}</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;etaChemical&#39;</span><span class="p">}</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;surfaceCoverage&#39;</span><span class="p">}</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;platedThickness&#39;</span><span class="p">}};</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">varnames</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">sd</span><span class="p">,</span><span class="w"> </span><span class="s">'cSurface'</span><span class="p">}</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'platedConcentration'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'etaPlating'</span><span class="p">}</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'etaChemical'</span><span class="p">}</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'surfaceCoverage'</span><span class="p">}</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">            </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">lp</span><span class="p">,</span><span class="w"> </span><span class="s">'platedThickness'</span><span class="p">}};</span>
 </pre></div>
 </div>
 </div>
@@ -828,12 +826,12 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">descriptions</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="s">&#39;Surface Concentration&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;mol/m^3&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                </span><span class="p">{</span><span class="s">&#39;Plated Lithium Concentration&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;mol/m^3&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                </span><span class="p">{</span><span class="s">&#39;Plating Overpotential&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;V&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                </span><span class="p">{</span><span class="s">&#39;Chemical Overpotential&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;V&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                </span><span class="p">{</span><span class="s">&#39;Surface Coverage&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;1&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                </span><span class="p">{</span><span class="s">&#39;Plated Thickness&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;m&#39;</span><span class="p">}};</span><span class="w"> </span><span class="c">% all SI units</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">descriptions</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="s">'Surface Concentration'</span><span class="p">,</span><span class="w"> </span><span class="s">'mol/m^3'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                </span><span class="p">{</span><span class="s">'Plated Lithium Concentration'</span><span class="p">,</span><span class="w"> </span><span class="s">'mol/m^3'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                </span><span class="p">{</span><span class="s">'Plating Overpotential'</span><span class="p">,</span><span class="w"> </span><span class="s">'V'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                </span><span class="p">{</span><span class="s">'Chemical Overpotential'</span><span class="p">,</span><span class="w"> </span><span class="s">'V'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                </span><span class="p">{</span><span class="s">'Surface Coverage'</span><span class="p">,</span><span class="w"> </span><span class="s">'1'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                </span><span class="p">{</span><span class="s">'Plated Thickness'</span><span class="p">,</span><span class="w"> </span><span class="s">'m'</span><span class="p">}};</span><span class="w"> </span><span class="c">% all SI units</span>
 </pre></div>
 </div>
 </div>
@@ -848,7 +846,7 @@
 <span class="k">for</span><span class="w"> </span><span class="n">ivar</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">varnames</span><span class="p">)</span>
 
 
-<span class="w">    </span><span class="n">v</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">getProp</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">varnames</span><span class="p">{</span><span class="n">ivar</span><span class="p">}),</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;un&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">v</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">getProp</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">varnames</span><span class="p">{</span><span class="n">ivar</span><span class="p">}),</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">'un'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 <span class="w">    </span><span class="n">vals</span><span class="p">{</span><span class="n">ivar</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="n">v</span><span class="p">{:}];</span>
 <span class="k">end</span>
 </pre></div>
@@ -860,7 +858,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">;</span>
-<span class="n">legtxt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">arrayfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;x = %g&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;un&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="n">legtxt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">arrayfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'x = %g'</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s">'un'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -873,8 +871,8 @@
 <span class="w">    </span><span class="nb">figure</span>
 <span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">vals</span><span class="p">{</span><span class="n">ivar</span><span class="p">});</span>
 <span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="n">descriptions</span><span class="p">{</span><span class="n">ivar</span><span class="p">}{</span><span class="mi">1</span><span class="p">});</span>
-<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;%s / %s&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">descriptions</span><span class="p">{</span><span class="n">ivar</span><span class="p">}{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="n">descriptions</span><span class="p">{</span><span class="n">ivar</span><span class="p">}{</span><span class="mi">2</span><span class="p">}));</span>
-<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / s&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'%s / %s'</span><span class="p">,</span><span class="w"> </span><span class="n">descriptions</span><span class="p">{</span><span class="n">ivar</span><span class="p">}{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="n">descriptions</span><span class="p">{</span><span class="n">ivar</span><span class="p">}{</span><span class="mi">2</span><span class="p">}));</span>
+<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / s'</span><span class="p">);</span>
 <span class="w">    </span><span class="nb">legend</span><span class="p">(</span><span class="n">legtxt</span><span class="p">)</span>
 <span class="k">end</span>
 </pre></div>

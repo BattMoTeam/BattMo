@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -593,7 +591,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_composite_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_composite_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/composite_silicon_graphite.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -619,7 +617,7 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_cell</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_cell</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -628,7 +626,7 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_cell</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">removeStructField</span><span class="p">(</span><span class="n">jsonstruct_cell</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">});</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_cell</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">removeStructField</span><span class="p">(</span><span class="n">jsonstruct_cell</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">'NegativeElectrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">,</span><span class="w"> </span><span class="s">'ActiveMaterial'</span><span class="p">});</span>
 </pre></div>
 </div>
 </div>
@@ -637,7 +635,7 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometry1d.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -668,16 +666,16 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
-<span class="n">pe</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">;</span>
-<span class="n">co</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">;</span>
-<span class="n">am1</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial1&#39;</span><span class="p">;</span>
-<span class="n">am2</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial2&#39;</span><span class="p">;</span>
-<span class="n">bd</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Binder&#39;</span><span class="p">;</span>
-<span class="n">ad</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ConductingAdditive&#39;</span><span class="p">;</span>
-<span class="n">sd</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidDiffusion&#39;</span><span class="p">;</span>
-<span class="n">itf</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Interface&#39;</span><span class="p">;</span>
-<span class="n">ctrl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Control&#39;</span><span class="p">;</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'NegativeElectrode'</span><span class="p">;</span>
+<span class="n">pe</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'PositiveElectrode'</span><span class="p">;</span>
+<span class="n">co</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">;</span>
+<span class="n">am1</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'ActiveMaterial1'</span><span class="p">;</span>
+<span class="n">am2</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'ActiveMaterial2'</span><span class="p">;</span>
+<span class="n">bd</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'Binder'</span><span class="p">;</span>
+<span class="n">ad</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'ConductingAdditive'</span><span class="p">;</span>
+<span class="n">sd</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'SolidDiffusion'</span><span class="p">;</span>
+<span class="n">itf</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'Interface'</span><span class="p">;</span>
+<span class="n">ctrl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'Control'</span><span class="p">;</span>
 </pre></div>
 </div>
 </div>
@@ -689,10 +687,10 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am1</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;massFraction&#39;</span><span class="p">},</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am2</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;massFraction&#39;</span><span class="p">},</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">bd</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;massFraction&#39;</span><span class="p">},</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">ad</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;massFraction&#39;</span><span class="p">},</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am1</span><span class="p">,</span><span class="w"> </span><span class="s">'massFraction'</span><span class="p">},</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am2</span><span class="p">,</span><span class="w"> </span><span class="s">'massFraction'</span><span class="p">},</span><span class="w"> </span><span class="mf">0.08</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">bd</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="s">'massFraction'</span><span class="p">},</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">ad</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="s">'massFraction'</span><span class="p">},</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -733,14 +731,14 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage'</span><span class="p">)</span>
 <span class="nb">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="o">/</span><span class="n">milli</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Current / mA&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Current / mA'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -761,7 +759,7 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 
 
 <span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
-<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC'</span><span class="p">});</span>
 <span class="k">end</span>
 
 
@@ -770,14 +768,14 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 <span class="n">SOC2</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am2</span><span class="p">).</span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
 
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - cumulated&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC1</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - Graphite&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC2</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - Silicon&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - cumulated'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC1</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - Graphite'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC2</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - Silicon'</span><span class="p">);</span>
 
 
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SOCs&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SOCs'</span><span class="p">)</span>
 
 
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
@@ -855,9 +853,9 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="p">(</span><span class="n">micro</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">:)</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">));</span>
-<span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;Particle concentration profile in %s&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">));</span>
-<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;radius / m&#39;</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;concentration / mol/litre&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'Particle concentration profile in %s'</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">));</span>
+<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">'radius / m'</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="s">'concentration / mol/litre'</span><span class="p">);</span>
 
 <span class="k">end</span>
 </pre></div>
@@ -872,13 +870,13 @@ $\begin{array} {|c|c|c|}\hline\text{ } &amp; \text{parameter name} &amp; \text{
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initstate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 <span class="n">jsonstruct</span><span class="p">.(</span><span class="n">ctrl</span><span class="p">).</span><span class="n">CRate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;Control&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;controlPolicy&#39;</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;CCCharge&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">'Control'</span><span class="p">,</span><span class="w"> </span><span class="s">'controlPolicy'</span><span class="p">},</span><span class="w"> </span><span class="s">'CCCharge'</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
 
 
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">initializationSetup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;given matlab object&#39;</span><span class="p">;</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">initializationSetup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'given matlab object'</span><span class="p">;</span>
 
 
-<span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;initstate&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">initstate</span><span class="p">);</span>
+<span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBatteryJson</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">'initstate'</span><span class="p">,</span><span class="w"> </span><span class="n">initstate</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -918,14 +916,14 @@ We plot the voltage and current
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage'</span><span class="p">)</span>
 <span class="nb">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="o">/</span><span class="n">milli</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Current / mA&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Current / mA'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -946,7 +944,7 @@ We plot the voltage and current
 
 
 <span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">allStates</span><span class="p">)</span>
-<span class="w">    </span><span class="n">allStates</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">allStates</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">allStates</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">allStates</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC'</span><span class="p">});</span>
 <span class="k">end</span>
 
 
@@ -955,14 +953,14 @@ We plot the voltage and current
 <span class="n">SOC2</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am2</span><span class="p">).</span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="n">allStates</span><span class="p">);</span>
 
 
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - cumulated&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC1</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - Graphite&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC2</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SOC - Silicon&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - cumulated'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC1</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - Graphite'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">SOC2</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'SOC - Silicon'</span><span class="p">);</span>
 
 
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SOCs&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SOCs'</span><span class="p">)</span>
 
 
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>

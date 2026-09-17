@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -594,7 +592,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;ParameterSets&#39;</span><span class="p">,</span><span class="s">&#39;Chen2020&#39;</span><span class="p">,</span><span class="s">&#39;chen2020_lithium_ion_battery.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="p">,</span><span class="s">'ParameterSets'</span><span class="p">,</span><span class="s">'Chen2020'</span><span class="p">,</span><span class="s">'chen2020_lithium_ion_battery.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -604,7 +602,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometryChen.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometryChen.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -1097,7 +1095,7 @@ Stopped because reached objChangeTol = 1.000000e-15.
 
 
 <span class="n">figure</span>
-<span class="s">tiledlayout(2,</span><span class="w"> </span><span class="s">3,</span><span class="w"> </span><span class="s">&#39;tileindexing&#39;,</span><span class="w"> </span><span class="s">&#39;columnmajor&#39;)</span><span class="p">;</span>
+<span class="s">tiledlayout(2,</span><span class="w"> </span><span class="s">3,</span><span class="w"> </span><span class="s">'tileindexing',</span><span class="w"> </span><span class="s">'columnmajor')</span><span class="p">;</span>
 
 
 <span class="n">nexttile</span>
@@ -1105,50 +1103,50 @@ Stopped because reached objChangeTol = 1.000000e-15.
 
 <span class="s">%</span><span class="w"> </span><span class="s">the</span><span class="w"> </span><span class="s">function</span><span class="w"> </span><span class="o">|</span><span class="n">setupFunction</span><span class="o">|</span><span class="w"> </span><span class="n">creates</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="nb">handle</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">battmo</span><span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="nb">input</span><span class="w"> </span><span class="nb">format</span><span class="p">.</span>
 <span class="n">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">OCP</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;OCP / V&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'OCP / V'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">R0</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R0&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R0 / \Omega&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R0'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R0 / \Omega'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">R1</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R1&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R1 / \Omega&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R1'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R1 / \Omega'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">C1</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C1&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C1 / F&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'C1'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'C1 / F'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">R2</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R2 / \Omega&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R2 / \Omega'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">fn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setupFunction</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">C2</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C2 / F&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">soc</span><span class="p">,</span><span class="w"> </span><span class="n">fn</span><span class="p">(</span><span class="n">soc</span><span class="p">),</span><span class="w"> </span><span class="s">'*-'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'C2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'C2 / F'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -597,9 +595,9 @@ meaning of the arguments.</p>
 <section id="function-name">
 <h2>Function name<a class="headerlink" href="#function-name" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;functionFormat&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;functionName&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">"functionFormat"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"functionName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"computeOCP_Graphite_Torchio"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"argumentList"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"stoichiometry"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -613,11 +611,11 @@ names do not necessarily to the one used in the implementation itself, as we can
 <section id="function-formula">
 <h2>Function formula<a class="headerlink" href="#function-formula" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string expression&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;var1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;var2&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;expression&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;language&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;matlab&quot;</span><span class="p">,</span>
-<span class="w">                    </span><span class="nt">&quot;variableNames&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">],</span>
-<span class="w">                    </span><span class="nt">&quot;formula&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;x + y&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string expression"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"var1"</span><span class="p">,</span><span class="w"> </span><span class="s2">"var2"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"expression"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"language"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"matlab"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"variableNames"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"x"</span><span class="p">,</span><span class="w"> </span><span class="s2">"y"</span><span class="p">],</span>
+<span class="w">                    </span><span class="nt">"formula"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"x + y"</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -634,10 +632,10 @@ should be given using the key <code class="code docutils literal notranslate"><s
 </section>
 <section id="tabulated-function">
 <h2>Tabulated function<a class="headerlink" href="#tabulated-function" title="Link to this heading"></a></h2>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tabulated&quot;</span><span class="p">,</span>
-<span class="w"> </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">],</span>
-<span class="w"> </span><span class="nt">&quot;dataX&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span>
-<span class="w"> </span><span class="nt">&quot;dataY&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tabulated"</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">"argumentList"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"stoichiometry"</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">"dataX"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">"dataY"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -649,9 +647,9 @@ obtained by linear interpolation.</p>
 </section>
 <section id="csv-file">
 <h2>CSV file<a class="headerlink" href="#csv-file" title="Link to this heading"></a></h2>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>
-<span class="w"> </span><span class="nt">&quot;argumentList&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;stoichiometry&quot;</span><span class="p">],</span>
-<span class="w"> </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/file.csv&quot;</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"csv"</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">"argumentList"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"stoichiometry"</span><span class="p">],</span>
+<span class="w"> </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"path/to/file.csv"</span>
 <span class="p">}</span>
 </pre></div>
 </div>

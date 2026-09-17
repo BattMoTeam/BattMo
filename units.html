@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -598,9 +596,9 @@
 <h2>Units and JSON input<a class="headerlink" href="#units-and-json-input" title="Link to this heading"></a></h2>
 <p>When a value is given in a json input file without a corresponding unit string, or a value is given directly in BattMo, the value is assumed to be in SI units.</p>
 <p>Values can be given in the json input as a value and unit pair as shown below. In this case the value will be converted to SI before use.</p>
-<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gram/((centi*meter)^3)&quot;</span>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gram/((centi*meter)^3)"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -609,7 +607,7 @@
 <p class="admonition-title">Note</p>
 <p>This conversion happens automatically inside <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Battery/BatteryInputParams.m">BatteryInputParams</a>, the code below is just for demonstration purposes.</p>
 </div>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;{&quot;density&quot;: {&quot;value&quot;: 1.1,&quot;unit&quot;: &quot;gram/((centi*meter)^3)&quot;}}&#39;</span><span class="p">;</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'{"density": {"value": 1.1,"unit": "gram/((centi*meter)^3)"}}'</span><span class="p">;</span>
 
 <span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">jsondecode</span><span class="p">(</span><span class="n">json</span><span class="p">);</span>
 
@@ -620,7 +618,7 @@
 <span class="w">  </span><span class="nb">struct</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">fields</span><span class="p">:</span>
 
 <span class="w">    </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1000</span>
-<span class="w">    </span><span class="n">unit</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;gram/((centi*meter)^3)&#39;</span>
+<span class="w">    </span><span class="n">unit</span><span class="p">:</span><span class="w"> </span><span class="s">'gram/((centi*meter)^3)'</span>
 
 <span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">val</span><span class="p">,</span><span class="n">isconverted</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">convertUnitBattMo</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">.</span><span class="n">density</span><span class="p">)</span>
 

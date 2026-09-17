@@ -451,7 +451,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -469,7 +468,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -580,20 +578,20 @@
 <span class="c">% We load the input data that is given by json structures. The physical properties of the supply gas layer is given in the json file :battmofile:`gas-supply.json &lt;ProtonicMembrane/jsonfiles/gas-supply.json&gt;`</span>
 <span class="c">%</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;gas-supply.json&#39;</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">'ProtonicMembrane'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'gas-supply.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="c">%%</span>
 <span class="c">% The geometry input is loaded from :battmofile:`2d-gas-layer-geometry.json &lt;ProtonicMembrane/jsonfiles/2d-gas-layer-geometry.json&gt;`</span>
 <span class="c">%</span>
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;2d-gas-layer-geometry.json&#39;</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">'ProtonicMembrane'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'2d-gas-layer-geometry.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="c">%%</span>
 <span class="c">% The input for the initial state is loaded from :battmofile:`gas-supply-initialization.json &lt;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&gt;`</span>
 <span class="c">%</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;gas-supply-initialization.json&#39;</span><span class="p">);</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="s">'ProtonicMembrane'</span><span class="p">,</span><span class="w"> </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'gas-supply-initialization.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_initialization</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
@@ -642,12 +640,12 @@
 <span class="c">%</span>
 <span class="c">% We plot the inlet faces.</span>
 <span class="n">coupTerm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
-<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;blue&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'blue'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 
 <span class="c">%%</span>
 <span class="c">% We plot the outlet faces.</span>
 <span class="n">coupTerm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
-<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plotFaces</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">coupTerm</span><span class="p">.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'red'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 
 <span class="c">%% Setup initial state</span>
 <span class="c">%</span>
@@ -670,7 +668,7 @@
 
 <span class="n">control</span><span class="p">.</span><span class="n">src</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[];</span><span class="w"> </span><span class="c">% The control is taking care of by a dedicated submobel. Hence, the empty field here.</span>
 
-<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
+<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">'control'</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="s">'step'</span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
 
 <span class="c">%% Simulation</span>
 <span class="c">%</span>
@@ -690,8 +688,8 @@
 <span class="c">% We plot the pressure at the final step.</span>
 <span class="c">%</span>
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 
@@ -700,7 +698,7 @@
 <span class="n">figure</span>
 <span class="s">plotCellData(G,</span><span class="w"> </span><span class="s">state.pressure/barsa)</span><span class="p">;</span>
 <span class="n">colorbar</span>
-<span class="s">title(&#39;Pressure / bar&#39;)</span><span class="p">;</span>
+<span class="s">title('Pressure / bar')</span><span class="p">;</span>
 
 <span class="c">%%</span>
 <span class="c">% We plot the water mass fractions at three different time step</span>
@@ -710,9 +708,9 @@
 <span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ninds</span>
 <span class="w">    </span><span class="nb">figure</span>
 <span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="n">inds</span><span class="p">(</span><span class="nb">i</span><span class="p">)};</span>
-<span class="w">    </span><span class="n">plotCellData</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">plotCellData</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
 <span class="w">    </span><span class="n">clim</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">]);</span>
-<span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;H2O mass fraction\n(timestep:%d)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">inds</span><span class="p">(</span><span class="nb">i</span><span class="p">)));</span>
+<span class="w">    </span><span class="nb">title</span><span class="p">(</span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'H2O mass fraction\n(timestep:%d)'</span><span class="p">,</span><span class="w"> </span><span class="n">inds</span><span class="p">(</span><span class="nb">i</span><span class="p">)));</span>
 <span class="w">    </span><span class="n">colorbar</span>
 <span class="s">end</span>
 </pre></div>

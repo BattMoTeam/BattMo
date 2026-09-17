@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -592,28 +590,28 @@
 <li><p>output specifications</p></li>
 </ul>
 <p>First, let’s define our cell materials. We have provided a JSON file that contains material properties for an LCO-Graphite Li-ion battery and can parse this as a <strong>BattMo</strong> structure:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="p">,</span><span class="w"> </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="s">'lithium_ion_battery_lco_graphite.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Next, we have defined the cell geometry properties in a separate JSON file that we can also parse into <strong>BattMo</strong>:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry3d.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometry3d.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>We can take the same approach for the remaining parameters, as shown below, for:</p>
 <p>Control policy</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'cc_discharge_control.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Simulation settings</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;simulation_parameters.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'simulation_parameters.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_simparams</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Output specifications</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;extra_output.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'extra_output.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -650,10 +648,10 @@ to have a look at the <a class="reference external" href="https://www.sintef.no/
 surface particle concentrations in both electrode at a given time step.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="mi">20</span><span class="p">};</span>
 <span class="n">E</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'facecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">,</span><span class="w"> </span><span class="s">'edgealpha'</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">)</span>
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">NegativeElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">NegativeElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">SolidDiffusion</span><span class="p">.</span><span class="n">cSurface</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">))</span>
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">SolidDiffusion</span><span class="p">.</span><span class="n">cSurface</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">/</span><span class="n">litre</span><span class="p">))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Particle Surface Lithium Concentration&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Particle Surface Lithium Concentration'</span><span class="p">);</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -676,41 +674,41 @@ basically relies on <a class="reference external" href="https://se.mathworks.com
 insert in place JSON data located in separate files. Here is an example, taken from
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json">lithium_ion_battery_lco_graphite.json</a>
 where we have the following lines</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ParameterData/MaterialProperties/Graphite/graphite.json&quot;</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">"NegativeElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"Coating"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"ActiveMaterial"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"Interface"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ParameterData/MaterialProperties/Graphite/graphite.json"</span>
 <span class="w">      </span><span class="p">}}}}</span>
 </pre></div>
 </div>
 <p>The content of the file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a> is then
 inserted in place. Hence, when we write</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fileread</span><span class="p">(</span><span class="s">&#39;ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">)</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fileread</span><span class="p">(</span><span class="s">'ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json'</span><span class="p">)</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>the <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is obtained is equivalent to the one where we would have copied and paste the content of
 <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/ParameterData/MaterialProperties/Graphite/graphite.json">graphite.json</a>.</p>
 <div class="sphinx_collapse docutils">
-<input class="sphinx_collapse__input" id="4ea21a7b-9f2b-47a0-8bcc-ddbf7b20a916" name="4ea21a7b-9f2b-47a0-8bcc-ddbf7b20a916" type="checkbox"><label class="sphinx_collapse__label" for="4ea21a7b-9f2b-47a0-8bcc-ddbf7b20a916"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;saturationConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30555</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;volumetricSurfaceArea&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;numberOfElectronsTransferred&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;activationEnergyOfReaction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;reactionRateConstant&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.031e-11</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;guestStoichiometry100&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88551</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;guestStoichiometry0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1429</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;chargeTransferCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;openCircuitPotential&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;function&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;functionname&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;argumentlist&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;cElectrode&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;T&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cmax&quot;</span><span class="p">]</span>
+<input class="sphinx_collapse__input" id="bd607776-3d7c-432c-8ff2-9ce2338eb7e2" name="bd607776-3d7c-432c-8ff2-9ce2338eb7e2" type="checkbox"><label class="sphinx_collapse__label" for="bd607776-3d7c-432c-8ff2-9ce2338eb7e2"><i class="sphinx_collapse__icon"></i>jsonstruct detail</label><div class="sphinx_collapse__content docutils">
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">"NegativeElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"Coating"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"ActiveMaterial"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"Interface"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"saturationConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30555</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"volumetricSurfaceArea"</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"numberOfElectronsTransferred"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"activationEnergyOfReaction"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"reactionRateConstant"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.031e-11</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"guestStoichiometry100"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88551</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"guestStoichiometry0"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1429</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"chargeTransferCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"openCircuitPotential"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"function"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"functionname"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"computeOCP_Graphite_Torchio"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"argumentlist"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"cElectrode"</span><span class="p">,</span><span class="w"> </span><span class="s2">"T"</span><span class="p">,</span><span class="w"> </span><span class="s2">"cmax"</span><span class="p">]</span>
 <span class="w">        </span><span class="p">}}},</span>
 </pre></div>
 </div>

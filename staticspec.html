@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -578,8 +576,8 @@
 <p>For a given battery model, we can compute the mass, the capacity and the nominal energy without running any
 simulation. A <code class="code docutils literal notranslate"><span class="pre">CellSpecificationSummary</span></code> object can be instantiated from a model to print all this information</p>
 <p>We setup a model using <code class="code docutils literal notranslate"><span class="pre">runBattery</span></code> but with the option <code class="code docutils literal notranslate"><span class="pre">runSimulation</span></code> set as false to avoid running the simulation.</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;JsonDataFiles/sample_input.json&#39;</span><span class="p">);</span>
-<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;runSimulation&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'JsonDataFiles/sample_input.json'</span><span class="p">);</span>
+<span class="n">model</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">'runSimulation'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 <span class="n">css</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">CellSpecificationSummary</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
 </pre></div>

@@ -451,7 +451,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -469,7 +468,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -581,34 +579,34 @@
 <span class="c">% the json file :battmofile:`gas-supply-whole-cell.json &lt;ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json&gt;`</span>
 
 <span class="nb">clear</span><span class="w"> </span><span class="n">jsonstruct_material</span>
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json&#39;</span><span class="p">;</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'ProtonicMembrane/jsonfiles/gas-supply-whole-cell.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">GasSupply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/protonicMembrane.json&#39;</span><span class="p">;</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'ProtonicMembrane/jsonfiles/protonicMembrane.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">Electrolyser</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">removeStructFields</span><span class="p">(</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Electrolyser&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Nx&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                                             </span><span class="p">{</span><span class="s">&#39;Electrolyser&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;xlength&#39;</span><span class="p">});</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">'Electrolyser'</span><span class="p">,</span><span class="w"> </span><span class="s">'Electrolyte'</span><span class="p">,</span><span class="w"> </span><span class="s">'Nx'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                             </span><span class="p">{</span><span class="s">'Electrolyser'</span><span class="p">,</span><span class="w"> </span><span class="s">'Electrolyte'</span><span class="p">,</span><span class="w"> </span><span class="s">'xlength'</span><span class="p">});</span>
 
 <span class="c">%%</span>
 <span class="c">% The geometrical property of the cell is given in :battmofile:`2d-cell-geometry.json &lt;ProtonicMembrane/jsonfiles/2d-cell-geometry.json&gt;`</span>
 <span class="c">%</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/2d-cell-geometry.json&#39;</span><span class="p">;</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'ProtonicMembrane/jsonfiles/2d-cell-geometry.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="c">%%</span>
 <span class="c">% The initial state is given in :battmofile:`gas-supply-initialization.json &lt;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&gt;`</span>
 <span class="c">%</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/gas-supply-initialization.json&#39;</span><span class="p">;</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'ProtonicMembrane/jsonfiles/gas-supply-initialization.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_initialization</span><span class="p">.</span><span class="n">GasSupply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="c">%%</span>
 <span class="c">% The time stepping parameters are given in :battmofile:`cell-timestepping.json &lt;ProtonicMembrane/jsonfiles/cell-timestepping.json&gt;`</span>
 <span class="c">%</span>
 
-<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ProtonicMembrane/jsonfiles/cell-timestepping.json&#39;</span><span class="p">;</span>
+<span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'ProtonicMembrane/jsonfiles/cell-timestepping.json'</span><span class="p">;</span>
 <span class="n">jsonstruct_timestepping</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="c">%%</span>
@@ -658,21 +656,21 @@
 <span class="c">% To resolve the non-linearity in the electrolyte, we need a very fine mesh. Plotting the full mesh including the edges</span>
 <span class="c">% for this domain will hide its structure. Therefore we set the option :code:`edgecolor` to :code:`none`.</span>
 <span class="c">%</span>
-<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
+<span class="nb">figure</span><span class="p">(</span><span class="s">'position'</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.9</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'facecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'red'</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'facecolor'</span><span class="p">,</span><span class="w"> </span><span class="mf">0.9</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="s">'edgealpha'</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
 <span class="c">%%</span>
 <span class="c">% We plot the boundary and interface faces</span>
 <span class="n">s</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">spring</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
-<span class="n">opts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">        </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="p">:)};</span>
+<span class="n">opts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">        </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="p">:)};</span>
 <span class="c">%%</span>
 <span class="c">% we plot the inlet faces</span>
-<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;red&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">)</span>
-<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgealpha&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
+<span class="nb">figure</span><span class="p">(</span><span class="s">'position'</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">337</span><span class="p">,</span><span class="w"> </span><span class="mi">757</span><span class="p">,</span><span class="w"> </span><span class="mi">3068</span><span class="p">,</span><span class="w"> </span><span class="mi">557</span><span class="p">])</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'facecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'red'</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">)</span>
+<span class="n">plotGrid</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="s">'facecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">,</span><span class="w"> </span><span class="s">'edgealpha'</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
 <span class="n">plotFaces</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">GasSupply</span><span class="p">.</span><span class="n">couplingTerms</span><span class="p">{</span><span class="mi">1</span><span class="p">}.</span><span class="n">couplingfaces</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">{:});</span>
 <span class="c">%%</span>
 <span class="c">% we add the outlet faces</span>
@@ -701,7 +699,7 @@
 <span class="c">% We use an adaptive time stepping. In this case, the solver will try to keep the number of timesteps equal to 5, based</span>
 <span class="c">% on the timestepping history.</span>
 
-<span class="n">ts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">IterationCountTimeStepSelector</span><span class="p">(</span><span class="s">&#39;targetIterationCount&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+<span class="n">ts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">IterationCountTimeStepSelector</span><span class="p">(</span><span class="s">'targetIterationCount'</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
 
 <span class="n">nls</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">NonLinearSolver</span><span class="p">();</span>
 <span class="n">nls</span><span class="p">.</span><span class="n">timeStepSelector</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ts</span><span class="p">;</span>
@@ -710,20 +708,20 @@
 <span class="c">%% Start simulation</span>
 <span class="c">%</span>
 <span class="c">% We start the simulation</span>
-<span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;OutputMinisteps&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;NonLinearSolver&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
+<span class="p">[</span><span class="o">~</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="n">report</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">simulateScheduleAD</span><span class="p">(</span><span class="n">initstate</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">,</span><span class="w"> </span><span class="s">'OutputMinisteps'</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">'NonLinearSolver'</span><span class="p">,</span><span class="w"> </span><span class="n">nls</span><span class="p">);</span>
 
 <span class="c">%% plotting setup</span>
 <span class="c">%</span>
 <span class="c">%</span>
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultfigureposition&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultfigureposition'</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
 
-<span class="n">elyser</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyser&#39;</span><span class="p">;</span>
-<span class="n">elyte</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
-<span class="n">gs</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;GasSupply&#39;</span><span class="p">;</span>
+<span class="n">elyser</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'Electrolyser'</span><span class="p">;</span>
+<span class="n">elyte</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'Electrolyte'</span><span class="p">;</span>
+<span class="n">gs</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">'GasSupply'</span><span class="p">;</span>
 
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="k">end</span><span class="p">};</span>
 <span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">addVariables</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
@@ -734,8 +732,8 @@
 <span class="c">%</span>
 
 <span class="nb">figure</span>
-<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Electrostatic Potential \phi / V&#39;</span><span class="p">)</span>
+<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Electrostatic Potential \phi / V'</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 
 <span class="c">%%</span>
@@ -752,10 +750,10 @@
 <span class="n">figure</span>
 <span class="s">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">phi</span><span class="p">;</span>
 <span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
-<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;\phi / V&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'\phi / V'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / mm'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'y / mm'</span><span class="p">)</span>
 <span class="nb">view</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 
@@ -766,10 +764,10 @@
 <span class="nb">figure</span>
 <span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">elyser</span><span class="p">).(</span><span class="n">elyte</span><span class="p">).</span><span class="n">pi</span><span class="p">;</span>
 <span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
-<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;pi / V&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'pi / V'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / mm'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'y / mm'</span><span class="p">)</span>
 <span class="nb">view</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 
@@ -780,8 +778,8 @@
 <span class="c">%</span>
 
 <span class="nb">figure</span>
-<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;H2O mass fraction / -&#39;</span><span class="p">)</span>
+<span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'H2O mass fraction / -'</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 
 
@@ -797,11 +795,11 @@
 <span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span>
 <span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
 
-<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
 <span class="n">colorbar</span>
-<span class="s">title(&#39;Mass Fraction H2O&#39;)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="s">title('Mass Fraction H2O')</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / mm'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'y / mm'</span><span class="p">)</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">51</span><span class="p">]);</span>
 
 <span class="c">%%</span>
@@ -809,16 +807,16 @@
 <span class="c">% We plot the O2 mass fraction</span>
 <span class="c">%</span>
 
-<span class="nb">figure</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
+<span class="nb">figure</span><span class="p">(</span><span class="s">'position'</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">1290</span><span class="p">,</span><span class="w"> </span><span class="mi">755</span><span class="p">,</span><span class="w"> </span><span class="mi">1275</span><span class="p">,</span><span class="w"> </span><span class="mi">559</span><span class="p">])</span>
 
 <span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">gs</span><span class="p">).</span><span class="n">massfractions</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
 <span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="p">[]);</span>
 
-<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="p">);</span>
+<span class="nb">surf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'none'</span><span class="p">);</span>
 <span class="n">colorbar</span>
-<span class="s">title(&#39;Mass Fraction O2&#39;)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;x / mm&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;y / mm&#39;</span><span class="p">)</span>
+<span class="s">title('Mass Fraction O2')</span><span class="p">;</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'x / mm'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'y / mm'</span><span class="p">)</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">51</span><span class="p">]);</span>
 
 <span class="c">%% Interface results</span>
@@ -841,8 +839,8 @@
 
 <span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">yc</span><span class="o">/</span><span class="p">(</span><span class="n">milli</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="nb">i</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current in Anode / A/cm^2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current in Anode / A/cm^2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'height / mm'</span><span class="p">)</span>
 
 
 <span class="c">%%</span>
@@ -861,15 +859,15 @@
 
 <span class="n">figure</span>
 <span class="s">plot(yc/(milli*meter),</span><span class="w"> </span><span class="s">iHp)</span><span class="p">;</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;iHp in Anode / A/cm^2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'iHp in Anode / A/cm^2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'height / mm'</span><span class="p">)</span>
 
 <span class="c">%%</span>
 <span class="c">%</span>
 <span class="c">% By dividing the proton current density with the total current density, we obtain the Faradic efficiency.</span>
 
 <span class="c">% drivingForces.src = schedule.control.src;</span>
-<span class="c">% state = model.evalVarName(state, &#39;Electrolyser.Anode.iHp&#39;, {{&#39;drivingForces&#39;, drivingForces}});</span>
+<span class="c">% state = model.evalVarName(state, 'Electrolyser.Anode.iHp', {{'drivingForces', drivingForces}});</span>
 
 <span class="nb">i</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">i</span><span class="p">;</span>
 <span class="n">iHp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Electrolyser</span><span class="p">.</span><span class="n">Anode</span><span class="p">.</span><span class="n">iHp</span><span class="p">;</span>
@@ -879,8 +877,8 @@
 
 <span class="n">figure</span>
 <span class="s">plot(yc/(milli*meter),</span><span class="w"> </span><span class="s">iHp./i)</span><span class="p">;</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Faradic efficiency&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;height / mm&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Faradic efficiency'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'height / mm'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -608,7 +606,7 @@ Bridge makes it possible to use the <strong>BattMo</strong> julia solver at expe
 <ul>
 <li><p>Launch a command prompt window in Windows (NOT the powershell)</p></li>
 <li><p>Run the following command:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span><span class="w"> </span><span class="o">--</span><span class="nb">startup</span><span class="o">-</span><span class="n">file</span><span class="p">=</span><span class="n">no</span><span class="w"> </span><span class="o">--</span><span class="n">project</span><span class="p">=</span><span class="o">\</span><span class="nb">path</span><span class="o">\</span><span class="n">to</span><span class="o">\</span><span class="n">RunMatlab</span><span class="o">\</span><span class="n">directory</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="s">&quot;using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)&quot;</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span><span class="w"> </span><span class="o">--</span><span class="nb">startup</span><span class="o">-</span><span class="n">file</span><span class="p">=</span><span class="n">no</span><span class="w"> </span><span class="o">--</span><span class="n">project</span><span class="p">=</span><span class="o">\</span><span class="nb">path</span><span class="o">\</span><span class="n">to</span><span class="o">\</span><span class="n">RunMatlab</span><span class="o">\</span><span class="n">directory</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="s">"using Revise, DaemonMode; serve(3000, true, call_stack=true, async=true)"</span>
 </pre></div>
 </div>
 <p>Replace <code class="code docutils literal notranslate"><span class="pre">/path/to/RunMatlab/directory</span></code> with the path to the
@@ -625,13 +623,13 @@ is deactivated in any other way. Calls to the server can now be made using the <
 <h2>Send simulation parameters<a class="headerlink" href="#send-simulation-parameters" title="Link to this heading"></a></h2>
 <p>We pass data to the server using the <code class="code docutils literal notranslate"><span class="pre">load</span></code> method.</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputFileName</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="n">battmoDir</span><span class="p">(),</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;Examples&#39;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;julia&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;jsonfiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                         </span><span class="s">&#39;p2d_40_jl_ud.json&#39;</span><span class="p">)</span>
+<span class="w">                         </span><span class="s">'Examples'</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">'julia'</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">'jsonfiles'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                         </span><span class="s">'p2d_40_jl_ud.json'</span><span class="p">)</span>
 
-<span class="n">man</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;inputType&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JSON&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">         </span><span class="s">&#39;inputFileName&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">inputFileName</span><span class="p">);</span>
+<span class="n">man</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">'inputType'</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">'JSON'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">         </span><span class="s">'inputFileName'</span><span class="p">,</span><span class="w"> </span><span class="n">inputFileName</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>The <code class="code docutils literal notranslate"><span class="pre">inputType</span></code> can be either <code class="code docutils literal notranslate"><span class="pre">JSON</span></code> as in example above or <code class="code docutils literal notranslate"><span class="pre">Matlab</span></code>. For JSON input type, the input
@@ -639,13 +637,13 @@ is fully processed in julia but we only support for the moment 1D geometry in th
 type, we can use any of the <a class="reference internal" href="geometryinput.html#battery-geometries"><span class="std std-ref">geometries</span></a> available in <strong>BattMo</strong> and pass it as
 an input to the julia solver.</p>
 <p>The json input <code class="code docutils literal notranslate"><span class="pre">p2d_40_jl_ud.json</span></code> contains functional parameters. For example, we have</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;Electrolyte&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">     </span><span class="nt">&quot;ionicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;function&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;function&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1e-4*c*((-10.5 + 0.668e-3*c + 0.494e-6*c^2) + (0.074 - 1.78e-5*c - 8.86e-10*c^2)*T + (-6.96e-5 + 2.80e-8*c)*T^2)^2&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;argumentlist&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">          </span><span class="s2">&quot;c&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="s2">&quot;T&quot;</span><span class="p">]}}</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"> </span><span class="nt">"Electrolyte"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="nt">"ionicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"function"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"function"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1e-4*c*((-10.5 + 0.668e-3*c + 0.494e-6*c^2) + (0.074 - 1.78e-5*c - 8.86e-10*c^2)*T + (-6.96e-5 + 2.80e-8*c)*T^2)^2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"argumentlist"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">"c"</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">"T"</span><span class="p">]}}</span>
 </pre></div>
 </div>
 <p>The full listing is available <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/p2d_40_jl_ud.json">here</a>. For the <code class="code docutils literal notranslate"><span class="pre">function</span></code>
@@ -667,11 +665,11 @@ Julia.</p>
 <p>The matlab structure contains the simulation output, which can be processed in Matlab. For example,</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">Phi</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">result</span><span class="p">.</span><span class="n">states</span><span class="p">.</span><span class="n">BPP</span><span class="p">});</span>
 <span class="nb">time</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="nb">cumsum</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">extra</span><span class="p">.</span><span class="n">timesteps</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;BattMo Julia&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">LineWidth</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">"BattMo Julia"</span><span class="p">,</span><span class="w"> </span><span class="n">LineWidth</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
 <span class="nb">legend</span>
 <span class="nb">grid</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / h&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / h'</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center">

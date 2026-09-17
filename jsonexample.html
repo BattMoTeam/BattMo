@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -585,13 +583,13 @@ stepping.</p>
 <section id="simulation">
 <h2>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;isFile&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;filenames&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/battery.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/geometry.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/modelSpecification.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/control.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/timeStepping.json&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/stateInitialization.json&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">"isFile"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"filenames"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Examples/Documentation/jsonfiles/Example/battery.json"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"Examples/Documentation/jsonfiles/Example/geometry.json"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"Examples/Documentation/jsonfiles/Example/modelSpecification.json"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"Examples/Documentation/jsonfiles/Example/control.json"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"Examples/Documentation/jsonfiles/Example/timeStepping.json"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"Examples/Documentation/jsonfiles/Example/stateInitialization.json"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -601,7 +599,7 @@ we want to include. Those files are also the ones that are presented in this pag
 <p>The path of the file is first tested as such but if no file is found, the parser will check the path that is obtained
 relative to your battmo installation path.</p>
 <p>You can actually run this illustration example using</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/Documentation/jsonfiles/Example/simulation.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/Documentation/jsonfiles/Example/simulation.json'</span><span class="p">);</span>
 <span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -609,29 +607,29 @@ relative to your battmo installation path.</p>
 <section id="battery">
 <h2>Battery<a class="headerlink" href="#battery" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/negativeElectrode.json&quot;</span>
+<span class="w">  </span><span class="nt">"NegativeElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/negativeElectrode.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;PositiveElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/positiveElectrode.json&quot;</span>
+<span class="w">  </span><span class="nt">"PositiveElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/positiveElectrode.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;Electrolyte&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/electrolyte.json&quot;</span>
+<span class="w">  </span><span class="nt">"Electrolyte"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/electrolyte.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;Separator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/separator.json&quot;</span>
+<span class="w">  </span><span class="nt">"Separator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/separator.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;ThermalModel&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/thermalComponent.json&quot;</span>
+<span class="w">  </span><span class="nt">"ThermalModel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/thermalComponent.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;SOC&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9900</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;initT&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">298.1500</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;use_thermal&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">"SOC"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9900</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"initT"</span><span class="p">:</span><span class="w"> </span><span class="mf">298.1500</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"use_thermal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -642,13 +640,13 @@ also included here.</p>
 <section id="negative-electrode">
 <h2>Negative Electrode<a class="headerlink" href="#negative-electrode" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Coating&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/coating.json&quot;</span>
+<span class="w">  </span><span class="nt">"Coating"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/coating.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/currentCollector.json&quot;</span>
+<span class="w">  </span><span class="nt">"CurrentCollector"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/currentCollector.json"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -659,20 +657,20 @@ negative electrode.</p>
 <section id="coating">
 <h2>Coating<a class="headerlink" href="#coating" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/activeMaterial.json&quot;</span>
+<span class="w">  </span><span class="nt">"ActiveMaterial"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/activeMaterial.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;Binder&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/binder.json&quot;</span>
+<span class="w">  </span><span class="nt">"Binder"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/binder.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;ConductingAdditive&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/conductingAdditive.json&quot;</span>
+<span class="w">  </span><span class="nt">"ConductingAdditive"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/conductingAdditive.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;effectiveDensity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1900</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;bruggemanCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
+<span class="w">  </span><span class="nt">"effectiveDensity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1900</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"bruggemanCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -683,20 +681,20 @@ effective density is used to compute the porosity from the properties of the thr
 <section id="active-material">
 <h2>Active Material<a class="headerlink" href="#active-material" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/interface.json&quot;</span>
+<span class="w">  </span><span class="nt">"Interface"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/interface.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;isFile&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;filename&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Examples/Documentation/jsonfiles/Example/solidDiffusion.json&quot;</span>
+<span class="w">  </span><span class="nt">"SolidDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"isFile"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"filename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Examples/Documentation/jsonfiles/Example/solidDiffusion.json"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;diffusionModelType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;massFraction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.94</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span>
+<span class="w">  </span><span class="nt">"diffusionModelType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"full"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"massFraction"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.94</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -707,31 +705,31 @@ the solid diffusion in the pseudo particle.</p>
 <section id="interface">
 <h2>Interface<a class="headerlink" href="#interface" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;saturationConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30555</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;volumetricSurfaceArea&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;numberOfElectronsTransferred&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;activationEnergyOfReaction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;reactionRateConstant&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.031E-11</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;guestStoichiometry100&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88551</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;guestStoichiometry0&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1429</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;chargeTransferCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;openCircuitPotential&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeOCP_Graphite_Torchio&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;stoichiometry&quot;</span>
+<span class="w">  </span><span class="nt">"saturationConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">30555</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"volumetricSurfaceArea"</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"numberOfElectronsTransferred"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"activationEnergyOfReaction"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"reactionRateConstant"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.031E-11</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"guestStoichiometry100"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88551</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"guestStoichiometry0"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1429</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"chargeTransferCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"openCircuitPotential"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeOCP_Graphite_Torchio"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"stoichiometry"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;entropyChange&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeEntropyChange_Graphite_Torchio&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;stoichiometry&quot;</span>
+<span class="w">  </span><span class="nt">"entropyChange"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeEntropyChange_Graphite_Torchio"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"stoichiometry"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;referenceTemperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;includeEntropyChange&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">"referenceTemperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">2240</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"includeEntropyChange"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -747,10 +745,10 @@ explained in details in <a class="reference internal" href="functioninterface.ht
 <section id="solid-diffusion">
 <h2>Solid Diffusion<a class="headerlink" href="#solid-diffusion" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;activationEnergyOfDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;referenceDiffusionCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.9e-14</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;particleRadius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;volumetricSurfaceArea&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"activationEnergyOfDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"referenceDiffusionCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">3.9e-14</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"particleRadius"</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"volumetricSurfaceArea"</span><span class="p">:</span><span class="w"> </span><span class="mi">723600</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>The particle radius and the diffusion coefficient governs the time scale of the diffusion. The volumetric surface
@@ -759,14 +757,14 @@ parameter is an important part of the volume averaging approach the DFN model us
 <section id="binder">
 <h2>Binder<a class="headerlink" href="#binder" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gram/((centi*meter)^3)&quot;</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gram/((centi*meter)^3)"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;massFraction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span>
+<span class="w">  </span><span class="nt">"massFraction"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -776,14 +774,14 @@ and electronic conductivity but no other process are modeled at this level.</p>
 <section id="conducting-additive">
 <h2>Conducting Additive<a class="headerlink" href="#conducting-additive" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.95</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gram/((centi*meter)^3)&quot;</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.95</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gram/((centi*meter)^3)"</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;massFraction&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">"massFraction"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">632</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="w"> </span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -793,31 +791,31 @@ and electronic conductivity but no other process are modeled at this level.</p>
 <section id="electrolyte">
 <h2>Electrolyte<a class="headerlink" href="#electrolyte" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;initialConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ionicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeElectrolyteConductivity_Ai2020&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;concentration&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;temperature&quot;</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"initialConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ionicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeElectrolyteConductivity_Ai2020"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"concentration"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"temperature"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;diffusionCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeDiffusionCoefficient_Ai2020&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;concentration&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;temperature&quot;</span>
+<span class="w">  </span><span class="nt">"diffusionCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeDiffusionCoefficient_Ai2020"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"concentration"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"temperature"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;species&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;transferenceNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
+<span class="w">  </span><span class="nt">"species"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"transferenceNumber"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"nominalConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;bruggemanCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
+<span class="w">  </span><span class="nt">"bruggemanCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -827,18 +825,18 @@ are functions of concentration and temperature.</p>
 <section id="current-collector">
 <h2>Current Collector<a class="headerlink" href="#current-collector" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1E-5</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;tab&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Nw&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Nh&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">  </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">1E-5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"tab"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Nw"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Nh"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;electronicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.96E+7</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">398</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">385</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8960</span>
+<span class="w">  </span><span class="nt">"electronicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.96E+7</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mi">398</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">385</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">8960</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -847,31 +845,31 @@ are functions of concentration and temperature.</p>
 <section id="separator">
 <h2>Separator<a class="headerlink" href="#separator" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;specificHeatCapacity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;thermalConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;density&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;initialConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ionicConductivity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeElectrolyteConductivity_Ai2020&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;concentration&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;temperature&quot;</span>
+<span class="w">  </span><span class="nt">"specificHeatCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2055</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"thermalConductivity"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"density"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"initialConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ionicConductivity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeElectrolyteConductivity_Ai2020"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"concentration"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"temperature"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;diffusionCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;functionFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;named function&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;functionName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computeDiffusionCoefficient_Ai2020&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;argumentList&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="s2">&quot;concentration&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="s2">&quot;temperature&quot;</span>
+<span class="w">  </span><span class="nt">"diffusionCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"functionFormat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"named function"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"functionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"computeDiffusionCoefficient_Ai2020"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"argumentList"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">"concentration"</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">"temperature"</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;species&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;transferenceNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;nominalConcentration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
+<span class="w">  </span><span class="nt">"species"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"transferenceNumber"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2594</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"nominalConcentration"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;bruggemanCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
+<span class="w">  </span><span class="nt">"bruggemanCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -880,9 +878,9 @@ are functions of concentration and temperature.</p>
 <section id="thermal-model">
 <h2>Thermal Model<a class="headerlink" href="#thermal-model" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;externalHeatTransferCoefficientTab&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;externalHeatTransferCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;externalTemperature&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span>
+<span class="w">  </span><span class="nt">"externalHeatTransferCoefficientTab"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"externalHeatTransferCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"externalTemperature"</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -895,50 +893,50 @@ except for the external temperature.</p>
 <h2>Geometry<a class="headerlink" href="#geometry" title="Link to this heading"></a></h2>
 <p>We consider the 3D demo model, see <a class="reference internal" href="geometryinput.html#id1"><span class="std std-ref">here</span></a></p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Geometry&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;case&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3D-demo&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Nw&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Nh&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">  </span><span class="nt">"Geometry"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"case"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3D-demo"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Nw"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Nh"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;NegativeElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0001</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;N&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}}},</span>
-<span class="w">    </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-05</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;tab&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Nw&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Nh&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">}}},</span>
-<span class="w">  </span><span class="nt">&quot;PositiveElectrode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Coating&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8e-05</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;ActiveMaterial&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;SolidDiffusion&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;N&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">  </span><span class="nt">"NegativeElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"Coating"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0001</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"ActiveMaterial"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"SolidDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"N"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">}}},</span>
+<span class="w">    </span><span class="nt">"CurrentCollector"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-05</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"tab"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Nw"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Nh"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">}}},</span>
+<span class="w">  </span><span class="nt">"PositiveElectrode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"Coating"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">8e-05</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"ActiveMaterial"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"SolidDiffusion"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"N"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
 <span class="w">        </span><span class="p">}}},</span>
-<span class="w">    </span><span class="nt">&quot;CurrentCollector&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-05</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;tab&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Nw&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Nh&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">}}},</span>
-<span class="w">  </span><span class="nt">&quot;Separator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5e-05</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;numberOfDiscreteCells&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;ThermalModel&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;externalHeatTransferCoefficientTab&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;externalHeatTransferCoefficient&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">    </span><span class="nt">"CurrentCollector"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-05</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"tab"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.004</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Nw"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Nh"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">}}},</span>
+<span class="w">  </span><span class="nt">"Separator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"thickness"</span><span class="p">:</span><span class="w"> </span><span class="mf">5e-05</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"numberOfDiscreteCells"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"ThermalModel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"externalHeatTransferCoefficientTab"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"externalHeatTransferCoefficient"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -951,10 +949,10 @@ provide a mesh with tags for the component. We have however not setup a json int
 <section id="control">
 <h2>Control<a class="headerlink" href="#control" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Control&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;controlPolicy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CCDischarge&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;DRate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;lowerCutoffVoltage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span><span class="p">}}</span>
+<span class="w">  </span><span class="nt">"Control"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"controlPolicy"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CCDischarge"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"DRate"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"lowerCutoffVoltage"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.4</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>Here, we use a discharge scenario with a given discarge rate and lower cutoff voltage. An overview with explanation of the available controls is given in <a class="reference internal" href="controlinput.html#control-models"><span class="std std-ref">Control models</span></a>.</p>
@@ -962,8 +960,8 @@ provide a mesh with tags for the component. We have however not setup a json int
 <section id="model-specification">
 <h2>Model Specification<a class="headerlink" href="#model-specification" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;include_current_collectors&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;use_thermal&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">"include_current_collectors"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"use_thermal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -973,13 +971,13 @@ current collector are included.</p>
 <section id="state-initialization">
 <h2>State Initialization<a class="headerlink" href="#state-initialization" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;initializationSetup&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;given SOC&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;initT&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;SOC&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.99</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;Electrolyte&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;initialConcentration&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mol/litre&quot;</span><span class="p">}}}</span>
+<span class="w">  </span><span class="nt">"initializationSetup"</span><span class="p">:</span><span class="w"> </span><span class="s2">"given SOC"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"initT"</span><span class="p">:</span><span class="w"> </span><span class="mf">298.15</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"SOC"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.99</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"Electrolyte"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"initialConcentration"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mol/litre"</span><span class="p">}}}</span>
 </pre></div>
 </div>
 <p>The simulator requires an initial state for the system. The default choice is to provide a state of charge (soc) and set
@@ -989,10 +987,10 @@ electrolyte concentration at the electrolyte level.</p>
 <section id="time-stepping">
 <h2>Time Stepping<a class="headerlink" href="#time-stepping" title="Link to this heading"></a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;TimeStepping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;numberOfTimeSteps&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;useRampup&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;numberOfRampupSteps&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">}}</span>
+<span class="w">  </span><span class="nt">"TimeStepping"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"numberOfTimeSteps"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"useRampup"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"numberOfRampupSteps"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>This information is used by the simulator to setup the time stepping. Default values are also provided, see <a class="reference internal" href="json.html#time-stepping-parameters"><span class="std std-ref">Time Stepping Parameters</span></a>.</p>

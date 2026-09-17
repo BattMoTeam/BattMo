@@ -453,7 +453,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -471,7 +470,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -585,7 +583,7 @@
 <p>For this example, we provide a sample JSON file <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Examples/JsonDataFiles/sample_input.json">sample_input.json</a> that
 describes a simple LCO-Graphite cell.</p>
 <p>We load and parse the JSON input file into <strong>BattMo</strong> using the command:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/sample_input.json&#39;</span><span class="p">)</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/JsonDataFiles/sample_input.json'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This transforms the parameter data as a <a class="reference external" href="https://se.mathworks.com/help/matlab/structures.html">MATLAB structure</a> <code class="code docutils literal notranslate"><span class="pre">jsonstruct</span></code> that is used to setup the simulation. We can explore the structure within the MATLAB Command Window by navigating the different levels of the structure.</p>
@@ -609,7 +607,7 @@ describes a simple LCO-Graphite cell.</p>
 <section id="show-the-dashboard">
 <h3>Show the Dashboard<a class="headerlink" href="#show-the-dashboard" title="Link to this heading"></a></h3>
 <p>We can dashboard the main results using <a class="reference external" href="https://github.com/BattMoTeam/BattMo/blob/main/Utilities/Visualization/plotDashboard.m">plotDashboard</a>. Here, for example at time step 10,</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotDashboard</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotDashboard</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">'step'</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-center" id="id1">
@@ -638,8 +636,8 @@ describes a simple LCO-Graphite cell.</p>
 </div>
 <p>We can see that the grid is stored as a structure with information about the cells, faces, nodes, etc. The values of the state quantities (e.g. concentration and electric potential) are calculated at the centroids of the cells. To plot the positions of the centroids, we can use the following commands:</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">;</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;o&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span><span class="w"> </span><span class="s">'o'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This shows the overall grid that is used for the model. However, <strong>BattMo</strong> models use a modular hierarchy where the overall cell model is composed of smaller submodels for electrodes, electrolyte, and current collectors. Each of these submodels has its own grid.</p>
@@ -648,11 +646,11 @@ describes a simple LCO-Graphite cell.</p>
 <span class="n">x_sep</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">Separator</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">;</span>
 <span class="n">x_pe</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">grid</span><span class="p">.</span><span class="n">cells</span><span class="p">.</span><span class="n">centroids</span><span class="p">;</span>
 
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_ne</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_ne</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;o&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_ne</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_ne</span><span class="p">)),</span><span class="w"> </span><span class="s">'o'</span><span class="p">)</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_sep</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_sep</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;ok&#39;</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_pe</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_pe</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;or&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_sep</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_sep</span><span class="p">)),</span><span class="w"> </span><span class="s">'ok'</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_pe</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_pe</span><span class="p">)),</span><span class="w"> </span><span class="s">'or'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If you would like more information about the <strong>BattMo</strong> model hierarchy, please see <a class="reference internal" href="architecture.html#battmo-model-architecture"><span class="std std-ref">BattMo Model Architecture</span></a>.</p>
@@ -691,16 +689,16 @@ describes a simple LCO-Graphite cell.</p>
 <span class="n">c</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="mi">10</span><span class="p">}.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">c</span>
 
 <span class="nb">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Concentration  /  mol \cdot m^{-3}&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Concentration  /  mol \cdot m^{-3}'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>BattMo</strong> also includes dedicated plotting functions that will come in handy when we start working with more complex systems (e.g. P4D grids). We can generate the same plot using the <strong>BattMo</strong> function <code class="code docutils literal notranslate"><span class="pre">plotCellData</span></code>:</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">timestep</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span>
 
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="n">timestep</span><span class="p">}.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">c</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Concentration  /  mol \cdot m^{-3}&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Concentration  /  mol \cdot m^{-3}'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>That’s it! 🎉 You have run an post-processed your first simulation! But there are still a lot of exciting features to discover. Let’s keep going and explore making chages to the model. 😃</p>
@@ -721,7 +719,7 @@ in the jsonstruct and re-run the simulation.</p>
 <span class="w">    </span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 <span class="w">    </span><span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 <span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">Control</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">'-'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 <span class="w">    </span><span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 <span class="k">end</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">off</span>
@@ -747,8 +745,8 @@ in the jsonstruct and re-run the simulation.</p>
 
 <span class="w">    </span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 <span class="w">    </span><span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">&#39;Control&#39;</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span><span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">'Control'</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">plot</span><span class="p">((</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">),</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">'-'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 <span class="w">    </span><span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 <span class="k">end</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">off</span>
@@ -763,11 +761,11 @@ in the jsonstruct and re-run the simulation.</p>
 <p>First, we clear the workspace and reload the original parameter set to start from a clean slate:</p>
 <div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">clear</span><span class="w"> </span><span class="nb">all</span>
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
-<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/sample_input.json&#39;</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/JsonDataFiles/sample_input.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Now we load and parse the LFP material parameters from the <strong>BattMo</strong> library and move it to the right place in the model hierarchy:</p>
-<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">lfp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/MaterialProperties/LFP/LFP_Xu2015.json&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">lfp</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'ParameterData/MaterialProperties/LFP/LFP_Xu2015.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_lfp</span><span class="p">.</span><span class="n">PositiveElectrode</span><span class="p">.</span><span class="n">Coating</span><span class="p">.</span><span class="n">ActiveMaterial</span><span class="p">.</span><span class="n">Interface</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">lfp</span><span class="p">;</span>
 </pre></div>
 </div>

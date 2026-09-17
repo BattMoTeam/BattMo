@@ -451,7 +451,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -469,7 +468,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -577,10 +575,10 @@
 
 <span class="c">%% Setup of the material properties</span>
 <span class="c">% </span>
-<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">);</span>
+<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'lithium_ion_battery_lco_graphite.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
 <span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
@@ -588,14 +586,14 @@
 <span class="c">%% Setup of the geometry</span>
 <span class="c">%</span>
 <span class="c">% We use a simple 3d-geometry</span>
-<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;geometry3d.json&#39;</span><span class="p">);</span>
+<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'geometry3d.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
 <span class="c">%% Setup of the Control</span>
 <span class="c">%</span>
-<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
+<span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'cc_discharge_control.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
 <span class="c">%% Setup the full input</span>
@@ -603,7 +601,7 @@
 <span class="c">%</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;warn&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">},</span><span class="w"> </span><span class="s">'warn'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 
 <span class="c">%%</span>
@@ -657,10 +655,10 @@
 <span class="c">% the 3d model.</span>
 
 <span class="nb">figure</span>
-<span class="n">plotFaceData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;black&#39;</span><span class="p">);</span>
+<span class="n">plotFaceData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s">'edgecolor'</span><span class="p">,</span><span class="w"> </span><span class="s">'black'</span><span class="p">);</span>
 <span class="n">axis</span><span class="w"> </span><span class="s">equal</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">]);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;External Heat Transfer Coefficient / W/s/m^2&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'External Heat Transfer Coefficient / W/s/m^2'</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 
 <span class="c">%% Run the simulation</span>
@@ -674,15 +672,15 @@
 <span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">time</span><span class="p">;</span>
 <span class="n">E</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">E</span><span class="p">;</span>
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaulttextfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaulttextfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
 
 <span class="n">figure</span>
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">E)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;voltage / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'voltage / V'</span><span class="p">);</span>
 
 
 <span class="c">%% Plot of the minimum and maximum values of the temperature</span>
@@ -702,11 +700,11 @@
 
 <span class="nb">figure</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;min T&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'min T'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 
@@ -741,11 +739,11 @@
 
 <span class="n">figure</span>
 <span class="s">hold</span><span class="w"> </span><span class="s">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;min T&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'min T'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 
@@ -759,7 +757,7 @@
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">             </span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">T0</span><span class="p">);</span>
 <span class="n">colorbar</span>
-<span class="s">title(&#39;Temperature / C&#39;)</span><span class="p">;</span>
+<span class="s">title('Temperature / C')</span><span class="p">;</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">]);</span>
 
 <span class="cm">%{</span>

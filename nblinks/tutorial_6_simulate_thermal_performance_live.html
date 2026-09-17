@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -595,7 +593,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/jsondatafiles/sample_input.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="p">.</span><span class="n">include_current_collectors</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 </pre></div>
 </div>
@@ -608,7 +606,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/geometry3d.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/JsonDataFiles/geometry3d.json'</span><span class="p">);</span>
 <span class="nb">disp</span><span class="p">(</span><span class="n">jsonstruct_geometry</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -695,15 +693,15 @@ mergeStructs: Parameter ThermalModel.externalHeatTransferCoefficient is assigned
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">time</span><span class="p">;</span>
 <span class="n">E</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">E</span><span class="p">;</span>
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaulttextfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaulttextfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
 
 <span class="n">figure</span>
 <span class="s">plot(time/hour,</span><span class="w"> </span><span class="s">E)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;voltage / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'voltage / V'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -727,11 +725,11 @@ mergeStructs: Parameter ThermalModel.externalHeatTransferCoefficient is assigned
 
 <span class="n">figure</span>
 <span class="s">hold</span><span class="w"> </span><span class="s">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;min T&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'min T'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 </pre></div>
@@ -780,7 +778,7 @@ state = struct with fields:
 <span class="n">plotCellData</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">T</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">T0</span><span class="p">);</span>
 <span class="n">colorbar</span>
-<span class="s">title(&#39;Temperature / C&#39;)</span><span class="p">;</span>
+<span class="s">title('Temperature / C')</span><span class="p">;</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">]);</span>
 </pre></div>
 </div>
@@ -869,10 +867,10 @@ state = struct with fields:
 <span class="n">val</span><span class="p">(</span><span class="n">extfaceind</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">externalHeatTransferCoefficient</span><span class="p">;</span>
 
 <span class="n">figure</span>
-<span class="s">plotFaceData(G,</span><span class="w"> </span><span class="s">val,</span><span class="w"> </span><span class="s">&#39;edgecolor&#39;,</span><span class="w"> </span><span class="s">&#39;black&#39;)</span><span class="p">;</span>
+<span class="s">plotFaceData(G,</span><span class="w"> </span><span class="s">val,</span><span class="w"> </span><span class="s">'edgecolor',</span><span class="w"> </span><span class="s">'black')</span><span class="p">;</span>
 <span class="n">axis</span><span class="w"> </span><span class="s">equal</span>
 <span class="nb">view</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">]);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;External Heat Transfer Coefficient / W/s/m^2&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'External Heat Transfer Coefficient / W/s/m^2'</span><span class="p">)</span>
 <span class="nb">colorbar</span>
 </pre></div>
 </div>
@@ -916,11 +914,11 @@ state = struct with fields:
 
 <span class="n">figure</span>
 <span class="s">hold</span><span class="w"> </span><span class="s">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;min T&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmin</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'min T'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 </pre></div>

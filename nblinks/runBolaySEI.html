@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -615,16 +613,16 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">;</span>
-<span class="n">pe</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">;</span>
-<span class="n">am</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">;</span>
-<span class="n">co</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">;</span>
-<span class="n">sd</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidDiffusion&#39;</span><span class="p">;</span>
-<span class="n">itf</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Interface&#39;</span><span class="p">;</span>
-<span class="n">sei</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SolidElectrodeInterface&#39;</span><span class="p">;</span>
-<span class="n">sr</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;SideReaction&#39;</span><span class="p">;</span>
-<span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Electrolyte&#39;</span><span class="p">;</span>
-<span class="n">ctrl</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Control&#39;</span><span class="p">;</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">ne</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'NegativeElectrode'</span><span class="p">;</span>
+<span class="n">pe</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'PositiveElectrode'</span><span class="p">;</span>
+<span class="n">am</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'ActiveMaterial'</span><span class="p">;</span>
+<span class="n">co</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">;</span>
+<span class="n">sd</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'SolidDiffusion'</span><span class="p">;</span>
+<span class="n">itf</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'Interface'</span><span class="p">;</span>
+<span class="n">sei</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">'SolidElectrodeInterface'</span><span class="p">;</span>
+<span class="n">sr</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">'SideReaction'</span><span class="p">;</span>
+<span class="n">elyte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'Electrolyte'</span><span class="p">;</span>
+<span class="n">ctrl</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">'Control'</span><span class="p">;</span>
 </pre></div>
 </div>
 </div>
@@ -635,8 +633,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="p">,</span><span class="w"> </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'lithium_ion_battery_nmc_graphite.json'</span><span class="p">);</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -655,7 +653,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;ParameterSets&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Bolay2022&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;bolay_sei_interface.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="p">,</span><span class="w"> </span><span class="s">'ParameterSets'</span><span class="p">,</span><span class="w"> </span><span class="s">'Bolay2022'</span><span class="p">,</span><span class="w"> </span><span class="s">'bolay_sei_interface.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_bolay</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
 
@@ -669,15 +667,15 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsontruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="w"> </span><span class="s">&#39;controlPolicy&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;CCCV&#39;</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;initialControl&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">&#39;discharging&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;numberOfCycles&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;CRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;DRate&#39;</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;lowerCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;upperCutoffVoltage&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;dIdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">1e-4</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                            </span><span class="s">&#39;dEdtLimit&#39;</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsontruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="w"> </span><span class="s">'controlPolicy'</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="s">'CCCV'</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'initialControl'</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">'discharging'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'numberOfCycles'</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'CRate'</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'DRate'</span><span class="w">             </span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'lowerCutoffVoltage'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'upperCutoffVoltage'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'dIdtLimit'</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">1e-4</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                            </span><span class="s">'dEdtLimit'</span><span class="w">         </span><span class="p">,</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">);</span>
 
 
 <span class="n">jsonstruct</span><span class="p">.(</span><span class="n">ctrl</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsontruct_control</span><span class="p">;</span>
@@ -692,7 +690,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometry1d.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometry1d.json'</span><span class="p">);</span>
 <span class="n">jsontruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 
 
@@ -735,8 +733,8 @@
 <span class="nb">close</span><span class="w"> </span><span class="nb">all</span>
 
 
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -746,9 +744,9 @@
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;*-&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">'*-'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -766,8 +764,8 @@
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current / A&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current / A'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -791,15 +789,15 @@
 
 
 <span class="n">delta</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">SEIlength</span><span class="p">(</span><span class="k">end</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">delta</span><span class="o">/</span><span class="p">(</span><span class="n">nano</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;at x_{max}&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">delta</span><span class="o">/</span><span class="p">(</span><span class="n">nano</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'at x_{max}'</span><span class="p">)</span>
 
 
 <span class="n">delta</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">SEIlength</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">delta</span><span class="o">/</span><span class="p">(</span><span class="n">nano</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;at x_{min}&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">delta</span><span class="o">/</span><span class="p">(</span><span class="n">nano</span><span class="o">*</span><span class="n">meter</span><span class="p">),</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'at x_{min}'</span><span class="p">)</span>
 
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SEI thickness in negative electrode/ nm&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SEI thickness in negative electrode/ nm'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 
 
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
@@ -826,15 +824,15 @@
 
 
 <span class="n">u</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">SEIvoltageDrop</span><span class="p">(</span><span class="k">end</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;at x_{max}&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'at x_{max}'</span><span class="p">)</span>
 
 
 <span class="n">u</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">SEIvoltageDrop</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;at x_{min}&#39;</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'at x_{min}'</span><span class="p">)</span>
 
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SEI voltage drop in negative electrode/ V&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SEI voltage drop in negative electrode/ V'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
 </pre></div>
 </div>
@@ -862,14 +860,14 @@
 
 <span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
 <span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">};</span>
-<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">itf</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SEIconcentration&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">itf</span><span class="p">,</span><span class="w"> </span><span class="s">'SEIconcentration'</span><span class="p">});</span>
 <span class="w">    </span><span class="n">m</span><span class="p">(</span><span class="n">istate</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">sum</span><span class="p">(</span><span class="n">vols</span><span class="o">.*</span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">sd</span><span class="p">).</span><span class="n">cAverage</span><span class="p">);</span>
 <span class="k">end</span>
 
 
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Total lithium amount in negative electrode / mol&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Total lithium amount in negative electrode / mol'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -898,7 +896,7 @@
 
 
 <span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states</span><span class="p">{</span><span class="n">timeindex</span><span class="p">};</span>
-<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">itf</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;SEIconcentration&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">am</span><span class="p">,</span><span class="w"> </span><span class="n">itf</span><span class="p">,</span><span class="w"> </span><span class="s">'SEIconcentration'</span><span class="p">});</span>
 <span class="w">    </span><span class="n">cSEI</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="n">ne</span><span class="p">).(</span><span class="n">co</span><span class="p">).(</span><span class="n">am</span><span class="p">).(</span><span class="n">itf</span><span class="p">).</span><span class="n">SEIconcentration</span><span class="p">;</span>
 
 <span class="w">    </span><span class="n">Liqqt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">sum</span><span class="p">(</span><span class="n">cSEI</span><span class="o">.*</span><span class="n">vols</span><span class="p">);</span>
@@ -909,9 +907,9 @@
 
 <span class="nb">figure</span>
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">quantities</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Lithium quantity consummed&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;quantity / mol&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Lithium quantity consummed'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'quantity / mol'</span><span class="p">);</span>
 <span class="n">grid</span><span class="w"> </span><span class="s">on</span><span class="p">;</span>
 
 
@@ -956,8 +954,8 @@
 <span class="k">end</span>
 
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SEI thickness in negative electrode/ nm&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SEI thickness in negative electrode/ nm'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">)</span>
 
 
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
@@ -979,16 +977,16 @@
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
 
 
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">PE_Li_quantities</span><span class="w">                </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Positive Electrode&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">NE_Li_quantities</span><span class="w">                </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Negative Electrode&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Electrolyte_Li_quantities</span><span class="w">       </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Electrolyte&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Electrodes_Li_quantities</span><span class="w">        </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Both Electrodes&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Total_Li_quantities</span><span class="w">             </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Total (except SEI)&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Total_Li_quantities</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">quantities</span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;Total (including SEI)&#39;</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">quantities</span><span class="w">                      </span><span class="p">,</span><span class="s">&#39;DisplayName&#39;</span><span class="p">,</span><span class="s">&#39;In the SEI&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Lithium quantity&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;quantity / mol&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">PE_Li_quantities</span><span class="w">                </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Positive Electrode'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">NE_Li_quantities</span><span class="w">                </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Negative Electrode'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Electrolyte_Li_quantities</span><span class="w">       </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Electrolyte'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Electrodes_Li_quantities</span><span class="w">        </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Both Electrodes'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Total_Li_quantities</span><span class="w">             </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Total (except SEI)'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Total_Li_quantities</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">quantities</span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'Total (including SEI)'</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">quantities</span><span class="w">                      </span><span class="p">,</span><span class="s">'DisplayName'</span><span class="p">,</span><span class="s">'In the SEI'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Lithium quantity'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'quantity / mol'</span><span class="p">);</span>
 <span class="n">grid</span><span class="w"> </span><span class="s">on</span><span class="p">;</span>
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
 </pre></div>
@@ -1023,9 +1021,9 @@
 <span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">qty</span><span class="o">*</span><span class="n">F</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">capacity</span><span class="p">);</span>
 
 
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Percentage of Lithium consummed&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;%&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Percentage of Lithium consummed'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'%'</span><span class="p">);</span>
 <span class="n">grid</span><span class="w"> </span><span class="s">on</span><span class="p">;</span>
 </pre></div>
 </div>

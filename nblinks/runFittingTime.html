@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -593,7 +591,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">clear</span><span class="w"> </span><span class="n">jsonstruct_control</span>
-<span class="n">jsonstruct_control</span><span class="p">.</span><span class="n">controlPolicy</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;timeControl&quot;</span><span class="p">;</span>
+<span class="n">jsonstruct_control</span><span class="p">.</span><span class="n">controlPolicy</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"timeControl"</span><span class="p">;</span>
 
 
 <span class="n">vals</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="w">    </span><span class="mi">0</span><span class="w">     </span><span class="mf">2.5</span><span class="p">;</span>
@@ -607,8 +605,8 @@
 
 
 <span class="n">clear</span><span class="w"> </span><span class="s">jsonstruct</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">argumentList</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">};</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;tabulated&quot;</span><span class="p">;</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">argumentList</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">"time"</span><span class="p">};</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"tabulated"</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">dataX</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">vals</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">dataY</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">vals</span><span class="p">(:,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
 
@@ -617,22 +615,22 @@
 
 
 <span class="n">clear</span><span class="w"> </span><span class="s">jsonstruct</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">argumentList</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;time&quot;</span><span class="p">};</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;constant&quot;</span><span class="p">;</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">argumentList</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="s">"time"</span><span class="p">};</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">functionFormat</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"constant"</span><span class="p">;</span>
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
 
 
 <span class="n">jsonstruct_control</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">;</span>
 
 
-<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="p">,</span><span class="s">&#39;ParameterSets&#39;</span><span class="p">,</span><span class="s">&#39;Chen2020&#39;</span><span class="p">,</span><span class="s">&#39;chen2020_lithium_ion_battery.json&#39;</span><span class="p">));</span>
-<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;geometryChen.json&#39;</span><span class="p">));</span>
+<span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="p">,</span><span class="s">'ParameterSets'</span><span class="p">,</span><span class="s">'Chen2020'</span><span class="p">,</span><span class="s">'chen2020_lithium_ion_battery.json'</span><span class="p">));</span>
+<span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'geometryChen.json'</span><span class="p">));</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_material</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct_geometry</span><span class="p">});</span>
 
 
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">Control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">jsonstruct_control</span><span class="p">;</span>
-<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;totalTime&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">vals</span><span class="p">(</span><span class="k">end</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                                 </span><span class="s">&quot;numberOfTimeSteps&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="n">jsonstruct</span><span class="p">.</span><span class="n">TimeStepping</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">'totalTime'</span><span class="p">,</span><span class="w"> </span><span class="n">vals</span><span class="p">(</span><span class="k">end</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                                 </span><span class="s">"numberOfTimeSteps"</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
 
 
 <span class="n">output</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">runBattery</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">);</span>
@@ -649,16 +647,16 @@
 
 <span class="n">nexttile</span>
 <span class="s">plot(output.time,</span><span class="w"> </span><span class="s">output.E)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / s&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;E / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / s'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'E / V'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(output.time,</span><span class="w"> </span><span class="s">output.I)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / s&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;I / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / s'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'I / V'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

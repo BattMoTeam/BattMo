@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -591,7 +589,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/MaterialProperties/LFP/LFP_Xu2015.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'ParameterData/MaterialProperties/LFP/LFP_Xu2015.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -705,9 +703,9 @@
 
 <span class="n">figure</span>
 <span class="s">plot(x,</span><span class="w"> </span><span class="s">y)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Stoichiometry&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP function LFP Xu 2015&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Stoichiometry'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP function LFP Xu 2015'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -723,7 +721,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'ParameterData/ParameterSets/Chen2020/chen2020_positive_electrode_interface.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -838,9 +836,9 @@ ans = 3.9720
 
 <span class="n">figure</span>
 <span class="s">plot(x,</span><span class="w"> </span><span class="s">y)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Stoichiometry&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP function NMC Chen 2020&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Stoichiometry'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP function NMC Chen 2020'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -856,7 +854,7 @@ ans = 3.9720
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Documentation/jsonfiles/LFP_Xu2015_csv.json&#39;</span><span class="p">)</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Documentation/jsonfiles/LFP_Xu2015_csv.json'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -922,9 +920,9 @@ jsonstruct = struct with fields:
 
 <span class="n">figure</span>
 <span class="s">plot(x,</span><span class="w"> </span><span class="s">y)</span><span class="p">;</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Stoichiometry&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP function LFP Xu2015&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Stoichiometry'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP function LFP Xu2015'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

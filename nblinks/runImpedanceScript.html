@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -593,10 +591,10 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                             </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                             </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                             </span><span class="s">&#39;lithium_ion_battery_lco_graphite.json&#39;</span><span class="p">));</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                             </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                             </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                             </span><span class="s">'lithium_ion_battery_lco_graphite.json'</span><span class="p">));</span>
 <span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
 
 <span class="n">jsonstruct</span><span class="p">.</span><span class="n">use_thermal</span><span class="w">                </span><span class="p">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
@@ -615,8 +613,8 @@
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%</span>
 <span class="c">% Plot settings</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultlinelinewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;defaultaxesfontsize&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultlinelinewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="nb">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">'defaultaxesfontsize'</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">);</span>
 
 <span class="n">figure</span>
 <span class="s">hold</span><span class="w"> </span><span class="s">on</span>
@@ -628,7 +626,7 @@
 <span class="n">socs</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
 
 <span class="n">options</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[];</span>
-<span class="n">options</span><span class="p">.</span><span class="n">stateInitialization</span><span class="p">.</span><span class="n">initializationSetup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;soc&#39;</span><span class="p">;</span>
+<span class="n">options</span><span class="p">.</span><span class="n">stateInitialization</span><span class="p">.</span><span class="n">initializationSetup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">'soc'</span><span class="p">;</span>
 
 <span class="k">for</span><span class="w"> </span><span class="n">isoc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">socs</span><span class="p">)</span>
 
@@ -643,15 +641,15 @@
 
 <span class="w">    </span><span class="n">Z</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span><span class="n">Z</span><span class="o">*</span><span class="n">gen</span><span class="p">.</span><span class="n">faceArea</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">centi</span><span class="o">*</span><span class="n">meter</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span><span class="p">);</span>
 
-<span class="w">    </span><span class="n">legtxt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">&#39;SOC=%g&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">soc</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">real</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span><span class="w"> </span><span class="o">-</span><span class="nb">imag</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">legtxt</span><span class="p">);</span>
-<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;real(Z) / Ωcm^2&#39;</span><span class="p">)</span>
-<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;-imag(Z) / Ωcm^2&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">legtxt</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">sprintf</span><span class="p">(</span><span class="s">'SOC=%g'</span><span class="p">,</span><span class="w"> </span><span class="n">soc</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">plot</span><span class="p">(</span><span class="nb">real</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span><span class="w"> </span><span class="o">-</span><span class="nb">imag</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="n">legtxt</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">xlabel</span><span class="p">(</span><span class="s">'real(Z) / Ωcm^2'</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">ylabel</span><span class="p">(</span><span class="s">'-imag(Z) / Ωcm^2'</span><span class="p">)</span>
 
 <span class="k">end</span>
 
 <span class="nb">legend</span><span class="w"> </span><span class="n">show</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Impedance&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Impedance'</span><span class="p">)</span>
 <span class="nb">axis</span><span class="w"> </span><span class="n">equal</span>
 </pre></div>
 </div>

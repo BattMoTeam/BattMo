@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -621,49 +619,49 @@
 
 
 <span class="n">figure</span>
-<span class="s">tiledlayout(2,</span><span class="w"> </span><span class="s">3,</span><span class="w"> </span><span class="s">&#39;tileindexing&#39;,</span><span class="w"> </span><span class="s">&#39;columnmajor&#39;)</span><span class="p">;</span>
+<span class="s">tiledlayout(2,</span><span class="w"> </span><span class="s">3,</span><span class="w"> </span><span class="s">'tileindexing',</span><span class="w"> </span><span class="s">'columnmajor')</span><span class="p">;</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.OCPfunc(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;OCP&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;OCP / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'OCP'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'OCP / V'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R0func(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R0&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R0 / Ohm&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R0'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R0 / Ohm'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R1func(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R1&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R1 / Ohm&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R1'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R1 / Ohm'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.C1func(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C1&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C1 / Ohm&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'C1'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'C1 / Ohm'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.R2func(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;R2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;R2 / Ohm&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'R2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'R2 / Ohm'</span><span class="p">);</span>
 
 
 <span class="n">nexttile</span>
 <span class="s">plot(soc,</span><span class="w"> </span><span class="s">model.C2func(soc))</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;C2&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;C2 / Ohm&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'C2'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'C2 / Ohm'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -682,10 +680,10 @@
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">figure</span>
 <span class="n">totalTime</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">totalTime</span><span class="p">;</span>
 <span class="n">t</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">totalTime</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Ifunc</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="w"> </span><span class="s">&#39;o-&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Input current&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / hour&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;I / A&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">model</span><span class="p">.</span><span class="n">Ifunc</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="w"> </span><span class="s">'o-'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Input current'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / hour'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'I / A'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -713,19 +711,19 @@
 <span class="nb">tiledlayout</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 <span class="nb">nexttile</span>
 <span class="nb">plot</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">I</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Current&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Current / A&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Current'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / hour'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Current / A'</span><span class="p">);</span>
 <span class="n">nexttile</span>
 <span class="s">plot(t/hour,</span><span class="w"> </span><span class="s">U)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / hour'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
 <span class="n">nexttile</span>
 <span class="s">plot(t/hour,</span><span class="w"> </span><span class="s">SOC)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;SOC&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Time / hour&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;SOC / -&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'SOC'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Time / hour'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'SOC / -'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

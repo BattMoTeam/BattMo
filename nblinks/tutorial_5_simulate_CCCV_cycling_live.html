@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -596,7 +594,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/jsondatafiles/sample_input.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/jsondatafiles/sample_input.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -633,7 +631,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">cccv_control_protocol</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;cccv_control.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">cccv_control_protocol</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'cccv_control.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_modified</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">cccv_control_protocol</span><span class="p">,</span><span class="w"> </span><span class="n">jsonstruct</span><span class="p">});</span>
 </pre></div>
 </div>
@@ -697,18 +695,18 @@ mergeStructs: Parameter Control.dEdtLimit is assigned twice with different value
 
 <span class="c">% extract the time and voltage quantities</span>
 <span class="nb">time</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">time</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">&#39;Control&#39;</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
-<span class="n">current</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">&#39;Control&#39;</span><span class="p">).</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="n">voltage</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">'Control'</span><span class="p">).</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="n">current</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.(</span><span class="s">'Control'</span><span class="p">).</span><span class="n">I</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
 
 <span class="c">% calculate the capacity</span>
 <span class="n">capacity</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">.*</span><span class="w"> </span><span class="n">current</span><span class="p">;</span>
 
 <span class="c">% plot the discharge curve in the figure</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;linewidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">voltage</span><span class="p">,</span><span class="w"> </span><span class="s">'-'</span><span class="p">,</span><span class="w"> </span><span class="s">'linewidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 
 <span class="c">% add plot annotations</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Capacity  /  mA \cdot h&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Cell Voltage  /  V&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Capacity  /  mA \cdot h'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Cell Voltage  /  V'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

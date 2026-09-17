@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -599,7 +597,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">&#39;Examples/JsonDataFiles/sample_input.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="s">'Examples/JsonDataFiles/sample_input.json'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -672,7 +670,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotDashboard</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;step&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotDashboard</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">'step'</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -753,14 +751,14 @@
 <span class="c">% plot them in a figure</span>
 <span class="nb">figure</span><span class="p">();</span>
 <span class="n">grid_axes</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">axes</span><span class="p">();</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">grid_axes</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;+&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">grid_axes</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span><span class="w"> </span><span class="s">'+'</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c">% remove the y-axis ticks</span>
 <span class="nb">yticks</span><span class="p">([]);</span>
 
 <span class="c">% add plot annotations</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Grid Centroids&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Grid Centroids'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -785,18 +783,18 @@
 
 <span class="c">% plot them together on one figure</span>
 <span class="nb">figure</span><span class="p">()</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_ne</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_ne</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;+&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_ne</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_ne</span><span class="p">)),</span><span class="w"> </span><span class="s">'+'</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_sep</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_sep</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;+k&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x_pe</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_pe</span><span class="p">)),</span><span class="w"> </span><span class="s">&#39;+r&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_sep</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_sep</span><span class="p">)),</span><span class="w"> </span><span class="s">'+k'</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x_pe</span><span class="p">,</span><span class="w"> </span><span class="nb">zeros</span><span class="p">(</span><span class="nb">size</span><span class="p">(</span><span class="n">x_pe</span><span class="p">)),</span><span class="w"> </span><span class="s">'+r'</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
 
 <span class="c">% remove the y-axis tick marks</span>
 <span class="nb">yticks</span><span class="p">([]);</span>
 
 <span class="c">% add plot annotations</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Grid Centroids by Component&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
-<span class="nb">legend</span><span class="p">(</span><span class="s">&#39;Negative Electrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Separator&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Positive Electrode&#39;</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Grid Centroids by Component'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
+<span class="nb">legend</span><span class="p">(</span><span class="s">'Negative Electrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'Separator'</span><span class="p">,</span><span class="w"> </span><span class="s">'Positive Electrode'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -871,11 +869,11 @@
 
 <span class="c">% plot the concentration values at the given grid centroid locations</span>
 <span class="nb">figure</span><span class="p">()</span>
-<span class="nb">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
 
 <span class="c">% add plot annotations</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Concentration  /  mol \cdot m^{-3}&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Concentration  /  mol \cdot m^{-3}'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -896,17 +894,17 @@
 <span class="n">hold</span><span class="w"> </span><span class="s">on</span>
 
 <span class="c">% define a colormap for the line colors</span>
-<span class="n">cm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cmocean</span><span class="p">(</span><span class="s">&#39;matter&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">length</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">));</span>
+<span class="n">cm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">cmocean</span><span class="p">(</span><span class="s">'matter'</span><span class="p">,</span><span class="w"> </span><span class="nb">length</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">));</span>
 
 <span class="c">% iterate through each of the output states and plot the calculated</span>
 <span class="c">% electrolyte concentration at each timestep</span>
 <span class="k">for</span><span class="w"> </span><span class="n">timestep</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">)</span>
-<span class="w">    </span><span class="n">plotCellData</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="n">timestep</span><span class="p">}.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;LineWidth&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Color&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">cm</span><span class="p">(</span><span class="n">timestep</span><span class="p">,:))</span>
+<span class="w">    </span><span class="n">plotCellData</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">states</span><span class="p">{</span><span class="n">timestep</span><span class="p">}.</span><span class="n">Electrolyte</span><span class="p">.</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="s">'LineWidth'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s">'Color'</span><span class="p">,</span><span class="w"> </span><span class="n">cm</span><span class="p">(</span><span class="n">timestep</span><span class="p">,:))</span>
 <span class="k">end</span>
 
 <span class="c">% add plot annotations and turn hold off</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;Position  /  m&#39;</span><span class="p">)</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Concentration  /  mol \cdot m^{-3}&#39;</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'Position  /  m'</span><span class="p">)</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Concentration  /  mol \cdot m^{-3}'</span><span class="p">)</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">off</span>
 </pre></div>
 </div>

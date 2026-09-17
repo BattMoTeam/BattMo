@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_1_battery_modeling_guide.html#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../modelingGuide/part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -595,10 +593,10 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;ParameterData&#39;</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;BatteryCellParameters&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;LithiumIonBatteryCell&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;lithium_ion_battery_nmc_graphite.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'ParameterData'</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'BatteryCellParameters'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'LithiumIonBatteryCell'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'lithium_ion_battery_nmc_graphite.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -611,9 +609,9 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                        </span><span class="s">&#39;geometry3d.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="w">     </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                        </span><span class="s">'geometry3d.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -626,7 +624,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">&#39;Examples&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;JsonDataFiles&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;cc_discharge_control.json&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonfilename</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">fullfile</span><span class="p">(</span><span class="s">'Examples'</span><span class="p">,</span><span class="w"> </span><span class="s">'JsonDataFiles'</span><span class="p">,</span><span class="w"> </span><span class="s">'cc_discharge_control.json'</span><span class="p">);</span>
 <span class="n">jsonstruct_control</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">parseBattmoJson</span><span class="p">(</span><span class="n">jsonfilename</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -638,7 +636,7 @@
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">mergeStructs</span><span class="p">({</span><span class="n">jsonstruct_geometry</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
 <span class="w">                               </span><span class="n">jsonstruct_material</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">},</span><span class="w"> </span><span class="s">&#39;warn&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">                               </span><span class="n">jsonstruct_control</span><span class="p">},</span><span class="w"> </span><span class="s">'warn'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -662,17 +660,17 @@
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">coef</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">5e-2</span><span class="p">;</span>
-<span class="n">locations</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;CurrentCollector&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;specificHeatCapacity&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">             </span><span class="p">{</span><span class="s">&#39;NegativeElectrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;specificHeatCapacity&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">             </span><span class="p">{</span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;CurrentCollector&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;specificHeatCapacity&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">             </span><span class="p">{</span><span class="s">&#39;PositiveElectrode&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Coating&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;ActiveMaterial&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;specificHeatCapacity&#39;</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
-<span class="w">             </span><span class="p">{</span><span class="s">&#39;Electrolyte&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;specificHeatCapacity&#39;</span><span class="p">}};</span>
+<span class="n">locations</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{{</span><span class="s">'NegativeElectrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'CurrentCollector'</span><span class="p">,</span><span class="w"> </span><span class="s">'specificHeatCapacity'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">             </span><span class="p">{</span><span class="s">'NegativeElectrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">,</span><span class="w"> </span><span class="s">'ActiveMaterial'</span><span class="p">,</span><span class="w"> </span><span class="s">'specificHeatCapacity'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">             </span><span class="p">{</span><span class="s">'PositiveElectrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'CurrentCollector'</span><span class="p">,</span><span class="w"> </span><span class="s">'specificHeatCapacity'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">             </span><span class="p">{</span><span class="s">'PositiveElectrode'</span><span class="p">,</span><span class="w"> </span><span class="s">'Coating'</span><span class="p">,</span><span class="w"> </span><span class="s">'ActiveMaterial'</span><span class="p">,</span><span class="w"> </span><span class="s">'specificHeatCapacity'</span><span class="p">},</span><span class="w"> </span><span class="k">...</span>
+<span class="w">             </span><span class="p">{</span><span class="s">'Electrolyte'</span><span class="p">,</span><span class="w"> </span><span class="s">'specificHeatCapacity'</span><span class="p">}};</span>
 
 
 <span class="k">for</span><span class="w"> </span><span class="n">iloc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">locations</span><span class="p">)</span>
 <span class="w">    </span><span class="n">loc</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">locations</span><span class="p">{</span><span class="n">iloc</span><span class="p">};</span>
 <span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">getStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="n">loc</span><span class="p">);</span>
-<span class="w">    </span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="n">loc</span><span class="p">,</span><span class="w"> </span><span class="n">coef</span><span class="o">*</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">jsonstruct</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="n">loc</span><span class="p">,</span><span class="w"> </span><span class="n">coef</span><span class="o">*</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
 <span class="k">end</span>
 </pre></div>
 </div>
@@ -705,7 +703,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotBatteryGrid</span><span class="p">(</span><span class="n">output_fullycoupled</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;shortLegendText&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;figure&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotBatteryGrid</span><span class="p">(</span><span class="n">output_fullycoupled</span><span class="p">.</span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="s">'shortLegendText'</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">'figure'</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -724,7 +722,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_isothermal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;use_thermal&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;handleMisMatch&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;quiet&#39;</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">jsonstruct_isothermal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">setStructField</span><span class="p">(</span><span class="n">jsonstruct</span><span class="p">,</span><span class="w"> </span><span class="s">'use_thermal'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="s">'handleMisMatch'</span><span class="p">,</span><span class="w"> </span><span class="s">'quiet'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -748,7 +746,7 @@
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output_isothermal</span><span class="p">.</span><span class="n">states</span><span class="p">;</span>
 <span class="k">for</span><span class="w"> </span><span class="n">istate</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">numel</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
 <span class="w">    </span><span class="c">% The functions to compute the source terms are available in the fully coupled model.</span>
-<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output_fullycoupled</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="s">&#39;ThermalModel&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;jHeatSource&#39;</span><span class="p">});</span>
+<span class="w">    </span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">}</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">output_fullycoupled</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">evalVarName</span><span class="p">(</span><span class="n">states</span><span class="p">{</span><span class="n">istate</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="s">'ThermalModel'</span><span class="p">,</span><span class="w"> </span><span class="s">'jHeatSource'</span><span class="p">});</span>
 <span class="k">end</span>
 </pre></div>
 </div>
@@ -761,7 +759,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">sourceTerms</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">jHeatSource</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;uniformoutput&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">sourceTerms</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">cellfun</span><span class="p">(@(</span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">ThermalModel</span><span class="p">.</span><span class="n">jHeatSource</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">,</span><span class="w"> </span><span class="s">'uniformoutput'</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 
 <span class="n">hss</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">HeatSourceSetup</span><span class="p">(</span><span class="n">sourceTerms</span><span class="p">,</span><span class="w"> </span><span class="n">output_isothermal</span><span class="p">.</span><span class="n">time</span><span class="p">);</span>
@@ -824,8 +822,8 @@
 <span class="n">control</span><span class="p">.</span><span class="n">src</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">@(</span><span class="nb">time</span><span class="p">)</span><span class="w"> </span><span class="n">hss</span><span class="p">.</span><span class="n">eval</span><span class="p">(</span><span class="nb">time</span><span class="p">);</span>
 
 
-<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                  </span><span class="s">&#39;step&#39;</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
+<span class="n">schedule</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">'control'</span><span class="p">,</span><span class="w"> </span><span class="n">control</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                  </span><span class="s">'step'</span><span class="w">   </span><span class="p">,</span><span class="w"> </span><span class="nb">step</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -852,9 +850,9 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">simInput</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="n">model_thermal</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                  </span><span class="s">&#39;initstate&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
-<span class="w">                  </span><span class="s">&#39;schedule&#39;</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
+<div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">simInput</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">struct</span><span class="p">(</span><span class="s">'model'</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="n">model_thermal</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                  </span><span class="s">'initstate'</span><span class="p">,</span><span class="w"> </span><span class="n">state0</span><span class="p">,</span><span class="w"> </span><span class="k">...</span>
+<span class="w">                  </span><span class="s">'schedule'</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">schedule</span><span class="p">);</span>
 
 
 <span class="n">simsetup</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">SimulationSetup</span><span class="p">(</span><span class="n">simInput</span><span class="p">);</span>
@@ -885,18 +883,18 @@
 
 <span class="nb">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T (fully coupled)&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T (fully coupled)'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 
 <span class="nb">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="nb">hold</span><span class="w"> </span><span class="n">on</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;fully coupled&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;voltage / V&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'fully coupled'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'voltage / V'</span><span class="p">);</span>
 
 
 <span class="n">states</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">states_thermal</span><span class="p">;</span>
@@ -909,10 +907,10 @@
 
 
 <span class="nb">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;max T (decoupled)&#39;</span><span class="p">);</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">)</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;Temperature / C&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">Tmax</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'max T (decoupled)'</span><span class="p">);</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">)</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'Temperature / C'</span><span class="p">);</span>
 
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
@@ -931,10 +929,10 @@
 </pre></div>
 </div>
 <div class="input_area highlight-matlab notranslate"><div class="highlight"><pre><br/><br/><span></span><span class="nb">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;displayname&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;isothermal&#39;</span><span class="p">)</span>
-<span class="nb">title</span><span class="p">(</span><span class="s">&#39;Voltage / V&#39;</span><span class="p">);</span>
-<span class="nb">xlabel</span><span class="p">(</span><span class="s">&#39;time / h&#39;</span><span class="p">);</span>
-<span class="nb">ylabel</span><span class="p">(</span><span class="s">&#39;voltage / V&#39;</span><span class="p">);</span>
+<span class="nb">plot</span><span class="p">(</span><span class="nb">time</span><span class="o">/</span><span class="nb">hour</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="s">'displayname'</span><span class="p">,</span><span class="w"> </span><span class="s">'isothermal'</span><span class="p">)</span>
+<span class="nb">title</span><span class="p">(</span><span class="s">'Voltage / V'</span><span class="p">);</span>
+<span class="nb">xlabel</span><span class="p">(</span><span class="s">'time / h'</span><span class="p">);</span>
+<span class="nb">ylabel</span><span class="p">(</span><span class="s">'voltage / V'</span><span class="p">);</span>
 
 
 <span class="n">legend</span><span class="w"> </span><span class="s">show</span>
