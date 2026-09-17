@@ -409,7 +409,7 @@ models. Once the two steps above are done, a Newton loop in our simulator will c
 #. Assembly of the Jacobian obtained form the residual equations (the tail nodes)
 
 The Jacobian matrix with the residuals can be sent to a Newton solver which will return an update of the
-primary variables, until convergence. All these three steps can by **automatized** as we will see later, so
+primary variables, until convergence. All these three steps can by **automated** as we will see later, so
 that a user which wants to implement a new model can only focus on the two steps mentioned further up.
 
 We need now to provide the user with a framework for computational graph and functionalities to setup graphs
