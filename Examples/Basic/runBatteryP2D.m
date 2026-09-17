@@ -68,7 +68,7 @@ model = GenericBattery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgit = model.computationalGraph;
+    cgit = model.computationalGraph; %#ok<UNRCH>
     return
 end
 
@@ -157,12 +157,12 @@ ylabel 'Current  / A';
 
 writeh5 = false;
 if writeh5
-    writeOutput(model, states, 'output.h5');
+    writeOutput(model, states, 'output.h5'); %#ok<UNRCH>
 end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -1,38 +1,35 @@
+clear all
+close all
+
 %% Example with non-linear solver
 
 %% Setup nonlinear solver
 
-jsonfilename = '/home/xavier/Matlab/Projects/battmo/Examples/JsonDataFiles/linear_solver_setup.json';
-jsonstruct_nonlinear_solver = parseBattmoJson(jsonfilename);
+jsonFilename = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', 'linear_solver_setup.json');
+solverJson = parseBattmoJson(jsonFilename);
 
 %% Setup material properties
 
-jsonfilename = fullfile('ParameterData'        , ...
-                        'BatteryCellParameters', ...
-                        'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_lco_graphite.json');
-jsonstruct_material = parseBattmoJson(jsonfilename);
+jsonFilename = fullfile(battmoDir(), 'ParameterData', 'BatteryCellParameters', ...
+    'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json');
+materialJson = parseBattmoJson(jsonFilename);
 
-jsonstruct_material = removeStructFields(jsonstruct_material           , ...
-                                             {'include_current_collectors'}, ...
-                                             {'ThermalModel', 'externalHeatTransferCoefficient'});
+% Use the current collectors and cooling coefficients specified by the geometry.
+materialJson = removeStructFields(materialJson, ...
+    {'include_current_collectors'}, ...
+    {'ThermalModel', 'externalHeatTransferCoefficient'});
 
 %% Setup geometry
-jsonfilename = fullfile('Examples'     , ...
-                        'JsonDataFiles', ...
-                        'geometry3d.json');
-jsonstruct_geometry = parseBattmoJson(jsonfilename);
 
-%% Setup Control
-jsonfilename = fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json');
-jsonstruct_control = parseBattmoJson(jsonfilename);
+jsonFilename = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', 'geometry3d.json');
+geometryJson = parseBattmoJson(jsonFilename);
 
+%% Setup control
 
-jsonstruct = mergeStructs({jsonstruct_nonlinear_solver, ...
-                               jsonstruct_geometry        , ...
-                               jsonstruct_material        , ...
-                               jsonstruct_control});
+jsonFilename = fullfile(battmoDir(), 'Examples', 'JsonDataFiles', 'cc_discharge_control.json');
+controlJson = parseBattmoJson(jsonFilename);
 
+jsonstruct = mergeStructs({solverJson, geometryJson, materialJson, controlJson});
 
 %% Run the simulation
 
@@ -53,20 +50,19 @@ title('Voltage / V');
 xlabel('time / h');
 ylabel('voltage / V');
 
-
 %% Plot the minimum and maximum values of the temperature
 
 T0 = PhysicalConstants.absoluteTemperature;
 
 states = output.states;
 
-Tmin = cellfun(@(state) min(state.ThermalModel.T + T0), states);
-Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
+minTemperature = cellfun(@(state) min(state.ThermalModel.T + T0), states);
+maxTemperature = cellfun(@(state) max(state.ThermalModel.T + T0), states);
 
 figure
 hold on
-plot(time / hour, Tmin, 'displayname', 'min T');
-plot(time / hour, Tmax, 'displayname', 'max T');
+plot(time / hour, minTemperature, 'displayname', 'min T');
+plot(time / hour, maxTemperature, 'displayname', 'max T');
 title('Temperature / C')
 xlabel('time / h');
 ylabel('Temperature / C');
@@ -84,14 +80,14 @@ output = runBattery(jsonstruct);
 
 states = output.states;
 
-Tmin = cellfun(@(state) min(state.ThermalModel.T + T0), states);
-Tmax = cellfun(@(state) max(state.ThermalModel.T + T0), states);
+minTemperature = cellfun(@(state) min(state.ThermalModel.T + T0), states);
+maxTemperature = cellfun(@(state) max(state.ThermalModel.T + T0), states);
 time = output.time;
 
 figure
 hold on
-plot(time / hour, Tmin, 'displayname', 'min T');
-plot(time / hour, Tmax, 'displayname', 'max T');
+plot(time / hour, minTemperature, 'displayname', 'min T');
+plot(time / hour, maxTemperature, 'displayname', 'max T');
 title('Temperature / C')
 xlabel('time / h');
 ylabel('Temperature / C');
@@ -100,16 +96,14 @@ legend show
 
 %% plot final temperature distribution
 
-state = states{end}
+model = output.model;
+state = states{end};
 figure
 plotCellData(model.ThermalModel.grid, ...
-             state.ThermalModel.T + T0);
+    state.ThermalModel.T + T0);
 colorbar
 title('Temperature / C');
 view([50, 50]);
-
-
-
 
 %{
 Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology

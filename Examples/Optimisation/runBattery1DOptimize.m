@@ -74,7 +74,7 @@ time = cellfun(@(x) x.time, states);
 doPlot = false;
 
 if doPlot
-    figure;
+    figure; %#ok<UNRCH>
     plot(time/hour, E, '*-', 'displayname', 'initial');
     xlabel('time  / h');
     ylabel('voltage  / V');
@@ -190,7 +190,7 @@ end
 doCompareGradient = false;
 if doCompareGradient
 
-    p = getScaledParameterVector(simsetup, parameters);
+    p = getScaledParameterVector(simsetup, parameters); %#ok<UNRCH>
     [vad, gad]   = evalObjectiveBattmo(p, objmatch, simsetup, parameters, 'gradientMethod', 'AdjointAD');
     [vnum, gnum] = evalObjectiveBattmo(p, objmatch, simsetup, parameters, 'gradientMethod', 'PerturbationADNUM', 'PerturbationSize', 1e-5);
 
@@ -209,7 +209,7 @@ function model = setImax(model, Imax)
 end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

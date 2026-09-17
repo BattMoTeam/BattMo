@@ -170,16 +170,10 @@ model.nonlinearTolerance = 1e-4;
 % Get more or less verbose output
 model.verbose = true;
 
-use_amg = false;
-if use_amg
-    mrstModule add agmg
-    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 0);
-end
-
 %% Run simulation
 doprofiling = false;
 if doprofiling
-    profile off
+    profile off %#ok<UNRCH>
     profile on
 end
 
@@ -208,10 +202,13 @@ axis tight
 axis([0 max(time/hour) 3.75 4.15])
 
 %% Plot an animated summary of the results
-% plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
+end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

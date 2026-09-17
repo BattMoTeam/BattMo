@@ -16,13 +16,13 @@ classdef TestBatteryPND < matlab.unittest.TestCase
             jsonstruct = parseBattmoJson(jsonfile);
             jsonstruct.include_current_collectors = true;
             inputparams = BatteryInputParams(jsonstruct);
-            
+
             switch dim
               case 2
                 gen = BatteryGeneratorP3D();
                 inputparams = gen.updateBatteryInputParams(inputparams);
-                inputparams.NegativeElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
-                inputparams.PositiveElectrode.CurrentCollector.EffectiveElectricalConductivity = 1e5;
+                inputparams.NegativeElectrode.CurrentCollector.effectiveElectronicConductivity = 1e5;
+                inputparams.PositiveElectrode.CurrentCollector.effectiveElectronicConductivity = 1e5;
 
               case 3
                 gen = BatteryGeneratorP4D();
@@ -32,7 +32,7 @@ classdef TestBatteryPND < matlab.unittest.TestCase
                 error('dim should be only 2 or 3, not %d\n', dim);
             end
 
-            model = Battery(inputparams);
+            model = GenericBattery(inputparams);
 
             C      = computeCellCapacity(model);
             CRate  = 1;
@@ -49,10 +49,8 @@ classdef TestBatteryPND < matlab.unittest.TestCase
             step      = struct('val', diff(times), 'control', ones(numel(tt), 1));
 
             tup = 0.1;
-            srcfunc = @(time, I, E) rampupSwitchControl(time, tup, I, E, ...
-                                                        model.Control.Imax, ...
-                                                        model.Control.lowerCutoffVoltage);
-            control = struct('src', srcfunc, 'CCDischarge', true);
+            model.Control.rampupTime = 0.1;
+            control = model.Control.setupScheduleControl();
 
             switch testSize
               case 'long'
@@ -64,7 +62,7 @@ classdef TestBatteryPND < matlab.unittest.TestCase
               otherwise
                 error('testSize not recognized')
             end
-            
+
             schedule = struct('control', control, 'step', step);
 
             initstate = model.setupInitialState();
@@ -107,28 +105,7 @@ classdef TestBatteryPND < matlab.unittest.TestCase
 end
 
 %{
-Copyright 2009-2022 SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The MATLAB Reservoir Simulation Toolbox (MRST).
-
-MRST is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-MRST is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with MRST.  If not, see <http://www.gnu.org/licenses/>.
-%}
-
-
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

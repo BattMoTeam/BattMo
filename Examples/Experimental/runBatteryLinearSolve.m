@@ -74,7 +74,7 @@ model = Battery(inputparams);
 
 inspectgraph = false;
 if inspectgraph
-    cgit = model.computationalGraph;
+    cgit = model.computationalGraph; %#ok<UNRCH>
     return
 end
 
@@ -200,7 +200,7 @@ figure(55)
 plot(nits.total);
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -51,12 +51,9 @@ doTestExamples = false;
 if doTestExamples
     suite = testsuite('TestRunExamples');
     runner = testrunner('textoutput');
-
     import matlab.unittest.plugins.StopOnFailuresPlugin
     runner.addPlugin(StopOnFailuresPlugin)
     results = runner.run(suite);
-
-    %results = runner.runInParallel(suite);
 end
 
 doTestJsonFiles = false;
@@ -92,7 +89,7 @@ if doTestPython
 end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

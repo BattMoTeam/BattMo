@@ -53,7 +53,7 @@ inputparams = BatteryInputParams(jsonstruct);
 
 use_cccv = false;
 if use_cccv
-    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ...
+    cccvstruct = struct( 'controlPolicy'     , 'CCCV',  ... %#ok<UNRCH>
                          'CRate'             , 1.5 , ...
                          'DRate'             , 1   , ...
                          'lowerCutoffVoltage', 2.4 , ...
@@ -85,7 +85,7 @@ model = Battery(inputparams);
 inspectgraph = false;
 if inspectgraph
     % plot the computational graph
-    cgit = ComputationalGraphInteractiveTool(model);
+    cgit = ComputationalGraphInteractiveTool(model); %#ok<UNRCH>
     cgit.getComputationalGraph('doplot', true);
     return
 end
@@ -326,10 +326,13 @@ end
 
 
 %% Plot the the output voltage and current
-% plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
+end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
