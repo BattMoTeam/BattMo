@@ -710,6 +710,9 @@ classdef Coating < ElectronicComponent
             vols = model.G.getVolumes();
 
             ams = {am1, am2};
+            molvals = nan(numel(ams), 1);
+            molval0s = nan(numel(ams), 1);
+            molval100s = nan(numel(ams), 1);
 
             for iam = 1 : numel(ams)
 
@@ -727,6 +730,7 @@ classdef Coating < ElectronicComponent
                 % molval0s(iam)   = theta0*cmax*sum(vol);
                 % molval100s(iam) = theta100*cmax*sum(vol);
 
+                molvals(iam)    = sum(c.*vol);
                 molval0s(iam)   = 0;
                 molval100s(iam) = cmax*sum(vol);
 
