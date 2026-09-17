@@ -17,7 +17,7 @@ ctrl  = 'Control';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite_bolay.json');
+                        'lithium_ion_battery_lco_graphite_bolay.json');
 jsonstruct = parseBattmoJson(jsonfilename);
 
 jsonstruct.use_thermal = false;
@@ -46,7 +46,7 @@ jsonstruct.SOC = 1;
 doPrintStruct = false;
 
 if doPrintStruct
-    fsv = flattenStruct(jsonstruct);
+    fsv = flattenStruct(jsonstruct); %#ok<UNRCH>
     % fsv.print('filter', {'parame name', 'SEI'})
 end
 
@@ -264,3 +264,23 @@ title('Percentage of Lithium consummed');
 xlabel('Time / year');
 ylabel('%');
 grid on;
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

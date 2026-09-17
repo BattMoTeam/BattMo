@@ -84,7 +84,7 @@ ylabel('Cell Voltage  /  V')
 legend(strcat('r=', num2str(radius(1)/micro), ' µm'), strcat('r=', num2str(radius(2)/micro), ' µm'), strcat('r=', num2str(radius(3)/micro), ' µm'))
 %% Swap Active Materials
 % Now let's try to replace the active material with a different material from 
-% the BattMo library. In this example, we will replace the NMC material with LFP. 
+% the BattMo library. In this example, we will replace the LCO material with LFP. 
 % First, let's re-load our baseline example parameter set to get rid of the changes 
 % from the previous sections.
 
@@ -135,5 +135,25 @@ ylabel('Cell Voltage  /  V')
 % In this tutorial, we explored how to modify material parameters in BattMo. 
 % We first explored the material parameter structure. Then we modified the effective 
 % particle radius and simulated its affect on the cell discharge curve. Finally 
-% we swapped out the NMC active material for a LFP material and simulated the 
+% we swapped out the LCO active material for a LFP material and simulated the 
 % new performance of the cell.
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

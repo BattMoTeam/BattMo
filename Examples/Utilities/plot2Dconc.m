@@ -13,7 +13,7 @@ set(h, 'Position', [107 28 1357 902]);
 dovideo = false;
 
 if dovideo
-    filename = 'concentration.avi';
+    filename = 'concentration.avi'; %#ok<UNRCH>
     video = VideoWriter(filename);
     video.FrameRate = 3;
     open(video);
@@ -81,7 +81,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

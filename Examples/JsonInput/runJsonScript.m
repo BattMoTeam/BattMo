@@ -8,7 +8,7 @@
 %% Material properties
 % We load the json structure for the material properties
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
 %% Geometry
@@ -70,7 +70,7 @@ ylabel('Cell Current [A]')
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

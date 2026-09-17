@@ -9,7 +9,7 @@ classdef BaseModel < PhysicalModel
         % The variables listed in extraVarNameList are elements in VarNameList that are not used in assembly of the
         % residuals, those has been typically introduced for post-processing.
         extraVarNameList
-       
+
         computationalGraph
 
 
@@ -17,7 +17,7 @@ classdef BaseModel < PhysicalModel
         % See method equipModelForComputation
 
         isRootSimulationModel % boolean if the model is meant to be run for simulation
-        
+
         funcCallList
         primaryVarNames
         equationVarNames
@@ -26,20 +26,20 @@ classdef BaseModel < PhysicalModel
 
         scalings % cell array. Each element is a cell pair. The first element in the pair is the variable name using the
                  % syntax of the getProp methods. The second element is the scaling coefficient. See methods applyScaling
-                
+
     end
-        
+
     methods
 
         function model = BaseModel()
 
             model = model@PhysicalModel([]);
-            
+
             model.propertyFunctionList = {};
             model.varNameList          = {};
             model.subModelNameList     = {};
             model.extraVarNameList     = {};
-            
+
         end
 
         function model = registerVarAndPropfuncNames(model)
@@ -47,7 +47,7 @@ classdef BaseModel < PhysicalModel
         % The function will be overload by the model. First, the submodels are setup. Then, the varNameList and
         % propertyFunctionList and others lists are populated using the methods
         %
-        % - registerVarName 
+        % - registerVarName
         % - registerVarNames
         % - registerPropFunction
         % - setAsStaticVarName
@@ -63,16 +63,16 @@ classdef BaseModel < PhysicalModel
         % to remove variables defined in the submodels. The property function using those will then be also removed.
         %
             model = model.registerSubModels();
-            
+
         end
 
         function model = setupComputationalGraph(model)
 
             model.computationalGraph = ComputationalGraph(model);
-            
+
         end
-        
-        
+
+
         function model = registerVarName(model, varname)
             if isa(varname, 'VarName')
                 model.varNameList = mergeList(model.varNameList, {varname});
@@ -86,7 +86,7 @@ classdef BaseModel < PhysicalModel
                 error('varname not recognized');
             end
         end
-        
+
         function model = registerVarNames(model, varnames)
             for ivarnames = 1 : numel(varnames)
                 model = model.registerVarName(varnames{ivarnames});
@@ -112,18 +112,18 @@ classdef BaseModel < PhysicalModel
                 error('varname not recognized');
             end
         end
-        
+
         function model = setAsStaticVarNames(model, varnames)
         % Register several static variable name using setAsStaticVarName
 
             for ivarnames = 1 : numel(varnames)
                 model = model.setAsStaticVarName(varnames{ivarnames});
             end
-            
+
         end
-        
+
         function model = setAsExtraVarName(model, varname)
-            
+
             if isa(varname, 'char')
                 varname = VarName({}, varname);
                 model = model.setAsExtraVarName(varname);
@@ -134,20 +134,20 @@ classdef BaseModel < PhysicalModel
                 model.extraVarNameList = mergeList(model.extraVarNameList, {varname});
             end
         end
-        
+
         function model = setAsExtraVarNames(model, varnames)
             for ivar = 1 : numel(varnames)
                 model = model.setAsExtraVarName(varnames{ivar});
             end
         end
-        
+
         function model = removeVarNames(model, varnames)
         % Remove several variable name using removeVarName
             for ivar = 1 : numel(varnames)
                 model = model.removeVarName(varnames{ivar});
             end
         end
-        
+
         function model = removeVarName(model, varname)
         % Remove a variable name. It will also remove the property functions where the variable name has been us either
         % in the input or output.
@@ -169,7 +169,7 @@ classdef BaseModel < PhysicalModel
                     end
                 end
                 model.varNameList = varnames(keep);
-                
+
                 % remove from propertyFunctionList if varname occurs in output and input variables
                 propfuncs = model.propertyFunctionList;
                 nprops = numel(propfuncs);
@@ -183,16 +183,16 @@ classdef BaseModel < PhysicalModel
                     end
                     propfunctions{iprop}.inputvarnames = inputvarnames;
                 end
-                
-                model.propertyFunctionList = propfuncs(keep);                
+
+                model.propertyFunctionList = propfuncs(keep);
 
             else
                 error('varname not recognized');
             end
-            
+
         end
 
-        
+
         function model = unsetAsExtraVarName(model, varname)
 
             model.extraVarNameList = BaseModel.removeVarNameFromList(varname, model.extraVarNameList);
@@ -243,27 +243,27 @@ classdef BaseModel < PhysicalModel
                 model = model.registerPropFunction(propfunc);
             else
                 error('propfunc not recognized');
-            end                
+            end
         end
 
 
         function model = removePropFunction(model, varname)
 
             if isa(varname, 'char')
-                
+
                 varname = VarName({}, varname);
                 model = model.removePropFunction(varname);
-                
+
             elseif isa(varname, 'cell')
-                
+
                 varname = VarName(varname(1 : end - 1), varname{end});
                 model = model.removePropFunction(varname);
-                
+
             elseif isa(varname, 'VarName')
 
                 propfuncs = model.propertyFunctionList;
                 nprops = numel(propfuncs);
-                
+
                 for iprop = 1 : nprops
                     [found, keep,  propfuncs{iprop}.varname] = BaseModel.extractVarName(varname, propfuncs{iprop}.varname);
                     if found
@@ -275,26 +275,26 @@ classdef BaseModel < PhysicalModel
                 if ~keep
                     inds(iprop) = false;
                 end
-                
+
                 model.propertyFunctionList = propfuncs(inds);
-                
+
             else
-                
+
                 error('not recognized')
 
             end
-            
+
         end
-        
+
         function stateAD = initStateAD(model, state)
         % initialize a new cleaned-up state with AD variables
-            
+
             pnames  = model.getPrimaryVariableNames();
             vars = cell(numel(pnames), 1);
             for i = 1:numel(pnames)
                 vars{i} = model.getProp(state, pnames{i});
             end
-            % Get the AD state for this model           
+            % Get the AD state for this model
             [vars{:}] = model.AutoDiffBackend.initVariablesAD(vars{:});
             stateAD = struct();
             for i = 1:numel(pnames)
@@ -302,20 +302,20 @@ classdef BaseModel < PhysicalModel
             end
 
             stateAD = model.addStaticVariables(stateAD, state);
-            
-        end 
-        
+
+        end
+
         function submodelnames = getSubModelNames(model)
 
             if ~isempty(model.subModelNameList)
 
                 submodelnames = model.subModelNameList;
-                
+
             else
 
                 props = propertynames(model);
                 submodelnames = {};
-                
+
                 for iprops = 1 : numel(props)
                     prop = props{iprops};
                     if isa(model.(prop), 'BaseModel')
@@ -326,47 +326,47 @@ classdef BaseModel < PhysicalModel
             end
 
         end
-        
+
         function model = registerSubModels(model)
 
             propfuncs     = model.propertyFunctionList;
             varnames      = model.varNameList;
             extravarnames = model.extraVarNameList;
-            
+
             submodelnames = model.getSubModelNames();
-            
+
             for isub = 1 : numel(submodelnames)
 
                 submodelname = submodelnames{isub};
                 submodel = model.(submodelname);
 
                 if isa(submodel, 'BaseModel')
-                    
+
                     submodel = registerVarAndPropfuncNames(submodel);
 
                     % Register the variable names from the submodel after adding the model name in the name space
 
                     subvarnames = submodel.varNameList;
-                    
+
                     for isubvar = 1 : numel(subvarnames)
                         subvarname = subvarnames{isubvar};
                         subvarname.namespace = {submodelname, subvarname.namespace{:}};
                         subvarnames{isubvar} = subvarname;
                     end
-                    
+
                     varnames = mergeList(varnames, subvarnames);
-                    
+
                     % Register the property functions from the submodel after adding the model name in the name space
-                    
+
                     subpropfuncs = submodel.propertyFunctionList;
 
                     for isubpropfunc = 1 : numel(subpropfuncs)
 
                         subpropfunc = subpropfuncs{isubpropfunc};
-                        
+
                         subpropfunc.varname.namespace = {submodelname, subpropfunc.varname.namespace{:}};
                         subpropfunc.modelnamespace = {submodelname, subpropfunc.modelnamespace{:}};
-                        
+
                         subinputvarnames = subpropfunc.inputvarnames;
                         for isubinput = 1 : numel(subinputvarnames)
                             subinputvarname = subinputvarnames{isubinput};
@@ -374,34 +374,34 @@ classdef BaseModel < PhysicalModel
                             subinputvarnames{isubinput} = subinputvarname;
                         end
                         subpropfunc.inputvarnames = subinputvarnames;
-                        
+
                         subpropfuncs{isubpropfunc} = subpropfunc;
-                    end               
-                    
+                    end
+
                     propfuncs = mergeList(propfuncs, subpropfuncs);
 
                     % Register the static variables
                     subextravarnames = submodel.extraVarNameList;
-                    
+
                     for isubvar = 1 : numel(subextravarnames)
                         subaddvarname = subextravarnames{isubvar};
                         subaddvarname.namespace = {submodelname, subaddvarname.namespace{:}};
                         subextravarnames{isubvar} = subaddvarname;
                     end
-                    
+
                     extravarnames = mergeList(extravarnames, subextravarnames);
 
                 end
-                
+
             end
-            
+
              model.varNameList          = varnames;
              model.propertyFunctionList = propfuncs;
              model.extraVarNameList     = extravarnames;
-             
+
         end
-        
-        
+
+
         function state = setProp(model, state, names, val)
             if iscell(names) & (numel(names) > 1)
                 name = names{1};
@@ -418,8 +418,8 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-        
-        
+
+
         function state = setNewProp(model, state, names, val)
             if iscell(names) & (numel(names) > 1)
                 name = names{1};
@@ -444,7 +444,7 @@ classdef BaseModel < PhysicalModel
             end
         end
 
-        
+
         function var = getProp(model, state, names)
             if iscell(names) && (numel(names) > 1)
                 name = names{1};
@@ -461,7 +461,7 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-        
+
         function submod = getSubmodel(model, names)
             submod = model.(names{1});
             for i=2:numel(names)
@@ -478,9 +478,9 @@ classdef BaseModel < PhysicalModel
                 val = val + dx{i};
                 state = model.setProp(state, p{i}, val);
             end
-           
+
             report = [];
-            
+
         end
 
         function [state, report] = updateAfterConvergence(model, state0, state, dt, drivingForces)
@@ -494,23 +494,23 @@ classdef BaseModel < PhysicalModel
 
             cleanState = model.addStaticVariables(cleanState, state);
             cleanState = model.addVariablesAfterConvergence(cleanState, state);
-            
+
             state = cleanState;
             report = [];
-            
+
         end
 
         function newstate = addVariablesAfterConvergence(model, newstate, state)
         % Function called in updateAfterConvergence
-            
+
             submodelnames = model.getSubModelNames();
-            
+
             for isub = 1 : numel(submodelnames)
 
                 submodelname = submodelnames{isub};
 
                 if isfield(state, submodelname)
-                    
+
                     if ~isfield(newstate, submodelname)
                         newstate.(submodelname) = [];
                     end
@@ -518,13 +518,13 @@ classdef BaseModel < PhysicalModel
                     if isa(model.(submodelname), 'BaseModel')
                         newstate.(submodelname) = model.(submodelname).addVariablesAfterConvergence(newstate.(submodelname), state.(submodelname));
                     end
-                    
+
                 end
 
             end
-            
+
         end
-        
+
         function cleanState = addStaticVariables(model, cleanState, state)
         % function to add static variables (not AD) on the cleanState, called in updateAfterConvergence and
         % initStateAD. Time is added by default here (when it exists)
@@ -533,28 +533,28 @@ classdef BaseModel < PhysicalModel
             end
 
             submodelnames = model.getSubModelNames();
-            
+
             for isub = 1 : numel(submodelnames)
 
                 submodelname = submodelnames{isub};
 
                 if isfield(state, submodelname)
-                    
+
                     if ~isfield(cleanState, submodelname)
                         cleanState.(submodelname) = [];
                     end
 
                     if isa(model.(submodelname), 'BaseModel')
                         cleanState.(submodelname) = model.(submodelname).addStaticVariables(cleanState.(submodelname), state.(submodelname));
-                    end 
+                    end
                 end
 
             end
-            
+
         end
-        
+
         function state = copyProp(model, state, refState, names)
-            
+
             if iscell(names) & (numel(names) > 1)
                 name = names{1};
                 names = names(2 : end);
@@ -574,16 +574,16 @@ classdef BaseModel < PhysicalModel
                 error('format not recognized');
             end
         end
-        
+
         function state = reduceState(model, state, removeContainers)
             state = value(state, false);
         end
-        
+
         function outputvars = extractGlobalVariables(model, states)
             ns = numel(states);
             outputvars = cell(1, ns);
         end
-        
+
         function state = evalVarName(model, state, varname, extravars)
         % varname is valid input to method ComputationalGraph.getPropFunctionCallList
 
@@ -597,7 +597,7 @@ classdef BaseModel < PhysicalModel
             if iscell(varname)
                 varname = VarName(varname(1 : end - 1), varname{end});
             end
-            
+
             funcCallList = cg.getPropFunctionCallList(varname);
 
             if (nargin > 3) && ~isempty(extravars)
@@ -612,17 +612,17 @@ classdef BaseModel < PhysicalModel
             for ifunc = 1 : numel(funcCallList)
                 eval(funcCallList{ifunc});
             end
-            
+
         end
 
         %% Methods used when the model is used as root model for a simulation. Then, the model is equipped for simulation
         %
-        
+
         function [problem, state] = getEquations(model, state0, state, dt, drivingForces, varargin)
-            
+
             opts = struct('ResOnly', false, 'iteration', 0, 'reverseMode', false);
             opts = merge_options(opts, varargin{:});
-            
+
             if (not(opts.ResOnly) && not(opts.reverseMode))
                 state = model.initStateAD(state);
             elseif opts.reverseMode
@@ -631,7 +631,7 @@ classdef BaseModel < PhysicalModel
             else
                 assert(opts.ResOnly);
             end
-            
+
             %% We call the assembly equations ordered from the graph
 
             funcCallList = model.funcCallList;
@@ -641,15 +641,15 @@ classdef BaseModel < PhysicalModel
             end
 
             state = model.applyScaling(state);
-            
+
             for ieq = 1 : numel(model.equationVarNames)
                 eqs{ieq} = model.getProp(state, model.equationVarNames{ieq});
             end
-            
+
             names       = model.equationNames;
             types       = model.equationTypes;
             primaryVars = model.primaryVarNames;
-            
+
             problem = LinearizedProblem(eqs, types, names, primaryVars, state, dt);
 
         end
@@ -659,9 +659,9 @@ classdef BaseModel < PhysicalModel
             primaryvarnames = model.primaryVarNames;
 
         end
-        
+
         function state = applyScaling(model, state)
-            
+
             if ~isempty(model.scalings)
 
                 scalings = model.scalings;
@@ -676,13 +676,13 @@ classdef BaseModel < PhysicalModel
                     val = 1./coef.*val;
 
                     state = model.setProp(state, name, val);
-                    
+
                 end
-                
+
             end
-            
+
         end
-                
+
         function model = equipModelForComputation(model, varargin)
 
             opt = struct('shortNames', []);
@@ -691,7 +691,7 @@ classdef BaseModel < PhysicalModel
             model = model.setupComputationalGraph();
 
             cg = model.computationalGraph();
-            
+
             model.funcCallList     = cg.getOrderedFunctionCallList();
             model.primaryVarNames  = cg.getPrimaryVariableNames();
             model.equationVarNames = cg.getEquationVariableNames();
@@ -704,7 +704,7 @@ classdef BaseModel < PhysicalModel
                     str = name;
                 end
             end
-            
+
             function str = setupName(varname)
 
                 if isnumeric(varname{end})
@@ -716,12 +716,12 @@ classdef BaseModel < PhysicalModel
                 end
 
                 str = strjoin(varname, '_');
-                
+
             end
-            
+
             model.equationNames = cellfun(@(varname) setupName(varname), model.equationVarNames, 'uniformoutput', false);
             model.equationTypes = repmat({'cell'}, 1, numel(model.equationNames));
-            
+
         end
 
         function jsonstruct = exportParams(model)
@@ -734,14 +734,14 @@ classdef BaseModel < PhysicalModel
                     submodelname = submodelnames{isubmodel};
 
                     jsonstruct.(submodelname) = model.(submodelname).exportParams();
-                    
+
                 end
             else
                 jsonstruct = [];
             end
         end
 
-        function cgit = getComputationalGrapInteractiveTool(model)
+        function cgit = getComputationalGraphInteractiveTool(model)
         % setup and retrieve the computational graph interactive tool
             if isempty(model.computationalGraph)
                 model = model.setupComputationalGraph();
@@ -751,7 +751,7 @@ classdef BaseModel < PhysicalModel
         end
 
         function cgit = cgit(model)
-            cgit = model.getComputationalGrapInteractiveTool();
+            cgit = model.getComputationalGraphInteractiveTool();
         end
 
         function G = grid(model)
@@ -762,13 +762,13 @@ classdef BaseModel < PhysicalModel
             else
                 G = model.G;
             end
-            
+
         end
 
         function model = validateModel(model, varargin)
 
         % By default, discard validateModel from MRST
-            
+
         end
 
         function inds = getRangePrimaryVariable(model, adsample, varname)
@@ -782,7 +782,7 @@ classdef BaseModel < PhysicalModel
             inds = ss(:, ivar);
 
         end
-        
+
         function ind = getIndexPrimaryVariable(model, varname)
 
             primvarnames = model.getPrimaryVariableNames();
@@ -796,9 +796,9 @@ classdef BaseModel < PhysicalModel
             end
 
             error('primary variable not found');
-            
+
         end
-                
+
     end
 
     methods(Static)
@@ -807,7 +807,7 @@ classdef BaseModel < PhysicalModel
 
         % This function supports index, meaning, it handles the case where the rvarname and varname has same name but
         % different indices where the indices of rvarname make a subset of those of varname.
-            
+
             [isequal, compIndices] = compareVarName(rvarname, varname);
             if isequal
                 keep  = false;
@@ -828,7 +828,7 @@ classdef BaseModel < PhysicalModel
                 keep  = true;
             end
         end
-        
+
 
         function varnames = removeVarNameFromList(varname, varnames)
 
@@ -852,17 +852,17 @@ classdef BaseModel < PhysicalModel
             else
                 error('varname not recognized');
             end
-            
+
         end
 
         function isequal = compareVarName(varname1, varname2)
-            
+
             if isempty(varname1) & isempty(varname2)
                 % Needed in recursion
                 isequal = true;
                 return
             end
-            
+
             if numel(varname1) == numel(varname2)
 
                 svarname1 = varname1{1};
@@ -891,16 +891,16 @@ classdef BaseModel < PhysicalModel
                 return
             end
         end
-        
-        
+
+
     end
-    
+
 end
 
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

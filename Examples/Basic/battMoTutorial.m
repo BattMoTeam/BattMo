@@ -14,7 +14,7 @@ close all;
 % Battmo. The function |parseBattmoJson| parses files and a file path can be given from the battmo root directory.
 
 fname = fullfile('ParameterData','BatteryCellParameters',...
-                 'LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+                 'LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json');
 jsonstruct = parseBattmoJson(fname);
 
 %%
@@ -195,7 +195,7 @@ ylim([0, 5.5])
 legend(eldes, 'location', 'nw');
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

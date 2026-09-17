@@ -4,7 +4,7 @@ function [OCP, dUdT] = computeOCPSilicon_Delithiation_Chandresekaran2011(c, T, c
     theta = c/cmax;
 
     %fname = fullfile('ParameterData','BatteryCellParameters',...
-    %                'LithiumIonBatteryCell','lithium_ion_battery_nmc_silicon.json');
+    %                'LithiumIonBatteryCell','lithium_ion_battery_lco_silicon.json');
     %jsonstruct = parseBattmoJson(fname);
     %R_delith = jsonstruct.NegativeElectrode.ActiveMaterial.SolidDiffusion.rp;
     %molarVolumeSi = 1.2e-05;
@@ -35,3 +35,23 @@ data = {{0.0010162601626016452,1.1031664964249233},{0.02032520325203246,1.103166
     dUdT = 0;
     
 end
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

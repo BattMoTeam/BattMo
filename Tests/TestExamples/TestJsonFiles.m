@@ -7,7 +7,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
         jsonSchemaFile = TestJsonFiles.findJsonFiles('*.schema.json');
 
         jsonDataSet = {
-            fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell'      , 'lithium_ion_battery_nmc_graphite.json'), ...
+            fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell'      , 'lithium_ion_battery_lco_graphite.json'), ...
             fullfile('ParameterData', 'ParameterSets'        , 'Chen2020'                   , 'chen2020_lithium_ion_battery.json')    , ...
             fullfile('ParameterData', 'ParameterSets'        , 'Xu2015'                     , 'lfp.json')                             , ...
             fullfile('Examples'     , 'JsonDataFiles'        , 'p2d_40_jl.json')            , ...
@@ -158,7 +158,7 @@ classdef TestJsonFiles < matlab.unittest.TestCase
 end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

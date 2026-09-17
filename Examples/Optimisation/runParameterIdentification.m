@@ -19,7 +19,7 @@ sep     = 'Separator';
 jsonParams  = parseBattmoJson(fullfile('ParameterData'        , ...
                                        'BatteryCellParameters', ...
                                        'LithiumIonBatteryCell', ...
-                                       'lithium_ion_battery_nmc_graphite.json'));
+                                       'lithium_ion_battery_lco_graphite.json'));
 jsonGeom    = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'geometry1d.json'));
 jsonControl = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'cc_discharge_control.json'));
 jsonSim     = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', 'simulation_parameters.json'));
@@ -120,7 +120,7 @@ objectiveGradient = @(p) evalObjectiveBattmo(p, objective, simsetup, params, 'ob
 %% Optional debug: Compare gradients using adjoints and finite difference approximation
 debug = false;
 if debug
-    pTmp = getScaledParameterVector(simSetup, params);
+    pTmp = getScaledParameterVector(simsetup, params); %#ok<UNRCH>
 
     [vad, gad] = evalObjectiveBattmo(pTmp, objective, simsetup, params, ...
                                      'gradientMethod', 'AdjointAD');
@@ -217,7 +217,7 @@ fprintf('%g\n', numIt);
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

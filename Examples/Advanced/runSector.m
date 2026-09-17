@@ -7,10 +7,6 @@ end
 clear
 close all
 
-% Setup mrst modules
-
-mrstModule add ad-core mrst-gui mpfa agmg
-
 %% We setup the geometrical parameters for a 4680 battery.
 %% Those will be gathered in structure spiralparams (see below) and used by SpiralBatteryGenerator to generate the spiral layered geometry of the jelly roll
 
@@ -81,7 +77,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', true);
 
 % The input material parameters given in json format are used to populate the inputparams object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
 jsonstruct.include_current_collectors = true;
 
 simcase = 'CCDischarge';
@@ -158,13 +154,6 @@ model.verbose = true;
 % Options for experimenting with linear solver
 nls.timeStepSelector = StateChangeTimeStepSelector('TargetProps', {{'Control', 'E'}}, 'targetChangeAbs', 0.03);
 
-use_amg = false;
-if use_amg
-    mrstModule add agmg
-    nls.LinearSolver = LinearSolverBattery('method', 'agmg', 'verbosity', 0);
-    nls.maxIterations = 10;
-end
-
 % Run simulation
 dataFolder = 'BattMo';
 problem = packSimulationProblem(initstate, model, schedule, dataFolder, 'Name', 'jellyroll', 'NonLinearSolver', nls);
@@ -197,12 +186,15 @@ figure
 plot(time, E);
 
 %% Plot an animated summary of the results
-%plotDashboard(model, states, 'step', 0);
+doplot = false;
+if doplot
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
+end
 
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

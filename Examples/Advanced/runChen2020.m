@@ -155,7 +155,7 @@ doplot = false;
 if doplot
 
     % We plot the solutions
-    l = lines(4);
+    l = lines(4); %#ok<UNRCH>
     figure
     hold on
     plot(t1, u1, 'linewidth', 3, 'color', l(1, :), 'linestyle', '--', 'displayname', 'pybamm - solid diffusion')
@@ -180,7 +180,7 @@ assert(norm(pb - battmo) / norm(pb) < 1e-3);
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

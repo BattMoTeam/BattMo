@@ -10,7 +10,7 @@ if doplot.illustration1D
 
     % We fake a 1D model
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     inputparams = BatteryInputParams(jsonstruct_material);
@@ -29,7 +29,7 @@ if doplot.illustration3D
 
     % We fake a 1D model
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     inputparams = BatteryInputParams(jsonstruct_material);
@@ -48,7 +48,7 @@ end
 
 if doplot.jellyroll
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     % load json struct for geometry
@@ -96,7 +96,7 @@ if doplot.jellyroll
 
     createFig = false;
     if createFig
-        cwdir = fullfile(battmoDir(), 'Examples', 'Documentation');
+        cwdir = fullfile(battmoDir(), 'Examples', 'Documentation'); %#ok<UNRCH>
 
         exportgraphics(fig1, fullfile(cwdir, 'jellyroll1.pdf'), 'Resolution', 300);
         exportgraphics(fig2, fullfile(cwdir, 'jellyroll2.pdf'), 'Resolution', 300);
@@ -117,7 +117,7 @@ end
 
 if doplot.multilayerpouch
 
-    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct_material = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct_material.include_current_collectors = true;
 
     % load json struct for geometry
@@ -149,7 +149,7 @@ if doplot.coincell
     sep     = 'Separator';
 
     %% Setup the properties of Li-ion battery materials and cell design
-    jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+    jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
     jsonstruct.use_thermal = false;
     jsonstruct.include_current_collectors = true;
 
@@ -212,3 +212,23 @@ if doplot.coincell
     plotBatteryGrid(model)
 
 end
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

@@ -1,7 +1,7 @@
 %% Tutorial 2 - Change the Control Protocol
 %% Introduction
 % In this tutorial, we will use a P2D model to simulate the discharge of an 
-% NMC-Graphite cell at different rates. After completing this tutorial, you should 
+% LCO-Graphite cell at different rates. After completing this tutorial, you should 
 % have a working knowledge of:
 %% 
 % * Basics of the control protocol definitions in BattMo
@@ -149,3 +149,23 @@ legend('1C', '2C', '3C')
 % we showed how to setup and execute a basic parameter sweep by defining a vector 
 % with different C-rates and using a for-loop to simulate the cell discharge at 
 % each rate.
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

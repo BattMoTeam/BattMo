@@ -4,7 +4,7 @@ an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
 
-filename = '/home/xavier/Matlab/Projects/battmo/OxideElectrolyte/oxidemembrane.json';
+filename = fullfile(battmoDir(), 'OxideElectrolyte', 'oxidemembrane.json');
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 

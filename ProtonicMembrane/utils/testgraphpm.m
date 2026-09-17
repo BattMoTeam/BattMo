@@ -4,7 +4,7 @@ an    = 'Anode';
 ct    = 'Cathode';
 elyte = 'Electrolyte';
 
-filename = '/home/xavier/Matlab/Projects/battmo/ProtonicMembrane/protonicMembrane.json';
+filename = fullfile(battmoDir(), 'ProtonicMembrane', 'jsonfiles', 'protonicMembrane.json');
 jsonstruct = fileread(filename);
 jsonstruct = jsondecode(jsonstruct);
 

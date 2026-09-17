@@ -16,11 +16,11 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
 
         function states = test1d(test, controlPolicy, use_thermal, include_current_collectors, diffusionModelType, testSize, varargin)
 
-            run('/home/xavier/Matlab/Projects/battmo/startupBattMo.m')
-            
+            run(fullfile(battmoDir, 'startupBattMo.m'));
+
             mrstModule add ad-core mrst-gui mpfa
-            
-            jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json');
+
+            jsonfile = fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json');
             json = parseBattmoJson(jsonfile);
 
             % Change json params
@@ -39,7 +39,6 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             end
             has_python = pyenv().Version ~= "";
             validate = serial & has_python;
-            validate = false;
             json = updateJson(json, params, 'validate', validate);
 
             inputparams = BatteryInputParams(json);
@@ -80,14 +79,14 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             %%  Initialize the battery model.
             % The battery model is initialized by sending inputparams to the Battery class
             % constructor. see :class:`Battery <Battery.Battery>`.
-            model = Battery(inputparams);
+            model = GenericBattery(inputparams);
             model.AutoDiffBackend = AutoDiffBackend();
 
             %% Setup schedule
-            
+
             step    = model.Control.setupScheduleStep();
             control = model.Control.setupScheduleControl();
-            
+
             % This control is used to set up the schedule
             schedule = struct('control', control, 'step', step);
 
@@ -103,8 +102,13 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
             % Change default behavior of nonlinear solver, in case of error
             nls.errorOnFailure = false;
             nls.timeStepSelector=StateChangeTimeStepSelector('TargetProps', {{'Control','E'}}, 'targetChangeAbs', 0.03);
-            % Change default tolerance for nonlinear solver
-            model.nonlinearTolerance = 1e-3*model.Control.Imax;
+            % Scale the tolerance using the current limits for the selected control policy.
+            if use_cccv
+                currentScale = model.Control.ImaxDischarge + model.Control.ImaxCharge;
+            else
+                currentScale = model.Control.Imax;
+            end
+            model.nonlinearTolerance = 1e-3*currentScale;
             % Set verbosity
             model.verbose = true;
 
@@ -149,28 +153,7 @@ classdef TestBatteryP2D < matlab.unittest.TestCase
 end
 
 %{
-Copyright 2009-2022 SINTEF Digital, Mathematics & Cybernetics.
-
-This file is part of The MATLAB Reservoir Simulation Toolbox (MRST).
-
-MRST is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-MRST is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with MRST.  If not, see <http://www.gnu.org/licenses/>.
-%}
-
-
-
-%{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

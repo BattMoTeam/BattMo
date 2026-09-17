@@ -17,7 +17,7 @@ Define Parameters
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
 For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/JsonDataFiles/sample_input.json>` that
-describes a simple NMC-Graphite cell.
+describes a simple LCO-Graphite cell.
 
 We load and parse the JSON input file into |battmo| using the command:
 
@@ -241,7 +241,7 @@ Change Material Parameters
 
 Finally, let's try changing active materials in the model.
 
-The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's try to replace the NMC active material with LFP.
+The sample JSON input file we provided is for an LCO-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's try to replace the LCO active material with LFP.
 
 First, we clear the workspace and reload the original parameter set to start from a clean slate:
 

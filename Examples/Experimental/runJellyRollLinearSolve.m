@@ -76,7 +76,7 @@ spiralparams = struct('nwindings'   , nwindings, ...
                       'angleuniform', false);
 
 % The input material parameters given in json format are used to populate the inputparams object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json'));
 inputparams = BatteryInputParams(jsonstruct);
 
 %% NB for linear solver test
@@ -110,8 +110,6 @@ inputE = 3;
 tt = times(2 : end);
 
 step = struct('val', diff(times), 'control', ones(numel(tt), 1));
-
-keyboard;
 
 tup = 0.1/DRate;
 
@@ -185,7 +183,7 @@ switch linearsolver
   case 'direct'
     disp('standard direct solver')
   otherwise
-    error()
+    error('Unknown linear solver.');
 end
 
 model.nonlinearTolerance = 1e-5;
@@ -265,7 +263,7 @@ plot(nits.total)
 tt = getReportOutput(report,'type','nonlinearSolverTime')
 tt = getReportOutput(report,'type','linearSolverTime')
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
