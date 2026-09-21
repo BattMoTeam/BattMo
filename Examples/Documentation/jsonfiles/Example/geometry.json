@@ -12,7 +12,7 @@
       "numberOfDiscreteCells": 3,
       "ActiveMaterial": {
         "SolidDiffusion": {
-          "N": 10 }}},
+          "numberOfDiscreteCells": 10 }}},
     "CurrentCollector": {
       "thickness": 1e-05,
       "numberOfDiscreteCells": 2,
@@ -27,7 +27,7 @@
       "numberOfDiscreteCells": 3,
       "ActiveMaterial": {
         "SolidDiffusion": {
-          "N": 10
+          "numberOfDiscreteCells": 10
         }}},
     "CurrentCollector": {
       "thickness": 1e-05,

@@ -196,7 +196,7 @@ classdef Coating < ElectronicComponent
 
             %% Setup the submodels
 
-            np = inputparams.G.getNumberOfCells();
+            numberOfParticles = inputparams.G.getNumberOfCells();
 
             if model.activeMaterialModelSetup.composite
 
@@ -205,7 +205,7 @@ classdef Coating < ElectronicComponent
                     amc = ams{iam};
                     inputparams.(amc).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(amc));
                     if strcmp(inputparams.(amc).diffusionModelType, 'full')
-                        inputparams.(amc).(sd).np = np;
+                        inputparams.(amc).(sd).numberOfParticles = numberOfParticles;
                     end
                     model.(amc) = ActiveMaterial(inputparams.(amc));
                 end
@@ -225,7 +225,7 @@ classdef Coating < ElectronicComponent
 
                     switch inputparams.(am).diffusionModelType
                       case {'full', 'swelling'}
-                        inputparams.(am).(sd).np = np;
+                        inputparams.(am).(sd).numberOfParticles = numberOfParticles;
                       case {'simple'}
                         % do nothing
                       otherwise
@@ -237,8 +237,8 @@ classdef Coating < ElectronicComponent
                   case 'Safari'
 
                     inputparams.(am).(sd).volumeFraction = model.volumeFraction*model.volumeFractions(model.compInds.(am));
-                    inputparams.(am).(sd).np  = np;
-                    inputparams.(am).(sei).np = np;
+                    inputparams.(am).(sd).numberOfParticles  = numberOfParticles;
+                    inputparams.(am).(sei).numberOfParticles = numberOfParticles;
                     model.ActiveMaterial = SEIActiveMaterial(inputparams.ActiveMaterial);
 
                   otherwise

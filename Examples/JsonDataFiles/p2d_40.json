@@ -36,7 +36,7 @@
           "activationEnergyOfDiffusion": 5000,
           "referenceDiffusionCoefficient": 3.9e-14,
           "particleRadius": 1e-06,
-          "N": 10
+          "numberOfDiscreteCells": 10
         }
       },
       "Binder": {
@@ -96,7 +96,7 @@
           "activationEnergyOfDiffusion": 5000,
           "referenceDiffusionCoefficient": 1e-14,
           "particleRadius": 1e-06,
-          "N": 10
+          "numberOfDiscreteCells": 10
         }
       },
       "Binder": {

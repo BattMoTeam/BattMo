@@ -176,7 +176,7 @@
              "dependentSchemas" : {
                "SolidDiffusion" : {
                  "properties" : {
-                   "N"  : {
+                   "numberOfDiscreteCells"  : {
                      "type" : "integer",
                      "description" : "discretization parameter for the particle"}}}}},
             {"not" : {

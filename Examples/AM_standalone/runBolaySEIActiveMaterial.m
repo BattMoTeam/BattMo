@@ -28,7 +28,7 @@ jsonstruct = mergeStructs({jsonstruct, ...
                                jsonstruct_bolay});
 
 jsonstruct.SEImodel              = 'Bolay';
-jsonstruct.(sd).N                = 10;
+jsonstruct.(sd).numberOfDiscreteCells                = 10;
 jsonstruct.isRootSimulationModel = true;
 
 jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
@@ -47,7 +47,7 @@ model = model.setupForSimulation();
 
 %% Setup initial state
 
-Nsd  = model.(sd).N;
+Nsd  = model.(sd).numberOfDiscreteCells;
 
 % Initial concentration value at the electrode
 cElectrodeInit = 0.75*model.(itf).saturationConcentration;
@@ -192,7 +192,7 @@ title('Concentration in particle / mol/L')
 legend show
 
 c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+r = linspace(0, model.(sd).particleRadius, model.(sd).numberOfDiscreteCells);
 
 figure
 plot(r, c/(mol/litre));

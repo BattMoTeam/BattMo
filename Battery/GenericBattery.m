@@ -844,9 +844,9 @@ classdef GenericBattery < BaseModel
                         initstate.(elde).(co).(amc).(sd).cAverage = c*ones(nc, 1);
                       case {'full'}
                         initstate.(elde).(co).(amc).(sd).cSurface = c*ones(nc, 1);
-                        N = model.(elde).(co).(amc).(sd).N;
-                        np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
-                        initstate.(elde).(co).(amc).(sd).c = c*ones(N*np, 1);
+                        numberOfDiscreteCells = model.(elde).(co).(amc).(sd).numberOfDiscreteCells;
+                        numberOfParticles = model.(elde).(co).(amc).(sd).numberOfParticles; % One particle per grid cell.
+                        initstate.(elde).(co).(amc).(sd).c = c*ones(numberOfDiscreteCells*numberOfParticles, 1);
                       case  'swelling'
                         % theta is interpretated as a fill-in level
                         compmodel = model.(elde).(co);
@@ -862,14 +862,14 @@ classdef GenericBattery < BaseModel
                         re = state.(am).(sd).radiusElongation;
                         vf = state.volumeFraction;
 
-                        N  = model.(elde).(co).(amc).(sd).N;
-                        np = model.(elde).(co).(amc).(sd).np; % Note : we have by construction np = nc
+                        numberOfDiscreteCells  = model.(elde).(co).(amc).(sd).numberOfDiscreteCells;
+                        numberOfParticles = model.(elde).(co).(amc).(sd).numberOfParticles; % One particle per grid cell.
 
                         c = model.(elde).(co).maximumTotalConcentration/vf*theta;
 
                         initstate.(elde).(co).volumeFraction              = vf .* ones(nc, 1);
                         initstate.(elde).(co).(amc).(sd).cSurface         = c*ones(nc, 1);
-                        initstate.(elde).(co).(amc).(sd).c                = c*ones(N*np, 1);
+                        initstate.(elde).(co).(amc).(sd).c                = c*ones(numberOfDiscreteCells*numberOfParticles, 1);
                         initstate.(elde).(co).(amc).(sd).radiusElongation = re*ones(nc, 1);
 
                       otherwise
@@ -889,22 +889,22 @@ classdef GenericBattery < BaseModel
 
                       case 'Safari'
 
-                        N = model.(elde).(co).(amc).(sei).N;
-                        np = model.(elde).(co).(amc).(sei).np; % Note : we have by construction np = nc
+                        numberOfDiscreteCells = model.(elde).(co).(amc).(sei).numberOfDiscreteCells;
+                        numberOfParticles = model.(elde).(co).(amc).(sei).numberOfParticles; % One particle per grid cell.
 
                         cExternal = jsonstruct.Electrolyte.initialEthyleneCarbonateConcentration;
 
                         initstate.(elde).(co).(amc).(sei).cExternal   = cExternal;
-                        initstate.(elde).(co).(amc).(sei).c           = cExternal*ones(N*np, 1);
-                        initstate.(elde).(co).(amc).(sei).cInterface  = cExternal*ones(np, 1);
-                        initstate.(elde).(co).(amc).(sei).delta       = 5*nano*meter*ones(np, 1);
-                        initstate.(elde).(co).(amc).totalReactionRate = zeros(np, 1);
+                        initstate.(elde).(co).(amc).(sei).c           = cExternal*ones(numberOfDiscreteCells*numberOfParticles, 1);
+                        initstate.(elde).(co).(amc).(sei).cInterface  = cExternal*ones(numberOfParticles, 1);
+                        initstate.(elde).(co).(amc).(sei).delta       = 5*nano*meter*ones(numberOfParticles, 1);
+                        initstate.(elde).(co).(amc).totalReactionRate = zeros(numberOfParticles, 1);
 
                       case 'Bolay'
 
                         l = model.(elde).(co).(amc).(itf).SEIlengthInitial/model.(elde).(co).(amc).(itf).SEIlengthRef;
-                        initstate.(elde).(co).(amc).(itf).normalizedSEIlength      = l*ones(np, 1);
-                        initstate.(elde).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(np, 1);
+                        initstate.(elde).(co).(amc).(itf).normalizedSEIlength      = l*ones(numberOfParticles, 1);
+                        initstate.(elde).(co).(amc).(itf).normalizedSEIvoltageDrop = zeros(numberOfParticles, 1);
 
                         initstate = model.evalVarName(initstate, {ne, co, amc, itf, 'SEIlength'});
 

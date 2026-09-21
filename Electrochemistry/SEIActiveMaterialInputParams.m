@@ -23,7 +23,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             
             if isAssigned(isRootSimulationModel) && isRootSimulationModel
                 % only one particle in the stand-alone model
-                jsonstruct = setStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
+                jsonstruct = setStructField(jsonstruct, {'SolidElectrodeInterface', 'numberOfParticles'}, 1, 'handleMisMatch', 'quiet');
             end
 
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
