@@ -341,6 +341,7 @@ classdef ServerManager < handle
                 fprintf("Call to julia: %s \n", cmd);
             elseif manager.options.verbose
                 fprintf("Call to julia (It will take time the first time due to just in time compilation)\n");
+                fprintf("  %s \n", cmd);
             end
 
             [st, result] = system(cmd);
