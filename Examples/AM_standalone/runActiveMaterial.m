@@ -49,8 +49,8 @@ T              = 298;
 cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 % set primary variables
-N = model.(sd).N;
-initState.(sd).c        = cElectrodeInit*ones(N, 1);
+numberOfDiscreteCells = model.(sd).numberOfDiscreteCells;
+initState.(sd).c        = cElectrodeInit*ones(numberOfDiscreteCells, 1);
 initState.(sd).cSurface = cElectrodeInit;
 
 % set static variable fields
@@ -133,7 +133,7 @@ title('Concentration in particle / mol/L')
 legend show
 
 c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+r = linspace(0, model.(sd).particleRadius, model.(sd).numberOfDiscreteCells);
 
 figure
 plot(r, c/(mol/litre));

@@ -11,8 +11,8 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
 
         %% Discretization parameters
         
-        N  % Number of discretization intervals in the sei layer model [-]
-        np % Number of computational grid cells (typically set by parent model)
+        numberOfDiscreteCells  % Number of discretization intervals in the sei layer model [-]
+        numberOfParticles % Number of computational grid cells (typically set by parent model)
         
     end
     

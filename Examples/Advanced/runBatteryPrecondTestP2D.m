@@ -48,8 +48,8 @@ jsonstruct.(ne).(am).diffusionModelType = diffusionModelType;
 
 inputparams = BatteryInputParams(jsonstruct);
 
-% inputparams.(ne).(am).(sd).N = 5;
-% inputparams.(pe).(am).(sd).N = 5;
+% inputparams.(ne).(am).(sd).numberOfDiscreteCells = 5;
+% inputparams.(pe).(am).(sd).numberOfDiscreteCells = 5;
 
 use_cccv = false;
 if use_cccv

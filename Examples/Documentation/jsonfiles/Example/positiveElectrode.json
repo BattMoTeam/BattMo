@@ -9,7 +9,7 @@
       "thermalConductivity": 2.1,
       "diffusionModelType": "full",
       "SolidDiffusion": {
-        "N": 10,
+        "numberOfDiscreteCells": 10,
         "activationEnergyOfDiffusion": 5000,
         "referenceDiffusionCoefficient": 1E-14,
         "particleRadius": 1E-6

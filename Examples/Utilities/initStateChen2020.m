@@ -33,8 +33,8 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         initstate.(ne).(co).(am).(sd).cAverage = c_ne*ones(nenp, 1);
         initstate.(ne).(co).(am).(sd).cSurface = c_ne*ones(nenp, 1);
       case 'full'
-        nenr = model.(ne).(co).(am).(sd).N;
-        nenp = model.(ne).(co).(am).(sd).np;
+        nenr = model.(ne).(co).(am).(sd).numberOfDiscreteCells;
+        nenp = model.(ne).(co).(am).(sd).numberOfParticles;
         initstate.(ne).(co).(am).(sd).c = c_ne*ones(nenr*nenp, 1);
       otherwise
         error('diffusionModelType type not recognized');
@@ -57,8 +57,8 @@ function initstate = initStateChen2020(model, c_ne, c_pe)
         initstate.(pe).(co).(am).(sd).cAverage = c_pe*ones(penp, 1);
         initstate.(pe).(co).(am).(sd).cSurface = c_pe*ones(penp, 1);
       case 'full'
-        penr = model.(pe).(co).(am).(sd).N;
-        penp = model.(pe).(co).(am).(sd).np;
+        penr = model.(pe).(co).(am).(sd).numberOfDiscreteCells;
+        penp = model.(pe).(co).(am).(sd).numberOfParticles;
         initstate.(pe).(co).(am).(sd).c = c_pe*ones(penr*penp, 1);
       otherwise
         error('diffusionModelType type not recognized');

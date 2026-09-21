@@ -16,8 +16,8 @@ classdef SolidElectrodeInterface < BaseModel
 
         % Discretization parameters
 
-        N  % Number of discretization intervals in the sei layer model [-]
-        np % Number of computational grid cells (typically set by parent model)
+        numberOfDiscreteCells  % Number of discretization intervals in the sei layer model [-]
+        numberOfParticles % Number of computational grid cells (typically set by parent model)
 
     end
 
@@ -34,8 +34,8 @@ classdef SolidElectrodeInterface < BaseModel
                        'density'             , ...
                        'conductivity'        , ...
                        'diffusionCoefficient', ...
-                       'np'                  , ...
-                       'N'};
+                       'numberOfParticles'   , ...
+                       'numberOfDiscreteCells'};
             model = dispatchParams(model, inputparams, fdnames);
 
             model.operators = model.setupOperators();
@@ -107,20 +107,20 @@ classdef SolidElectrodeInterface < BaseModel
 
         function operators = setupOperators(model)
 
-            np = model.np;
-            N  = model.N;
+            numberOfParticles = model.numberOfParticles;
+            numberOfDiscreteCells  = model.numberOfDiscreteCells;
             D  = model.diffusionCoefficient;
 
-            celltbl.cells = (1 : np)';
+            celltbl.cells = (1 : numberOfParticles)';
             celltbl = IndexArray(celltbl);
 
-            Scelltbl.Scells = (1 : N)';
+            Scelltbl.Scells = (1 : numberOfDiscreteCells)';
             Scelltbl = IndexArray(Scelltbl);
 
             cellScelltbl = crossIndexArray(celltbl, Scelltbl, {}, 'optpureproduct', true);
             cellScelltbl = sortIndexArray(cellScelltbl, {'cells', 'Scells'});
 
-            endScelltbl.Scells = N;
+            endScelltbl.Scells = numberOfDiscreteCells;
             endScelltbl = IndexArray(endScelltbl);
             endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
 
@@ -128,22 +128,22 @@ classdef SolidElectrodeInterface < BaseModel
             startScelltbl = IndexArray(startScelltbl);
             startcellScelltbl = crossIndexArray(cellScelltbl, startScelltbl, {'Scells'});
 
-            Sfacetbl.Sfaces = (1 : (N - 1))'; % index of the internal faces (correspond to image of C')
+            Sfacetbl.Sfaces = (1 : (numberOfDiscreteCells - 1))'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
 
             % The governing equation is setup in a fixed grid of length 1
-            G = cartGrid(N, 1);
+            G = cartGrid(numberOfDiscreteCells, 1);
             G = computeGeometry(G);
 
-            rock.perm = ones(N, 1);
-            rock.poro = ones(N, 1);
+            rock.perm = ones(numberOfDiscreteCells, 1);
+            rock.poro = ones(numberOfDiscreteCells, 1);
             op = setupOperatorsTPFA(G, rock);
             C = op.C;
             T = op.T; % in Sfacetbl
             T_all = op.T_all;
 
-            TExtBc = D*T_all(N); % half-transmissibility for of the external boundary face
+            TExtBc = D*T_all(numberOfDiscreteCells); % half-transmissibility for of the external boundary face
             TIntBc = D*T_all(1); % half-transmissibility for of the internal boundary face (close to solid particle)
 
             Grad = -diag(T)*C;

@@ -22,7 +22,7 @@
           "activationEnergyOfDiffusion": 4000,
           "referenceDiffusionCoefficient": 3.9e-14,
           "particleRadius": 1.475e-05,
-          "N": 10
+          "numberOfDiscreteCells": 10
         }
       }
     },
@@ -48,7 +48,7 @@
           "activationEnergyOfDiffusion": 20000,
           "referenceDiffusionCoefficient": 1.25e-15,
           "particleRadius": 1.15e-06,
-          "N": 10
+          "numberOfDiscreteCells": 10
         }
       }
     },

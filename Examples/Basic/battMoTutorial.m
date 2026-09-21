@@ -55,8 +55,8 @@ cc      = 'CurrentCollector';
 % similar way to updating the jsonstruct. Here we set the discretisation
 % level for the diffusion model. 
 
-jsonstruct.(ne).(co).(am).(sd).N = 5;
-jsonstruct.(pe).(co).(am).(sd).N = 5;
+jsonstruct.(ne).(co).(am).(sd).numberOfDiscreteCells = 5;
+jsonstruct.(pe).(co).(am).(sd).numberOfDiscreteCells = 5;
 
 %%
 % We can also change how the battery is operated, for example setting

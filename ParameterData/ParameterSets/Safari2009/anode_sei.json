@@ -19,14 +19,14 @@
     "activationEnergyOfDiffusion": 0,
     "referenceDiffusionCoefficient": 2e-14,
     "particleRadius": 2e-6,
-    "N": 10
+    "numberOfDiscreteCells": 10
   },
   "SolidElectrodeInterface" : {
     "molecularWeight": 0.162,
     "density": 1690,
     "conductivity" : 5e-6,
     "diffusionCoefficient": 6.8e-21,
-    "N": 10
+    "numberOfDiscreteCells": 10
   },
   "SideReaction" : {
     "chargeTransferCoefficient" : 0.5,
