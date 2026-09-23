@@ -31,8 +31,6 @@ classdef BatteryLinearSolver < handle
 
         function solver = BatteryLinearSolver(varargin)
 
-            mrstModule add linearsolvers
-
             solver.verbose                   = 0;
             solver.replaceNaN                = false;
             solver.replaceInf                = false;
@@ -628,7 +626,7 @@ classdef BatteryLinearSolver < handle
                 dd = abs(diag(U));
 
                 if (max(dd)/min(dd) > 1e14)
-                    error();
+                    error('Smoother diagonal is poorly scaled.');
                 end
 
                 smoother = @(A, x) opt.U\(opt.L\x);
@@ -641,7 +639,7 @@ classdef BatteryLinearSolver < handle
                 dd   = abs(diag(U));
 
                 if(max(dd)/min(dd) > 1e14)
-                    error();
+                    error('Smoother diagonal is poorly scaled.');
                 end
 
                 opt = struct('L'       , L   , ...
@@ -1017,7 +1015,7 @@ end
 
 
 %{
-  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
   and SINTEF Digital, Mathematics & Cybernetics.
 
   This file is part of The Battery Modeling Toolbox BattMo

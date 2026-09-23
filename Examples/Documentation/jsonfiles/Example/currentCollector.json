@@ -1,6 +1,6 @@
 {
   "thickness": 1E-5,
-  "N": 2,
+  "numberOfDiscreteCells": 2,
   "tab": {
     "width": 0.004,
     "height": 0.001,

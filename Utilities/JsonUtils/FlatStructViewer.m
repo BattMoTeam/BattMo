@@ -16,9 +16,9 @@ classdef FlatStructViewer
                 flatstruct = table2cell(flatstruct);
                 skip_column_name_set = true;
             else
-                skip_column_name_set = false;                
+                skip_column_name_set = false;
             end
-            
+
             fsv.flatstruct = flatstruct;
 
             if (nargin < 2) & ~skip_column_name_set
@@ -43,7 +43,7 @@ classdef FlatStructViewer
         function T = getTable(fsv)
 
             T = cell2table(fsv.flatstruct, 'VariableNames', fsv.columnnames);
-            
+
         end
 
         function T = print(fsv, varargin)
@@ -70,11 +70,12 @@ classdef FlatStructViewer
                     end
                 end
             end
-            
+
             T = cell2table(fsv.flatstruct, 'VariableNames', fsv.columnnames);
 
             if opt.print
-                display(T, 'view');
+                tableText = evalc('disp(T)');
+                fprintf('%s', tableText);
             end
 
             if ~isempty(opt.filename)
@@ -171,7 +172,7 @@ classdef FlatStructViewer
                     r = regexprep(frontColumName, ' +', '.*');
                     ind = regexp(columnnames, r);
                     ind = cellfun(@(res) ~isempty(res), ind);
-                    found = [found, find(ind)]; 
+                    found = [found, find(ind)];
                 end
             else
                 fsv = fsv.reorderColumns({frontColumNames});
@@ -195,7 +196,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

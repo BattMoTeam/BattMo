@@ -2,6 +2,7 @@
   "$id": "file://./AMGCLoptions",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "options for amgcl linear solver, sources are in battmoDir()/MRST/mrst-solvers/linearsolvers/amgcl/dependencies/amgcl-4f260881c7158bc5aede881f5f0ed272df2ab580/ which we call AMGCLDIR in this file",
+  "$comment" : "Shall we keep the following properties or clean-up the mrst interface amgcl_matlab_simple?",
   "type": "object",
 
   "properties": {
@@ -15,7 +16,6 @@
 
                     },
 
-    "QUESTION" : "Shall we keep the following properties or clean-up the mrst interface amgcl_matlab_simple?",
     "verbose"      : {"type" : "integer"},
     "block_size"   : {"type" : "integer",
                       "QUESTION" : "this one is needed by amgcl interface"},
@@ -195,9 +195,9 @@
 
     "ilu0" : {
       "type" : "object",
+      "description" : "parameters are fully described in AMGCLDIR/amgcl/relaxation/ilu0.hpp",
       "properties" : {
         "type" : {"const" : "ilu0"},
-        "description" : "parameters are fully described in AMGCLDIR/amgcl/relaxation/ilu0.hpp",
         "damping" : {"type" : "number",
                      "description" : "damping factor",
                      "default" : 1},
@@ -215,9 +215,9 @@
 
     "spai0" : {
       "type" : "object",
+      "description" : "no parameters, see AMGCLDIR/amgcl/relaxation/spai0.hpp",
       "properties" : {
-        "type" : {"const" : "spai0"},
-        "description" : "no parameters, see AMGCLDIR/amgcl/relaxation/spai0.hpp"
+        "type" : {"const" : "spai0"}
       }
     },
 

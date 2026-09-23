@@ -18,8 +18,8 @@ jsonstruct_geometry = parseBattmoJson(jsonfilename);
 % We change some parameters to get a smaller model and simulation time.
 
 jsonstruct_geometry.Geometry.outerRadius = jsonstruct_geometry.Geometry.innerRadius + 4*milli*meter;
-jsonstruct_geometry.Geometry.numberOfDiscretizationCellsVertical = 2;
-jsonstruct_geometry.Geometry.numberOfDiscretizationCellsAngular  = 20;
+jsonstruct_geometry.Geometry.numberOfDiscreteCellsVertical = 2;
+jsonstruct_geometry.Geometry.numberOfDiscreteCellsAngular  = 20;
 %% 
 % We use <https://github.com/BattMoTeam/BattMo/blob/main/Utilities/JsonUtils/FlatStructViewer.m 
 % FlatStructViewer.m> to flatten the json structure and print it to screen.
@@ -105,3 +105,23 @@ title('Active Material Surface Lithium Concentration  /  mol \cdot L^{-1}');
 % add a colorbar
 colorbar()
 view(45,45)
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

@@ -27,7 +27,19 @@ The documentation is found at the `documentation webpage <https://battmoteam.git
 Installation
 ------------
 
-Before cloning this reposity you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation.
+The easiest way is to download the zip file of the latest release (see the Release section to the right). Unzip this file *in a new directory*, run `startupBattMo` to set up the paths, and you are ready to go. We believe you need a MATLAB version newer than R2022a.
+
+For the development version you must clone this repository. Before cloning you must make sure you have **Git LFS** installed. See `https://git-lfs.com` for instructions on downloading and installation. Typically it's
+
+``apt install git-lfs``
+
+or
+
+``brew install git-lfs``
+
+followed by
+
+``git lfs install``
 
 BattMo is based on `MRST <https://www.sintef.no/Projectweb/MRST/>`_, which provides a general unstructured grid format,
 generic MATLAB automatic differentiation tools and Newton solvers. The MRST source code wil be installed directly via
@@ -40,7 +52,7 @@ Then start MATLAB and in the directory where you cloned the repository, run:
 
 ``startupBattMo``
 
-You can check that that your installation is setup correctly by running one of the example scripts:
+You can check that your installation is setup correctly by running one of the example scripts:
 
 ``runBatteryP2D``
 
@@ -66,6 +78,11 @@ Tutorials
 
 Tutorials are presented in `documentation <https://BattMoTeam.github.io/BattMo/>`_.
 
+Contributing
+------------
+
+If you are interested in how to contribute to BattMo, please read `here <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst>`_.
+
 Acknowledgements
 -----------------
 BattMo has received funding from the European Union’s Horizon 2020 innovation program under grant agreement numbers:
@@ -73,5 +90,5 @@ BattMo has received funding from the European Union’s Horizon 2020 innovation 
 * 875527 HYDRA
 * 957189 BIG-MAP
 * 101104013 BATMAX
-* 101103997 DigiBatt 
+* 101103997 DigiBatt
 * 101069765 IntelLiGent

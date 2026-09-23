@@ -47,7 +47,7 @@ nbsphinx_prolog = r"""
 {% for d in env.found_docs %}
   {% if extra_rst in d %}{% set ns.found = True %}{% break %}{% endif %}
 {% endfor %}
-{% if ns.found %} 
+{% if ns.found %}
 {% set extra_rst = extra_rst ~ '.rst' %}
 .. include:: {{ extra_rst }}
 {% endif %}
@@ -71,7 +71,8 @@ extensions = ['nbsphinx',
               'sphinx.ext.mathjax',
               'sphinxcontrib.youtube',
               'sphinx_collapse',
-              'sphinx_design']
+              'sphinx_design',
+              'sphinx_copybutton']
 
 bibtex_bibfiles = ['refs.bib']
 
@@ -87,8 +88,6 @@ nbsphinx_custom_formats_strs = {
     '.pct.py': 'jupytext.reads:py:percent',
     '.md': 'jupytext.reads:Rmd',
 }
-
-import matplotlib.pyplot
 
 autosectionlabel_prefix_document = True
 
@@ -109,8 +108,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BattMo'
-copyright = '2021-2024'
-author = 'Simon Clark'
+copyright = '2021-2026'
+author = 'Xavier Raynaud, Augut Johansson, Simon Clark'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -135,23 +134,24 @@ author = 'Simon Clark'
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build', 'unparsed']
 # exclude_patterns += ['*.nblink']
-# exclude_patterns += ["exploreOutput.nblink"]
-# exclude_patterns += ["functionInterfaceExample.nblink"]
-# exclude_patterns += ["runBolaySEI.nblink"]
-# exclude_patterns += ["runCellPlating.nblink"]
-# exclude_patterns += ["runControlExamples.nblink"]
-# exclude_patterns += ["runGenericStepControlCycle.nblink"]
-# exclude_patterns += ["runGenericStepControlSimple.nblink"]
-# exclude_patterns += ["runOnlyThermal.nblink"]
-# exclude_patterns += ["runSiliconGraphiteBattery.nblink"]
-# exclude_patterns += ["runSPMplating.nblink"]
-# exclude_patterns += ["runSwellingExample.nblink"]
-# exclude_patterns += ["runThermalExample.nblink"]
-# exclude_patterns += ["runTimeControlExample.nblink"]
-# exclude_patterns += ['publishedExamples']
-# exclude_patterns += ['pynbnotebooks']
-# exclude_patterns += ['pynbnotebooks/part_1_battery_modeling_guide.ipynb']
-# exclude_patterns += ['pynbnotebooks/part_2_battery_modeling_guide.ipynb']
+# exclude_patterns += ["tutorials/*"]
+# exclude_patterns += ["nblinks/exploreOutput.nblink"]
+# exclude_patterns += ["nblinks/functionInterfaceExample.nblink"]
+# exclude_patterns += ["nblinks/runBolaySEI.nblink"]
+# exclude_patterns += ["nblinks/runCellPlating.nblink"]
+# exclude_patterns += ["nblinks/runControlExamples.nblink"]
+# exclude_patterns += ["nblinks/runGenericStepControlCycle.nblink"]
+# exclude_patterns += ["nblinks/runGenericStepControlSimple.nblink"]
+# exclude_patterns += ["nblinks/runOnlyThermal.nblink"]
+# exclude_patterns += ["nblinks/runSiliconGraphiteBattery.nblink"]
+# exclude_patterns += ["nblinks/runSPMplating.nblink"]
+# exclude_patterns += ["nblinks/runSwellingExample.nblink"]
+# exclude_patterns += ["nblinks/runThermalExample.nblink"]
+# exclude_patterns += ["nblinks/runTimeControlExample.nblink"]
+# exclude_patterns += ['nblinks/publishedExamples']
+# exclude_patterns += ['nblinks/pynbnotebooks']
+# exclude_patterns += ['modelingGuide/part_1_battery_modeling_guide.ipynb']
+# exclude_patterns += ['modelingGuide/part_2_battery_modeling_guide.ipynb']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -417,7 +417,7 @@ class BattMoRole(ReferenceRole):
 
 roles.register_local_role('battmo', BattMoRole())
 
-    
+
 class BattMoFileRole(ReferenceRole):
 
     def run(self):

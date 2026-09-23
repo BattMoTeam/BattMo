@@ -26,9 +26,9 @@ classdef FullSolidDiffusionModelInputParams < SolidDiffusionModelInputParams
         %% Discretization parameters
         
         % Number of discretization intervals in the diffusion model [-]
-        N
+        numberOfDiscreteCells
         % Number of computational grid cells (typically set by parent model :class:`ActiveMaterial <Electrochemistry.ActiveMaterialInputParams>`)
-        np 
+        numberOfParticles
 
     end
     
@@ -53,7 +53,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

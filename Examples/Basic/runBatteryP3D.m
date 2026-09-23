@@ -6,10 +6,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
 % The properties and parameters of the battery cell, including the
 % architecture and materials, are set using an instance of
@@ -18,7 +14,7 @@ mrstModule add ad-core mrst-gui mpfa
 % throughout the submodels. The input parameters can be set manually or
 % provided in json format. All the parameters for the model are stored in
 % the inputparams object.
-jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', 'lithium_ion_battery_lco_graphite.json'));
 jsonstruct.include_current_collectors = false;
 inputparams = BatteryInputParams(jsonstruct);
 
@@ -121,11 +117,11 @@ ylabel 'potential  / V';
 %% Plot an animated summary of the results
 doplot = false;
 if doplot
-    plotDashboard(model, states, 'step', 0);
+    plotDashboard(model, states, 'step', 1); %#ok<UNRCH>
 end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

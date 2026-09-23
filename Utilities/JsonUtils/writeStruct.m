@@ -7,9 +7,11 @@ function filename = writeStruct(jsonstruct, filename)
         prettyprint = true;
     end
 
+    jsonText = jsonencode(jsonstruct, 'PrettyPrint', prettyprint);
     fid = fopen(filename, 'w');
-    fprintf(fid, jsonencode(jsonstruct, 'PrettyPrint', prettyprint));
-    fclose(fid);
+    assert(fid > 0, 'Could not open %s for writing', filename);
+    fileCleanup = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, '%s', jsonText);
 
 end
 

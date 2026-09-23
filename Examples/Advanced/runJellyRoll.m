@@ -8,9 +8,9 @@ jsonstruct_geometry = parseBattmoJson(fullfile('Examples', 'JsonDataFiles', '468
 testing = true;
 if testing
     fprintf('We setup a smaller case for quicker testing\n');
-    rOuter = jsonstruct_geometry.Geometry.innerRadius + 1*milli*meter;
-    jsonstruct_geometry.Geometry.outerRadius                         = rOuter;
-    jsonstruct_geometry.Geometry.numberOfDiscretizationCellsVertical =  2;
+    outerRadius = jsonstruct_geometry.Geometry.innerRadius + 1*milli*meter;
+    jsonstruct_geometry.Geometry.outerRadius                         = outerRadius;
+    jsonstruct_geometry.Geometry.numberOfDiscreteCellsVertical =  2;
 %% 
 % We do not include any special tab so that the whole current collector at the 
 % top and bottom is connected to the external system (tabless design).
@@ -25,7 +25,7 @@ end
 jsonstruct_material = parseBattmoJson(fullfile('ParameterData'        , ...
                                                'BatteryCellParameters', ...
                                                'LithiumIonBatteryCell', ...
-                                               'lithium_ion_battery_nmc_graphite.json'));
+                                               'lithium_ion_battery_lco_graphite.json'));
 
 jsonstruct_material = removeStructField(jsonstruct_material, {'include_current_collectors'});
 %% We load the control parameters
@@ -106,3 +106,23 @@ plot(time, E, 'linewidth', 3);
 set(gca, 'fontsize', 18);
 title('Cell Voltage / V')
 xlabel('time')
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

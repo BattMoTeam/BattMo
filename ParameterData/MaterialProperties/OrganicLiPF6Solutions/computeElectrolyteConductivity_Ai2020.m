@@ -7,9 +7,10 @@ function conductivity = computeElectrolyteConductivity_Ai2020(c, T)
 %    Electrochemical Thermal-Mechanical Modelling of Stress Inhomogeneity
 %    in Lithium-Ion Pouch Cells. Journal of The Electrochemical Society,
 %    167(1), 013512. DOI: 10.1149/2.0122001JES.
-%    .. [2] Torchio, Marcello, et al. "Lionsimba: a matlab framework based
-%    on a finite volume model suitable for li-ion battery design, simulation,
-%    and control." Journal of The Electrochemical Society 163.7 (2016): A1192.
+% .. [2] Torchio, M., Magni, L., Gopaluni, R. B., Braatz, R. D., and Raimondo, D. M. (2016).
+%    LIONSIMBA: A Matlab Framework Based on a Finite Volume Model Suitable for Li-Ion Battery
+%    Design, Simulation, and Control. Journal of The Electrochemical Society, 163(7),
+%    A1192-A1205. DOI: 10.1149/2.0291607jes.
     
     conductivityFactor = 1e-4;
     
@@ -24,6 +25,22 @@ function conductivity = computeElectrolyteConductivity_Ai2020(c, T)
     
 end
 
-
 %{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
 %}

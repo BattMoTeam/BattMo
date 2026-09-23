@@ -4,12 +4,8 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
-jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_nmc_graphite.json'));
+jsonstruct = parseBattmoJson(fullfile('ParameterData','BatteryCellParameters','LithiumIonBatteryCell','lithium_ion_battery_lco_graphite.json'));
 
 % We define some shorthand names for simplicity.
 ne      = 'NegativeElectrode';
@@ -53,8 +49,8 @@ T              = 298;
 cElectrodeInit   = (model.(itf).guestStoichiometry100)*(model.(itf).saturationConcentration);
 
 % set primary variables
-N = model.(sd).N;
-initState.(sd).c        = cElectrodeInit*ones(N, 1);
+numberOfDiscreteCells = model.(sd).numberOfDiscreteCells;
+initState.(sd).c        = cElectrodeInit*ones(numberOfDiscreteCells, 1);
 initState.(sd).cSurface = cElectrodeInit;
 
 % set static variable fields
@@ -137,7 +133,7 @@ title('Concentration in particle / mol/L')
 legend show
 
 c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+r = linspace(0, model.(sd).particleRadius, model.(sd).numberOfDiscreteCells);
 
 figure
 plot(r, c/(mol/litre));
@@ -148,7 +144,7 @@ title('Particle concentration profile (last time step)')
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

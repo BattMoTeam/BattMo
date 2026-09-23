@@ -1,5 +1,3 @@
-mrstModule add ad-core mpfa
-
 mrstDebug(20);
 
 jsonfilename = fullfile('Electrolyser','Parameters','alkalineElectrolyser.json');
@@ -89,7 +87,7 @@ ylabel('Current [A/cm^2]');
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

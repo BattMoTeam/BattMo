@@ -24,7 +24,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
 %
 %   [E, energyDensity, energy] = runJsonFunction('a_json_file.json', 'do_plot', true);
 %
-%   E = runJsonFunction({'lithium_ion_battery_nmc_graphite.json', 'geometry1d.json});
+%   E = runJsonFunction({'lithium_ion_battery_lco_graphite.json', 'geometry1d.json});
 %
 % SEE ALSO:
 %
@@ -37,7 +37,7 @@ function [E, energyDensity, energy] = runJsonFunction(jsonfiles, varargin)
     if ~exist('jsonfiles', 'var')
         jsonfiles = {
             fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell',...
-                     'lithium_ion_battery_nmc_graphite.json'),...
+                     'lithium_ion_battery_lco_graphite.json'),...
             fullfile('Examples', 'JsonDataFiles', 'geometry1d.json'), ...
             fullfile('Examples', 'JsonDataFiles', 'extra_output.json'), ...
                     };
@@ -90,7 +90,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

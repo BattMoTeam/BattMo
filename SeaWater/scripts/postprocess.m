@@ -14,8 +14,6 @@ for  idir = 1 : numel(directories)
     directory = directories{idir};
     [bp, simlist] = setupSimList(directory);
 
-    mrstModule add ad-core
-
     newsimlist = simlist;
 
     newsimlist = bp.filterSimList(simlist, 'nucMax', 1, 'nparams', @(str) ismember(str, {'10;40;40', '10;20;40', '10;40;20', '80;80;80', '40;40;40', '30;30;30'}));
@@ -52,7 +50,7 @@ xlabel('time (hours)')
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

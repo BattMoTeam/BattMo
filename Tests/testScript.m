@@ -51,12 +51,9 @@ doTestExamples = false;
 if doTestExamples
     suite = testsuite('TestRunExamples');
     runner = testrunner('textoutput');
-
     import matlab.unittest.plugins.StopOnFailuresPlugin
     runner.addPlugin(StopOnFailuresPlugin)
     results = runner.run(suite);
-
-    %results = runner.runInParallel(suite);
 end
 
 doTestJsonFiles = false;
@@ -67,8 +64,6 @@ if doTestJsonFiles
     import matlab.unittest.plugins.StopOnFailuresPlugin
     runner.addPlugin(StopOnFailuresPlugin)
     results = runner.run(suite);
-
-    %results = runner.runInParallel(suite);
 end
 
 doTestChen2020 = true;
@@ -83,9 +78,18 @@ if doTestChen2020
 
 end
 
+doTestPython = false;
+if doTestPython
+    suite = testsuite('TestPython');
+    runner = testrunner('textoutput');
+    import matlab.unittest.plugins.StopOnFailuresPlugin
+    runner.addPlugin(StopOnFailuresPlugin)
+    results = runner.run(suite);
+
+end
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

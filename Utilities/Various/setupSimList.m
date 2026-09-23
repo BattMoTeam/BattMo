@@ -3,8 +3,6 @@ function [bp, simlist] = setupSimList(directory, varargin)
     opt = struct('addDirectoryName', false, ...
                  'directoryField', 'directory');
     opt = merge_options(opt, varargin{:});
-    
-    mrstModule add mpfa
 
     if exist(directory, 'dir')
         dataDirectory = directory;
@@ -49,7 +47,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

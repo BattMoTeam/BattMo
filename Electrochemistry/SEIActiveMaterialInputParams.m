@@ -23,7 +23,7 @@ classdef SEIActiveMaterialInputParams < ActiveMaterialInputParams
             
             if isAssigned(isRootSimulationModel) && isRootSimulationModel
                 % only one particle in the stand-alone model
-                jsonstruct = setStructField(jsonstruct, {'SolidElectrodeInterface', 'np'}, 1, 'handleMisMatch', 'quiet');
+                jsonstruct = setStructField(jsonstruct, {'SolidElectrodeInterface', 'numberOfParticles'}, 1, 'handleMisMatch', 'quiet');
             end
 
             inputparams = inputparams@ActiveMaterialInputParams(jsonstruct);
@@ -43,7 +43,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

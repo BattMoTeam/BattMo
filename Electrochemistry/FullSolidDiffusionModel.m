@@ -18,8 +18,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         % Advanced parameters
 
-        np % Number of particles
-        N  % Discretization parameters in spherical direction
+        numberOfParticles % Number of particles
+        numberOfDiscreteCells  % Discretization parameters in spherical direction
 
 
         %% Computed parameters at model setup
@@ -42,12 +42,12 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
                        'saturationConcentration', ...
                        'guestStoichiometry100'  , ...
                        'guestStoichiometry0'    , ...
-                       'np'                     , ...
-                       'N'};
+                       'numberOfParticles'      , ...
+                       'numberOfDiscreteCells'};
 
             model = dispatchParams(model, inputparams, fdnames);
             model.operators = model.setupOperators();
-            
+
             if ~isempty(model.diffusionCoefficient)
                 model.useDFunc = true;
                 [model.computeDFunc, model.computeD] = setupFunction(model.diffusionCoefficient);
@@ -120,25 +120,25 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function operators = setupOperators(model)
 
-            np = model.np;
-            N  = model.N;
+            numberOfParticles = model.numberOfParticles;
+            numberOfDiscreteCells  = model.numberOfDiscreteCells;
             rp = model.particleRadius;
 
-            celltbl.cells = (1 : np)';
+            celltbl.cells = (1 : numberOfParticles)';
             celltbl = IndexArray(celltbl);
 
             % Solid particle cells
-            Scelltbl.Scells = (1 : N)';
+            Scelltbl.Scells = (1 : numberOfDiscreteCells)';
             Scelltbl = IndexArray(Scelltbl);
 
             cellScelltbl = crossIndexArray(celltbl, Scelltbl, {}, 'optpureproduct', true);
             cellScelltbl = sortIndexArray(cellScelltbl, {'cells', 'Scells'});
 
-            endScelltbl.Scells = N;
+            endScelltbl.Scells = numberOfDiscreteCells;
             endScelltbl = IndexArray(endScelltbl);
             endcellScelltbl = crossIndexArray(cellScelltbl, endScelltbl, {'Scells'});
 
-            G = cartGrid(N, rp);
+            G = cartGrid(numberOfDiscreteCells, rp);
             r = G.nodes.coords;
 
             G.cells.volumes   = 4/3*pi*(r(2 : end).^3 - r(1 : (end - 1)).^3);
@@ -150,8 +150,8 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             G.faces.areas     = 4*pi*r.^2;
             G.faces.normals   = G.faces.areas;
 
-            rock.perm = ones(N, 1);
-            rock.poro = ones(N, 1);
+            rock.perm = ones(numberOfDiscreteCells, 1);
+            rock.poro = ones(numberOfDiscreteCells, 1);
 
             tbls = setupTables(G);
             cellfacetbl = tbls.cellfacetbl;
@@ -168,9 +168,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             % Here, we use that we know *apriori* the indexing in G.cells.faces (the last index corresponds to outermost cell-face)
             Tbc = hT(end); % half-transmissibility for of the boundary face
-            Tbc = repmat(Tbc, np, 1);
+            Tbc = repmat(Tbc, numberOfParticles, 1);
 
-            Sfacetbl.Sfaces = (2 : N)'; % index of the internal faces (correspond to image of C')
+            Sfacetbl.Sfaces = (2 : numberOfDiscreteCells)'; % index of the internal faces (correspond to image of C')
             Sfacetbl = IndexArray(Sfacetbl);
             cellSfacetbl = crossIndexArray(celltbl, Sfacetbl, {}, 'optpureproduct', true);
 
@@ -369,13 +369,9 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
             if useDFunc
                 state.flux = op.flux(D, c);
-                % a = state.flux;
-                % a = combineEquations(a);
-                % keyboard
             else
                 D = op.mapToParticle*D;
                 state.flux = op.flux(D, c);
-                % keyboard
             end
 
 
@@ -424,20 +420,20 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
 
         function c = getParticleConcentrations(model, state)
         % Reshape the particle concentration distribution as an array
-            np = model.np;
-            N  = model.N;
+            numberOfParticles = model.numberOfParticles;
+            numberOfDiscreteCells  = model.numberOfDiscreteCells;
 
-            c = reshape(state.c, np, N)';
-            
+            c = reshape(state.c, numberOfParticles, numberOfDiscreteCells)';
+
         end
-        
+
     end
 
 end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

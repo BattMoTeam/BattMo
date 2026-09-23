@@ -2,10 +2,8 @@ classdef MLXnotebookExporter
 
     properties
 
-        % list of the registered mlx notebooks (for info and automatic iteration)
-        notebooknames = {'part_1_battery_modeling_guide'                   , ...
-                         'part_2_battery_modeling_guide'                   , ...
-                         'tutorial_1_a_simple_p2d_model_live'              , ...
+        % Documentation sources rebuilt by updateDocumentationIpynbs.
+        notebooknames = {'tutorial_1_a_simple_p2d_model_live'              , ...
                          'tutorial_2_changing_control_protocol_live'       , ...
                          'tutorial_3_modify_structural_parameters_live'    , ...
                          'tutorial_4_modify_material_parameters_live'      , ...
@@ -13,39 +11,54 @@ classdef MLXnotebookExporter
                          'tutorial_6_simulate_thermal_performance_live'    , ...
                          'tutorial_7_a_simple_p4d_model_live'              , ...
                          'tutorial_8_simulate_a_multilayer_pouch_cell_live', ...
-                         'tutorial_9_simulate_a_cylindrical_cell_live'};
+                         'tutorial_9_simulate_a_cylindrical_cell_live'     , ...
+                         'runImpedanceScript'                              , ...
+                         'runCalibrateEcmFromP2D'                          , ...
+                         'runGenericStepControlSimple'                     , ...
+                         'runControlExamples'                              , ...
+                         'functionInterfaceExample'                        , ...
+                         'runFittingTime'                                  , ...
+                         'runThermalExample'                               , ...
+                         'runImpedanceExplorer'                            , ...
+                         'runGenericStepControlCycle'                      , ...
+                         'runEquivalentCircuitModel'                       , ...
+                         'runOnlyThermal'                                  , ...
+                         'runSPMplating'                                   , ...
+                         'runBolaySEI'                                     , ...
+                         'runSwellingExample'                              , ...
+                         'exploreOutput'                                   , ...
+                         'runSiliconGraphiteBattery'                       , ...
+                         'runTimeControlExample'                           , ...
+                         'runCellPlating'};
 
-        % list of registered m-scripts (obtained from the test suite)
-        mscripts
-        
-        
     end
 
     methods
 
-        function mne = MLXnotebookExporter()
-            
-            testrunexample = TestRunExamples();
-            mne.mscripts = testrunexample.filename;
-            
-        end
+        function updateDocumentationIpynbs(exporter, varargin)
+            % Rebuild registered documentation notebooks; use 'run', true to refresh plots.
 
-        function updateDocumentationIpynbs(mne)
-        % Update all the ipynb in the documentation.
+            options = struct('run', false);
+            options = merge_options(options, varargin{:});
 
-            run_note_book = false;
-            
-            inputdir  = fullfile(battmoDir(), 'Examples', 'Notebooks');
-            outputdir = fullfile(battmoDir(), 'Documentation', 'pynbnotebooks');
-            
-            for inote = 1 : numel(mne.notebooknames)
-                
-                notebookname = mne.notebooknames{inote};
-                
-                inputfilename  = fullfile(inputdir, [notebookname, '.mlx']);
-                
-                mne.setupIpynbFromMlx(inputfilename, 'outputDirectory', outputdir);
-                
+            for notebookIndex = 1 : numel(exporter.notebooknames)
+                notebookName = exporter.notebooknames{notebookIndex};
+                scriptFilename = which([notebookName, '.m']);
+
+                if ~isempty(scriptFilename)
+                    % Regenerate the intermediate live script so code edits reach the HTML.
+                    exporter.setupIpynbFromM(scriptFilename, 'run', options.run);
+                else
+                    % The modeling guides are authored directly as live scripts.
+                    liveFilename = which([notebookName, '.mlx']);
+                    assert(~isempty(liveFilename), 'Notebook %s not found.', notebookName);
+                    if options.run
+                        MLXnotebookExporter.resetGraphicsDefaults();
+                        matlab.internal.liveeditor.executeAndSave(liveFilename);
+                    end
+                    outputDirectory = fullfile(battmoDir(), 'Documentation', 'modelingGuide');
+                    exporter.setupIpynbFromMlx(liveFilename, 'outputDirectory', outputDirectory);
+                end
             end
 
         end
@@ -144,6 +157,7 @@ classdef MLXnotebookExporter
             matlab.internal.liveeditor.openAndSave(inputfile, outputfile);
 
             if opt.run
+                MLXnotebookExporter.resetGraphicsDefaults();
                 matlab.internal.liveeditor.executeAndSave(outputfile);
             end
             
@@ -203,18 +217,21 @@ classdef MLXnotebookExporter
             
         end
 
-        function runMlxAndSave(mne, filename)
-
-        % To run and update the mlx notebook programmatically, it is possible to use:
-        % matlab.internal.liveeditor.executeAndSave('fullpathnameto.mlx')
-            
-            matlab.internal.liveeditor.executeAndSave(filename);
-
-        end
-
     end
 
     methods (Static)
+
+        function resetGraphicsDefaults()
+        % Reset root graphics defaults (font size, line width, etc) to MATLAB's factory
+        % values. Some example scripts change these with set(0, ...) without restoring
+        % them, which otherwise leaks into the figures of whichever notebook happens to
+        % run next in the same MATLAB session.
+
+            set(0, 'defaulttextfontsize' , 'default');
+            set(0, 'defaultaxesfontsize' , 'default');
+            set(0, 'defaultlinelinewidth', 'default');
+
+        end
 
         function txt = cleanup(txt)
 
@@ -283,3 +300,22 @@ classdef MLXnotebookExporter
 
 end
 
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

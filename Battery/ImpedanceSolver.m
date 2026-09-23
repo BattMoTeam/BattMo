@@ -71,21 +71,28 @@ classdef ImpedanceSolver < handle
             
         end
 
-        function Z = computeImpedance(impsolv, omegas)
+        function ocp = getOCP(impsolv)
+
+            state = impsolv.state;
+            ocp = state.Control.E;
+            
+        end
+        
+        function Z = computeImpedance(impsolv, freqs)
             
             DM    = impsolv.DM;
             DA    = impsolv.DA;
             b     = impsolv.b;
             indUs = impsolv.indUs;
 
-            for iomega = 1 : numel(omegas)
+            for ifreq = 1 : numel(freqs)
 
-                omega = omegas(iomega);
+                freq = freqs(ifreq);
 
-                A = (i*2*pi*omega*DM + DA);
+                A = (i*2*pi*freq*DM + DA);
                 x = A\b;
 
-                Z(iomega) = x(indUs(1) : indUs(2));
+                Z(ifreq) = x(indUs(1) : indUs(2));
                 
             end
             
@@ -235,3 +242,22 @@ classdef ImpedanceSolver < handle
     
 end
 
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

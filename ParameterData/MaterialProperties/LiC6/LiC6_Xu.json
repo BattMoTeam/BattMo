@@ -1,5 +1,5 @@
 {
-  "description" : "Data from Xu et al (2015) doi:10.1016/j.energy.2014.11.073",
+  "description" : "Xu2015 material parameter set. Reference: Xu, M., Zhang, Z., Wang, X., Jia, L., and Yang, L. (2015). A pseudo three-dimensional electrochemical-thermal model of a prismatic LiFePO4 battery during discharge process. Energy, 80, 303-317. DOI: 10.1016/j.energy.2014.11.073.",
   "saturationConcentration": 31540,
   "volumetricSurfaceArea": 142372,
   "density": 1852,

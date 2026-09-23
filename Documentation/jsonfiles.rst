@@ -8,10 +8,10 @@ List of Json File Examples
    :align:  center
             
    * - Full Cell Parameters
-   * - :battmofile:`Graphite-NMC cell <ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_graphite.json>`   
+   * - :battmofile:`Graphite-LCO cell <ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_graphite.json>`   
    * - :battmofile:`Xu 2015 cell <ParameterData/ParameterSets/Xu2015/lfp.json>`
    * - :battmofile:`Chen 2020 cell <ParameterData/ParameterSets/Chen2020/chen2020_lithium_ion_battery.json>`
-   * - :battmofile:`Graphite-Silicon cell <ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_nmc_silicon.json>`
+   * - :battmofile:`Silicon-LCO cell <ParameterData/BatteryCellParameters/LithiumIonBatteryCell/lithium_ion_battery_lco_silicon.json>`
      
 .. list-table::
    :header-rows: 1

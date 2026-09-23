@@ -76,7 +76,7 @@ Source code for runElectrolyser
   
   %% Visualize the results
   %
-  % The results contain only the primary variables of the system (the unknwons that descrive the state of the system). We
+  % The results contain only the primary variables of the system (the unknowns that descrive the state of the system). We
   % use the method :code:`addVariables` to add all the intermediate quantities that are computed to solve the equations
   % but not stored automatically in the result.
   
@@ -163,7 +163,7 @@ Source code for runElectrolyser
   set(hTitle, 'string', 'J (A/cm^2)');
   
   %{
-  Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+  Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
   and SINTEF Digital, Mathematics & Cybernetics.
   
   This file is part of The Battery Modeling Toolbox BattMo
@@ -181,4 +181,3 @@ Source code for runElectrolyser
   You should have received a copy of the GNU General Public License
   along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
   %}
-

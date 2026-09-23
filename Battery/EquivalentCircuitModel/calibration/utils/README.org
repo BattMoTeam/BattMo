@@ -1,0 +1,21 @@
+The Ank data in [[file:ank_data.csv][ank_data.csv]] is taken from
+
+#+begin_quote
+@article{
+  title =        {Lithium-Ion Cells in Automotive Applications: Tesla 4680 Cylindrical Cell Teardown and
+  Characterization},
+  volume =       170,
+  ISSN =         {1945-7111},
+  url =          {http://dx.doi.org/10.1149/1945-7111/ad14d0},
+  DOI =          {10.1149/1945-7111/ad14d0},
+  number =       12,
+  journal =      {Journal of The Electrochemical Society},
+  publisher =    {The Electrochemical Society},
+  author =       {Ank, Manuel and Sommer, Alessandro and Abo Gamra, Kareem and Schöberl, Jan and Leeb, Matthias and
+  Schachtl, Johannes and Streidel, Noah and Stock, Sandro and Schreiber, Markus and Bilfinger, Philip and Allgäuer,
+  Christian and Rosner, Philipp and Hagemeister, Jan and Rößle, Matti and Daub, Rüdiger and Lienkamp, Markus},
+  year =         2023,
+  month =        Dec,
+  pages =        120536
+}
+#+end_quote

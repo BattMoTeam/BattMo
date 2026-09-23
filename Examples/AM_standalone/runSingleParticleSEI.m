@@ -4,11 +4,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-
-mrstModule add ad-core mrst-gui mpfa
-
 %% Setup the properties of Li-ion battery materials and cell design
 jsonstruct = parseBattmoJson(fullfile('ParameterData', 'ParameterSets', 'Safari2009', 'fullmodel.json'));
 
@@ -36,17 +31,17 @@ switch controlPolicy
     error('control policy not recognized')
 end
 
-inputparams.(an).(sd).N   = 10;
-inputparams.(an).(sd).np  = 1;
-inputparams.(an).(sei).N  = 10;
-inputparams.(an).(sei).np = 1;
+inputparams.(an).(sd).numberOfDiscreteCells   = 10;
+inputparams.(an).(sd).numberOfParticles  = 1;
+inputparams.(an).(sei).numberOfDiscreteCells  = 10;
+inputparams.(an).(sei).numberOfParticles = 1;
 
 xlength = 57e-6;
 G = cartGrid(1, xlength);
 inputparams.(an).G = Grid(G);
 
-inputparams.(ct).(sd).N  = 10;
-inputparams.(ct).(sd).np = 1;
+inputparams.(ct).(sd).numberOfDiscreteCells  = 10;
+inputparams.(ct).(sd).numberOfParticles = 1;
 inputparams.(ct).G = Grid(G);
 
 model = SingleParticleSEI(inputparams);
@@ -61,7 +56,7 @@ end
 dograph = false;
 
 if dograph
-    cgit = ComputationalGraphInteractiveTool(model);
+    cgit = ComputationalGraphInteractiveTool(model); %#ok<UNRCH>
     % cgit.includeNodeNames = 'Anode.SolidDiffusion.cSurface';
     cgit.includeNodeNames = 'Control.I$';
     % cgit.includeNodeNames = 'SideReaction.R';
@@ -77,11 +72,11 @@ end
 
 %% Setup initial state
 
-NanodeSd  = model.(an).(sd).N;
-NanodeSEI = model.(an).(sei).N;
+NanodeSd  = model.(an).(sd).numberOfDiscreteCells;
+NanodeSEI = model.(an).(sei).numberOfDiscreteCells;
 cAnodeMax = model.(an).(itf).saturationConcentration;
 
-NcathodeSd  = model.(ct).(sd).N;
+NcathodeSd  = model.(ct).(sd).numberOfDiscreteCells;
 cCathodeMax = model.(ct).(itf).saturationConcentration;
 
 x0 = 0.75; % Initial stochiometry from Safari
@@ -188,7 +183,7 @@ nls.errorOnFailure = false;
 
 dopack = false;
 if dopack
-    dataFolder = 'BattMo';
+    dataFolder = 'BattMo'; %#ok<UNRCH>
     problem = packSimulationProblem(initState, model, schedule, dataFolder, 'Name', 'safari3', 'NonLinearSolver', nls);
     problem.SimulatorSetup.OutputMinisteps = true;
     simulatePackedProblem(problem);
@@ -221,7 +216,7 @@ ylabel('sie width / [\mu m]');
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

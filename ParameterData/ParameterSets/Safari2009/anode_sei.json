@@ -1,4 +1,5 @@
 {
+  "description": "Parameter-set reference: Safari, M., Morcrette, M., Teyssot, A., and Delacourt, C. (2009). Multimodal Physics-Based Aging Model for Life Prediction of Li-Ion Batteries. Journal of The Electrochemical Society, 156(3), A145-A153. DOI: 10.1149/1.3043429.",
   "electronicConductivity": 215,
   "Interface": {
     "saturationConcentration": 30555,
@@ -18,14 +19,14 @@
     "activationEnergyOfDiffusion": 0,
     "referenceDiffusionCoefficient": 2e-14,
     "particleRadius": 2e-6,
-    "N": 10
+    "numberOfDiscreteCells": 10
   },
   "SolidElectrodeInterface" : {
     "molecularWeight": 0.162,
     "density": 1690,
     "conductivity" : 5e-6,
     "diffusionCoefficient": 6.8e-21,
-    "N": 10
+    "numberOfDiscreteCells": 10
   },
   "SideReaction" : {
     "chargeTransferCoefficient" : 0.5,

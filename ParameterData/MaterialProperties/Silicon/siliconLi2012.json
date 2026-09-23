@@ -1,4 +1,5 @@
 {
+  "description": "Legacy silicon parameter file associated by its filename and OCP function with: Li, J., Xiao, X., Yang, F., Verbrugge, M. W., and Cheng, Y.-T. (2012). Potentiostatic Intermittent Titration Technique for Electrodes Governed by Diffusion and Interfacial Reaction. The Journal of Physical Chemistry C, 116(1), 1472-1478. DOI: 10.1021/jp207919q. The attribution of all scalar parameters to this paper has not been verified.",
   "cmax": 311307.4,
   "volumeFraction": 0.8,
   "volumetricSurfaceArea": 723600,

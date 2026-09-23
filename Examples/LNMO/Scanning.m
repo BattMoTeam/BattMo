@@ -57,11 +57,11 @@ classdef Scanning < handle
 
             % We do not need fine discretization, set it to minimum
 
-            jsonstruct.(ne).(co).N = 1;
-            jsonstruct.(pe).(co).N = 1;
-            jsonstruct.(ne).(cc).N = 1;
-            jsonstruct.(pe).(cc).N = 1;
-            jsonstruct.(sep).N = 1;
+            jsonstruct.(ne).(co).numberOfDiscreteCells = 1;
+            jsonstruct.(pe).(co).numberOfDiscreteCells = 1;
+            jsonstruct.(ne).(cc).numberOfDiscreteCells = 1;
+            jsonstruct.(pe).(cc).numberOfDiscreteCells = 1;
+            jsonstruct.(sep).numberOfDiscreteCells = 1;
             
             sc.jsonstruct = jsonstruct;
             
@@ -115,3 +115,22 @@ classdef Scanning < handle
     
 end
 
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

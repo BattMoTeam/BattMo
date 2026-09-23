@@ -33,12 +33,12 @@ Then, using the :code:`printSpecifications` method, we get an overview of the ce
                 Energy Density : 851.122 [Wh/L]
                Initial Voltage : 4.17686 [V]   
    
-There exist separate functions to compute all this information separatly.
+There exist separate functions to compute all this information separately.
                
 
 * :battmo:`computeCellMass` computes the **mass** of the battery and its components
 * :battmo:`computeCellCapacity` computes the **capacity** of the the electrodes
 * :battmo:`computeCellEnergy` computes the **total energy** of the battery when discharged at equilibrium conditions.
-  It means that the transport effects are totally neglicted and corresponds to the case of an infinitly small CRate.
+  It means that the transport effects are totally neglicted and corresponds to the case of an infinitely small CRate.
 
    

@@ -17,7 +17,7 @@ Define Parameters
 |battmo| uses JSON to manage parameters. This allows you to easily save, document, and share complete parameter sets from specific simulations. We have used long and explicit key names for good readability. If you are new to JSON, you can learn more about it `here <https://www.w3schools.com/js/js_json_intro.asp>`_. Details on the BattMo specification are available in the :ref:`json:JSON input specification`.
 
 For this example, we provide a sample JSON file :battmofile:`sample_input.json<Examples/JsonDataFiles/sample_input.json>` that
-describes a simple NMC-Graphite cell.
+describes a simple LCO-Graphite cell.
 
 We load and parse the JSON input file into |battmo| using the command:
 
@@ -189,16 +189,16 @@ in the jsonstruct and re-run the simulation.
 
 .. code:: matlab
 
-   CRates = [0.5, 1, 2];
+   DRates = [0.8, 1, 2];
    figure()
-   for i = 1 : numel(CRates)
-       jsonstruct.Control.CRate = CRates(i);
+   for i = 1 : numel(DRates)
+       jsonstruct.Control.DRate = DRates(i);
        output = runBattery(jsonstruct);
 
        states = output.states;
        time = cellfun(@(state) state.time, states);
        voltage = cellfun(@(state) state.Control.E, states);
-       plot((time/hour), voltage, '-', 'linewidth', 3)
+       plot(time/hour, voltage, '-', 'linewidth', 3)
        hold on
    end
    hold off
@@ -241,7 +241,7 @@ Change Material Parameters
 
 Finally, let's try changing active materials in the model.
 
-The sample JSON input file we provided is for an NMC-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's try to replace the NMC active material with LFP.
+The sample JSON input file we provided is for an LCO-Graphite cell, but BattMo contains parameter sets for different active materials that have been collected from the scientific literature. Let's try to replace the LCO active material with LFP.
 
 First, we clear the workspace and reload the original parameter set to start from a clean slate:
 
@@ -255,7 +255,7 @@ Now we load and parse the LFP material parameters from the |battmo| library and 
 
 .. code:: matlab
 
-   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP.json');
+   lfp = parseBattmoJson('ParameterData/MaterialProperties/LFP/LFP_Xu2015.json');
    jsonstruct_lfp.PositiveElectrode.Coating.ActiveMaterial.Interface = lfp;
 
 To merge new parameter data into our existing model, we can use the |battmo| function :code:`mergeStructs`.

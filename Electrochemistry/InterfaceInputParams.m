@@ -48,7 +48,8 @@ classdef InterfaceInputParams < InputParams
         
         %% Double layer capacity
         useDoubleLayerCapacity % if true, add double layer capacity (default is false)
-        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2      
+        doubleLayerCapacitance % Value of electric double layer capacitance / Fm^-2
+        
     end
     
     methods
@@ -72,7 +73,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

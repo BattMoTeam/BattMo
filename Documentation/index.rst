@@ -13,6 +13,7 @@
    output
    geometryinput
    batteryphysics
+   equivalentcircuitmodels
    elchemsystems
    optimisation
    modeling
@@ -48,5 +49,5 @@ BattMo has received funding from the European Union’s Horizon 2020 and Horizon
 - 875527 - Hybrid power-energy electrodes for next-generation lithium-ion batteries (HYDRA)
 - 957189 - Battery interface genome and materials acceleration platform (BIG-MAP)
 - 101069765 - Innovative and Sustainable High Voltage Li-ion Cells for Next Generation (EV) Batteries (IntelLiGent)
-- 101104031 - Battery management by multi-X (X=scale/physics/use/domain) digital twins (BATMAX)
+- 101104013 - Battery management by multi-X (X=scale/physics/use/domain) digital twins (BATMAX)
 - 101103997 - Digital Solutions for Accelerated Battery Testing (DigiBatt)

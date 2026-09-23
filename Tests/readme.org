@@ -10,8 +10,8 @@
    tests in path, run ~runtests~.
 
    To run all the tests in the folder 'Tests', run ~runtests('Tests', includeSubfolders, true)~.
-   
-   To only run the test ~TestBattery1D~, run ~runtests('TestBattery1D')~.
+
+   To only run the test ~TestBatteryP2D~, run ~runtests('TestBatteryP2D')~.
 
 
 ** Running the tests (some more advanced commands)
@@ -41,7 +41,7 @@
 
    Note that, when running in parallel, we need to setup the mrst modules before (call to ~mrstModule add
    modulname~). It appears that calling ~mrstModule~ inside ~TestCase~ constructor does not work.
-   
+
 
    We can filter the suite by given the value of a parameter. For example, in the following, we run only the short
    versions for the tests (only a few timesteps).
@@ -66,7 +66,7 @@
      suite = suite(ind);
      suite.run()
    #+end_src
-   
+
    Through plugins, we can add extra output in the tests
    #+begin_src matlab
      import matlab.unittest.TestSuite;
@@ -80,7 +80,7 @@
      result = runner.run(suite);
    #+end_src
    Then, look at structure ~result(1).Details.DiagnosticRecord~ and the file ~report.txt~
-   
+
 ** Generate Reference Data
 
    Reference data is created by setting the property ~createReferenceData~ to true as an external parameter,
@@ -92,6 +92,4 @@
      result = suite.run()
    #+end_src
 
-   Reference data are then saved in ~mat~ files found in ~TestExamples/ReferenceData~. 
-
-
+   Reference data are then saved in ~mat~ files found in ~TestExamples/ReferenceData~.

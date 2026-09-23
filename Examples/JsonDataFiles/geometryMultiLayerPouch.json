@@ -25,25 +25,25 @@
   "NegativeElectrode": {
     "Coating": {
       "thickness": 0.0001,
-      "N": 3
+      "numberOfDiscreteCells": 3
     },
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 2
+      "numberOfDiscreteCells": 2
     }
   },
   "PositiveElectrode": {
     "Coating": {
       "thickness": 8e-05,
-      "N": 3
+      "numberOfDiscreteCells": 3
     },
     "CurrentCollector": {
       "thickness": 1e-05,
-      "N": 2
+      "numberOfDiscreteCells": 2
     }
   },
   "Separator": {
     "thickness": 5e-05,
-    "N": 3
+    "numberOfDiscreteCells": 3
   }
 }

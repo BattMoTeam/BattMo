@@ -1,7 +1,5 @@
 close all
 
-mrstModule add ad-core
-
 input = struct();
 
 % If the simulation has already be run, we can just fetch the results from disk by setting runSimulation to false
@@ -69,7 +67,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -4,10 +4,6 @@
 clear
 close all
 
-%% Import the required modules from MRST
-% load MRST modules
-mrstModule add ad-core mrst-gui mpfa
-
 ne    = 'NegativeElectrode';
 pe    = 'PositiveElectrode';
 am    = 'ActiveMaterial';
@@ -20,7 +16,7 @@ elyte = 'Electrolyte';
 
 %% Setup the properties of the Li-ion battery materials and of the cell design
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 jsonstruct = jsonstruct_material.(ne).(co).(am);
 
@@ -32,7 +28,7 @@ jsonstruct = mergeStructs({jsonstruct, ...
                                jsonstruct_bolay});
 
 jsonstruct.SEImodel              = 'Bolay';
-jsonstruct.(sd).N                = 10;
+jsonstruct.(sd).numberOfDiscreteCells                = 10;
 jsonstruct.isRootSimulationModel = true;
 
 jsonstruct.(sd).referenceDiffusionCoefficient = 1e-14;
@@ -51,7 +47,7 @@ model = model.setupForSimulation();
 
 %% Setup initial state
 
-Nsd  = model.(sd).N;
+Nsd  = model.(sd).numberOfDiscreteCells;
 
 % Initial concentration value at the electrode
 cElectrodeInit = 0.75*model.(itf).saturationConcentration;
@@ -196,7 +192,7 @@ title('Concentration in particle / mol/L')
 legend show
 
 c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+r = linspace(0, model.(sd).particleRadius, model.(sd).numberOfDiscreteCells);
 
 figure
 plot(r, c/(mol/litre));
@@ -225,3 +221,23 @@ xlabel('time / h');
 ylabel('Voltage drop /V');
 title('SEI voltage drop');
 grid on;
+
+%{
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+and SINTEF Digital, Mathematics & Cybernetics.
+
+This file is part of The Battery Modeling Toolbox BattMo
+
+BattMo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+BattMo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with BattMo.  If not, see <http://www.gnu.org/licenses/>.
+%}

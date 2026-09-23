@@ -21,7 +21,7 @@ mnames = {{'Electrolyte'}, ...
 
 doFixedTempScale = false;
 if doFixedTempScale
-    tM = max(states{1}.(thermal).T);
+    tM = max(states{1}.(thermal).T); %#ok<UNRCH>
     tm = min(states{1}.(thermal).T);
     for i = 1 : numel(states)
         tM = max(tM, max(states{i}.(thermal).T));
@@ -106,7 +106,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

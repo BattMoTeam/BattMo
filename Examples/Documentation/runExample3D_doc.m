@@ -1,14 +1,6 @@
 %% BattMo example Json input
 % This script shows an example where we setup a simulation using exclusively json input files.
 
-%% Setting up the environment
-% BattMo uses functionality from :mod:`MRST <MRSTBattMo>`. This functionality
-% is collected into modules where each module contains code for doing
-% specific things. To use this functionality we must add these modules to
-% the matlab path by running:
-
-mrstModule add ad-core mrst-gui
-
 %% We load the json files
 % When loading a json file using :code:`parseBattmoJson`, the output is the standard matlab structure that is
 % obtained by the native matlab command :code:`jsondecode`, see `here <https://se.mathworks.com/help/matlab/ref/jsondecode.html>`_
@@ -16,7 +8,7 @@ mrstModule add ad-core mrst-gui
 %% Material properties
 % We load the json structure for the material properties
 jsonfilename = fullfile('ParameterData', 'BatteryCellParameters', 'LithiumIonBatteryCell', ...
-                        'lithium_ion_battery_nmc_graphite.json');
+                        'lithium_ion_battery_lco_graphite.json');
 jsonstruct_material = parseBattmoJson(jsonfilename);
 
 %% Geometry
@@ -113,7 +105,7 @@ plot(time, T);
 
 
 %{
-Copyright 2021-2023 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

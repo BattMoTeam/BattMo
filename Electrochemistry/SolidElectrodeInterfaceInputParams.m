@@ -11,8 +11,8 @@ classdef SolidElectrodeInterfaceInputParams < InputParams
 
         %% Discretization parameters
         
-        N  % Number of discretization intervals in the sei layer model [-]
-        np % Number of computational grid cells (typically set by parent model)
+        numberOfDiscreteCells  % Number of discretization intervals in the sei layer model [-]
+        numberOfParticles % Number of computational grid cells (typically set by parent model)
         
     end
     
@@ -32,7 +32,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo

@@ -1,6 +1,13 @@
 name: Releases
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and release'
+        required: true
+        type: string
+
   push:
     tags:
       - '*'
@@ -11,13 +18,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
           submodules: recursive
+          lfs: true
       - name: Create zip with submodules
         run: |
           chmod -R +r .
           zip -r battmo.zip . -x "./.git/*" "./Documentation/*" "./.gitattributes" "./.github/*" ".gitmodules"
       - uses: ncipollo/release-action@v1
         with:
+          tag: ${{ inputs.tag || github.ref_name }}
           artifacts: "battmo.zip"

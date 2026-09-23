@@ -100,7 +100,7 @@ classdef ActiveMaterialInputParams < ComponentInputParams
 
             if isAssigned(isRootSimulationModel) && isRootSimulationModel 
                 % only one particle in the stand-alone model
-                jsonstruct = setStructField(jsonstruct, {sd, 'np'}, 1);
+                jsonstruct = setStructField(jsonstruct, {sd, 'numberOfParticles'}, 1);
                 % For the standalone model, we set the volume fraction to one (no other component is present)
                 jsonstruct = setStructField(jsonstruct, {sd, 'volumeFraction'}, 1);
             end
@@ -171,7 +171,7 @@ end
 
 
 %{
-Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
