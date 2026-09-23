@@ -49,9 +49,9 @@ schedule = model.Control.setupSchedule(jsonstruct);
 simInput = struct('model', model, ...
                   'schedule', schedule);
 
-simsetup = SimulationSetup(simInput);
-
 return
+
+simsetup = SimulationSetup(simInput);
 
 [~, states] = simulateScheduleAD(initstate, model, schedule);
 
