@@ -456,7 +456,6 @@
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="../modeling.html">Modeling with BattMo</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Part1</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Part-I:-Table-of-Contents">Part I: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#1.-Lithium-Ion-Battery-Basics"><strong>1. Lithium-Ion Battery Basics</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#1.1-Cell-Components"><strong>1.1 Cell Components</strong></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#1.2-Working-Principle"><strong>1.2 Working Principle</strong></a></li>
@@ -474,7 +473,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="part_2_battery_modeling_guide.html">Part2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#Part-II:-Table-of-Contents">Part II: Table of Contents</a></li>
 <li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#1.-DFN-Model-Overview">1. DFN Model Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="part_2_battery_modeling_guide.html#2.-Overpotentials-and-Voltage-losses"><strong>2. Overpotentials and Voltage losses</strong></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="part_2_battery_modeling_guide.html#Example-1.-OCV-curve-and-voltage-loss-at-different-C-rates"><strong>Example 1. OCV curve and voltage loss at different C-rates</strong></a></li>
@@ -595,29 +593,10 @@
 <li><p><strong>Part IV: Ageing mechanisms and cell engineering</strong> discusses the SEI and Lithium plating issues as part of the ageing mechanism, we also intoduce P4D models for dealing with complex geometries.</p></li>
 </ul>
 <p><em>Please run ‘startupBattMo.M’ present in the home folder before running this notebook, this loads all the neccessary modules for running the simulations.</em></p>
-<!-- Begin Toc --><section id="Part-I:-Table-of-Contents">
-<h2>Part I: Table of Contents<a class="headerlink" href="#Part-I:-Table-of-Contents" title="Link to this heading"></a></h2>
-<p> 1. Lithium-Ion Battery Basics</p>
-<p>  1.1 Cell Components</p>
-<p>  1.2 Working Principle</p>
-<p>  1.3 Battery Properties</p>
-<p>  1.4 Operational Protocols</p>
-<p> 2. Modelling with BattMo</p>
-<p>  2.1 P2D/P3D/P4D Models</p>
-<p>   Example 1. Build and Visualize the Battery Grid in 3D</p>
-<p>   Example 2. Constant Current Discharging of a Gr-NMC Battery Cell in 1D geometry</p>
-<p>   Example 3. Post-Processing Voltage Curves</p>
-<p>  2.2 Influence of structural and material parameters on the capacity</p>
-<p>   Example 4. Increasing the thickness of the negative electrode / positive electrode</p>
-<p>   Example 5. Increasing the effective density of electrode coating</p>
-<p>   Example 6. Influence of material chemistry on capacity</p>
-<p>  3. Summary</p>
-<p>  4. References</p>
-<!-- End Toc --><p>Rechargeable Li-ion batteries have transformed our lives. With the current focus on electrifying the mobility sector and the growing need to support intermittent renewable energy sources, there is much to learn about batteries and the materials that make them. The goal is to develop batteries with higher energy density and improved safety, manufactured in a sustainable manner.</p>
+<p>Rechargeable Li-ion batteries have transformed our lives. With the current focus on electrifying the mobility sector and the growing need to support intermittent renewable energy sources, there is much to learn about batteries and the materials that make them. The goal is to develop batteries with higher energy density and improved safety, manufactured in a sustainable manner.</p>
 <p>BattMo is a powerful tool for conducting battery simulations, aiding in the understanding and optimization of battery performance. It utilizes continuum scale PXD (pseudo-X-dimensional) simulations based on the Doyle-Fuller-Newman (DFN) model. By providing material and design parameters for the various components of the battery, BattMo can simulate how key quantities like voltage, current, concentration, and temperature change in the battery as it is operated. When simulated over many
 charge-discharge cycles, BattMo can also predict capacity losses that occur due to degradation. It supports simulations from simple 1D grids to complex multi-layer pouch cells and jelly rolls, incorporating thermal effects and degradation mechanisms. Its modular design facilitates easy switching between different cell chemistries, making BattMo versatile for applications in battery research and development.</p>
 <p>For a detailed overview of the modelling approach and the DFN model, please refer to <strong>Part II</strong> of this modelling guide.</p>
-</section>
 <section id="1.-Lithium-Ion-Battery-Basics">
 <h2><strong>1. Lithium-Ion Battery Basics</strong><a class="headerlink" href="#1.-Lithium-Ion-Battery-Basics" title="Link to this heading"></a></h2>
 <p>Let’s begin by exploring some lithium-ion (Li-ion) battery basics. The battery cell consists of three main components: <strong>a negative electrode</strong>, <strong>a positive electrode</strong>, and <strong>an electrolyte</strong>.</p>
