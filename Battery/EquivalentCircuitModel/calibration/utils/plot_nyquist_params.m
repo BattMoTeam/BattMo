@@ -12,7 +12,7 @@ figure;
 plot(Z_re_exp, Z_im_exp, 'ro', 'MarkerFaceColor', 'r');
 hold on;
 plot(Z_real, Z_imag, '-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'b');
-axis equal; % Essentiel pour Nyquist
+axis equal; % Essential for a Nyquist plot
 grid on;
 xlabel('Z_{réel} (\Omega)', 'FontWeight', 'bold');
 ylabel('-Z_{imaginaire} (\Omega)', 'FontWeight', 'bold');

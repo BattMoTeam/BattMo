@@ -148,7 +148,7 @@ classdef FittingEIS < handle
                 'lineSearchMaxIt', 100);
             best_params = scaled2unscaled(feis, best_params_norm(:) );
 
-            % explications of why it stopped
+            % Explain why the optimization stopped
             fitting_error = feis.optifunc(best_params);
 
             it_count = length(history.val) - 1;
@@ -235,7 +235,7 @@ classdef FittingEIS < handle
                 % Chain rule :
                 pmin = feis.scales(1:5);
                 pmax = feis.scales(6:10);
-                dp_dpnorm = (pmax - pmin);      % Dérivée de p par rapport à p_norm
+                dp_dpnorm = (pmax - pmin);      % Derivative of p with respect to p_norm
                 g_norm = g_true .* dp_dpnorm;
 
 
