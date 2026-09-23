@@ -4,6 +4,7 @@ classdef CO2captureGridGenerator
 
         nx       % Discretization number
         length   % Length
+        areas
         
     end
     
@@ -20,6 +21,9 @@ classdef CO2captureGridGenerator
 
             gen.nx     = 100;
             gen.length = 1;
+
+            gen.areas = struct('feed', 1, ...
+                               'permeate', 1);
             
         end
         
@@ -37,7 +41,15 @@ classdef CO2captureGridGenerator
 
             for icomp = 1 : numel(components)
                 comp = components{icomp};
-                [inputparams.(comp), gen] = setupGrid(gen, inputparams.(comp));
+                switch comp
+                  case 'Feed'
+                    area = gen.areas.feed;
+                  case 'Permeate'
+                    area = gen.areas.permeate;
+                  otherwise
+                    error('Unknown component: %s', comp);
+                end
+                [inputparams.(comp), gen] = setupGrid(gen, inputparams.(comp), area);
             end
             
         end
@@ -54,13 +66,13 @@ classdef CO2captureGridGenerator
         end
         
         
-        function [inputparams, gen] = setupGrid(gen, inputparams, params)
+        function [inputparams, gen] = setupGrid(gen, inputparams, area)
 
             % Cartesian Grid 
             G = cartGrid(gen.nx, gen.length);
             
             % Setup parent grid with given face area
-            parentGrid = Grid(G);
+            parentGrid = Grid(G, 'faceArea', area);
 
             % The component subgrid is the whole grid in this case
             G = genSubGrid(parentGrid, (1 : parentGrid.getNumberOfCells())');
