@@ -86,8 +86,8 @@ classdef CO2captureGridGenerator
         
         function [inputparams, gen] = setupControlCouplingTerm(gen, inputparams, comp)
 
-            bcfaces = [1, gen.nx + 1];
-            bccells = [1, gen.nx];
+            bcfaces = [1; gen.nx + 1];
+            bccells = [1; gen.nx];
 
             compnames = {'channel'};
             coupname = 'control faces';

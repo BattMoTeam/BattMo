@@ -10,7 +10,8 @@ classdef CO2captureChannel < BaseModel
         rateCoefficient
         
         area
-        length
+
+        couplingTerms
         
         %% Helpers
 
@@ -40,7 +41,7 @@ classdef CO2captureChannel < BaseModel
                        'gasSpecies'     , ...
                        'rateCoefficient', ...
                        'area'           , ...
-                       'length'};
+                       'couplingTerms'};
 
             model = dispatchParams(model, inputparams, fdnames);
 
@@ -48,7 +49,7 @@ classdef CO2captureChannel < BaseModel
             
             model = CO2capture.setupGasStructures(model, model.gasSpecies);
             
-            % model = model.setupHelpers();
+            model = model.setupHelpers();
             
         end
 
@@ -158,6 +159,7 @@ classdef CO2captureChannel < BaseModel
             model.Control = CO2captureControl();
             
         end
+        
         function model = setupHelpers(model, state)
 
             gasInd = model.gasInd;
@@ -174,15 +176,6 @@ classdef CO2captureChannel < BaseModel
             bcfaces = coupterm.couplingfaces;
 
             Tbc = model.G.getBcTrans(bcfaces);
-
-            % setup the given boundary mol fractions
-            fdnames = fieldnames(model.control.composition);
-            for igas = 1 : nGas
-                fdname = fdnames{igas};
-                mfs(gasInd.(fdname)) = model.control.composition.(fdname);
-            end
-            % We normalize to one
-            mfs = mfs./sum(mfs);
 
             bcfacetbl.faces = bcfaces;
             bcfacetbl = IndexArray(bcfacetbl);
