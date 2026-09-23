@@ -5,17 +5,14 @@ classdef CO2captureInputParams < InputParams
         Feed
         Permeate
         permeances % structure with permeability
-        length
+
+        couplingTerms
         
     end
 
     methods
 
         function inputparams = CO2captureInputParams(jsonstruct)
-
-            jsonstruct = equalizeStructFields(jsonstruct, {'length'      , ...
-                                                           {'Feed', 'length'}, ...
-                                                           {'Permeate', 'length'}});
 
             jsonstruct = equalizeStructFields(jsonstruct, {'gasSpecies'      , ...
                                                            {'Feed', 'gasSpecies'}, ...

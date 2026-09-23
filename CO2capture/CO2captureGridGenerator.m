@@ -26,7 +26,7 @@ classdef CO2captureGridGenerator
         function [inputparams, gen] = updateInputParams(gen, inputparams)
 
             [inputparams, gen] = gen.setupGrids(inputparams);
-            [inputparams, gen] = gen.setupExternalCouplingTerms(inputparams);
+            [inputparams, gen] = gen.setupCrossCouplingTerm(inputparams);
             [inputparams, gen] = gen.setupControlCouplingTerms(inputparams);
             
         end
@@ -42,24 +42,13 @@ classdef CO2captureGridGenerator
             
         end
         
-        function [inputparams, gen] = setupExternalCouplingTerms(gen, inputparams)
-
-            components = {'Feed', 'Permeate'};
-
-            for icomp = 1 : numel(components)
-                comp = components{icomp};
-                [inputparams.(comp), gen] = setupExternalCouplingTerm(gen, inputparams.(comp));
-            end
-            
-        end
-
         function [inputparams, gen] = setupControlCouplingTerms(gen, inputparams)
 
             components = {'Feed', 'Permeate'};
 
             for icomp = 1 : numel(components)
                 comp = components{icomp};
-                [inputparams.(comp), gen] = setupControlCouplingTerm(gen, inputparams.(comp), comp);
+                [inputparams.(comp), gen] = setupControlCouplingTerm(gen, inputparams.(comp));
             end
             
         end
@@ -80,49 +69,33 @@ classdef CO2captureGridGenerator
             
         end
         
-        function [inputparams, gen] = setupExternalCouplingTerm(gen, inputparams)
+        function [inputparams, gen] = setupCrossCouplingTerm(gen, inputparams)
 
-            bcfaces = [1;
-                       gen.nx + 1];
             
-            bccells = [1;
-                       gen.nx];
+            bccells = [(1 : gen.nx)', (1 : gen.nx)'];
 
-            compnames = {'inner'};
-            coupTerm = couplingTerm('boundary faces', compnames);
-            coupTerm.couplingfaces = bcfaces;
+            compnames = {'Feed', 'Permeate'};
+            coupTerm = couplingTerm('Feed-Permeate', compnames);
+
             coupTerm.couplingcells = bccells;
 
-            % inputparams.couplingTerms{end + 1} = coupTerm;
+            inputparams.couplingTerms{end + 1} = coupTerm;
             
         end
 
         
         function [inputparams, gen] = setupControlCouplingTerm(gen, inputparams, comp)
 
-            switch comp
-                
-              case 'Feed'
+            bcfaces = [1, gen.nx + 1];
+            bccells = [1, gen.nx];
 
-                bcfaces = 1;
-                bccells = 1;
-                
-              case 'Permeate'
-                
-                bcfaces = gen.nx + 1;
-                bccells = gen.nx;
-                
-              otherwise
-                error('comp not recognized');
-            end
-               
-
-            compnames = {'inner'};
-            coupTerm = couplingTerm('control faces', compnames);
+            compnames = {'channel'};
+            coupname = 'control faces';
+            coupTerm = couplingTerm(coupname, compnames);
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
-            % inputparams.couplingTerms{end + 1} = coupTerm;
+            inputparams.couplingTerms{end + 1} = coupTerm;
             
         end
 

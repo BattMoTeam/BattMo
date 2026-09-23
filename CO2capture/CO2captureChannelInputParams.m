@@ -2,6 +2,9 @@ classdef CO2captureChannelInputParams < ComponentInputParams
 
     properties
 
+
+        couplingTerms
+        
         Control
         
         gasSpecies
