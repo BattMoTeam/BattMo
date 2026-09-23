@@ -1,5 +1,6 @@
 
 %% prepare input for co2membrane
+%
 
 filename = 'CO2capture/CO2capture.json';
 jsonstruct = parseBattmoJson(filename);
@@ -11,6 +12,7 @@ gen = CO2captureGridGenerator();
 inputparams = gen.updateInputParams(inputparams);
 
 %% Setup model for membrane channel (using Feed input data)
+%
 
 model = CO2captureChannel(inputparams.Feed);
 model.isRootSimulationModel = true;
@@ -22,11 +24,23 @@ shortNames =  {'Boundary' ,'bd'  ;
 model = model.equipModelForComputation('shortNames', shortNames);
 
 %%
+% plot computational graph
+%
 
-cgit = model.cgit;
+doplotgraph = false;
 
-close all
-cgit.plot
+if doplotgraph
+    
+    cgit = model.cgit;
+
+    close all
+    cgit.plot
+
+end
+
+%%
+% setup simulation
+%
 
 model.verbose = true;
 
