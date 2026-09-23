@@ -10,7 +10,7 @@
         "totalTime": {
           "$ref": "PhysicalQuantity.schema.json",
           "description": "Total time. It is usually computed by the control models from their specific input. If given, it will (in general) overwrite this computed value. Check for the specific control model you are using",
-          "symmbol": ""
+          "symbol": ""
         },
         "timeStepDuration": {
           "type": "number",
