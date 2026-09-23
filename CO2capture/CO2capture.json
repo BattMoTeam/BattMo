@@ -3,8 +3,10 @@
   "permeances" : [1, 1, 1, 1, 1],
   "temperature": 278,
   "length" : 1,
-  "Control" : {
-    "timeSteps" : 10
+  "TimeStepping" : {
+    "totalTime" : {"unit" : "hour",
+                   "value" : 1},
+    "numberOfTimeSteps" : 100
   },
   "Feed": {
     "rateCoefficient": 1,
