@@ -28,23 +28,16 @@ cgit = model.cgit;
 close all
 cgit.plot
 
-return
-%%
-
-% cgt.printRootVariables;
-% cgt.printTailVariables;
-
-initstate = model.setupInitialState();
-
-step = struct('val', 1, ...
-              'control', 1);
-
-control = struct('src', []);
-
-schedule = struct('step', step, ...
-                  'control', control);
-
 model.verbose = true;
+
+schedule = model.Control.setupSchedule(jsonstruct);
+
+simInput = struct('model', model, ...
+                  'schedule', schedule);
+
+simsetup = SimulationSetup(simInput);
+
+return
 
 [~, states] = simulateScheduleAD(initstate, model, schedule);
 
