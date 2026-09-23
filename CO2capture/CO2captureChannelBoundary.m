@@ -5,6 +5,7 @@ classdef CO2captureChannelBoundary < BaseModel
         nGas   % Number of gas (each of them will have a partial pressure). Only needed when gasSupplyType == 'coupled'
         gasInd % Structure whose fieldname give index number of the corresponding gas component.
 
+        control
         
     end
     
@@ -34,8 +35,6 @@ classdef CO2captureChannelBoundary < BaseModel
             %  total rate equation
             varnames{end + 1} = 'totalRateEquation';
             %  mol fraction equation (sum of mol fraction should be equal to one)
-            varnames{end + 1} = 'molFractionConstraintEq';
-            %  mol fraction equations. Provides the mol fraction at the boundary either from control value or from upwinding
             varnames{end + 1} = VarName({}, 'molFractionEquations', nGas);
             %  control equation, sets either the prescribed rate or pressure values
             varnames{end + 1} = 'controlEquation';
@@ -47,12 +46,7 @@ classdef CO2captureChannelBoundary < BaseModel
                              'totalRate'};
             model = model.registerPropFunction({'totalRateEquation', fn, inputvarnames});
 
-            fn = @CO2captureChannelBoundary.totalRateEquation;
-            inputvarnames = {VarName({}, 'molFractions', nGas)};
-            model = model.registerPropFunction({'molFractionConstraintEq', fn, inputvarnames});            
-            
         end
-
 
     end
     

@@ -101,11 +101,10 @@ classdef CO2captureChannel < BaseModel
                 fn = @CO2captureChannel.updateBoundaryMolFractionsDefinitions;
                 inputvarnames = {VarName({'Boundary'}, 'molFractions', nGas, igas), ...
                                  VarName({}, 'molFractions', nGas, igas)          , ...
-                                 'pressure'                                       , ...
-                                 {'Boundary', 'pressure'}};
+                                 VarName({'Boundary'}, 'rates', nGas, igas)};
                 outputvarname = VarName({'Boundary'}, 'molFractionEquations', nGas, igas);
                 model = model.registerPropFunction({outputvarname, fn, inputvarnames});
-
+                
                 fn = @CO2captureChannel.updateMassConses;
                 fn = {fn, @(prop) PropFunction.accumFuncCallSetupFn(prop)};
                 inputvarnames = {VarName({}, 'molFractions', nGas, igas)   , ...
@@ -135,7 +134,7 @@ classdef CO2captureChannel < BaseModel
                              {'Boundary', 'pressure'}, ...
                              VarName({}, 'molFractions', nGas), ...
                              'pressure'};
-            outputvarname = {'Boundary', 'rates'};
+            outputvarname = VarName({'Boundary'}, 'rates', nGas);
             model = model.registerPropFunction({outputvarname, fn, inputvarnames});
 
             fn = @CO2captureChannel.updateControl;
@@ -152,6 +151,13 @@ classdef CO2captureChannel < BaseModel
 
         end
 
+        function model = equipModelForComputation(model, varargin)
+
+            model = equipModelForComputation@BaseModel(model, varargin{:});
+
+            model.Control = CO2captureControl();
+            
+        end
         function model = setupHelpers(model, state)
 
             gasInd = model.gasInd;
@@ -207,10 +213,10 @@ classdef CO2captureChannel < BaseModel
             mapFromBc = mapFromBc.setFromTensorMap(map);
             mapFromBc = mapFromBc.getMatrix();
             
-            boundaryHelper = struct('transmissibilities', Tbc, ...
-                                    'mapFromBc', mapFromBc   , ...
-                                    'mapToBc', mapToBc       , ...
-                                    'molFractions', mfs);
+            boundaryHelper = struct('transmissibilities', Tbc      , ...
+                                    'mapFromBc'         , mapFromBc, ...
+                                    'mapToBc'           , mapToBc  , ...
+                                    'molFractions'      , mfs);
             
             ind = strcmp('control faces', coupnames);
             coupterm = coupterms{ind};            
