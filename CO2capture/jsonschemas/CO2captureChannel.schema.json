@@ -18,11 +18,7 @@
       "type" : "number",
       "description" : "cross section area of the channel"
     }
-    "length" : {
-      "type" : "number",
-      "description" : "length of the channel"
-    },
-    "Control" : {
+    "SideControl" : {
       "type" : "object",
       "properties" : {
         "Left" : {

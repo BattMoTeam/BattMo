@@ -8,10 +8,14 @@
                    "value" : 1},
     "numberOfTimeSteps" : 100
   },
+  "Geometry" : {
+    "length" : 1,
+    "areas" : {
+      "feed" : 1,
+      "permeate" : 1}},
   "Feed": {
     "rateCoefficient": 1,
-    "area" : 1,
-    "Control": {
+    "SideControl": {
       "Left" : {
         "ctrltype" : "rate",
         "rate": 1,
@@ -23,8 +27,7 @@
     }},
   "Permeate": {
     "rateCoefficient": 1,
-    "area" : 2,
-    "Control": {
+    "SideControl": {
       "Left" : {
         "ctrltype" : "pressure",
         "pressure": 10000,

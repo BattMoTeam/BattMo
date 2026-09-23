@@ -17,10 +17,21 @@
       }
       "description" : "permeance values. One value for each specie. The order is given by the gasSpecies property. The unit is mol/(m*s*Pa)"
     },
-    "length" : {
-      "type" : "number",
-      "description" : "length of the device. The unit is meter"
-    }
+    "Geometry" : {
+      "type" : "object",
+      "description" : "geometry data for the CO2 capture device. For the moment only 1D support"
+      "properties" : {
+        "length" : {
+          "type" : "number",
+          "description" : "length of the device. The unit is meter"},
+        "areas" : {
+          "type" : "object",
+          "description" : "cross section areas for the feed and permeate channels. The unit is m^2",
+          "properties" : {
+            "feed" : {
+              "type" : "number"},
+            "permeate" : {
+              "type" : "number"}}},
     "Feed" : {
       "$ref": "CO2captureChannel.schema.json",
       "description": "Feed channel parameters"

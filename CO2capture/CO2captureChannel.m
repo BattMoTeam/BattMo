@@ -9,8 +9,6 @@ classdef CO2captureChannel < BaseModel
 
         rateCoefficient
         
-        area
-
         couplingTerms
         
         %% Helpers
@@ -29,6 +27,7 @@ classdef CO2captureChannel < BaseModel
                       % - pressureValues
                       % - fluxMap
                       % - fluxValues
+
     end
 
     methods

@@ -10,10 +10,6 @@ classdef CO2captureChannelInputParams < ComponentInputParams
         gasSpecies
 
         rateCoefficient
-        
-        area
-        length
-        
 
     end
 
