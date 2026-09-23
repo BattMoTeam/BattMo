@@ -346,7 +346,7 @@ classdef ProtonicMembraneCell < BaseModel
             map.toTbl = bccellfaceindtbl;
             map.mergefds = {'cells'};
 
-            M = SparseTensor();
+            M = SparseMatrix();
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 

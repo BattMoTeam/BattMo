@@ -188,7 +188,7 @@ classdef Grid < GenericGrid
             prod.reducefds = {'faces'};
             prod = prod.setup;
 
-            divM = SparseTensor();
+            divM = SparseMatrix();
             divM = divM.setFromTensorProd(sgn, prod);
             divM = divM.getMatrix();
 
@@ -312,7 +312,7 @@ classdef Grid < GenericGrid
 
             p = 0.5*ones(cellfacetbl.num, 1);
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(p, prod);
 
             matrixop.cellCentroids = tens.getMatrix();
@@ -515,7 +515,7 @@ classdef Grid < GenericGrid
 
             facenode12vec13tbl = prod.tbl3;
 
-            M = SparseTensor();
+            M = SparseMatrix();
             matrixop.triNormals1 = M.setFromTensorProd(sigma, prod);
             matrixop.triNormals1 = matrixop.triNormals1.getMatrix();
             % To Run:

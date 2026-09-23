@@ -376,7 +376,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             map.toTbl    = couptbl;
             map.mergefds = {'coup'};
 
-            M = SparseTensor;
+            M = SparseMatrix;
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
@@ -398,7 +398,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             map.toTbl    = comptypecouptbl2;
             map.mergefds = {'coup'};
 
-            M = SparseTensor();
+            M = SparseMatrix();
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
@@ -425,7 +425,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             map.toTbl    = comptypecouptbl2;
             map.mergefds = {'coup'};
 
-            M = SparseTensor();
+            M = SparseMatrix();
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
@@ -482,7 +482,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
             map.mergefds = {'coup', 'cells', 'faces'};
             map = map.setup();
 
-            M = SparseTensor();
+            M = SparseMatrix();
             M = M.setFromTensorMap(map);
             M = M.getMatrix();
 
@@ -511,7 +511,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 map.mergefds = {'cells'};
                 map = map.setup();
                 
-                M = SparseTensor();
+                M = SparseMatrix();
                 M = M.setFromTensorMap(map);
                 M = M.getMatrix();
                 
@@ -523,7 +523,7 @@ classdef ProtonicMembraneGasSupply < BaseModel
                 map.mergefds = {'cells', 'faces', 'coup'};
                 map = map.setup();
                 
-                M = SparseTensor();
+                M = SparseMatrix();
                 M = M.setFromTensorMap(map);
                 M = M.getMatrix();
                 

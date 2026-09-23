@@ -136,7 +136,7 @@ classdef SubGrid < GenericGrid
             prod.reducefds = {'faces'};
             prod = prod.setup;
 
-            divM = SparseTensor();
+            divM = SparseMatrix();
             divM = divM.setFromTensorProd(sgn, prod);
             divM = divM.getMatrix();
 

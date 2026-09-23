@@ -116,7 +116,7 @@ classdef ThermalComponent < BaseModel
                 map.toTbl = bccelltbl;
                 map.mergefds = {'cells'};
 
-                bcfacecellmap = SparseTensor();
+                bcfacecellmap = SparseMatrix();
                 bcfacecellmap = bcfacecellmap.setFromTensorMap(map);
                 bcfacecellmap = bcfacecellmap.getMatrix();
 

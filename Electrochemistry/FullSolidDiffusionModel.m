@@ -199,7 +199,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             prod.reducefds = {'Sfaces'};
             prod = prod.setup();
 
-            divMat = SparseTensor();
+            divMat = SparseMatrix();
             divMat = divMat.setFromTensorProd(sgn, prod);
             divMat = divMat.getMatrix();
 
@@ -215,7 +215,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             prod.reducefds = {'Scells'};
             prod = prod.setup();
 
-            invHtMat = SparseTensor();
+            invHtMat = SparseMatrix();
             invHtMat = invHtMat.setFromTensorProd(1./hT, prod);
             invHtMat = invHtMat.getMatrix();
 
@@ -237,7 +237,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             prod.tbl3 = cellScelltbl;
             prod.mergefds = {'cells'};
 
-            mapFromBc = SparseTensor();
+            mapFromBc = SparseMatrix();
             mapFromBc = mapFromBc.setFromTensorProd(f, prod);
             mapFromBc = mapFromBc.getMatrix();
 
@@ -250,7 +250,7 @@ classdef FullSolidDiffusionModel < SolidDiffusionModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapToParticle = SparseTensor();
+            mapToParticle = SparseMatrix();
             mapToParticle = mapToParticle.setFromTensorMap(map);
             mapToParticle = mapToParticle.getMatrix();
 

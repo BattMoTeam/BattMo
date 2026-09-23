@@ -298,7 +298,7 @@ classdef StokesSolver
             prod.mergefds  = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
 
             N = tens.getMatrix();
@@ -311,7 +311,7 @@ classdef StokesSolver
             prod.mergefds  = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind, prod);
 
             nk_N = tens.getMatrix();
@@ -379,7 +379,7 @@ classdef StokesSolver
             prod.mergefds = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
 
             R1 = tens.getMatrix();
@@ -392,7 +392,7 @@ classdef StokesSolver
             prod.mergefds = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellNodeVecLinGtypeGind1, prod);
 
             nk_R1 = tens.getMatrix();
@@ -438,7 +438,7 @@ classdef StokesSolver
             prod.mergefds = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
             R2 = tens.getMatrix();
@@ -451,7 +451,7 @@ classdef StokesSolver
             prod.mergefds = {'cells'};
             prod = prod.setup();
 
-            tens = SparseTensor();
+            tens = SparseMatrix();
             tens = tens.setFromTensorProd(cellFaceLinGtypeGind1, prod);
 
             nk_R2 = tens.getMatrix();
@@ -493,7 +493,7 @@ classdef StokesSolver
             map.mergefds = {'gtype', 'gind'};
             map = map.setup();
 
-            P = SparseTensor();
+            P = SparseMatrix();
             P = P.setFromTensorMap(map);
             P = P.getMatrix();
 
@@ -524,7 +524,7 @@ classdef StokesSolver
             prod.reducefds = {'gind', 'gtype'};
             prod = prod.setup();
 
-            F1 = SparseTensor();
+            F1 = SparseMatrix();
             F1 = F1.setFromTensorProd(fluxFaceNodeVecGindGtype, prod);
             F1 = F1.getMatrix();
 
@@ -536,7 +536,7 @@ classdef StokesSolver
             prod.reducefds = {'gind', 'gtype'};
             prod = prod.setup();
 
-            F2 = SparseTensor();
+            F2 = SparseMatrix();
             F2 = F2.setFromTensorProd(G.faces.areas, prod);
             F2 = F2.getMatrix();
 
@@ -553,7 +553,7 @@ classdef StokesSolver
             prod.reducefds = {'faces'};
             prod = prod.setup();
 
-            C = SparseTensor();
+            C = SparseMatrix();
             C = C.setFromTensorProd(sgn, prod);
             C = C.getMatrix();
 
@@ -587,7 +587,7 @@ classdef StokesSolver
             map.mergefds = {'gind', 'gtype'};
             map = map.setup();
 
-            gPn = SparseTensor();
+            gPn = SparseMatrix();
             gPn = gPn.setFromTensorMap(map);
             gPn = gPn.getMatrix();
 
@@ -597,7 +597,7 @@ classdef StokesSolver
             map.mergefds = {'gind', 'gtype'};
             map = map.setup();
 
-            gPf = SparseTensor();
+            gPf = SparseMatrix();
             gPf = gPf.setFromTensorMap(map);
             gPf = gPf.getMatrix();
 
@@ -607,7 +607,7 @@ classdef StokesSolver
             map.mergefds = {'gind', 'gtype'};
             map = map.setup();
 
-            dPn = SparseTensor();
+            dPn = SparseMatrix();
             dPn = dPn.setFromTensorMap(map);
             dPn = dPn.getMatrix();
 
@@ -617,7 +617,7 @@ classdef StokesSolver
             map.mergefds = {'gind', 'gtype'};
             map = map.setup();
 
-            dPf = SparseTensor();
+            dPf = SparseMatrix();
             dPf = dPf.setFromTensorMap(map);
             dPf = dPf.getMatrix();
 
@@ -650,7 +650,7 @@ classdef StokesSolver
             prod.reducefds = {'faces', 'vec'};
             prod = prod.setup();
 
-            Neum = SparseTensor();
+            Neum = SparseMatrix();
             Neum = Neum.setFromTensorProd(0.5*ones(neumannNodeFaceVecGtypeGindTbl.num, 1), prod);
             Neum = Neum.getMatrix();
 

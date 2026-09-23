@@ -170,7 +170,7 @@ classdef SolidElectrodeInterface < BaseModel
             prod.mergefds = {'cells'};
             prod.reducefds = {'Scells'};
 
-            Grad = SparseTensor();
+            Grad = SparseMatrix();
             Grad = Grad.setFromTensorProd(grad, prod);
             Grad = Grad.getMatrix();
 
@@ -201,7 +201,7 @@ classdef SolidElectrodeInterface < BaseModel
             prod.reducefds = {'Sfaces'};
             prod = prod.setup();
 
-            divMat = SparseTensor();
+            divMat = SparseMatrix();
             divMat = divMat.setFromTensorProd(d, prod);
             divMat = divMat.getMatrix();
 
@@ -223,7 +223,7 @@ classdef SolidElectrodeInterface < BaseModel
             prod.tbl3 = cellScelltbl;
             prod.mergefds = {'cells'};
 
-            mapFromExtBc = SparseTensor();
+            mapFromExtBc = SparseMatrix();
             mapFromExtBc = mapFromExtBc.setFromTensorProd(f, prod);
             mapFromExtBc = mapFromExtBc.getMatrix();
 
@@ -244,7 +244,7 @@ classdef SolidElectrodeInterface < BaseModel
             prod.tbl3 = cellScelltbl;
             prod.mergefds = {'cells'};
 
-            mapFromIntBc = SparseTensor();
+            mapFromIntBc = SparseMatrix();
             mapFromIntBc = mapFromIntBc.setFromTensorProd(f, prod);
             mapFromIntBc = mapFromIntBc.getMatrix();
 
@@ -279,7 +279,7 @@ classdef SolidElectrodeInterface < BaseModel
             prod.mergefds = {'cells'};
             prod = prod.setup();
 
-            faceAverage = SparseTensor();
+            faceAverage = SparseMatrix();
             faceAverage = faceAverage.setFromTensorProd(M, prod);
             faceAverage = faceAverage.getMatrix();
 
@@ -292,7 +292,7 @@ classdef SolidElectrodeInterface < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapToSei = SparseTensor();
+            mapToSei = SparseMatrix();
             mapToSei = mapToSei.setFromTensorMap(map);
             mapToSei = mapToSei.getMatrix();
 
