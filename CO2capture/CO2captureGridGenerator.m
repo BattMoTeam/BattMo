@@ -101,14 +101,21 @@ classdef CO2captureGridGenerator
             bcfaces = [1; gen.nx + 1];
             bccells = [1; gen.nx];
 
+            coupname = 'boundary faces';
             compnames = {'channel'};
-            coupname = 'control faces';
             coupTerm = couplingTerm(coupname, compnames);
             coupTerm.couplingfaces = bcfaces;
             coupTerm.couplingcells = bccells;
 
             inputparams.couplingTerms{end + 1} = coupTerm;
+
+            coupname = 'control';
+            compnames = {'channel boundary faces', 'control'};
+            coupTerm = couplingTerm(coupname, compnames);
+            coupTerm.couplingfaces = [bcfaces, [1; 2]];
             
+            inputparams.couplingTerms{end + 1} = coupTerm;
+
         end
 
     end

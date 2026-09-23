@@ -20,8 +20,7 @@ classdef CO2captureChannel < BaseModel
                        % - transmissibilities
                        % - mapToBc
                        % - mapFromBc
-                       % - molFractions (Vector of dimension nGas with the mol fractions. It used for the moment to setup
-                       %                 the composition at all boundaries. Fragile!)
+
         controlHelper % control structure with fields
                       % - pressureMap
                       % - pressureValues
@@ -39,7 +38,6 @@ classdef CO2captureChannel < BaseModel
             fdnames = {'G'              , ...
                        'gasSpecies'     , ...
                        'rateCoefficient', ...
-                       'area'           , ...
                        'couplingTerms'};
 
             model = dispatchParams(model, inputparams, fdnames);
@@ -167,7 +165,6 @@ classdef CO2captureChannel < BaseModel
             coupterms = model.couplingTerms;
             coupnames = cellfun(@(coupterm) coupterm.name, coupterms, 'uniformoutput', false);
 
-
             ind = strcmp('boundary faces', coupnames);
             coupterm = coupterms{ind};
             
@@ -178,7 +175,8 @@ classdef CO2captureChannel < BaseModel
 
             bcfacetbl.faces = bcfaces;
             bcfacetbl = IndexArray(bcfacetbl);
-
+            bcfacetbl = bcfacetbl.addLocInd('bcfaces');
+            
             bccelltbl.cells = coupterm.couplingcells;
             bccelltbl = IndexArray(bccelltbl);
             
@@ -191,46 +189,47 @@ classdef CO2captureChannel < BaseModel
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapToBc = SparseTensor();
-            mapToBc = mapToBc.setFromTensorMap(map);
-            mapToBc = mapToBc.getMatrix();
+            mapToBc = map.getMatrix();
 
             map = TensorMap();
-            map.fromTbl = bccelltbl;
-            map.toTbl = celltbl;
+            map.fromTbl  = bccelltbl;
+            map.toTbl    = celltbl;
             map.mergefds = {'cells'};
             map = map.setup();
 
-            mapFromBc = SparseTensor();
-            mapFromBc = mapFromBc.setFromTensorMap(map);
-            mapFromBc = mapFromBc.getMatrix();
+            mapFromBc = map.getMatrix();
             
             boundaryHelper = struct('transmissibilities', Tbc      , ...
                                     'mapFromBc'         , mapFromBc, ...
-                                    'mapToBc'           , mapToBc  , ...
-                                    'molFractions'      , mfs);
+                                    'mapToBc'           , mapToBc);
             
-            ind = strcmp('control faces', coupnames);
+            ind = strcmp('control', coupnames);
             coupterm = coupterms{ind};            
 
-            ctrlfacetbl.faces = coupterm.couplingfaces;
-            ctrlfacetbl = IndexArray(ctrlfacetbl);
+            bccontrolfacetbl = [];
+            ind = strcmp('channel boundary faces', coupterm.componentnames);
+            bccontrolfacetbl.faces = coupterm.couplingfaces(:, ind);
+            ind = strcmp('control', coupterm.componentnames);
+            bccontrolfacetbl.control = coupterm.couplingfaces(:, ind);
+            
+            bccontrolfacetbl = IndexArray(bccontrolfacetbl);
+
+            bccontrolfacetbl = crossIndexArray(bccontrolfacetbl, bcfacetbl, {'faces'});
+            bccontrolfacetbl = bccontrolfacetbl.sort('bcfaces', 'keepAllFields', true);
+            
+            controltbl = bccontrolfacetbl.proj('control');
 
             map = TensorMap();
-            map.fromTbl  = bcfacetbl;
-            map.toTbl    = ctrlfacetbl;
-            map.mergefds = {'faces'};
+            map.fromTbl  = controltbl;
+            map.toTbl    = bccontrolfacetbl;
+            map.mergefds = {'control'};
             map = map.setup();
-
-            M = SparseTensor();
-            M = M.setFromTensorMap(map);
-            M = M.getMatrix();
-
-            controlHelper = struct('pressureMap', M                        , ...
-                                   'fluxMap', M                            , ...
-                                   'pressureValues', model.control.pressure, ...
-                                   'fluxValues', -model.control.rate);
             
+            M = map.getMatrix();
+
+            controlHelper = struct('controlToBcMap', M, ...
+                                   'bcToControlMap', M');
+                                   
             model.boundaryHelper = boundaryHelper;
             model.controlHelper  = controlHelper;
             
