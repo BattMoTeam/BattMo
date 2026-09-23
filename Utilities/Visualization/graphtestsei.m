@@ -22,18 +22,18 @@ elyte = 'Electrolyte';
 
 inputparams = SingleParticleSEIInputParams(jsonstruct);
 
-inputparams.(an).(sd).N   = 10;
-inputparams.(an).(sd).np  = 1;
-inputparams.(an).(sei).N  = 10;
-inputparams.(an).(sei).np = 1;
+inputparams.(an).(sd).numberOfDiscreteCells   = 10;
+inputparams.(an).(sd).numberOfParticles  = 1;
+inputparams.(an).(sei).numberOfDiscreteCells  = 10;
+inputparams.(an).(sei).numberOfParticles = 1;
 
 xlength = 57e-6; 
 G = cartGrid(1, xlength);
 G = computeGeometry(G);
 inputparams.(an).G = G;
 
-inputparams.(ct).(sd).N   = 10;
-inputparams.(ct).(sd).np  = 1;
+inputparams.(ct).(sd).numberOfDiscreteCells   = 10;
+inputparams.(ct).(sd).numberOfParticles  = 1;
 inputparams.(ct).G = G;
 
 model = SingleParticleSEI(inputparams);

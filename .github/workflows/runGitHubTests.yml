@@ -3,6 +3,8 @@ name: Running runGitHubTests
 
 # Controls when the action will run.
 on:
+  workflow_dispatch:
+
   # Run after pushes to main
   push:
     branches: [main]

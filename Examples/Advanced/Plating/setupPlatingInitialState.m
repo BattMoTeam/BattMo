@@ -15,8 +15,8 @@ function [model, initstate] = setupPlatingInitialState(model, T, cElectrolyte, p
     ctrl    = 'Control';
     cc      = 'CurrentCollector';
     
-    N = model.(sd).N;
-    initstate.(sd).c        = cElectrodeInit*ones(N, 1);
+    numberOfDiscreteCells = model.(sd).numberOfDiscreteCells;
+    initstate.(sd).c        = cElectrodeInit*ones(numberOfDiscreteCells, 1);
     initstate.(sd).cSurface = cElectrodeInit;
 
     initstate.T = T;

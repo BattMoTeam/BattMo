@@ -8,7 +8,10 @@ function dUdT = computeEntropyChange_LCO(theta)
 
     % References
     % ----------
-    % https://github.com/scott-moura/fastDFN
+    % .. [1] Moura, Scott. FastDFN: Fast Doyle-Fuller-Newman (DFN)
+    %    Electrochemical-Thermal Battery Model Simulator (software).
+    %    https://github.com/scott-moura/fastDFN
+    %    No DOI for this software source was identified.
 
     
     stretch = 1.062;

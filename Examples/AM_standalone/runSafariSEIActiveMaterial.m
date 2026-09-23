@@ -21,8 +21,8 @@ jsonstruct.isRootSimulationModel = true;
 
 inputparams = SEIActiveMaterialInputParams(jsonstruct);
 
-inputparams.(sd).N  = 10;
-inputparams.(sei).N = 10;
+inputparams.(sd).numberOfDiscreteCells  = 10;
+inputparams.(sei).numberOfDiscreteCells = 10;
 
 % We initiate the model
 model = SEIActiveMaterial(inputparams);
@@ -30,8 +30,8 @@ model = model.setupForSimulation();
 
 %% Setup initial state
 
-Nsd  = model.(sd).N;
-Nsei = model.(sei).N;
+Nsd  = model.(sd).numberOfDiscreteCells;
+Nsei = model.(sei).numberOfDiscreteCells;
 
 % Initial concentration value at the electrode
 cElectrodeInit   = 0.75*model.(itf).saturationConcentration;
@@ -161,7 +161,7 @@ ylabel('thickness / nm');
 title('SEI thickness')
 
 c = states{end}.(sd).c;
-r = linspace(0, model.(sd).particleRadius, model.(sd).N);
+r = linspace(0, model.(sd).particleRadius, model.(sd).numberOfDiscreteCells);
 
 figure
 plot(r, c/(mol/litre));
@@ -170,7 +170,7 @@ ylabel('concentration / mol/L')
 title('Particle concentration profile (last time step)')
 
 r = states{end}.(sei).delta;
-r = linspace(0, r, model.(sei).N);
+r = linspace(0, r, model.(sei).numberOfDiscreteCells);
 c = states{end}.(sei).c;
 
 figure

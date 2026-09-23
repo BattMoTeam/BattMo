@@ -175,7 +175,7 @@ Control
 .. literalinclude:: ../Examples/Documentation/jsonfiles/Example/control.json
    :language: json              
 
-Here, we use a discharge scenario with a given discarge rate and lower cutoff voltage. An overview with explanation of the available controls is given in :ref:`Control models <controlinput:Control models>`.
+Here, we use a discharge scenario with a given discharge rate and lower cutoff voltage. An overview with explanation of the available controls is given in :ref:`Control models <controlinput:Control models>`.
               
 Model Specification
 ===================

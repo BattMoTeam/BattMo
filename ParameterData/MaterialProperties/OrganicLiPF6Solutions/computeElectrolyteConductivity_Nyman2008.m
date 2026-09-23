@@ -1,7 +1,12 @@
 function conductivity = computeElectrolyteConductivity_Nyman2008(c, T)
-    
+% References
+% ----------
+% .. [1] Nyman, A., Behm, M., and Lindbergh, G. (2008). Electrochemical characterisation and
+%    modelling of the mass transport phenomena in LiPF6-EC-EMC electrolyte. Electrochimica
+%    Acta, 53(22), 6356-6365. DOI: 10.1016/j.electacta.2008.04.023.
+
     conductivity = 0.1297*(c./1000).^3 - 2.51*(c./1000).^1.5 + 3.329*(c./1000);
-    
+
 end
 
 %{

@@ -1,4 +1,5 @@
 {
+  "description": "Parameter-set reference: Chen, C.-H., Brosa Planella, F., O’Regan, K., Gastol, D., Widanage, W. D., and Kendrick, E. (2020). Development of Experimental Techniques for Parameterization of Multi-scale Lithium-ion Battery Models. Journal of The Electrochemical Society, 167, 080534. DOI: 10.1149/1945-7111/ab9050.",
   "comment": "Data set from Chen 2020",
   "SOC": 1,
   "initT": 298.15,
@@ -26,7 +27,7 @@
           "activationEnergyOfDiffusion": 0,
           "referenceDiffusionCoefficient": 3.3e-14,
           "particleRadius": 5.86e-06,
-          "N": 40
+          "numberOfDiscreteCells": 40
         }
       }
     }
@@ -46,7 +47,7 @@
           "activationEnergyOfDiffusion": 0,
           "referenceDiffusionCoefficient": 4e-15,
           "particleRadius": 5.22e-06,
-          "N": 40
+          "numberOfDiscreteCells": 40
         }
       }
     }

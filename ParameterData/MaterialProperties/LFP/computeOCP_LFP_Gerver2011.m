@@ -1,4 +1,12 @@
 function [OCP, dUdT] = computeOCP_LFP_Gerver2011(c, T, cmax)
+% LFP open-circuit potential. The filename attributes the fit to Gerver (2011); [1] is a related
+% publication. The exact source of these coefficients has not been verified.
+%
+% References
+% ----------
+% .. [1] Gerver, R. E., and Meyers, J. P. (2011). Three-Dimensional Modeling of Electrochemical
+%    Performance and Heat Generation of Lithium-Ion Batteries in Tabbed Planar Configurations.
+%    Journal of The Electrochemical Society, 158(7), A835-A843. DOI: 10.1149/1.3591799.
 
     error("function is not compatible with new function interface");
     

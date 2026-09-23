@@ -31,17 +31,17 @@ switch controlPolicy
     error('control policy not recognized')
 end
 
-inputparams.(an).(sd).N   = 10;
-inputparams.(an).(sd).np  = 1;
-inputparams.(an).(sei).N  = 10;
-inputparams.(an).(sei).np = 1;
+inputparams.(an).(sd).numberOfDiscreteCells   = 10;
+inputparams.(an).(sd).numberOfParticles  = 1;
+inputparams.(an).(sei).numberOfDiscreteCells  = 10;
+inputparams.(an).(sei).numberOfParticles = 1;
 
 xlength = 57e-6;
 G = cartGrid(1, xlength);
 inputparams.(an).G = Grid(G);
 
-inputparams.(ct).(sd).N  = 10;
-inputparams.(ct).(sd).np = 1;
+inputparams.(ct).(sd).numberOfDiscreteCells  = 10;
+inputparams.(ct).(sd).numberOfParticles = 1;
 inputparams.(ct).G = Grid(G);
 
 model = SingleParticleSEI(inputparams);
@@ -72,11 +72,11 @@ end
 
 %% Setup initial state
 
-NanodeSd  = model.(an).(sd).N;
-NanodeSEI = model.(an).(sei).N;
+NanodeSd  = model.(an).(sd).numberOfDiscreteCells;
+NanodeSEI = model.(an).(sei).numberOfDiscreteCells;
 cAnodeMax = model.(an).(itf).saturationConcentration;
 
-NcathodeSd  = model.(ct).(sd).N;
+NcathodeSd  = model.(ct).(sd).numberOfDiscreteCells;
 cCathodeMax = model.(ct).(itf).saturationConcentration;
 
 x0 = 0.75; % Initial stochiometry from Safari

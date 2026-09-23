@@ -13,7 +13,7 @@
    "Coating": {
      "thickness" : 94e-6,
      "numberOfDiscreteCells" : 3,
-     "SolidDiffusion" : {"N" : 5}
+     "SolidDiffusion" : {"numberOfDiscreteCells" : 5}
    },
    "CurrentCollector": {
      "thickness" : 25e-6,
@@ -26,7 +26,7 @@
    "Coating": {
      "thickness" : 84e-6,
      "numberOfDiscreteCells" : 3,
-     "SolidDiffusion" : {"N" : 5}
+     "SolidDiffusion" : {"numberOfDiscreteCells" : 5}
    },
    "CurrentCollector": {
      "thickness" : 10e-6,

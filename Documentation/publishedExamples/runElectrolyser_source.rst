@@ -76,7 +76,7 @@ Source code for runElectrolyser
   
   %% Visualize the results
   %
-  % The results contain only the primary variables of the system (the unknwons that descrive the state of the system). We
+  % The results contain only the primary variables of the system (the unknowns that descrive the state of the system). We
   % use the method :code:`addVariables` to add all the intermediate quantities that are computed to solve the equations
   % but not stored automatically in the result.
   

@@ -70,7 +70,7 @@
           "volumetricSurfaceArea": 723600
         },
         "SolidDiffusion": {
-          "N": 50,
+          "numberOfDiscreteCells": 50,
           "activationEnergyOfDiffusion": 5000,
           "particleRadius": 1e-06,
           "referenceDiffusionCoefficient": 3.9e-14
@@ -99,7 +99,7 @@
           "volumetricSurfaceArea": 723600
         },
         "SolidDiffusion": {
-          "N": 50,
+          "numberOfDiscreteCells": 50,
           "activationEnergyOfDiffusion": 5000,
           "particleRadius": 6e-08,
           "referenceDiffusionCoefficient": 1e-15
@@ -170,7 +170,7 @@
           "volumetricSurfaceArea": 885000
         },
         "SolidDiffusion": {
-          "N": 10,
+          "numberOfDiscreteCells": 10,
           "activationEnergyOfDiffusion": 0,
           "comment": "originally 4e-15",
           "particleRadius": 5e-06,

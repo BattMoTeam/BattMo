@@ -89,8 +89,6 @@ nbsphinx_custom_formats_strs = {
     '.md': 'jupytext.reads:Rmd',
 }
 
-import matplotlib.pyplot
-
 autosectionlabel_prefix_document = True
 
 global_substitutions = {

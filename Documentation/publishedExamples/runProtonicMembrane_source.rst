@@ -143,7 +143,7 @@ Source code for runProtonicMembrane
   end
   
   %%
-  % We plot the profile of the electromotive potential for the mininum and maximum current values.
+  % We plot the profile of the electromotive potential for the minimum and maximum current values.
   %
   
   figure

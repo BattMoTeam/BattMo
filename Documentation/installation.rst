@@ -46,7 +46,7 @@ For a detailed guided installation of git, you can consult this `video <https://
 Update existing installation
 ============================
 
-In the case where we alread have installed BattMo and you want to update to the latest version. As usual in git, you
+In the case where we already have installed BattMo and you want to update to the latest version. As usual in git, you
 will do that by running
 
 .. code-block:: shell
@@ -61,7 +61,7 @@ case, you will need to run in addition to the previous command,
    git submodule update --recursive
 
 
- Contributing
- ============
+Contributing
+============
 
- To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.
+To contribute, please see `contributing.rst <https://github.com/BattMoTeam/BattMo/blob/main/contributing.rst#>`_.

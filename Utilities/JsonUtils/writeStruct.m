@@ -7,15 +7,16 @@ function filename = writeStruct(jsonstruct, filename)
         prettyprint = true;
     end
 
+    jsonText = jsonencode(jsonstruct, 'PrettyPrint', prettyprint);
     fid = fopen(filename, 'w');
-    jsonstr = jsonencode(jsonstruct, 'PrettyPrint', prettyprint);
-    fprintf(fid, '%s', jsonstr);
-    fclose(fid);
+    assert(fid > 0, 'Could not open %s for writing', filename);
+    fileCleanup = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, '%s', jsonText);
 
 end
 
 %{
-Copyright 2021-2026 SINTEF Industry, Sustainable Energy Technology
+Copyright 2021-2024 SINTEF Industry, Sustainable Energy Technology
 and SINTEF Digital, Mathematics & Cybernetics.
 
 This file is part of The Battery Modeling Toolbox BattMo
