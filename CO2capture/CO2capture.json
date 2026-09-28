@@ -2,7 +2,6 @@
   "gasSpecies" : ["CO2", "N2", "O2", "H2O", "Ar"],
   "permeances" : [1, 1, 1, 1, 1],
   "temperature": 278,
-  "length" : 1,
   "TimeStepping" : {
     "totalTime" : {"unit" : "hour",
                    "value" : 1},
