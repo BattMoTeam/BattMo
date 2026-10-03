@@ -1,3 +1,8 @@
+(defconst battmo-utils-repository-directory
+  (expand-file-name "../../../"
+                    (file-name-directory (or load-file-name buffer-file-name)))
+  "BattMo repository directory, resolved from this file's location.")
+
 (setq filenames (list "tutorial_1_a_simple_p2d_model_live"
                       "tutorial_2_changing_control_protocol_live"
                       "tutorial_3_modify_structural_parameters_live"
@@ -38,7 +43,10 @@
   )
 
 (defun get-details (filename)
-  (with-current-buffer (find-file-noselect (concat "/home/xavier/Matlab/Projects/battmo/Documentation/utils/Temp/" filename ".m"))
+  (with-current-buffer
+      (find-file-noselect
+       (expand-file-name (concat "Examples/Tutorials/" filename ".m")
+                         battmo-utils-repository-directory))
     (beginning-of-buffer)
     (re-search-forward (rx "Tuto" (0+ (not numeric)) (group (any numeric)) (0+ (not "-")) "- " (group (1+ any)) eol))
     `((filename . ,filename)
@@ -63,7 +71,8 @@
   )
 
 (defun create-page (filename)
-  (let* ((directory "/home/xavier/Matlab/Projects/battmo/Documentation/tutorials/")
+  (let* ((directory (expand-file-name "Documentation/tutorials/"
+                                      battmo-utils-repository-directory))
          (notebook (get-details filename))
          (content (setup-page notebook))
          (outputname (concat directory "tutorial" (let-alist notebook .num) ".rst")))
@@ -114,4 +123,3 @@
     (insert "\n\n")
     (insert content)
     ))
-

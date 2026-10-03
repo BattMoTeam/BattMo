@@ -35,9 +35,15 @@ function jsonstruct = resolveUnitInputJson(jsonstruct)
             end
             
             jsonstruct = resJsonstruct;
-            
+
         end
         
+    elseif iscell(jsonstruct)
+
+        % we have cells. We call resolveFileInputJson on each element
+        for i_jsonstruct = 1 : numel(jsonstruct)
+            jsonstruct{i_jsonstruct} = resolveUnitInputJson(jsonstruct{i_jsonstruct});
+        end
     end
 
 end

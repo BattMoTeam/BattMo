@@ -119,6 +119,7 @@ tup = 1*second*(Iref/Imax);
 
 srcfunc = @(time) rampupControl(time, tup, -Imax);
 
+control = [];
 control.src = srcfunc;
 
 schedule = struct('control', control, 'step', step);
