@@ -1,9 +1,9 @@
 function [Z_real, Z_imag, omega] = load_experimental_data(filename)
     
-    % --- 1. Configuration et Importation des données ---
+    % --- 1. Configuration and data import ---
     % filename = 'C:\Users\Alexandre Fichter\Documents\stage_3A\contenu stage\data_August\ank_data\Supplementary material\02_Electrical_characterization\EIS\131-828_EIS_01_MB_CD8.txt';
     
-    % Le délimiteur est la tabulation ('\t')
+    % The delimiter is a tab ('\t')
     opts = detectImportOptions(filename, 'Delimiter', '\t');
 
     opts.VariableNamesLine = 1;
@@ -17,7 +17,7 @@ function [Z_real, Z_imag, omega] = load_experimental_data(filename)
     idx_imag = contains(colNames, 'Im(Z)', 'IgnoreCase', true);
     idx_freq = contains(colNames, 'freq', 'IgnoreCase', true);
     
-    % Extraction des données brutes (peu importe où elles se trouvent)
+    % Extract raw data regardless of column position
     Z_real_raw = data{:, idx_real}; 
     Z_imag_raw = data{:, idx_imag};
     freq_raw  = data{:, idx_freq};
@@ -44,10 +44,10 @@ function [Z_real, Z_imag, omega] = load_experimental_data(filename)
     Z_real = Z_real(:);
     Z_imag = Z_imag(:);
     omega = omega(:);
-%% Figure test
+%% Test plot
     % figure;
     % semilogx(omega, Z_real, 'ro', 'MarkerFaceColor', 'r');      
-    % % legend('Expérimental', 'Modèle (Fitted)');
+    % % legend('Experimental', 'Model (Fitted)');
     % title('Fitting results');
     % xlabel('Omega');
     % ylabel('Z_{re} '); 

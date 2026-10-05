@@ -195,7 +195,7 @@ classdef  WarburgFittingEIS < FittingEIS
             fprintf('R0    = %.4e Ohms\n', best_params(1));
             fprintf('R1    = %.4e Ohms\n', best_params(2));
             fprintf('Q1    = %.4e s^a/Ohm\n', best_params(3));
-            fprintf('a1    = %.4f \n', best_params(4)); % %f suffit pour 'a' car il est entre 0 et 1
+            fprintf('a1    = %.4f \n', best_params(4)); % %f suffices for 'a', which is between 0 and 1
             fprintf('R2    = %.4e Ohms\n', best_params(5));
             fprintf('Q2    = %.4e s^a/Ohm\n', best_params(6));
             fprintf('a2    = %.4f \n', best_params(7));
