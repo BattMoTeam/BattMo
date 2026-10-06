@@ -23,7 +23,7 @@ classdef PlatiniumKineticFunctions
 
         function rate = computeRate(kf, eta, aH2O, cOH, T)
 
-            th = 1e-2;
+            th = 1e-4;
             
             R = PhysicalConstants.R;
             F = PhysicalConstants.F;
@@ -36,16 +36,16 @@ classdef PlatiniumKineticFunctions
             k1p_actif = kf.k1p.*aH2O.*fp;
             k1m_actif = kf.k1m.*(cOH/1000).*fm;
             k2p_actif = kf.k2p.*aH2O.*fp;
-            k2m_actif = kf.k2m.*(cOH/1000).*fm;
+            k2m_actif = kf.k2m.*(cOH/1000).*fm; % we do not include the H2 activity
             k3m_actif = kf.k3m; % we do not include the H2 activity
             k3p_actif = kf.k3p; % we do not include the H2 activity
             
             x = (k1p_actif + k1m_actif + k2p_actif);
-
-            lambda = (-x + regularizedSqrt(x.^2 + 8*k1p_actif.*k3m_actif, th))./(4*k3p_actif);
+            y = 8*k1p_actif.*k3p_actif;
+            lambda = y./(regularizedSqrt(x.^2  + y, th) + x)./(4*k3p_actif);
 
             rate = -F*(k1p_actif.*(1 - lambda) - k1m_actif.*lambda + ...
-                      k2p_actif.*lambda - k2m_actif.*(1 - lambda));
+                       (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
 
         end
         
