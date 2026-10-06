@@ -17,7 +17,7 @@ classdef IonomerMembrane < ElectronicComponent
         totalChargedGroupConcentration % Total concentration of charged groups (one value per cell)
 
         molarVolume % molar volume (needed for function groupHydration which is only needed in setup of initial condition and not
-          % for assembly, and also for activity computation)
+                    % for assembly, and also for activity computation)
 
         tortuosity
         conductivity % membrane conductivity
