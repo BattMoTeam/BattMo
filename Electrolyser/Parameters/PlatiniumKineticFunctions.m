@@ -33,11 +33,14 @@ classdef PlatiniumKineticFunctions
             fp = exp(-beta.*F.*eta./(R.*T));
             fm = exp((1 - beta).*F.*eta./(R.*T));
 
+            k2m = kf.k1p*kf.k2p/kf.k1m;
+            k3m = (kf.k1p)^2*(kf.k3p)/(kf.k1m^2);
+            
             k1p_actif = kf.k1p.*aH2O.*fp;
             k1m_actif = kf.k1m.*(cOH/1000).*fm;
             k2p_actif = kf.k2p.*aH2O.*fp;
-            k2m_actif = kf.k2m.*(cOH/1000).*fm; % we do not include the H2 activity
-            k3m_actif = kf.k3m; % we do not include the H2 activity
+            k2m_actif = k2m.*(cOH/1000).*fm; % we do not include the H2 activity
+            k3m_actif = k3m; % we do not include the H2 activity
             k3p_actif = kf.k3p; % we do not include the H2 activity
             
             x = (k1p_actif + k1m_actif + k2p_actif);
