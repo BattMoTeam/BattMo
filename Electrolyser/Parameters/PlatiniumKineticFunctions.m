@@ -45,7 +45,7 @@ classdef PlatiniumKineticFunctions
             lambda = y./(regularizedSqrt(x.^2  + y, th) + x)./(4*k3p_actif);
 
             rate = -F*(k1p_actif.*(1 - lambda) - k1m_actif.*lambda + ...
-                       (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
+                           (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
 
         end
         

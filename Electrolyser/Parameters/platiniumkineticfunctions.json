@@ -4,12 +4,24 @@
   "methodName" : "computeIonomerRate",
   "argumentList" : ["eta", "H2Oa", "cOH", "T"],
   "parameters" : {
-    "k1p" : 5e-10,
-    "k1m" :  6e-9,
-    "k2p" :  1.5e-11,
-    "k2m" :  4.2e-12,
-    "k3p" :  3e-10,
-    "k3m" :  6.2e-12,
+    "k1p" : {
+      "value" : 5e-10,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k1m" : {
+      "value" : 6e-9,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k2p" : {
+      "value" : 1.5e-11,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k2m" : {
+      "value" : 4.2e-12,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k3p" : {
+      "value" : 3e-10,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k3m" : {
+      "value" : 6.2e-12,
+      "unit" : "mol/((centi*meter)^2)"},
     "chargeTransferCoefficient" :  0.5}},
  "computeElyteRate" : {
    "functionFormat" : "class method",
@@ -17,12 +29,24 @@
    "methodName" : "computeElyteRate",
    "argumentList" : ["eta", "H2Oa", "cOH", "T"],
   "parameters" : {
-    "k1p" : 5e-10,
-    "k1m" :  6e-9,
-    "k2p" :  1.5e-11,
-    "k2m" :  4.2e-12,
-    "k3p" :  3e-10,
-    "k3m" :  6.2e-12,
+    "k1p" : {
+      "value" : 5e-10,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k1m" : {
+      "value" : 6e-9,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k2p" : {
+      "value" : 1.5e-11,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k2m" : {
+      "value" : 4.2e-12,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k3p" : {
+      "value" : 3e-10,
+      "unit" : "mol/((centi*meter)^2)"},
+    "k3m" : {
+      "value" : 6.2e-12,
+      "unit" : "mol/((centi*meter)^2)"},
     "chargeTransferCoefficient" :  0.5}}}
 
- 
+
