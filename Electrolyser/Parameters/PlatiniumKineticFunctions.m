@@ -10,6 +10,8 @@ classdef PlatiniumKineticFunctions
         k3m
 
         chargeTransferCoefficient
+
+        th % threshold constant used for the regularization of the square root.
         
     end
     
@@ -18,12 +20,14 @@ classdef PlatiniumKineticFunctions
         function kf = PlatiniumKineticFunctions(parameters)
             
             kf = setupParameters(kf, parameters);
+
+            kf.th = 8*kf.k1p*kf.k3p*1e-3;
             
         end
 
         function rate = computeRate(kf, eta, aH2O, cOH, T)
 
-            th = 1e-4;
+            th = kf.th;
             
             R = PhysicalConstants.R;
             F = PhysicalConstants.F;
@@ -48,7 +52,7 @@ classdef PlatiniumKineticFunctions
             lambda = y./(regularizedSqrt(x.^2  + y, th) + x)./(4*k3p_actif);
 
             rate = -F*(k1p_actif.*(1 - lambda) - k1m_actif.*lambda + ...
-                           (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
+                       (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
 
         end
         
