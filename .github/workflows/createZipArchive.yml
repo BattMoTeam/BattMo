@@ -31,3 +31,4 @@ jobs:
         with:
           tag: ${{ inputs.tag || github.ref_name }}
           artifacts: "battmo.zip"
+          allowUpdates: true
