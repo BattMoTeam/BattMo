@@ -157,8 +157,8 @@ By combining a modular modelling framework with documented JSON-based
 inputs, tutorials, and interfaces such as the Julia bridge, BattMo
 provides reproducible battery cell development workflows for research and
 education.  BattMo has been used in several commercial and
-non-commercial projects. Publications include [@Clark2026] and
-[@Schmitt2026]. It has been important for the success of several EU
+non-commercial projects. Publications include @Clark2026 and
+@Schmitt2026. It has been important for the success of several EU
 projects, primarily HYDRA (875527) and BATMAX (101104013), where it
 has been used to model novel LNMO cells, as well as commercial
 LFP and NMC cells in both 1D and 3D.
