@@ -12,6 +12,7 @@ classdef PlatiniumKineticFunctions
         chargeTransferCoefficient
 
         th % threshold constant used for the regularization of the square root.
+           % not used here
         
     end
     
@@ -23,46 +24,88 @@ classdef PlatiniumKineticFunctions
 
         end
 
-        function rate = computeRate(kf, eta, aH2O, cOH, T)
+        function rate = computeRate(kf, eta, aH2O, aOH, aH2, T)
 
             th = kf.th;
             
             R = PhysicalConstants.R;
             F = PhysicalConstants.F;
 
-            beta = kf.chargeTransferCoefficient;
-            
-            fp = exp(-beta.*F.*eta./(R.*T));
-            fm = exp((1 - beta).*F.*eta./(R.*T));
+            beta_HER = 0.5;
+            E_0_HER = 0;
 
-            k2m = kf.k1p*kf.k2p/kf.k1m;
-            k3m = (kf.k1p)^2*(kf.k3p)/(kf.k1m^2);
-            
-            k1p_actif = kf.k1p.*aH2O.*fp;
-            k1m_actif = kf.k1m.*(cOH/1000).*fm;
-            k2p_actif = kf.k2p.*aH2O.*fp;
-            k2m_actif = k2m.*(cOH/1000).*fm; % we do not include the H2 activity
-            k3m_actif = k3m; % we do not include the H2 activity
-            k3p_actif = kf.k3p; % we do not include the H2 activity
-            
-            x = (k1p_actif + k1m_actif + k2p_actif);
-            y = 8*k1p_actif.*k3p_actif;
-            lambda = y./(regularizedSqrt(x.^2  + y, th) + x)./(4*k3p_actif);
+            k1_0     = 5e-10;   % [mol/(cm^2 * s)]
+            k1_neg_0 = 6e-9;    % [mol/(cm^2 * s)]
+            k2_0     = 1.5e-11; % [mol/(cm^2 * s)]
+            k3_0     = 3e-10;   % [mol/(cm^2 * s)]
 
-            rate = -F*(k1p_actif.*(1 - lambda) - k1m_actif.*lambda + ...
-                       (k2p_actif.*lambda - k2m_actif.*(1 - lambda)));
+            change_unit = true;
+            if change_unit
+                k1_0     = 1e4*k1_0     ; 
+                k1_neg_0 = 1e4*k1_neg_0 ; 
+                k2_0     = 1e4*k2_0     ; 
+                k3_0     = 1e4*k3_0     ; 
+            end
+
+            k2_neg_0 = k1_0*k2_0/k1_neg_0; % paper: 4.2e-12 [mol/(cm^2 * s)]
+            k3_neg_0 = (k1_0^2)*k3_0/(k1_neg_0^2); % paper: 6.2e-12 [mol/(cm^2 * s)]
+
+            k1     = k1_0.*exp(-beta_HER.*F.*(eta)./(R.*T)).*aH2O;
+            k1_neg = k1_neg_0.*exp((1 - beta_HER).*F.*(eta)./(R.*T)).*aOH;
+            k2     = k2_0.*exp(-beta_HER.*F.*(eta)./(R.*T)).*aH2O;
+            k2_neg = k2_neg_0.*exp((1 - beta_HER).*F.*(eta)./(R.*T)).*aOH.*aH2;
+            k3     = k3_0;
+            k3_neg = k3_neg_0.*aH2;
+
+            a_theta = 2*(k3 - k3_neg);
+            b_theta = k1 + k1_neg + k2 + k2_neg +4*k3_neg;
+            c_theta = -(k1 + k2_neg + 2*k3_neg);
+
+            % Compute the square root, we do not use threshold
+            x = b_theta.^2 - 4*a_theta.*c_theta;
+            sqr = x; % quick way to create AD with same size
+            ind = (x <= 0);
+            sqr(ind)  = 0*x(ind);
+            sqr(~ind) = (x(~ind)).^0.5;
+
+            % Original expression is
+            % theta_HER_full = (-b_theta + y)./(2*a_theta);
+            % which is equivalent to
+            theta_HER_full = -2*c_theta./(sqr + b_theta);
+
+            debug = false:
+            if debug
+                function printstat(x, name)
+                    x = value(x);
+                    fprintf('%s, min : %g, max: %g, mean: %g\n', name, min(x), max(x), mean(x));
+                end
+
+                fprintf('\n')
+                printstat(a_theta, 'a')
+                printstat(b_theta, 'b')
+                printstat(c_theta, 'c')
+                printstat(theta_HER_full, 'theta')
+            end
+            
+            theta_HER_full = max(1, theta_HER_full);
+            theta_HER_full = min(0, theta_HER_full);
+
+            v1_full = k1.*(1 - theta_HER_full) - k1_neg.*theta_HER_full;
+            v2_full = k2.*theta_HER_full - k2_neg.*(1 - theta_HER_full);
+
+            rate = -F*(v1_full + v2_full);
 
         end
         
-        function rate = computeIonomerRate(kf, eta, aH2O, cOH, T)
+        function rate = computeIonomerRate(kf, eta, aH2O, aOH, aH2, T)
 
-            rate = kf.computeRate(eta, aH2O, cOH, T);
+            rate = kf.computeRate(eta, aH2O, aOH, aH2, T);
 
         end
         
-        function rate = computeElyteRate(kf, eta, aH2O, cOH, T)
+        function rate = computeElyteRate(kf, eta, aH2O, aOH, aH2, T)
             
-            rate = kf.computeRate(eta, aH2O, cOH, T);
+            rate = kf.computeRate(eta, aH2O, aOH, aH2, T);
             
         end
         
