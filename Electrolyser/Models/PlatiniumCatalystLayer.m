@@ -102,8 +102,9 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             F  = con.F;
             R  = con.R;
 
-            state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
-
+            % state.Eelyte = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
+            state.Eelyte = E0;
+            
         end
         
         function state = updateEinmr(model, state)
@@ -121,7 +122,8 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             F  = con.F;
             R  = con.R;
 
-            state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
+            % state.Einmr = E0 + R*T./(2*F).*log((H2Oa.^2).*(c0.^2).*(cOH.^-2).*(p/pref).^(-1));
+            state.Einmr = E0;
             
         end
 
