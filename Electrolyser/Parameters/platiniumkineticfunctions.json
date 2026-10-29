@@ -2,7 +2,7 @@
   "functionFormat" : "class method",
   "className" : "PlatiniumKineticFunctions",
   "methodName" : "computeIonomerRate",
-  "argumentList" : ["eta", "H2Oa", "cOH", "T"],
+  "argumentList" : ["eta", "H2Oa", "OHa", "H2a", "T"],
   "parameters" : {
     "k1p" : {
       "value" : 5e-10,
@@ -27,26 +27,26 @@
    "functionFormat" : "class method",
    "className" : "PlatiniumKineticFunctions",
    "methodName" : "computeElyteRate",
-   "argumentList" : ["eta", "H2Oa", "cOH", "T"],
-  "parameters" : {
-    "k1p" : {
-      "value" : 5e-10,
-      "unit" : "mol/((centi*meter)^2)"},
-    "k1m" : {
-      "value" : 6e-9,
-      "unit" : "mol/((centi*meter)^2)"},
-    "k2p" : {
-      "value" : 1.5e-11,
-      "unit" : "mol/((centi*meter)^2)"},
-    "k2m" : {
-      "value" : 4.2e-12,
-      "unit" : "mol/((centi*meter)^2)"},
-    "k3p" : {
-      "value" : 3e-10,
-      "unit" : "mol/((centi*meter)^2)"},
-    "k3m" : {
-      "value" : 6.2e-12,
-      "unit" : "mol/((centi*meter)^2)"},
-    "chargeTransferCoefficient" :  0.5}}}
+   "argumentList" : ["eta", "H2Oa", "OHa", "H2a", "T"],
+   "parameters" : {
+     "k1p" : {
+       "value" : 5e-10,
+       "unit" : "mol/((centi*meter)^2)"},
+     "k1m" : {
+       "value" : 6e-9,
+       "unit" : "mol/((centi*meter)^2)"},
+     "k2p" : {
+       "value" : 1.5e-11,
+       "unit" : "mol/((centi*meter)^2)"},
+     "k2m" : {
+       "value" : 4.2e-12,
+       "unit" : "mol/((centi*meter)^2)"},
+     "k3p" : {
+       "value" : 3e-10,
+       "unit" : "mol/((centi*meter)^2)"},
+     "k3m" : {
+       "value" : 6.2e-12,
+       "unit" : "mol/((centi*meter)^2)"},
+     "chargeTransferCoefficient" :  0.5}}}
 
 
