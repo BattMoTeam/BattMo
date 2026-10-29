@@ -2,7 +2,7 @@
 # Pandoc must also be installed separately (see .github/workflows/doc.yml).
 nbsphinx==0.9.8
 nbsphinx-link==1.4.1
-Sphinx==9.1.0
+Sphinx==9.2.0
 sphinx-copybutton==0.5.2
 sphinx_collapse==0.1.4
 sphinx_design==0.7.0
