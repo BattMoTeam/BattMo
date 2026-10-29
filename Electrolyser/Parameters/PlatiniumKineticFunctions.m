@@ -21,6 +21,16 @@ classdef PlatiniumKineticFunctions
             
             kf = setupParameters(kf, parameters);
 
+            pms = {'k1p', ...
+                   'k1m', ...
+                   'k2p', ...
+                   'k2m', ...
+                   'k3p', ...
+                   'k3m'};
+
+            for ipm = 1 : numel(pms)
+                kf.(pms{ipm}) = 1e3*kf.(pms{ipm});
+            end
             kf.th = 8*kf.k1p*kf.k3p*1e-3;
             
         end
