@@ -19,7 +19,7 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             % Assemble the reaction rate constants
             if model.useGenericRateFunction
                 fn = @() CatalystLayer.genericUpdateReactionRates;
-                inputnames = {'volumetricSurfaceArea', 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr', 'etaElyte', 'etaInmr', 'T'};
+                inputnames = {'volumetricSurfaceArea', 'cOHelyte', 'cOHinmr', 'H2OaElyte', 'H2OaInmr', 'etaElyte', 'etaInmr', 'pressureActiveGas', 'T'};
                 model = model.registerPropFunction({'elyteReactionRate', fn, inputnames});
                 model = model.registerPropFunction({'inmrReactionRate', fn, inputnames});
             else
@@ -53,7 +53,6 @@ classdef PlatiniumCatalystLayer < CatalystLayer
 
         function state = genericUpdateReactionRates(model, state)
 
-
             Xinmr = model.ionomerFractionArea;
             
             vsa       = state.volumetricSurfaceArea;
@@ -64,9 +63,14 @@ classdef PlatiniumCatalystLayer < CatalystLayer
             cOHinmr   = state.cOHinmr;
             H2OaInmr  = state.H2OaInmr;
             T         = state.T;
+            pH2       = state.pressureActiveGas;
+
+            aOHelyte = cOHelyte/1000;
+            aOHinmr  = cOHinmr/1000;
+            aH2      = pH2/model.referencePressure;
             
-            state.elyteReactionRate = (1 - Xinmr).*vsa.*model.computeElyteRate(etaElyte, H2OaElyte, cOHelyte, T);
-            state.inmrReactionRate  = Xinmr.*vsa.*model.computeIonomerRate(etaInmr, H2OaInmr, cOHinmr, T);
+            state.elyteReactionRate = (1 - Xinmr).*vsa.*model.computeElyteRate(etaElyte, H2OaElyte, aOHelyte, aH2, T);
+            state.inmrReactionRate  = Xinmr.*vsa.*model.computeIonomerRate(etaInmr, H2OaInmr, aOHinmr, aH2, T);
             
         end
         
