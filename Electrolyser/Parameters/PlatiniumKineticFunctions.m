@@ -85,9 +85,9 @@ classdef PlatiniumKineticFunctions
                 
             end
             
-            theta_HER_full = max(1, theta_HER_full);
-            theta_HER_full = min(0, theta_HER_full);
-
+            theta_HER_full = min(1, theta_HER_full);
+            theta_HER_full = max(0, theta_HER_full);
+            
             v1_full = k1.*(1 - theta_HER_full) - k1_neg.*theta_HER_full;
             v2_full = k2.*theta_HER_full - k2_neg.*(1 - theta_HER_full);
 
