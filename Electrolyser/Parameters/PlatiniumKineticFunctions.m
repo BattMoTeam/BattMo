@@ -73,18 +73,16 @@ classdef PlatiniumKineticFunctions
             % which is equivalent to
             theta_HER_full = -2*c_theta./(sqr + b_theta);
 
-            debug = false:
-            if debug
-                function printstat(x, name)
-                    x = value(x);
-                    fprintf('%s, min : %g, max: %g, mean: %g\n', name, min(x), max(x), mean(x));
-                end
+            debug = false;
 
-                fprintf('\n')
-                printstat(a_theta, 'a')
-                printstat(b_theta, 'b')
-                printstat(c_theta, 'c')
-                printstat(theta_HER_full, 'theta')
+            if debug
+
+                fprintf('\n');
+                kf.printstat(a_theta, 'a');
+                kf.printstat(b_theta, 'b');
+                kf.printstat(c_theta, 'c');
+                kf.printstat(theta_HER_full, 'theta');
+                
             end
             
             theta_HER_full = max(1, theta_HER_full);
@@ -107,6 +105,15 @@ classdef PlatiniumKineticFunctions
             
             rate = kf.computeRate(eta, aH2O, aOH, aH2, T);
             
+        end
+        
+    end
+
+    methods (Static)
+        
+        function printstat(x, name)
+            x = value(x);
+            fprintf('%s, min : %g, max: %g, mean: %g\n', name, min(x), max(x), mean(x));
         end
         
     end
