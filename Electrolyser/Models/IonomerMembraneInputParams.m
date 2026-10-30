@@ -1,7 +1,8 @@
 classdef IonomerMembraneInputParams < ElectronicComponentInputParams
     
     properties
-        
+
+        liquidVolumeFraction % active part in the membrane, where water can flow
         volumeFraction
         
         H2O % with fields
@@ -27,6 +28,8 @@ classdef IonomerMembraneInputParams < ElectronicComponentInputParams
     methods
         
         function inputparams = IonomerMembraneInputParams(jsonstruct)
+
+            jsonstruct = setDefaultStructField(jsonstruct, 'liquidVolumeFraction', 1);
             
             inputparams = inputparams@ElectronicComponentInputParams(jsonstruct);
             

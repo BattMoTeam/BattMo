@@ -7,7 +7,10 @@
   "properties" : {
     "volumeFraction" : {
       "type" : "number",
-      "description" : "volume fraction occupied by membrane"},
+      "description" : "volume fraction occupied by membrane. In current implementation, it is setup at the same time as the grid. It varies in x"},
+    "liquidVolumeFraction" : {
+      "type" : "number",
+      "description" : "liquid volume fraction in the membrane, which we interpret as the fraction of the membrane that can conducts the water. Default value is 1"}    
     "conductivity" : {
       "type" : "number",
       "description" : "Conductivity of the membrane"},
