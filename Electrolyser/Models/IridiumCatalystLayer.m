@@ -118,7 +118,7 @@ classdef IridiumCatalystLayer < CatalystLayer
             F  = con.F;
             R  = con.R;
 
-            state.Einmr = E0 + R*T./(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2).*(p/pref).^0.5);
+            state.Einmr = E0 + R*T./(2*F).*log(H2Oa.*(c0.^2).*(cOH.^-2));
             
         end
 
