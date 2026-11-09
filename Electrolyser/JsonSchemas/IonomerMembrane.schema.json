@@ -7,7 +7,7 @@
   "properties" : {
     "volumeFraction" : {
       "type" : "number",
-      "description" : "volume fraction occupied by membrane"},
+      "description" : "volume fraction occupied by membrane. In current implementation, it is setup at the same time as the grid. It varies in x"},
     "conductivity" : {
       "type" : "number",
       "description" : "Conductivity of the membrane"},
