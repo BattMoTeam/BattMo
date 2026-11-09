@@ -31,22 +31,15 @@ classdef PlatiniumKineticFunctions
             R = PhysicalConstants.R;
             F = PhysicalConstants.F;
 
-            beta_HER = 0.5;
-            E_0_HER = 0;
+            beta_HER = kf.chargeTransferCoefficient;
 
-            k1_0     = 5e-10;   % [mol/(cm^2 * s)]
-            k1_neg_0 = 6e-9;    % [mol/(cm^2 * s)]
-            k2_0     = 1.5e-11; % [mol/(cm^2 * s)]
-            k3_0     = 3e-10;   % [mol/(cm^2 * s)]
+            k1_0     = kf.k1p;
+            k1_neg_0 = kf.k1m;
+            k2_0     = kf.k2p;
+            k3_0     = kf.k3p;
 
-            change_unit = true;
-            if change_unit
-                k1_0     = 1e4*k1_0     ; 
-                k1_neg_0 = 1e4*k1_neg_0 ; 
-                k2_0     = 1e4*k2_0     ; 
-                k3_0     = 1e4*k3_0     ; 
-            end
-
+            % The backward rate constants of the second and third reactions are not taken from the input (the values
+            % kf.k2m and kf.k3m given there are the ones of the paper) but recomputed from the other rate constants.
             k2_neg_0 = k1_0*k2_0/k1_neg_0; % paper: 4.2e-12 [mol/(cm^2 * s)]
             k3_neg_0 = (k1_0^2)*k3_0/(k1_neg_0^2); % paper: 6.2e-12 [mol/(cm^2 * s)]
 
@@ -72,18 +65,6 @@ classdef PlatiniumKineticFunctions
             % theta_HER_full = (-b_theta + y)./(2*a_theta);
             % which is equivalent to
             theta_HER_full = -2*c_theta./(sqr + b_theta);
-
-            debug = false;
-
-            if debug
-
-                fprintf('\n');
-                kf.printstat(a_theta, 'a');
-                kf.printstat(b_theta, 'b');
-                kf.printstat(c_theta, 'c');
-                kf.printstat(theta_HER_full, 'theta');
-                
-            end
             
             theta_HER_full = min(1, theta_HER_full);
             theta_HER_full = max(0, theta_HER_full);
