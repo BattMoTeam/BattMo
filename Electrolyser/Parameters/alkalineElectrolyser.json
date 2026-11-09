@@ -15,7 +15,7 @@
   "HydrogenEvolutionElectrode": {
     "porousTransportLayerType" : "Hydrogen",
     "PorousTransportLayer" : {
-      "solidVolumefraction": 0.33,
+      "solidVolumeFraction": 0.33,
       "leverettCoefficients": [ -1.11178e-1,
                                 1.39e-3,
                                 1.422e-2,
