@@ -1,0 +1,20 @@
+{"computeIonomerRate" : {
+  "functionFormat" : "class method",
+  "className" : "IridiumKineticFunctions",
+  "methodName" : "computeIonomerRate",
+  "argumentList" : ["eta", "H2Oa", "cOH", "T"],
+  "parameters" : {
+    "K1" : 1.51e6,
+    "K2" : 1.75e-2,
+    "effectiveChargeTransferCoefficient" : 0.9289}},
+ "computeElyteRate" : {
+   "functionFormat" : "class method",
+   "className" : "IridiumKineticFunctions",
+   "methodName" : "computeElyteRate",
+   "argumentList" : ["eta", "H2Oa", "cOH", "T"],
+   "parameters" : {
+     "K1" : 1.51e6,
+     "K2" : 1.75e-2,
+     "effectiveChargeTransferCoefficient" : 0.9289}}}
+
+ 

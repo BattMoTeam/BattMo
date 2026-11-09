@@ -24,9 +24,11 @@ ctl = 'CatalystLayer';
 % We add the kinetic functions to the json structure. The kinetic functions are defined in a separate json file
 % :battmofile:`kineticfunctions.json<Electrolyser/Parameters/kineticfunctions.json>`
 
-jsonstruct_kinetics  = parseBattmoJson('Electrolyser/Parameters/platiniumkineticfunctions.json');
+jsonstruct_her_kinetics = parseBattmoJson('Electrolyser/Parameters/platiniumkineticfunctions.json');
+jsonstruct.(her).(ctl).genericRateFunctions = jsonstruct_her_kinetics;
 
-jsonstruct.(her).(ctl).genericRateFunctions = jsonstruct_kinetics;
+jsonstruct_oer_kinetics = parseBattmoJson('Electrolyser/Parameters/iridiumkineticfunctions.json');
+jsonstruct.(oer).(ctl).genericRateFunctions = jsonstruct_oer_kinetics;
 
 simsetup = setupElectrolyserSimulation(jsonstruct);
 
@@ -66,8 +68,6 @@ model = simsetup.model;
 for istate = 1 : numel(states)
     states{istate} = model.addVariables(states{istate});
 end
-
-
 
 %%
 % We extract the time, voltage and current values for each time step
